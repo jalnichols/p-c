@@ -464,6 +464,7 @@ selector <- 'body > div.wrapper > div.content > div:nth-child(1) > div.ESNav.sta
 #
 
 stages_list <- vector("list", length(all_events$url))
+gc_list <- vector("list", length(all_events$url))
   
 #
   
@@ -473,11 +474,25 @@ for(e in 1:length(all_events$url)) {
   
   # go to generic event page and find which stage is listed last
   
-  ms <- paste0('https://www.procyclingstats.com/', all_events$url[[e]]) %>%
+  page <- paste0('https://www.procyclingstats.com/', all_events$url[[e]]) %>%
     
-    read_html() %>%
+    read_html()
+  
+  # pull in last stage
+  
+  ms <- page %>%
     html_nodes(selector) %>%
     html_attr(name = "href")
+  
+  # pull in GC results
+  
+  gc <- page %>%
+    html_nodes('table') %>%
+    html_table()
+  
+  # assign to gc list
+  
+  gc_list[[e]] <- gc
   
   # if it's empty, it's a one day race
   # otherwise find the max stage to scrape
@@ -503,11 +518,15 @@ for(e in 1:length(all_events$url)) {
   
   print(e)
   
+  Sys.sleep(runif(1, 5, 15))
+  
 }
 
 tictoc::toc()
 
 #
+
+readr::write_rds(gc_list, "R Code/Cycling/GC_List.rds")
 
 # extract stage types
 
@@ -1242,10 +1261,12 @@ stage_data <- stage_data %>%
                                        "la route d'occitanie - la depeche du midi", race)), by = c("race", "stage", "year")) %>%
       
       group_by(stage, race, year) %>%
-      mutate(position_highest = max(model_category, na.rm = T)) %>%
+      mutate(position_highest = max(model_category, na.rm = T),
+             last_climb = max(end_distance, na.rm = T)) %>%
       ungroup() %>%
       
-      mutate(position_highest = ifelse(position_highest == model_category, end_distance / stage_length, NA)) %>%
+      mutate(position_highest = ifelse(position_highest == model_category, end_distance / stage_length, NA),
+             last_climb = ifelse(last_climb == end_distance, model_category, NA)) %>%
       
       mutate(summit_finish = ifelse(abs(end_distance - stage_length) < 2, TRUE, FALSE)) %>%
       mutate(summit_finish = ifelse(race == "tour de romandie" & stage == 4 &
@@ -1260,6 +1281,7 @@ stage_data <- stage_data %>%
                 number_cat_climbs = sum(kom_points >= 1, na.rm = T),
                 raw_climb_difficulty = sum(basic_kom_points, na.rm = T),
                 act_climb_difficulty = sum(kom_points, na.rm = T),
+                last_climb = max(last_climb, na.rm = T),
                 position_highest = mean(position_highest, na.rm = T),
                 summit_finish = max(summit_finish, na.rm = T)) %>%
       ungroup(), by = c("race", "stage", "year")
@@ -1275,7 +1297,11 @@ stage_data <- stage_data %>%
          raw_climb_difficulty = ifelse(is.na(raw_climb_difficulty),
                                        ifelse(is.na(total_elev_change), NA, 0), raw_climb_difficulty),
          act_climb_difficulty = ifelse(is.na(act_climb_difficulty),
-                                   ifelse(is.na(total_elev_change), NA, 0), act_climb_difficulty)) %>%
+                                   ifelse(is.na(total_elev_change), NA, 0), act_climb_difficulty),
+         position_highest = ifelse(is.na(position_highest),
+                                   ifelse(is.na(total_elev_change), NA, 0), position_highest),
+         last_climb = ifelse(is.na(last_climb),
+                             ifelse(is.na(total_elev_change), NA, 0), last_climb)) %>%
   
   filter(!is.na(act_climb_difficulty)) %>%
   
