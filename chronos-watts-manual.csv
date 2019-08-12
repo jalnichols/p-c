@@ -1,0 +1,99 @@
+name,climb,event,year,minutes,watts_kg,watts
+Geraint Thomas,La Planche de Belles Filles,Tour de France,2019,20.03,6.5,455
+Thibaut Pinot,La Planche de Belles Filles,Tour de France,2019,20.08,6.5,436
+Julian Alaphilippe,La Planche de Belles Filles,Tour de France,2019,20.08,6.6,409
+Julian Alaphilippe,Col de Romme,Tour de France,2018,29.5,5.85,403
+Julian Alaphilippe,Grand Colombiere,Tour de France,2018,23.5,5.9,404
+Geraint Thomas,Torgon,Romandie,2019,22,5.9,417
+Romain Bardet,La Planche de Belles Filles,Tour de France,2019,22,6.15,428
+Warren Barguil,La Planche de Belles Filles,Tour de France,2019,21,6.45,442
+Egan Bernal,Flumserberg,Suisse,2019,23.75,6.6,449
+Egan Bernal,St Gotthard,Suisse,2019,35.4,5.8,396
+Egan Bernal,Furkapass,Suisse,2019,33.5,5.6,381
+Wout Poels,Pipay,Dauphine,2019,51,5.7,394
+Jakob Fuglsang,Arrate,Basque Country,2019,13,6.65,466
+Jakob Fuglsang,Monte du Chat,Dauphine,2017,29.4,6.2,435
+Jakob Fuglsang,Cole de la Couillole,Paris Nice,2017,43,5.95,416
+Jakob Fuglsang,Valmorel,Dauphine,2013,31,5.95,416
+Jakob Fuglsang,Croix de Chaubouret,Paris Nice,2015,23,6.1,427
+Richard Carapaz,Montoso,Giro,2019,29,6,413
+Richard Carapaz,Lago Serru,Giro,2019,21,6,412
+Richard Carapaz,San Carlo,Giro,2019,36,5.98,412
+Richard Carapaz,Civiglio,Giro,2019,13,6.66,459
+Richard Carapaz,Mortirolo,Giro,2019,45,5.89,406
+Richard Carapaz,Anterselva,Giro,2019,11,6.4,441
+Richard Carapaz,Monte Avena,Giro,2019,17.67,6.35,436
+Vincenzo Nibali,Montoso,Giro,2019,29,5.98,413
+Vincenzo Nibali,Lago Serru,Giro,2019,22.5,5.57,385
+Vincenzo Nibali,San Carlo,Giro,2019,36.5,5.87,405
+Vincenzo Nibali,Civiglio,Giro,2019,13,6.63,459
+Vincenzo Nibali,Mortirolo,Giro,2019,45,5.87,406
+Vincenzo Nibali,Anterselva,Giro,2019,11.25,6.37,439
+Vincenzo Nibali,Monte Avena,Giro,2019,17.67,6.27,433
+Primoz Roglic,Montoso,Giro,2019,28.5,6.15,421
+Primoz Roglic,Lago Serru,Giro,2019,20.12,5.92,405
+Primoz Roglic,San Carlo,Giro,2019,36.5,5.92,405
+Primoz Roglic,Civiglio,Giro,2019,13,6.58,451
+Primoz Roglic,Mortirolo,Giro,2019,45,5.92,406
+Primoz Roglic,Anterselva,Giro,2019,11,6.7,459
+Primoz Roglic,Monte Avena,Giro,2019,17.6,6.35,433
+Simon Yates,Mt Etna,Giro,2018,48.67,6,410
+Simon Yates,Zoncolan,Giro,2018,40,6.1,419
+Chris Froome,Zoncolan,Giro,2018,40,6,420
+Thibaut Pinot,Zoncolan,Giro,2018,40.75,5.95,412
+Egan Bernal,Gibraltar Rd,California,2018,32.4,6.1,415
+Egan Bernal,Daggett Pass,California,2018,30.4,6,410
+Egan Bernal,Colloms,Romandie,2018,18.67,6.1,415
+Nairo Quintana,Mt Etna,Giro,2017,48.75,5.7,386
+Nairo Quintana,Blockhaus,Giro,2017,40,6.25,425
+Nairo Quintana,Oropa,Giro,2017,18,6.75,454
+Nairo Quintana,Umbrail,Giro,2017,42.5,5.7,386
+Nairo Quintana,Pontives,Giro,2017,25,5.8,389
+Nairo Quintana,Piancavallo,Giro,2017,39,6.2,420
+Nairo Quintana,Foza,Giro,2017,32.25,6.2,417
+Tom Dumoulin,Mt Etna,Giro,2017,48.75,5.5,386
+Tom Dumoulin,Blockhaus,Giro,2017,40.4,6,420
+Tom Dumoulin,Oropa,Giro,2017,17.67,6.6,461
+Tom Dumoulin,Umbrail,Giro,2017,43.4,5.4,377
+Tom Dumoulin,Pontives,Giro,2017,25,5.55,389
+Tom Dumoulin,Piancavallo,Giro,2017,40,5.95,416
+Tom Dumoulin,Foza,Giro,2017,32.6,5.9,413
+Thibaut Pinot,Mt Etna,Giro,2017,48.7,5.55,386
+Thibaut Pinot,Blockhaus,Giro,2017,40.5,6.05,420
+Thibaut Pinot,Oropa,Giro,2017,18.25,6.4,444
+Thibaut Pinot,Umbrail,Giro,2017,43.5,5.4,376
+Thibaut Pinot,Pontives,Giro,2017,25,5.65,391
+Thibaut Pinot,Piancavallo,Giro,2017,38.8,6.15,426
+Thibaut Pinot,Foza,Giro,2017,32.25,6,416
+Vincenzo Nibali,Mt Etna,Giro,2017,48.75,5.55,386
+Vincenzo Nibali,Blockhaus,Giro,2017,41,5.95,413
+Vincenzo Nibali,Oropa,Giro,2017,18.5,6.3,438
+Vincenzo Nibali,Umbrail,Giro,2017,42.5,5.55,386
+Vincenzo Nibali,Pontives,Giro,2017,25,5.6,389
+Vincenzo Nibali,Piancavallo,Giro,2017,39,6.05,420
+Vincenzo Nibali,Foza,Giro,2017,32.2,6,417
+Mikel Landa,Piancavallo,Giro,2017,39.5,6.25,427
+Egan Bernal,Col Turini,Paris Nice,2019,40.75,6.07,413
+Nairo Quintana,Col Turini,Paris Nice,2019,40.75,6.07,413
+Romain Bardet,Col Turini,Paris Nice,2019,41.5,5.85,405
+Primoz Roglic,Terminillo,Tirreno Adriatico,2017,41.75,5.95,412
+Nairo Quintana,Col de Portet,Tour de France,2018,49.5,6.1,415
+Dan Martin,Col de Portet,Tour de France,2018,50,5.99,411
+Geraint Thomas,Col de Portet,Tour de France,2018,50.5,5.82,408
+Tom Dumoulin,Col de Portet,Tour de France,2018,50.5,5.82,407
+Primoz Roglic,Col de Portet,Tour de France,2018,50.5,5.87,407
+Steven Kruijswijk,Col de Portet,Tour de France,2018,50.6,5.82,405
+Egan Bernal,Col de Portet,Tour de France,2018,51,5.9,401
+Chris Froome,Col de Portet,Tour de France,2018,51,5.76,401
+Mikel Landa,Col de Portet,Tour de France,2018,51,5.83,401
+Romain Bardet,Col de Portet,Tour de France,2018,52,5.69,392
+Jakob Fuglsang,Col de Portet,Tour de France,2018,53.5,5.44,380
+Warren Barguil,Col de Portet,Tour de France,2018,54,5.52,376
+Simon Yates,Colmiane,Paris Nice,2018,40.8,5.9,397
+Mikel Landa,Sassotetto,Tirreno Adriatico,2018,28.8,6.1,417
+Nairo Quintana,Terminillo,Tirreno Adriatico,2017,41,6.2,422
+Geraint Thomas,Terminillo,Tirreno Adriatico,2017,41,5.94,418
+Adam Yates,Terminillo,Tirreno Adriatico,2017,41.3,6.06,417
+Rigoberto Uran,Terminillo,Tirreno Adriatico,2017,41.3,6.06,417
+Tom Dumoulin,Terminillo,Tirreno Adriatico,2017,41.5,5.89,416
+Thibaut Pinot,Terminillo,Tirreno Adriatico,2017,41.6,5.96,413
