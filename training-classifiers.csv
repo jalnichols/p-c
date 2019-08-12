@@ -25,8 +25,8 @@ tour de france,2014,3,sprint
 tour de france,2014,4,sprint
 tour de france,2014,5,cobbles
 tour de france,2014,6,sprint
-tour de france,2014,7,sharp finish
-tour de france,2014,8,sharp finish
+tour de france,2014,7,sprint
+tour de france,2014,8,intermediate
 tour de france,2014,9,intermediate
 tour de france,2014,10,mountain
 tour de france,2014,11,intermediate
@@ -37,7 +37,7 @@ tour de france,2014,15,sprint
 tour de france,2014,16,mountain
 tour de france,2014,17,mountain
 tour de france,2014,18,mountain
-tour de france,2014,19,sharp finish
+tour de france,2014,19,sprint
 tour de france,2014,21,sprint
 tour de france,2015,2,sprint
 tour de france,2015,3,sharp finish
@@ -65,7 +65,7 @@ tour de france,2016,3,sprint
 tour de france,2016,4,sprint
 tour de france,2016,5,intermediate
 tour de france,2016,6,sprint
-tour de france,2016,7,intermediate
+tour de france,2016,7,mountain
 tour de france,2016,8,mountain
 tour de france,2016,9,mountain
 tour de france,2016,10,intermediate
@@ -73,7 +73,7 @@ tour de france,2016,11,sprint
 tour de france,2016,12,mountain
 tour de france,2016,14,sprint
 tour de france,2016,15,mountain
-tour de france,2016,16,intermediate
+tour de france,2016,16,sharp finish
 tour de france,2016,17,mountain
 tour de france,2016,19,mountain
 tour de france,2016,20,mountain
@@ -90,12 +90,12 @@ tour de france,2017,10,sprint
 tour de france,2017,11,sprint
 tour de france,2017,12,mountain
 tour de france,2017,13,mountain
-tour de france,2017,14,intermediate
+tour de france,2017,14,sharp finish
 tour de france,2017,15,intermediate
-tour de france,2017,16,sprint
+tour de france,2017,16,intermediate
 tour de france,2017,17,mountain
 tour de france,2017,18,mountain
-tour de france,2017,19,intermediate
+tour de france,2017,19,sprint
 tour de france,2017,21,sprint
 tour de france,2018,1,sprint
 tour de france,2018,2,sprint
@@ -110,7 +110,7 @@ tour de france,2018,11,mountain
 tour de france,2018,12,mountain
 tour de france,2018,13,sprint
 tour de france,2018,14,intermediate
-tour de france,2018,15,mountain
+tour de france,2018,15,intermediate
 tour de france,2018,16,mountain
 tour de france,2018,17,mountain
 tour de france,2018,18,sprint
@@ -132,8 +132,132 @@ tour de france,2019,13,ITT
 tour de france,2019,14,mountain
 tour de france,2019,15,mountain
 tour de france,2019,16,sprint
-tour de france,2019,17,sharp finish
+tour de france,2019,17,intermediate
 tour de france,2019,18,mountain
 tour de france,2019,19,mountain
 tour de france,2019,20,mountain
 tour de france,2019,21,sprint
+dwars door vlaanderen - a travers la flandre,2019,1,sprint
+gent-wevelgem in flanders fields,2019,1,sprint
+driedaagse brugge-de panne,2019,1,sprint
+milano - sanremo,2019,1,intermediate
+omloop het nieuwsblad elite,2019,1,sprint
+strade bianche,2019,1,sharp finish
+ronde van vlaanderen - tour des flandres,2019,1,intermediate
+tour de romandie,2019,1,intermediate
+tour de romandie,2019,2,intermediate
+tour de romandie,2019,3,sharp finish
+tour de romandie,2019,4,mountain
+tour de romandie,2019,5,ITT
+criterium du dauphine,2019,1,intermediate
+criterium du dauphine,2019,2,intermediate
+criterium du dauphine,2019,3,sprint
+criterium du dauphine,2019,4,ITT
+criterium du dauphine,2019,5,sprint
+criterium du dauphine,2019,6,intermediate
+criterium du dauphine,2019,7,mountain
+criterium du dauphine,2019,8,intermediate
+tour de suisse,2019,1,ITT
+tour de suisse,2019,2,intermediate
+tour de suisse,2019,3,sprint
+tour de suisse,2019,4,sprint
+tour de suisse,2019,5,sharp finish
+tour de suisse,2019,6,mountain
+tour de suisse,2019,7,mountain
+tour de suisse,2019,8,ITT
+tour de suisse,2019,9,mountain
+uae tour,2019,1,TTT
+uae tour,2019,2,sprint
+uae tour,2019,3,mountain
+uae tour,2019,4,sharp finish
+uae tour,2019,5,sprint
+uae tour,2019,6,mountain
+uae tour,2019,7,sprint
+paris - nice,2019,1,sprint
+paris - nice,2019,2,sprint
+paris - nice,2019,3,sprint
+paris - nice,2019,4,intermediate
+paris - nice,2019,5,ITT
+paris - nice,2019,6,intermediate
+paris - nice,2019,7,mountain
+paris - nice,2019,8,intermediate
+tirreno-adriatico,2019,1,TTT
+tirreno-adriatico,2019,2,sharp finish
+tirreno-adriatico,2019,3,intermediate
+tirreno-adriatico,2019,4,intermediate
+tirreno-adriatico,2019,5,intermediate
+tirreno-adriatico,2019,6,sprint
+tirreno-adriatico,2019,7,ITT
+volta ciclista a catalunya,2019,1,intermediate
+volta ciclista a catalunya,2019,2,sharp finish
+volta ciclista a catalunya,2019,3,mountain
+volta ciclista a catalunya,2019,4,mountain
+volta ciclista a catalunya,2019,5,sprint
+volta ciclista a catalunya,2019,6,sprint
+volta ciclista a catalunya,2019,7,intermediate
+clasica ciclista san sebastian,2019,1,intermediate
+cadel evans great ocean road race,2019,1,sprint
+paris-roubaix,2019,1,cobbles
+santos tour down under,2019,1,sprint
+santos tour down under,2019,2,sharp finish
+santos tour down under,2019,3,sprint
+santos tour down under,2019,4,intermediate
+santos tour down under,2019,5,sprint
+santos tour down under,2019,6,sharp finish
+itzulia basque country,2019,1,ITT
+itzulia basque country,2019,2,sharp finish
+itzulia basque country,2019,3,sharp finish
+itzulia basque country,2019,4,intermediate
+itzulia basque country,2019,5,mountain
+itzulia basque country,2019,6,mountain
+e3 binckbank classic ,2019,1,intermediate
+amgen tour of california,2019,1,sprint
+amgen tour of california,2019,2,intermediate
+amgen tour of california,2019,3,intermediate
+amgen tour of california,2019,4,sprint
+amgen tour of california,2019,5,intermediate
+amgen tour of california,2019,6,mountain
+amgen tour of california,2019,7,intermediate
+il lombardia,2018,1,mountain
+prudential ridelondon-surrey classic,2018,1,sprint
+euroeyes cyclassics hamburg,2018,1,sprint
+binckbank tour,2018,1,sprint
+binckbank tour,2018,2,ITT
+binckbank tour,2018,3,sprint
+binckbank tour,2018,4,sprint
+binckbank tour,2018,5,sprint
+binckbank tour,2018,6,intermediate
+binckbank tour,2018,7,intermediate
+tour de pologne,2018,1,sprint
+tour de pologne,2018,2,sprint
+tour de pologne,2018,3,sprint
+tour de pologne,2018,4,intermediate
+tour de pologne,2018,5,sharp finish
+tour de pologne,2018,6,intermediate
+tour de pologne,2018,7,intermediate
+vuelta a espana,2018,1,ITT
+vuelta a espana,2018,2,sharp finish
+vuelta a espana,2018,3,intermediate
+vuelta a espana,2018,4,mountain
+vuelta a espana,2018,5,intermediate
+vuelta a espana,2018,6,sprint
+vuelta a espana,2018,7,intermediate
+vuelta a espana,2018,8,sharp finish
+vuelta a espana,2018,9,mountain
+vuelta a espana,2018,10,sprint
+vuelta a espana,2018,11,intermediate
+vuelta a espana,2018,12,intermediate
+vuelta a espana,2018,13,mountain
+vuelta a espana,2018,14,mountain
+vuelta a espana,2018,15,mountain
+vuelta a espana,2018,16,ITT
+vuelta a espana,2018,17,mountain
+vuelta a espana,2018,18,sprint
+vuelta a espana,2018,19,mountain
+vuelta a espana,2018,20,mountain
+vuelta a espana,2018,21,sprint
+la fleche wallone,2019,1,sharp finish
+amstel gold race,2019,1,intermediate
+eschborn-frankfurt,2019,1,intermediate
+liege - bastogne - liege,2018,1,sharp finish
+liege-bastogne-liege,2019,1,intermediate
