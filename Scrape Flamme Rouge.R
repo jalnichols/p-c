@@ -178,6 +178,9 @@ for(y in 1:length(stages_list)) {
     # with the climbs / sprints data
     actual_climbs <- json[[3]]$stageclimbs
     
+    # with the generic sprints (some of this contains climb data)
+    generic_sprints <- json[[3]]$stagegenericsprints
+    
     # and the distance / altitude data
     other_jsons <- json[[2]]
     
@@ -232,7 +235,63 @@ for(y in 1:length(stages_list)) {
              year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
              stage = z)
     
-    data_list[[z]] <- df
+    # clean up generic sprints
+    #
+    
+    gen_spr_list <- vector('list', length(generic_sprints))
+    
+    if(length(generic_sprints) > 0) {
+    
+    for(c in 1:length(gen_spr_list)) {
+      
+      category = generic_sprints[[c]]$difficulty
+      
+      if(is.null(category)) {
+        
+      } else {
+      
+      gen_spr_list[[c]] <- tibble(
+        
+        climb_name = generic_sprints[[c]]$name %>% str_replace_all("%20", " "),
+        start_distance = generic_sprints[[c]]$startdistance,
+        end_distance = generic_sprints[[c]]$distance,
+        category = as.numeric(category),
+        altitude = generic_sprints[[c]]$altitude)
+        
+      }
+        
+    }
+    
+    gen_sprs <- bind_rows(gen_spr_list) %>%
+      
+      filter(!is.na(category)) %>%
+      
+      mutate(category = as.numeric(NA)) %>%
+      
+      mutate(url = stages_list[[y]]$url[[z]],
+             race_url = stages_list[[y]]$race_url[[z]],
+             race = stages_list[[y]]$race[[z]],
+             #year = stages_list[[y]]$year[[z]],
+             year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
+             stage = z)
+    
+    } else {
+      
+      gen_sprs = df
+      
+    }
+    
+    # use actual_climbs, if blank use climbs from generic sprints
+    
+    if(length(actual_climbs) > 0) {
+      
+      data_list[[z]] <- df
+      
+    } else {
+      
+      data_list[[z]] <- gen_sprs
+      
+    }
     
     # Now I can pull in distance, altitude data
     # I take only every tenth item + final item
@@ -265,7 +324,9 @@ for(y in 1:length(stages_list)) {
     
     other_json_list[[y]] <- bind_rows(data_list2)
     
-    Sys.sleep(runif(1, 1,9))
+    print(y)
+    
+    Sys.sleep(runif(1, 1, 9))
     
 }
 
@@ -276,8 +337,8 @@ for(y in 1:length(stages_list)) {
 
 tictoc::toc()
 
-readr::write_rds(climbs_stages_list, "R Code/Cycling/flamme-rouge-climbs-707.rds")
-readr::write_rds(other_json_list, "R Code/Cycling/flamme-rouge-routes-707.rds")
+readr::write_rds(climbs_stages_list, "flamme-rouge-climbs-811.rds")
+readr::write_rds(other_json_list, "flamme-rouge-routes-811.rds")
 
 #readr::write_rds(climbs_stages_list, "R Code/Cycling/flamme-rouge-climbs1.rds")
 #readr::write_rds(other_json_list, "R Code/Cycling/flamme-rouge-routes.rds")
@@ -365,11 +426,13 @@ all_climbs <- bind_rows(climbs_stages_list) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2509', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, "' ", "'"))) %>%
   
+  unique() %>%
+  
   #link with Pro cycling stats
   
   left_join(
     
-    readr::read_csv("R Code/Cycling/flamme-rouge-to-pcs.csv") %>%
+    readr::read_csv("flamme-rouge-to-pcs.csv") %>%
       filter(!pcs == "UNK"), by = c("race" = "fr")
     
   ) %>%
@@ -435,7 +498,7 @@ all_routes <- bind_rows(other_json_list) %>%
   
   left_join(
     
-    readr::read_csv("R Code/Cycling/flamme-rouge-to-pcs.csv") %>%
+    readr::read_csv("flamme-rouge-to-pcs.csv") %>%
       filter(!pcs == "UNK"), by = c("race" = "fr")
     
   ) %>%
@@ -656,11 +719,14 @@ all_climbs_int <- all_climbs %>%
 
 lm(category ~ gradient + length + summit + gradient:length, 
    
+   # the KOM point values found by measuring max efforts in total watts are
+   # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+   
    data = all_climbs_int %>%
      mutate(category = ifelse(category == 1, 10, 
                               ifelse(category == 2, 5, 
-                                     ifelse(category == 3, 2, 
-                                            ifelse(category == 4, 1, 20))))) %>% 
+                                     ifelse(category == 3, 3, 
+                                            ifelse(category == 4, 1.5, 20))))) %>% 
      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
      unique())
@@ -670,10 +736,10 @@ lm(category ~ gradient + length + summit + gradient:length,
 climbs_to_write <- all_climbs_int %>%
   
   mutate(model_category = 
-           (15.03 * gradient) + 
-           (-0.419 * length) + 
-           (0.001595 * summit) + 
-           (15.929 * (gradient * length)) - 1.1) %>%
+           (11.44 * gradient) + 
+           (-0.402 * length) + 
+           (0.001517 * summit) + 
+           (15.115 * (gradient * length)) - 0.1) %>%
   
   unique() %>%
   
@@ -693,9 +759,19 @@ climbs_to_write <- all_climbs_int %>%
   
   rbind(
     
-    readr::read_csv("R Code/Cycling/f_r_climbs_missing.csv")
+    readr::read_csv("f_r_climbs_missing.csv")
     
-  )
+  ) %>%
+  
+  filter(!(str_detect(climb_name, "passage sur la"))) %>%
+  filter(!(str_detect(climb_name, "Finish"))) %>%
+  filter(!(str_detect(climb_name, "Lap"))) %>%
+  filter(!(str_detect(tolower(climb_name), "km at"))) %>%
+  filter(!(str_detect(climb_name, "km @"))) %>%
+  filter(!(str_detect(tolower(climb_name), "m -"))) %>%
+  filter(!(str_detect(tolower(climb_name), "circuit"))) %>%
+  filter(!(str_detect(climb_name, "Avenue"))) %>%
+  filter(!(str_detect(climb_name, "U-turn")))
   
 
 dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.names = FALSE)
