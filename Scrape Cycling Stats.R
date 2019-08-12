@@ -442,16 +442,14 @@ all_events <- bind_rows(events_list) %>%
 
 miss_events <- all_events
 
-miss_events$Race <- iconv(miss_events$Race, from="UTF-8", to = "ASCII//TRANSLIT")
-
 curr_events <- dbReadTable(con, "all_races")
 
 all_events <- miss_events %>% 
-  filter(!paste0(Race, year) %in% paste0(curr_events$Race, curr_events$year))
+  filter(!url %in% curr_events$url)
 
 #
 
-#dbWriteTable(con, "all_races", miss_events, row.names = FALSE, overwrite = TRUE)
+#dbWriteTable(con, "all_races", all_events, row.names = FALSE, append = TRUE)
 
 #
 
@@ -720,9 +718,10 @@ for(r in 1:length(all_stages$url)) {
             
             length <- length %>% .[[2]] %>%
               str_replace_all("k","") %>%
-              tibble::as_tibble() %>%
-              mutate(value = ifelse(nchar(value) == 5, str_sub(value, 2,4),
-                                    ifelse(nchar(value) == 6, str_sub(value, 2,5), str_sub(value, 2,6)))) %>%
+              enframe(name = NULL) %>%
+              #mutate(value = ifelse(nchar(value) == 5, str_sub(value, 2,4),
+              #                      ifelse(nchar(value) == 6, str_sub(value, 2,5), str_sub(value, 2,6)))) %>%
+              mutate(value = parse_number(value)) %>%
               mutate(value = as.numeric(value)) %>%
               as.data.frame() %>%
               .[1,1]
@@ -803,20 +802,33 @@ for(r in 1:length(all_stages$url)) {
           
           x <- str_locate(spd, 'Avg. speed winner:') %>% .[[2]]
           
-          speed_winner <- readr::parse_number(str_sub(spd, x+1, x+7))
+          SPD_WIN <- readr::parse_number(str_sub(spd, x+1, x+7))
           
           # now actually process the stage including getting times correct
           
           stage <- d[[choose]] %>%
-            janitor::clean_names() %>%
+            janitor::clean_names()
+          
+          if(race_url == "race/tour-de-france/2019" & s == 19) {
+            
+          stage <- stage %>%
+            mutate(del = 1) %>%
+            mutate(dnf = rnk) %>%
+            mutate(rnk = rank(del, ties.method = "first")) %>%
+            mutate(rnk = ifelse(dnf %in% c("OTL", "DNF", "DSQ", "NQ"), dnf, rnk)) %>%
+            select(-del, -dnf)
+            
+          } 
+          
+          stage <- stage %>%
             
             # this processes time
-            mutate(time = ifelse(time == ",,,,", 0, time),
-                   time = ifelse(time == "--", 0, time)) %>%
+            mutate(time = ifelse(time == ",,,,", NA, time),
+                   time = ifelse(time == "--", NA, time)) %>%
             mutate(time = str_replace_all(time, ",", "")) %>%
             
-            mutate(time = ifelse(time %in% c("0:00", "0:000:00"), NA, time)) %>%
-
+            mutate(time = ifelse(time %in% c("0:00", "0:000:00"), 0, time)) %>%
+            
             mutate(nch = nchar(time),
                    d1 = str_sub(time, 1, nch / 2),
                    d2 = str_sub(time, (nch / 2) + 1, nch),
@@ -828,7 +840,7 @@ for(r in 1:length(all_stages$url)) {
             mutate(time = ifelse(rnk == 1, 0, time)) %>%
             
             select(rnk, rider, age, team, win_time, time) %>%
-
+            
             mutate(count_colons = str_count(win_time, ":"),
                    count_colons1 = str_count(time, ":")) %>%
             
@@ -864,7 +876,7 @@ for(r in 1:length(all_stages$url)) {
                    total_seconds = ifelse(valid == TRUE, win_seconds + time_seconds,
                                           ifelse(rnk == 1, win_seconds, time_seconds))) %>%
             
-            mutate(total_seconds = ifelse(total_seconds == 0, (lag(total_seconds) + lead(total_seconds)) / 2, time_seconds)) %>%
+            mutate(total_seconds = ifelse(total_seconds == 0, (lag(total_seconds) + lead(total_seconds)) / 2, total_seconds)) %>%
             
             select(rnk, rider, team, win_seconds, total_seconds) %>%
             
@@ -913,13 +925,15 @@ tictoc::toc()
 
 # process stage data
 
-#write_rds(races_list, "R Code/pcs-races_list-06-20-19.rds")
+#races_list <- c(read_rds("pcs-races_list-07-05-19.rds"), races_list)
+
+#write_rds(races_list, "pcs-races-list-08-02-19.rds")
 
 #
 #
 # Bring together all stage data -------------------------------------------
 
-races_list <- read_rds("R Code/pcs-races_list-07-05-19.rds")
+races_list <- read_rds("pcs-races_list-08-02-19.rds")
 
 # some races don't award KOM points at all (UAE TOUR / Tour of Oman)
 
@@ -1000,7 +1014,7 @@ kom_stages <- kom_stages_new %>%
   #                                ifelse(is.na(kom_progression), 0, kom_progression))) %>%
   # fix wonky data
   #mutate(kom_progression = ifelse(stage == 4 & race == "Tirreno-Adriatico" & year == 2013, kom_progression - 40,
-  #                                 ifelse(stage == 2 & race == "Critérium du Dauphiné" & year == 2013, kom_progression + 30,
+  #                                 ifelse(stage == 2 & race == "Crit?rium du Dauphin?" & year == 2013, kom_progression + 30,
   #                                        ifelse(stage == 6 & race == "Tour de Suisse" & year == 2013, kom_progression - 112,
   #                                               kom_progression)))) %>%
   #mutate(kom_points = ifelse(kom_progression == 0, 0,
@@ -1061,9 +1075,9 @@ stage_data <- stage_data %>%
   mutate(last_place = max(total_seconds, na.rm = T)) %>%
   ungroup() %>%
   
-  filter(!rnk %in% c("DNS", "DSQ")) %>%
+  filter(!rnk %in% c("DNS", "DSQ", "DNF", "NQ")) %>%
   
-  mutate(total_seconds = ifelse(rnk %in% c("DNF", "OTL", "NQ"), last_place, total_seconds)) %>%
+  mutate(total_seconds = ifelse(rnk %in% c("OTL"), last_place, total_seconds)) %>%
   
   mutate(total_seconds = ifelse(is.na(total_seconds), last_place, total_seconds)) %>%
   
@@ -1133,7 +1147,7 @@ stage_data <- stage_data %>%
   # in terms of climbing difficulty (with 5 = primarily flat, 75 = toughest grand tour stage)
   left_join(
     
-    read_csv("R Code/cycling-queen-stages.csv") %>%
+    read_csv("cycling-queen-stages.csv") %>%
       select(-stage_name, -HC, -X1, -X2), by = c("stage", "race", "year")
     
   ) %>%
@@ -1270,15 +1284,18 @@ stage_data <- stage_data %>%
       
       mutate(summit_finish = ifelse(abs(end_distance - stage_length) < 2, TRUE, FALSE)) %>%
       mutate(summit_finish = ifelse(race == "tour de romandie" & stage == 4 &
-                                      year == 2018 & climb_name == "Torgon", TRUE, summit_finish)) %>%
+                                      year == 2019 & climb_name == "Torgon", TRUE, summit_finish)) %>%
       
+      # increase KOM points by 25% if summit finish
       mutate(basic_kom_points = model_category,
-             kom_points = ifelse(summit_finish == TRUE, model_category * 2, model_category)) %>%
+             kom_points = ifelse(summit_finish == TRUE, model_category * 1.25, model_category),
+             climbing_end = ifelse((stage_length - end_distance) < 20.1, kom_points, NA)) %>%
       
       group_by(race, stage, year) %>%
       summarize(cat_climb_length = sum(end_distance - start_distance, na.rm = T),
                 concentration = max(kom_points, na.rm = T),
                 number_cat_climbs = sum(kom_points >= 1, na.rm = T),
+                climbing_final_20km = sum(climbing_end, na.rm = T),
                 raw_climb_difficulty = sum(basic_kom_points, na.rm = T),
                 act_climb_difficulty = sum(kom_points, na.rm = T),
                 last_climb = max(last_climb, na.rm = T),
@@ -1294,6 +1311,8 @@ stage_data <- stage_data %>%
          concentration = ifelse(is.na(concentration),
                                    ifelse(is.na(total_elev_change), NA, 1),
                                 ifelse(is.na(concentration), 1, concentration)),
+         climbing_final_20km = ifelse(is.na(climbing_final_20km),
+                                       ifelse(is.na(total_elev_change), NA, 0), climbing_final_20km),
          raw_climb_difficulty = ifelse(is.na(raw_climb_difficulty),
                                        ifelse(is.na(total_elev_change), NA, 0), raw_climb_difficulty),
          act_climb_difficulty = ifelse(is.na(act_climb_difficulty),
@@ -1322,125 +1341,15 @@ stage_data <- stage_data %>%
                                                               "vuelta a pais vasco"), 0.25,
                                                   ifelse(class %in% c("1.UWT", "2.UWT"), 0,
                                                          ifelse(class %in% c("1.HC", "2.HC"), -0.25,
-                                                                ifelse(class %in% c("1.1", "2.1"), -0.5, -1.0)))))))
+                                                                ifelse(class %in% c("1.1", "2.1"), -0.5, -1.0))))))) %>%
+  filter(!(is.na(act_climb_difficulty))) %>%
+  
+  mutate(position_highest = ifelse(position_highest > 1, 1, position_highest),
+         position_highest = ifelse(is.na(position_highest), median(position_highest, na.rm = T), position_highest),
+         summit_finish = ifelse(is.na(summit_finish), 0, summit_finish)) %>%
+  
+  unique()
 
-#
-#
-#
-
-time_trials <- stage_data %>%
-  
-  filter(time_trial == TRUE & year > 2015) %>%
-
-  mutate(rel_gc = gain_gc / length,
-         rel_3 = gain_3rd / length,
-         rel_5 = gain_5th / length,
-         rel_10 = gain_10th / length,
-         rel_20 = gain_20th / length
-  ) %>%
-  
-  
-  group_by(rider) %>% 
-  summarize(rel_gc = median(rel_gc, na.rm = T) * 29,
-            rel_3 = median(rel_3, na.rm = T) * 29,
-            rel_5 = mean(rel_5, na.rm = T) * 29,
-            rel_10 = mean(rel_10, na.rm = T) * 29,
-            rel_20 = median(rel_20, na.rm = T) * 29,
-            stages = n()) %>% 
-  
-  ungroup()
-
-#
-
-sprints <- stage_data %>% 
-  
-  filter(time_trial == FALSE & act_climb_difficulty < 11 & top_variance < 20 & final_1km_gradient < 0.02 &
-           year > 2015) %>% 
-  
-  mutate(rnk = ifelse(rnk > 10, 11, rnk)) %>%
-  
-  mutate(pts = ((1 / (log10(rnk + 1))) - (1 / log10(12))) / 2.40) %>%
-  group_by(rider) %>% 
-  summarize(perf = mean(pts, na.rm = T),
-            wins = mean(rnk == 1, na.rm = T),
-            top_3 = mean(rnk %in% c(1,2,3), na.rm = T),
-            stages = n()) %>% 
-  arrange(-perf)
-
-#
-
-mountains <- stage_data %>%
-  
-  filter(act_climb_difficulty > 20 & time_trial == FALSE & year > 2015) %>%
-  
-  mutate(rel_gc = gain_gc / length / act_climb_difficulty,
-         rel_3 = gain_3rd / length / act_climb_difficulty,
-         rel_5 = gain_5th / length / act_climb_difficulty,
-         rel_10 = gain_10th / length / act_climb_difficulty,
-         rel_20 = gain_20th / length / act_climb_difficulty
-         ) %>%
-  
-  
-  group_by(rider) %>% 
-  summarize(rel_gc = median(rel_gc, na.rm = T) * 50,
-            rel_3 = median(rel_3, na.rm = T) * 50,
-            rel_5 = median(rel_5, na.rm = T) * 50,
-            rel_10 = median(rel_10, na.rm = T) * 50,
-            rel_20 = median(rel_20, na.rm = T) * 50,
-            with_GC = mean(rel_gc < 11, na.rm = T),
-            stages = n()) %>% 
-  
-  ungroup() %>%
-  
-  mutate(rel_gc = rel_gc * 175,
-         rel_3 = rel_3 * 175,
-         rel_5 = rel_5 * 175,
-         rel_10 = rel_10 * 175, 
-         rel_20 = rel_20 * 175)
-
-#
-
-single_finish <- stage_data %>%
-  
-  filter(perc_gain_end > 0.5 & time_trial == FALSE & year > 2015 & concentration > 9.9) %>%
-  
-  mutate(rel_gc = gain_gc / length / act_climb_difficulty,
-         rel_3 = gain_3rd / length / act_climb_difficulty,
-         rel_5 = gain_5th / length / act_climb_difficulty,
-         rel_10 = gain_10th / length / act_climb_difficulty,
-         rel_20 = gain_20th / length / act_climb_difficulty
-  ) %>%
-  
-  
-  group_by(rider) %>% 
-  summarize(rel_gc = median(rel_gc, na.rm = T) * 50,
-            rel_3 = median(rel_3, na.rm = T) * 50,
-            rel_5 = median(rel_5, na.rm = T) * 50,
-            rel_10 = median(rel_10, na.rm = T) * 50,
-            rel_20 = median(rel_20, na.rm = T) * 50,
-            with_GC = mean(rel_gc < 11, na.rm = T),
-            stages = n()) %>% 
-  
-  ungroup() %>%
-  
-  mutate(rel_gc = rel_gc * 175,
-         rel_3 = rel_3 * 175,
-         rel_5 = rel_5 * 175,
-         rel_10 = rel_10 * 175, 
-         rel_20 = rel_20 * 175)
-
-#
-
-one_day <- stage_data %>% 
-  filter(time_trial == FALSE & tolower(stage_name) == "one day race") %>% 
-  mutate(pts = ((1 / (log(rnk) + 1)) - (1 / log(51))) / 0.63) %>%
-  group_by(rider) %>% 
-  summarize(m = mean(rel_qual, na.rm = T), 
-            perf = mean(pts, na.rm = T),
-            stages = n()) %>% 
-  arrange(-perf)
-
-#
 #
 #
 #
@@ -1451,15 +1360,6 @@ one_day <- stage_data %>%
 
 # Analysis Prep -----------------------------------------------------------
 
-stage_data <- stage_data %>%
-  
-  filter(!(is.na(act_climb_difficulty))) %>%
-  
-  mutate(position_highest = ifelse(position_highest > 1, 1, position_highest),
-         position_highest = ifelse(is.na(position_highest), median(position_highest, na.rm = T), position_highest)) %>%
-  
-  unique()
-
 # analysis of stages
 
 set.seed(17)
@@ -1467,14 +1367,10 @@ set.seed(17)
 stages_pca <- prcomp(stage_data %>%
                        filter(rnk == 1) %>%
                        filter(time_trial == FALSE) %>%
-                       mutate(final_1km_gradient = ifelse(act_climb_difficulty < 10, 
-                                                          ifelse(final_1km_gradient > 0.02, final_1km_gradient, 0), 0)) %>%
-                       select(act_climb_difficulty, length, speed,
-                              top_variance, variance, total_elev_change,
-                              concentration, final_1km_gradient, gain_gc,
-                              position_highest,
-                              number_cat_climbs) %>%
-                       mutate(gain_gc = ifelse(is.na(gain_gc), 0, gain_gc)), center = TRUE, scale = TRUE)
+
+                       select(summit_finish, act_climb_difficulty, concentration,
+                              climbing_final_20km, position_highest, number_cat_climbs,
+                              total_elev_change, final_1km_gradient, highest_point), center = TRUE, scale = TRUE)
 
 summary(stages_pca)
 
@@ -1499,12 +1395,10 @@ stages_pca$rotation
 stage_partition_data <- stage_data %>%
   filter(rnk == 1) %>%
   filter(time_trial == FALSE) %>%
-  mutate(final_1km_gradient = ifelse(act_climb_difficulty < 10, 
-                                     ifelse(final_1km_gradient > 0.02, final_1km_gradient, 0), 0)) %>%
-  select(grand_tour, act_climb_difficulty, length, variance, speed, one_day_race,
-         race, year, stage, winner = rider, top_variance, 
-         final_1km_gradient, total_elev_change, concentration,
-         gain_gc, number_cat_climbs, position_highest) %>%
+  select(summit_finish, act_climb_difficulty, concentration,
+         climbing_final_20km, position_highest, number_cat_climbs,
+         total_elev_change, final_1km_gradient, highest_point, 
+         grand_tour, one_day_race, time_trial, stage, race, year, winner = rider) %>%
   
   cbind(
     
@@ -1512,26 +1406,27 @@ stage_partition_data <- stage_data %>%
     
   ) %>%
   
-  select(grand_tour, act_climb_difficulty, length, variance, speed, one_day_race, gain_gc, number_cat_climbs,
-         race, year, stage, winner, top_variance, total_elev_change, final_1km_gradient, concentration, position_highest,
-         PC1, PC2, PC3, PC4, PC5, PC6) %>%
+  select(summit_finish, act_climb_difficulty, concentration,
+         climbing_final_20km, position_highest, number_cat_climbs,
+         total_elev_change, final_1km_gradient, highest_point,
+         
+         grand_tour, one_day_race, time_trial, stage, race, year, winner, PC1, PC2, PC3, PC4, PC5) %>%
   
   rbind(
     
     stage_data %>%
       filter(rnk == 1) %>%
       filter(time_trial == TRUE) %>%
-      mutate(final_1km_gradient = ifelse(act_climb_difficulty < 10, 
-                                         ifelse(final_1km_gradient > 0.02, final_1km_gradient, 0), 0)) %>%
-      select(grand_tour, act_climb_difficulty, length, variance, top_variance, speed, one_day_race,
-             race, year, stage, winner = rider, final_1km_gradient, total_elev_change, concentration,
-             gain_gc, number_cat_climbs, position_highest) %>%
+      select(summit_finish, act_climb_difficulty, concentration,
+             climbing_final_20km, position_highest, number_cat_climbs,
+             total_elev_change, final_1km_gradient, highest_point,
+             
+             grand_tour, one_day_race, time_trial, stage, race, year, winner = rider) %>%
       mutate(PC1 = NA,
              PC2 = NA,
              PC3 = NA,
              PC4 = NA,
-             PC5 = NA,
-             PC6 = NA)
+             PC5 = NA)
     
   )
 
@@ -1539,7 +1434,7 @@ stage_partition_data <- stage_data %>%
 
 km_stages <- kmeans(stage_partition_data %>% 
                       filter(!is.na(PC1)) %>% 
-                      select(PC1:PC5), 4)
+                      .[, 1:9], 4)
 
 km_stages$centers
 
@@ -1553,12 +1448,10 @@ km_parts <- cbind(
 km_brkdwn <- km_parts %>% 
   group_by(cl) %>% 
   summarize(mean(grand_tour), 
-            mean(act_climb_difficulty), 
-            mean(length), mean(variance),
-            mean(top_variance), 
-            mean(speed), 
+            mean(act_climb_difficulty),
+            mean(climbing_final_20km), mean(position_highest),
             mean(final_1km_gradient), mean(total_elev_change), mean(concentration),
-            mean(gain_gc), mean(number_cat_climbs),
+            mean(number_cat_climbs), mean(summit_finish), mean(highest_point),
             mean(one_day_race), mean(PC1), mean(PC2), mean(PC3), mean(PC4))
 
 km_parts %>% 
@@ -1570,11 +1463,96 @@ km_parts %>%
     labs(x = "", y = "", title = "Cycling stage partitioning")+
     theme(plot.title = element_text(face = "bold"))
 
+#
+#
+# cluster rider types
+
+riders_stages <- stage_data %>%
+  
+  filter(time_trial == FALSE) %>%
+  
+  filter(rnk < 11) %>%
+  
+  select(rider1 = rider, stage, race, year) %>%
+  
+  inner_join(
+    
+    stage_data %>%
+      
+      filter(time_trial == FALSE) %>%
+      
+      filter(rnk < 11) %>%   
+      
+      select(rider2 = rider, stage, race, year), by = c("stage", "race", "year")	
+    
+  ) %>%
+  
+  filter(!(rider1 == rider2))
+
+#
+
+matches <- riders_stages %>%
+  
+  group_by(rider1, rider2) %>%
+  summarize(n = n()) %>%
+  ungroup() %>% 
+  
+  filter(n > 4) %>% 
+  
+  spread(rider2, n) %>%
+  
+  gather(rider2, n, -rider1) %>%
+  
+  mutate(n = ifelse(is.na(n), 0, n)) %>%
+  
+  spread(rider2, n)
+
+# kmeans, ignore for PCA
+
+#kxxx <- kmeans(matches[, 2:ncol(matches)], centers = 3)
+
+#rxxx <- cbind(cl = kxxx$cluster, matches %>%
+#                select(rider1))
+
+# PCA
+
+pxxx <- prcomp(matches[, 2:ncol(matches)], scale = TRUE, center = TRUE)
+
+# two PCs capture 26%
+
+# PC1 is the sprinter vs mountains classifier
+
+rxxx <- cbind(
+  pxxx$x, 
+  matches %>%
+    select(rider1)) %>%
+  select(rider1, PC1, PC2, PC3)
+
+riders_top10s <- stage_data %>%
+  filter(rnk < 11) %>% 
+  inner_join(rxxx %>% 
+               select(rider = rider1, PC1)) %>%
+  group_by(stage, race, year) %>%
+  summarize(tot = sum(PC1, na.rm = T), 
+            n = n()) %>%
+  ungroup()
+
+km_parts <- km_parts %>%
+  
+  left_join(
+    
+    riders_top10s %>%
+      select(stage, race, year, rider_cl = tot), by = c("race", "stage", "year")
+    
+  ) %>%
+  
+  mutate(rider_cl = ifelse(is.na(rider_cl), 0, rider_cl))
+
 # classification problem
 
 library(rpart)
 
-classification_data <- readr::read_csv("C:/Users/Jake/Documents/R Code/Cycling/training-classifiers.csv") %>%
+classification_data <- readr::read_csv("training-classifiers.csv") %>%
   
   inner_join(
     
@@ -1589,12 +1567,14 @@ classification_data <- readr::read_csv("C:/Users/Jake/Documents/R Code/Cycling/t
 training <- classification_data %>%
   
   select(type, act_climb_difficulty, length, variance, top_variance, number_cat_climbs, position_highest,
-         speed, gain_gc, total_elev_change, final_1km_gradient, concentration, PC1, PC2, PC3, PC4)
+         speed, gain_gc, total_elev_change, final_1km_gradient, concentration,
+         climbing_final_20km, summit_finish, PC1, PC2, PC3, PC4)
 
 #
 
 tree_model <- rpart(type ~ act_climb_difficulty + concentration + length + speed + top_variance + position_highest + 
-                      total_elev_change + final_1km_gradient + number_cat_climbs, data = training)
+                      total_elev_change + final_1km_gradient + number_cat_climbs + climbing_final_20km + summit_finish,
+                    data = training)
 
 pc_tree_model <- rpart(type ~ PC1 + PC2 + PC3 + PC4, data = training)
 
@@ -1626,6 +1606,197 @@ apply_tree_model <- km_parts %>%
          type = ifelse(race == "vuelta a espana" & year == 2015 & stage == 4, "sharp_finish", type),
          type = ifelse(race == 'tour of utah' & year == 2017 & stage == 7, "intermediate", type),
          type = ifelse(race == "tour de france" & year == 2016 & stage == 10, "intermediate", type))
+
+#
+#
+# Random Forests
+
+library(randomForest)
+
+training <- readr::read_csv("training-classifiers.csv") %>%
+  
+  inner_join(
+    
+    km_parts, by = c("race", "stage", "year")
+    
+  ) %>%
+  
+  mutate(type = ifelse(type %in% c("cobbles", "cobbled"), "sprint", type),
+         type = as.factor(type))
+
+#
+
+model_list <- vector("list", 100)
+predict_list <- model_list
+importance_list <- model_list
+confusion_list <- model_list
+
+for(t in 1:length(model_list)) {
+
+train <- sample(1:nrow(training), nrow(training) / 2)
+
+#
+
+rf_model <- randomForest(type ~ act_climb_difficulty + concentration + length + speed + top_variance + position_highest + 
+                           total_elev_change + final_1km_gradient + number_cat_climbs + climbing_final_20km + summit_finish +
+                           rider_cl,
+                         data = training, subset = train,
+                         mtry = 5, importance = TRUE)
+
+rf_predict <- cbind(training[-train,], pred = predict(rf_model, newdata = training[-train, ])) %>%
+  select(stage, year, race, type, pred) %>% 
+  mutate(match = ifelse(pred == type, 1, 0))
+
+model_list[[t]] <- rf_model
+predict_list[[t]] <- rf_predict %>%
+  mutate(iteration = t)
+
+}
+
+prds <- bind_rows(predict_list) %>%
+  group_by(stage, year, race, pred) %>% 
+  count() %>% 
+  ungroup() %>% 
+  
+  group_by(stage, year, race) %>%
+  mutate(perc = n / sum(n), 
+         diff = n()) %>%
+  ungroup()
+
+#
+
+for(m in 1:length(model_list)) {
+  
+  importance_list[[m]] <- importance(model_list[[m]]) %>%
+    as.data.frame() %>%
+    rownames_to_column()
+  
+  confusion_list[[m]] <- model_list[[m]]$confusion %>%
+    as.data.frame() %>%
+    rownames_to_column()
+  
+}
+
+importances <- bind_rows(importance_list)
+
+confusion_matrix <- bind_rows(confusion_list) %>%
+  mutate(n = intermediate+mountain+`sharp finish`+sprint) %>% 
+  mutate(perc_int = intermediate / n,
+         perc_sharp = `sharp finish` / n, 
+         perc_spr = sprint / n, 
+         perc_mtn = mountain / n) %>% 
+  gather(stat, value, perc_int:perc_mtn) %>%
+  group_by(rowname, stat) %>% 
+  summarize(rate = sum(n * value, na.rm = T) / sum(n, na.rm = T)) %>% 
+  spread(stat, rate)
+
+# Gradient Boosting
+
+library(xgboost)
+
+training <- readr::read_csv("training-classifiers.csv") %>%
+  
+  inner_join(
+    
+    km_parts, by = c("race", "stage", "year")
+    
+  ) %>%
+  
+  mutate(type = ifelse(type %in% c("cobbles", "cobbled"), "sprint", type),
+         type = as.factor(type)) %>%
+  mutate(class_type = ifelse(type == "sprint", 0,
+                             ifelse(type == "sharp finish", 1,
+                                    ifelse(type == "intermediate", 2, 3))))
+
+# roughly 1 minute per run
+
+model_list <- vector("list", 25)
+predict_list <- model_list
+importance_list <- model_list
+confusion_list <- model_list
+
+for(t in 1:length(model_list)) {
+  
+  train <- sample(1:nrow(training), nrow(training) / 2)
+  
+  # create train and test sets // label is the classification type
+  
+  xgb.train <- xgb.DMatrix(
+    
+    data = as.matrix(training[train, ] %>%
+                       select(summit_finish, act_climb_difficulty, concentration,
+                              climbing_final_20km, position_highest, #number_cat_climbs, 
+                              total_elev_change, final_1km_gradient, rider_cl)),
+    label = training[train, ]$class_type)
+  
+  xgb.test <- xgb.DMatrix(
+    
+    data = as.matrix(training[-train, ] %>%
+                       select(summit_finish, act_climb_difficulty, concentration,
+                              climbing_final_20km, position_highest, #number_cat_climbs, 
+                              total_elev_change, final_1km_gradient, rider_cl)),
+    label = training[-train, ]$class_type)
+  
+  # tune parameters
+  
+  params <- list(
+    
+    booster = "gbtree",
+    eta = 0.01,
+    max_depth = 3,
+    gamma = 1,
+    subsample = 1,
+    colsample_bytree = 0.75,
+    objective = "multi:softprob",
+    eval_metric = "mlogloss",
+    num_class = 4
+    
+  )
+  
+  # model
+  
+  gbm_model <- xgb.train(params = params,
+                         data = xgb.train,
+                         nrounds = 5000,
+                         nthreads = 4,
+                         early_stopping_rounds = 10,
+                         watchlist = list(val1 = xgb.train,
+                                          val2 = xgb.test),
+                         verbose = 1)
+  
+  # predictions
+  
+  gbm_predict = cbind(
+    
+    training[-train, ],
+    
+    pred = predict(gbm_model, as.matrix(training[-train, ] %>%
+                                          select(summit_finish, act_climb_difficulty, concentration,
+                                                 climbing_final_20km, position_highest, #number_cat_climbs, 
+                                                 total_elev_change, final_1km_gradient, rider_cl)), reshape=T))  %>% 
+    select(race, year, stage, type, sprint = pred.1, sharp = pred.2, inter = pred.3, mtn = pred.4)
+  
+  #
+  
+  model_list[[t]] <- gbm_model
+  predict_list[[t]] <- gbm_predict %>%
+    mutate(iteration = t) %>%
+    gather(pred_type, pred, sprint:mtn) %>%
+    group_by(race, year, stage) %>% 
+    mutate(best = ifelse(max(pred) == pred, "best", "other")) %>%
+    ungroup()
+  
+}
+
+prds <- bind_rows(predict_list) %>%
+  
+  group_by(race, stage, year, type, pred_type) %>%
+  summarize(avg = mean(pred, na.rm = T), 
+            min = min(pred, na.rm = T), 
+            max = max(pred, na.rm = T), 
+            best = mean(best == "best", na.rm = T), 
+            n = n()) %>% 
+  ungroup()
 
 # assign stage types
 
@@ -1918,12 +2089,6 @@ unique_GT_stages <- stage_performance_data %>%
   
   select(race, year, date) %>%
   unique() %>%
-  
-  rbind(
-    tibble(race = "TDF",
-           year = 2019,
-           date = '2019-07-05')
-  ) %>% mutate(DATE = date + 1) %>%
   
   mutate(week_id = ((lubridate::year(date) - 2000) * 52) + lubridate::week(date))
 
@@ -2872,8 +3037,16 @@ gt_climbing_eval <- stage_performance_data %>%
   
   group_by(race, year, rider) %>% 
   summarize(to_gc = sum(gain_gc, na.rm = T),
+            time = sum(total_seconds, na.rm = T),
             n = n()) %>% 
   ungroup() %>%
+  
+  group_by(year, race) %>%
+  filter(max(n) == n) %>%
+  mutate(best = min(time, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(time_lost = time - best)
   
   left_join(unique_GT_stages, by = c("race", "year")) %>%
   
@@ -2922,3 +3095,84 @@ summary(glm(win ~ log(rk_LT+1) + ST_imp, data = gt_climbing_eval %>% mutate(win 
 #
 
 tdf_2019_cl <- lt_performance %>% filter(date == '2019-07-06') %>% mutate(year = lubridate::year(date)) %>% filter(stage_type == "mountain" & stages > 9) %>% select(rider, year, LT = median) %>% left_join(st_performance %>% filter(date == '2019-07-06') %>% mutate(year = lubridate::year(date)) %>% filter(stage_type == "mountain" & stages > 1) %>% select(rider, year, ST = median), by = c("year", "rider")) %>% filter(!is.na(LT)) %>% mutate(ST_imp = (ST - LT), ST_imp = ifelse(ST_imp > 1, 1, ifelse(ST_imp < -1,-1, ST_imp))) %>% mutate(coef = (0.90 * LT) + (0.37 * ST_imp) - 1.46, probs = (exp(coef) / (1+exp(coef))))
+
+#
+#
+#
+#
+#
+#
+#
+# impact of highest climb on finishing top 3
+
+in_contact <- stage_performance_data %>%
+  filter(!is.na(rnk)) %>% 
+  mutate(W = ifelse(rnk == 1,1,0), 
+         T3 = ifelse(rnk < 4,1,0), 
+         contact = ifelse(gain_gc < 161, 1, 0)) %>% 
+  group_by(rider) %>% 
+  filter(n() > 99) %>%
+  ungroup() %>%
+  
+  group_by(rider) %>%
+  do(broom::tidy(glm(contact ~ concentration, data = ., family = "binomial"))) %>%
+  ungroup() %>%
+  
+  select(rider, term, estimate) %>%
+  
+  spread(term, estimate) %>% 
+  janitor::clean_names() %>%
+  mutate(flat = exp((intercept + (0*concentration)))/(1+exp((intercept + (0*concentration)))), 
+         cat4 = exp((intercept + (1*concentration)))/(1+exp((intercept + (1*concentration)))),
+         cat3 = exp((intercept + (3*concentration)))/(1+exp((intercept + (3*concentration)))),
+         wkcat2 = exp((intercept + (5*concentration)))/(1+exp((intercept + (5*concentration)))),
+         stcat2 = exp((intercept + (8*concentration)))/(1+exp((intercept + (8*concentration)))),
+         cat1 = exp((intercept + (12*concentration)))/(1+exp((intercept + (12*concentration)))),
+         HC = exp((intercept + (20*concentration)))/(1+exp((intercept + (20*concentration))))) %>% 
+  
+  gather(cat, prob, flat:HC) %>% 
+  inner_join(tibble(concen = c(0,1,3,5,8,12,20), 
+                    cat = c("flat", "cat4", "cat3", "wkcat2", "stcat2", "cat1", "HC")))
+
+#
+
+plot_riders <- in_contact %>%
+  filter(rider %in% c("Groenewegen Dylan",
+                      "Alaphilippe Julian",
+                      "Ewan Caleb",
+                      "Roglic Primoz",
+                      "Bennett Sam",
+                      "Ackermann Pascal",
+                      "Lutsenko Alexey",
+                      "Teunissen Mike",
+                      "Herrada Jesus")) %>%
+  
+  group_by(rider) %>% 
+  mutate(m = sd(prob, na.rm = T)) %>% 
+  ungroup()
+
+#
+
+ggplot(plot_riders, 
+       
+       aes(x = concen, 
+           y = prob, 
+           label = str_sub(rider, 1, 3),
+           fill = reorder(rider, m),
+           color = reorder(rider, m)))+
+  
+  geom_point(size = 3, shape = 21, color = "white", stroke = 1)+
+  geom_line(size = 1)+
+  ggrepel::geom_label_repel(data = plot_riders %>% 
+                              group_by(rider) %>% 
+                              filter(prob == max(prob)) %>%
+                              ungroup(), show.legend = FALSE,
+                            color = "white", size = 4)+ 
+  scale_y_continuous(labels = scales::percent)+
+  labs(x = "categorized rating of highest climb in stage", 
+       y = "modeled probability of finishing in top 3", title = "Top 3 probability by toughest climb")+
+  scale_fill_discrete(name = "Rider")+
+  scale_color_discrete(name = "Rider")+
+  coord_cartesian(xlim = c(0,20))+
+  theme(axis.text = element_text(size = 14), 
+        legend.text = element_text(size = 14))
