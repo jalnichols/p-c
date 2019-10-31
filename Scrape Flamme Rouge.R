@@ -3,6 +3,21 @@ library(tidyverse)
 library(rvest)
 library(RMySQL)
 
+# Can pull in all climbs in Lat/Long box using the following URLs
+
+# https://www.la-flamme-rouge.eu/maps/tracks/maps/load/2/bounds/44/3/41/-3
+
+# Eg, for this 18 squares box lat/long in the Pyrenees there are 2300 climbs
+# can cover Western Europe with about 450 square boxes
+
+# DB
+
+con <- dbConnect(MySQL(),
+                 host='localhost',
+                 dbname='cycling',
+                 user='jalnichols',
+                 password='braves')
+
 # Scrape all UCI World Tour races for 2013-19
 
 scraper_list <- tibble(year = c(2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019),
@@ -49,13 +64,15 @@ all_races <- bind_rows(result_list)
 
 scraper_list <- tibble(year = c(2017, 2017, 2017, 2017, 2017, 
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
-                                2019, 2019, 2019, 2019, 2019, 2019, 2017, 2018, 2019,
-                                2017, 2018, 2019, 2017, 2018, 2018, 2019),
-                       page_no = c(1,2,3,4,5, 1,2,3,4,5,6,7,8,9,10, 1,2,3,4,5,6,
+                                2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, #2
+                                2017, 2018, 2019, #3
+                                2017, 2018, 2019, #8
+                                2017, 2018, 2018, 2019), #4
+                       page_no = c(1,2,3,4,5, 1,2,3,4,5,6,7,8,9,10, 1,2,3,4,5,6,7, 8,9,
                                    1, 1, 1,
                                    1, 1, 1, 
                                    1, 1, 2, 1),
-                       type = c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+                       type = c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
                                 3,3,3,
                                 8,8,8, 
                                 4,4,4,4))
@@ -103,16 +120,63 @@ intermediate_races <- all_races %>%
 
 # NON UWT events to retain data
 
-retain_ids <- c(159, 309, 828, 337, 66, 61, 274, 69, 70, 99, 92,
-                93, 213, 210, 14, 9, 204, 359, 96, 162, 148, 88, 90,
-                # 2.HC
-                180, 175, 91, 168, 89, 87, 88, 264,
-                # 1.HC
-                99, 100, 69, 70, 98, 214, 262, 80, 79, 81, 820, 83,
-                # 1.1
-                349, 86,
-                # 2.1
-                158, 440)
+retain_ids <- c(
+  
+  # 1.HC
+  
+  # scheldeprijs, Nokere, tre valli varesine,
+  # milan torino, paris tours, brussels, gp indus, kuurne
+  # brabantse, almeria, drenthe, gran piemonte, emilia
+  # laigueglia
+  
+  69, 70, 79, 80, 81, 83, 98, 99, 100, 214, 262, 820, 75, 101,
+  
+  # 1.1
+  
+  # Meml Pantani, Toscano, Ventoux
+  
+  349, 86, 828,
+  
+  # 2.1
+  
+  # Occitanie, Provence, Julio Alvarez, deutschland
+  # castilla/leon, madrid, adriatica ionica,
+  # colombia, l'ain, austria, valencia
+  # san juan, slovenia, murcia, japan cup
+  
+  159, 158, 274, 440, 287, 285, 505, 359, 337, 334, 210,
+  204, 309, 213, 82,
+  
+  # 2.HC
+  
+  # Dunkirk, belgium, wallonia, norway, arctic
+  # denmark, britain, luxembourg
+  # dubai, oman, alps
+  # burgos, ruta del sol, algarve, utah
+  
+  180, 175, 91, 168, 89, 87, 88, 264, 162, 148,
+  66, 90, 92, 93, 96, 61,
+  
+  # other HC level European races
+  
+  270, 171, 302, 102, 166, 167, 171, 260, 35, 76, 77, 78, 97,
+  
+  # 1.1 Euros in 2019
+  
+  
+  520, 749, 139, 145, 152, 691, 352, 353, 316, 802, 351, 85,
+  346, 354, 348, 350, 347, 787, 341, 360, 344, 342, 340, 343, 
+  330, 327, 328, 318, 317, 310, 315, 308, 335, 311, 304, 299, 
+  286, 560, 528, 269, 271, 273, 272, 73, 268, 265, 266, 263, 
+  453, 261, 326, 246, 243, 242, 207, 202, 201, 200, 199,
+  
+  # other multi-day Tours at 2.1 European level which are equal to weaker 2.HC European races
+  
+  209, 449, 71, 314,
+  
+  # WC / ITT
+  
+  9, 14)
 
 #
 
@@ -125,6 +189,21 @@ all_races <- intermediate_races %>%
   select(-trash) %>%
   
   filter(str_detect(class, "UWT") | id %in% retain_ids)
+
+# find data we already have
+
+already_scraped <- bind_rows(read_rds("flamme-rouge-climbs-821.rds"),
+                             read_rds("flamme-rouge-climbs-811.rds"),
+                             read_rds("flamme-rouge-climbs-902.rds")) %>%
+  
+  select(race_url) %>%
+  unique()
+
+# only scrape ones we don't have
+
+#all_races <- all_races %>%
+  
+#  filter(!(url %in% already_scraped$race_url))
 
 # Now we can pull in all URLs from all_races
 
@@ -152,8 +231,39 @@ for(x in 1:length(all_races$url)) {
   
 }
 
-all_stages <- all_races
+# filter out races w/o data available yet (empty stages)
 
+stages_list <- stages_list %>%
+  discard(function(x) nrow(x) == 0)
+
+# and for the data frame
+
+all_stages <- all_races %>%
+  
+  inner_join(
+    
+    bind_rows(stages_list) %>%
+      select(race_url) %>%
+      unique(), by = c("url" = "race_url"))
+
+#
+
+dbWriteTable(con,
+             
+             "fr_stages",
+             
+             all_stages,
+             
+             row.names = FALSE,
+             
+             append = TRUE
+             
+             )
+
+#
+#
+#
+#
 #
 
 tictoc::tic()
@@ -161,8 +271,10 @@ tictoc::tic()
 climbs_stages_list <- vector("list", length(stages_list))
 other_json_list <- vector("list", length(stages_list))
 
-for(y in 1:length(stages_list)) {
+#
 
+for(y in 120:length(stages_list)) {
+  
   data_list <- vector('list', length(stages_list[[y]]))
   data_list2 <- vector('list', length(stages_list[[y]]))
   
@@ -173,7 +285,19 @@ for(y in 1:length(stages_list)) {
     
     # this pulls out the json data
     
-    json <- rjson::fromJSON(readLines(stages_list[[y]]$url[[z]]))
+    q = 0
+    
+    json <- NULL
+    
+    while(is.null(json) & q < 5) {
+    
+      q = q + 1
+      
+      try(
+        json <- rjson::fromJSON(readLines(stages_list[[y]]$url[[z]]))
+      )
+    
+    }
     
     # with the climbs / sprints data
     actual_climbs <- json[[3]]$stageclimbs
@@ -294,9 +418,9 @@ for(y in 1:length(stages_list)) {
     }
     
     # Now I can pull in distance, altitude data
-    # I take only every tenth item + final item
+    # I take only every fifth item + final item
     
-    other_jsons <- c(other_jsons[seq(1,floor(length(other_jsons)/10)*10, 10)],
+    other_jsons <- c(other_jsons[seq(1,floor(length(other_jsons)/3)*3, 3)],
                      other_jsons[length(other_jsons)])
     
     route_list <- vector("list", length(other_jsons))
@@ -304,9 +428,10 @@ for(y in 1:length(stages_list)) {
     for(a in 1:length(other_jsons)) {
       
       route_list[[a]] <- tibble(alt = other_jsons[[a]]$altitude,
-                                dist = other_jsons[[a]]$distance,
-                                lat = other_jsons[[a]]$position$A,
-                                long = other_jsons[[a]]$position$k)
+                                #lat = other_jsons[[a]]$position$A,
+                                #long = other_jsons[[a]]$position$k
+                                dist = other_jsons[[a]]$distance
+                                )
       
     }
     
@@ -318,15 +443,17 @@ for(y in 1:length(stages_list)) {
              year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
              stage = z)
     
+    Sys.sleep(runif(1, 3, 7))
+    
   }
     
     climbs_stages_list[[y]] <- bind_rows(data_list)
     
-    other_json_list[[y]] <- bind_rows(data_list2)
+    dbWriteTable(con, "fr_altitude", bind_rows(data_list2), append = TRUE, row.names = FALSE)
     
     print(y)
     
-    Sys.sleep(runif(1, 1, 9))
+    Sys.sleep(runif(1, 5, 13))
     
 }
 
@@ -337,19 +464,8 @@ for(y in 1:length(stages_list)) {
 
 tictoc::toc()
 
-readr::write_rds(climbs_stages_list, "flamme-rouge-climbs-811.rds")
-readr::write_rds(other_json_list, "flamme-rouge-routes-811.rds")
-
-#readr::write_rds(climbs_stages_list, "R Code/Cycling/flamme-rouge-climbs1.rds")
-#readr::write_rds(other_json_list, "R Code/Cycling/flamme-rouge-routes.rds")
-
-climbs_stages_list <- c(read_rds("R Code/Cycling/flamme-rouge-climbs1.rds"), 
-                       read_rds("R Code/Cycling/flamme-rouge-climbs-707.rds"),
-                       read_rds("R Code/Cycling/flamme-rouge-climbs.rds"))
-
-other_json_list <- c(read_rds("R Code/Cycling/flamme-rouge-routes.rds"), read_rds("R Code/Cycling/flamme-rouge-routes-707.rds"))
-
-# DB
+# In the for loop, the alt/dist coordinates get written to the DB automatically
+# Below we write the climbs / sprint points data
 
 con <- dbConnect(MySQL(),
                  host='localhost',
@@ -357,9 +473,35 @@ con <- dbConnect(MySQL(),
                  user='jalnichols',
                  password='braves')
 
+#
+
+dbWriteTable(con,
+             
+             "fr_scraped_climb_stages",
+             
+             bind_rows(climbs_stages_list),
+             
+             append = FALSE,
+             
+             row.names = FALSE)
+
+#readr::write_rds(climbs_stages_list, "flamme-rouge-climbs-902.rds")
+#readr::write_rds(other_json_list, "flamme-rouge-routes-902.rds")
+
+#readr::write_rds(climbs_stages_list, "R Code/Cycling/flamme-rouge-climbs1.rds")
+#readr::write_rds(other_json_list, "R Code/Cycling/flamme-rouge-routes.rds")
+
+#climbs_stages_list <- c(read_rds("flamme-rouge-climbs-811.rds"), 
+#                        read_rds("flamme-rouge-climbs-821.rds"),
+#                        read_rds("flamme-rouge-climbs-902.rds"))
+
+#other_json_list <- c(read_rds("flamme-rouge-routes-811.rds"), 
+#                     read_rds("flamme-rouge-routes-821.rds"),
+#                     read_rds("flamme-rouge-routes-902.rds"))
+
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
-all_climbs <- bind_rows(climbs_stages_list) %>%
+clean_climbs <- dbReadTable(con, "fr_scraped_climb_stages") %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%F4', 'o'))) %>%   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F4', 'o'))) %>%
@@ -428,12 +570,84 @@ all_climbs <- bind_rows(climbs_stages_list) %>%
   
   unique() %>%
   
+  mutate(year = as.numeric(year))
+
+# build matcher for PCS to FR race names
+
+pcs <- dbGetQuery(con, "SELECT year, race FROM pcs_stage_raw GROUP BY race, year")
+
+fr <- dbGetQuery(con, "SELECT race, year FROM fr_altitude GROUP BY race, year")
+
+#
+
+matches <- fr %>%
+  
+  mutate(year = as.numeric(year)) %>%
+  rename(fr_race = race) %>%
+  
+  inner_join(
+    
+    pcs %>%
+      rename(pcs_race = race), by = c("year")
+    
+  ) %>%
+  
+  mutate(sd_DL = stringdist::stringdist(tolower(pcs_race), tolower(fr_race), method = "dl") / nchar(pcs_race),
+         sd_QG = stringdist::stringdist(tolower(pcs_race), tolower(fr_race), method = "qgram", q = 2) / nchar(pcs_race)) %>%
+  
+  group_by(fr_race, year) %>%
+  mutate(rankDL = rank(sd_DL, ties.method = "min"),
+         rankQG = rank(sd_QG, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(hm = (sd_DL + sd_QG) / 2) %>%
+  
+  group_by(fr_race, year) %>%
+  mutate(rankHM = rank(hm, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(fr_race) %>% 
+  mutate(no1 = sum(rankHM == 1, na.rm = T)) %>%
+  ungroup()
+
+#
+
+pcs_fr_matches <- matches %>%
+  
+  filter(rankHM == 1 |
+           ((tolower(fr_race) == "euroeyes cyclassics") & (tolower(pcs_race) == "cyclassics hamburg"))) %>%
+  
+  rbind(
+    
+    matches %>%
+      mutate(hm = 0.75) %>%
+      inner_join(
+        read_csv('fr_pcs_matches.csv') %>%
+          filter(match == TRUE) %>%
+          select(-match), by = c("fr_race" = "fr", "pcs_race" = "pcs", "year")
+        
+      )) %>%
+  
+  filter(hm < 0.751) %>%
+  
+  anti_join(
+    
+    read_csv('fr_pcs_matches.csv') %>%
+      filter(match == FALSE) %>%
+      select(-match), by = c("fr_race" = "fr", "pcs_race" = "pcs", "year")
+    
+  )
+
+#
+
+all_climbs <- clean_climbs %>%
+  
   #link with Pro cycling stats
   
   left_join(
     
-    readr::read_csv("flamme-rouge-to-pcs.csv") %>%
-      filter(!pcs == "UNK"), by = c("race" = "fr")
+    pcs_fr_matches %>%
+      select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
     
   ) %>%
   
@@ -459,6 +673,16 @@ all_climbs <- bind_rows(climbs_stages_list) %>%
   
   unique() %>%
   
+  filter(!(str_detect(climb_name, "passage sur la"))) %>%
+  filter(!(str_detect(climb_name, "Finish"))) %>%
+  filter(!(str_detect(climb_name, "Lap"))) %>%
+  filter(!(str_detect(tolower(climb_name), "km at"))) %>%
+  filter(!(str_detect(climb_name, "km @"))) %>%
+  filter(!(str_detect(tolower(climb_name), "m -"))) %>%
+  filter(!(str_detect(tolower(climb_name), "circuit"))) %>%
+  filter(!(str_detect(climb_name, "Avenue"))) %>%
+  filter(!(str_detect(climb_name, "U-turn"))) %>%
+  
   # count climbs on stage
   group_by(stage, race, year, climb_name) %>%
   mutate(time_climbed = rank(end_distance, ties.method = "first")) %>%
@@ -468,7 +692,7 @@ all_climbs <- bind_rows(climbs_stages_list) %>%
 # clean routes
 #
 
-all_routes <- bind_rows(other_json_list) %>%
+all_routes <- dbReadTable(con, "fr_altitude") %>%
   
   unique() %>%
   
@@ -495,11 +719,14 @@ all_routes <- bind_rows(other_json_list) %>%
   
   select(-dist) %>%
   rename(elevations = alt) %>%
+  mutate(year = as.numeric(year)) %>%
   
+  #link with Pro cycling stats
+
   left_join(
     
-    readr::read_csv("flamme-rouge-to-pcs.csv") %>%
-      filter(!pcs == "UNK"), by = c("race" = "fr")
+    pcs_fr_matches %>%
+      select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
     
   ) %>%
   
@@ -717,41 +944,77 @@ all_climbs_int <- all_climbs %>%
 
 #
 
-lm(category ~ gradient + length + summit + gradient:length, 
+mtn_names <- all_climbs_int %>%
+  filter(!is.na(category)) %>%
+  mutate(mtn = str_sub(climb_name, 1, str_locate(climb_name, " ") %>% .[, 2])) %>%
+  
+  group_by(mtn) %>%
+  summarize(n = n(), 
+            len = mean(length, na.rm = T), 
+            grade = mean(gradient, na.rm = T)) %>%
+  arrange(-n)
+
+#
+
+matching_with_every_climb <- all_climbs_int %>%
+  
+  select(climb_name, url, race_url) %>%
+  
+  mutate(merge = "YES") %>%
+  
+  left_join(
+    
+    dbReadTable(con, "fr_all_european_climbs") %>%
+      select(TRACKID, TRACKNAME) %>%
+      mutate(merge = "YES"), by = c("merge")
+    
+  )
+
+#
+
+gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5), 
    
    # the KOM point values found by measuring max efforts in total watts are
    # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
    
    data = all_climbs_int %>%
+     filter(!is.na(category)) %>%
      mutate(category = ifelse(category == 1, 10, 
                               ifelse(category == 2, 5, 
                                      ifelse(category == 3, 3, 
                                             ifelse(category == 4, 1.5, 20))))) %>% 
      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
-     unique())
+     unique() %>%
+     mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)))
 
 #
 
 climbs_to_write <- all_climbs_int %>%
   
-  mutate(model_category = 
-           (11.44 * gradient) + 
-           (-0.402 * length) + 
-           (0.001517 * summit) + 
-           (15.115 * (gradient * length)) - 0.1) %>%
+  mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)) %>%
+  
+  cbind(
+    model_category = predict(gam_mod, 
+                             all_climbs_int %>%
+                               mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)))) %>%
   
   unique() %>%
   
-  filter(!(race == "Giro del Trentino")) %>%
+  #filter(!(race == "Giro del Trentino")) %>%
   
-  mutate(race = ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2018/159", "La Route d'Occitane",
-                       ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2017/159", "Route du Sud - la Depeche du Midi",
-                              ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2019/159", "La Route d'Occitanie - La Depeche du Midi", race)))) %>%
+  #mutate(race = ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2018/159", "La Route d'Occitane",
+  #                     ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2017/159", "Route du Sud - la Depeche du Midi",
+  #                            ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2019/159", "La Route d'Occitanie - La Depeche du Midi", race)))) %>%
   
-  mutate(model_category = ifelse(model_category < 0.1, 0.1, model_category)) %>%
+  filter(gradient > 0.03 | model_category > 1.15) %>%
   
-  select(climb_name, race, stage, year, start_distance, end_distance, summit, length, time_climbed, gradient, model_category) %>%
+  filter(gradient > 0) %>%
+  
+  mutate(model_category = ifelse(model_category < 1.25, 1.25, model_category)) %>%
+  
+  select(climb_name, race, stage, year, start_distance, end_distance, summit, length, time_climbed, gradient, model_category,
+         vam_poly, alt) %>%
   
   unique() %>%
   
@@ -759,7 +1022,18 @@ climbs_to_write <- all_climbs_int %>%
   
   rbind(
     
-    readr::read_csv("f_r_climbs_missing.csv")
+    cbind(
+      
+      readr::read_csv("f_r_climbs_missing.csv") %>%
+        select(-model_category) %>%
+        mutate(vam_poly = ((gradient^2) * length), 
+               alt = ifelse(summit > 1500, 1, 0)),
+      
+      model_category = predict(gam_mod, 
+                               readr::read_csv("f_r_climbs_missing.csv") %>%
+                                 select(-model_category) %>%
+                                 mutate(vam_poly = ((gradient^2) * length), 
+                                        alt = ifelse(summit > 1500, 1, 0))))
     
   ) %>%
   
@@ -771,7 +1045,96 @@ climbs_to_write <- all_climbs_int %>%
   filter(!(str_detect(tolower(climb_name), "m -"))) %>%
   filter(!(str_detect(tolower(climb_name), "circuit"))) %>%
   filter(!(str_detect(climb_name, "Avenue"))) %>%
-  filter(!(str_detect(climb_name, "U-turn")))
+  filter(!(str_detect(climb_name, "U-turn"))) %>%
+
+  as_tibble()
   
 
 dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.names = FALSE)
+
+#
+#
+#
+#
+#
+
+# scraping lat long boxes
+
+json_list <- vector("list", 160)
+
+# TURKEY
+longs <- seq(25, 39, 2)
+lats <- seq(36, 42, 2)
+
+i = 1
+
+for(x in 1:length(lats)) {
+  
+  for(y in 1:length(longs)) {
+  
+  url <- paste0('https://www.la-flamme-rouge.eu/maps/tracks/maps/load/2/bounds/',
+                lats[[x]],
+                '/',
+                longs[[y]],
+                '/',
+                lats[[x]]-2,
+                '/',
+                longs[[y]]-2
+  )
+  
+  json <- rjson::fromJSON(readLines(url))
+  
+  json_list[[i]] <- json
+  
+  print(i)
+  
+  Sys.sleep(runif(1, 10, 30))
+  
+  i = i + 1
+  
+  }
+
+}
+
+#
+
+climbs_json <- vector("list", length(json_list))
+
+for(j in 1:length(json_list)) {
+  
+  if(length(json_list[[j]]) == 0) {
+    
+    
+  } else {
+    
+    df_list <- vector("list", length(json_list[[j]]))
+    
+    for(c in 1:length(json_list[[j]])) {
+      
+      df_list[[c]] <- json_list[[j]][[c]] %>%
+        as_tibble()
+      
+    }
+    
+    climbs_json[[j]] <- bind_rows(df_list)
+    
+  }
+  
+}
+
+
+#
+#
+#
+
+european_climbs <- bind_rows(climbs_json)
+
+#
+
+european_climbs$TRACKNAME <- iconv(european_climbs$TRACKNAME, from="UTF-8", to = "ASCII//TRANSLIT")
+
+dbWriteTable(con, "fr_all_european_climbs", european_climbs, row.names = FALSE, append = TRUE)
+
+#
+#
+#
