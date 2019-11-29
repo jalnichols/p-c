@@ -3,12 +3,23 @@ library(tidyverse)
 library(rvest)
 library(RMySQL)
 
+# this script identifies the F-R stage we want to extract (Identify Section)... it writes those stages in fr_stages
+# scrapes those stages/races (Scraping Section)... inside that it writes the profile information automatically to fr_altitude
+# following that it writes the raw stage climb data to fr_scraped_climb_stages
+# the next section (Cleaning Section) cleans up both the climb and altitude data
+
+
 # Can pull in all climbs in Lat/Long box using the following URLs
 
 # https://www.la-flamme-rouge.eu/maps/tracks/maps/load/2/bounds/44/3/41/-3
 
 # Eg, for this 18 squares box lat/long in the Pyrenees there are 2300 climbs
 # can cover Western Europe with about 450 square boxes
+
+
+# Identify Section --------------------------------------------------------
+
+
 
 # DB
 
@@ -192,18 +203,16 @@ all_races <- intermediate_races %>%
 
 # find data we already have
 
-already_scraped <- bind_rows(read_rds("flamme-rouge-climbs-821.rds"),
-                             read_rds("flamme-rouge-climbs-811.rds"),
-                             read_rds("flamme-rouge-climbs-902.rds")) %>%
+already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stages") %>%
   
-  select(race_url) %>%
+  select(url) %>%
   unique()
 
 # only scrape ones we don't have
 
-#all_races <- all_races %>%
+all_races <- all_races %>%
   
-#  filter(!(url %in% already_scraped$race_url))
+  filter(!(url %in% already_scraped$url))
 
 # Now we can pull in all URLs from all_races
 
@@ -266,6 +275,9 @@ dbWriteTable(con,
 #
 #
 
+# Scraping Section --------------------------------------------------------
+
+
 tictoc::tic()
 
 climbs_stages_list <- vector("list", length(stages_list))
@@ -273,7 +285,7 @@ other_json_list <- vector("list", length(stages_list))
 
 #
 
-for(y in 120:length(stages_list)) {
+for(y in 1:length(stages_list)) {
   
   data_list <- vector('list', length(stages_list[[y]]))
   data_list2 <- vector('list', length(stages_list[[y]]))
@@ -311,6 +323,8 @@ for(y in 120:length(stages_list)) {
     # and lat/long data
     lat_longs <- json[[1]]
     
+    # if there are climbs listed inside the JSON, scrape them
+    
     if(length(actual_climbs) > 0) {
       
       climbs_list <- vector('list', length(actual_climbs))
@@ -331,7 +345,8 @@ for(y in 120:length(stages_list)) {
         start_distance = actual_climbs[[c]]$startdistance,
         end_distance = actual_climbs[[c]]$distance,
         category = as.numeric(category),
-        altitude = actual_climbs[[c]]$altitude
+        altitude = actual_climbs[[c]]$altitude,
+        source = "ACTUAL CLIMBS"
         
       )
       
@@ -347,9 +362,12 @@ for(y in 120:length(stages_list)) {
                           start_distance = as.numeric(NA),
                           end_distance = as.numeric(NA),
                           altitude = as.numeric(NA),
-                          category = as.numeric(NA))
+                          category = as.numeric(NA),
+                          source = "MISSING")
     
     }
+    
+    #combine all climbs for that stage
     
     df <- bind_rows(climbs_list) %>%
       mutate(url = stages_list[[y]]$url[[z]],
@@ -363,6 +381,8 @@ for(y in 120:length(stages_list)) {
     #
     
     gen_spr_list <- vector('list', length(generic_sprints))
+    
+    # if generic sprints has data present (anything appearing on the F-R stage profiles) scrape them
     
     if(length(generic_sprints) > 0) {
     
@@ -380,7 +400,8 @@ for(y in 120:length(stages_list)) {
         start_distance = generic_sprints[[c]]$startdistance,
         end_distance = generic_sprints[[c]]$distance,
         category = as.numeric(category),
-        altitude = generic_sprints[[c]]$altitude)
+        altitude = generic_sprints[[c]]$altitude,
+        source = "GENERIC SPRINTS")
         
       }
         
@@ -418,9 +439,9 @@ for(y in 120:length(stages_list)) {
     }
     
     # Now I can pull in distance, altitude data
-    # I take only every fifth item + final item
+    # I take only every other item + final item
     
-    other_jsons <- c(other_jsons[seq(1,floor(length(other_jsons)/3)*3, 3)],
+    other_jsons <- c(other_jsons[seq(1,floor(length(other_jsons)/2)*2, 2)],
                      other_jsons[length(other_jsons)])
     
     route_list <- vector("list", length(other_jsons))
@@ -481,23 +502,13 @@ dbWriteTable(con,
              
              bind_rows(climbs_stages_list),
              
-             append = FALSE,
+             append = TRUE,
              
              row.names = FALSE)
 
-#readr::write_rds(climbs_stages_list, "flamme-rouge-climbs-902.rds")
-#readr::write_rds(other_json_list, "flamme-rouge-routes-902.rds")
 
-#readr::write_rds(climbs_stages_list, "R Code/Cycling/flamme-rouge-climbs1.rds")
-#readr::write_rds(other_json_list, "R Code/Cycling/flamme-rouge-routes.rds")
+# Cleaning Section --------------------------------------------------------
 
-#climbs_stages_list <- c(read_rds("flamme-rouge-climbs-811.rds"), 
-#                        read_rds("flamme-rouge-climbs-821.rds"),
-#                        read_rds("flamme-rouge-climbs-902.rds"))
-
-#other_json_list <- c(read_rds("flamme-rouge-routes-811.rds"), 
-#                     read_rds("flamme-rouge-routes-821.rds"),
-#                     read_rds("flamme-rouge-routes-902.rds"))
 
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
@@ -550,6 +561,37 @@ clean_climbs <- dbReadTable(con, "fr_scraped_climb_stages") %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0131', "i"))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u2019', "'"))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%u2019', "'"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2C', ","))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F2', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E1', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E5', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E7', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E3', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EB', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%B0', ""))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%D6', "O"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25D8', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F8', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25C5', "A"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25C6', "Ae"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2525', ""))) %>%
+
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0160', "S"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0150', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u010D', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u0160', "S"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u0150', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u010D', "c"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u010C', "C"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0107', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0153', "oe"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u010C', "C"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0107', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0153', "oe"))) %>%
+  
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28 Souvenir Jacques Goddet%29', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Henri Desgrange%29', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Jacques Goddet%29', ''))) %>%
@@ -567,7 +609,8 @@ clean_climbs <- dbReadTable(con, "fr_scraped_climb_stages") %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28.*%29', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2509', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, "' ", "'"))) %>%
-  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25', ''))) %>%
+    
   unique() %>%
   
   mutate(year = as.numeric(year))
@@ -821,7 +864,7 @@ stage_characteristics <- all_routes %>%
   filter(!(is.na(points))) %>%
   filter(points == 1) %>%
   select(-points, -distances, -elevations, -grades,
-         -race_url, -url, -lat, -long) %>%
+         -race_url, -url) %>%
   
   inner_join(
     
@@ -848,7 +891,7 @@ stage_characteristics <- all_routes %>%
   filter(!is.na(race))
 
 #
-#
+# write the altitude feature data to database
 #
 
 dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, overwrite = TRUE)
@@ -956,20 +999,105 @@ mtn_names <- all_climbs_int %>%
 
 #
 
+fr_worldwide_climbs <- dbReadTable(con, "fr_all_european_climbs") %>%
+  
+  mutate(TRACKNAME = str_trim(str_replace(TRACKNAME, "(via D110 - Entraigues)", "")))
+
+# 
+
 matching_with_every_climb <- all_climbs_int %>%
   
-  select(climb_name, url, race_url) %>%
+  filter(source == "ACTUAL CLIMBS" & is.na(category) & (gradient < 0.04 | length < 1.5)) %>%
+  
+  select(climb_name, url, race_url, source) %>%
   
   mutate(merge = "YES") %>%
   
   left_join(
     
-    dbReadTable(con, "fr_all_european_climbs") %>%
+    fr_worldwide_climbs %>%
       select(TRACKID, TRACKNAME) %>%
       mutate(merge = "YES"), by = c("merge")
     
-  )
+  ) %>%
+  
+  mutate(sd = stringdist::stringdist(tolower(climb_name), tolower(TRACKNAME), method = "qgram", q = 2) / nchar(climb_name)) %>%
+  
+  group_by(climb_name) %>% 
+  mutate(rk = rank(sd, ties.method = "min")) %>%
+  filter(rk < 4) %>% 
+  ungroup() %>%
+  
+  filter(sd < 0.300 & rk == 1)
 
+#
+
+matching_with_every_climb_others <- all_climbs_int %>%
+  
+  select(climb_name, url, race_url, source) %>%
+  
+  mutate(merge = "YES") %>%
+  
+  filter(source != "ACTUAL CLIMBS") %>%
+  
+  left_join(
+    
+    fr_worldwide_climbs %>%
+      select(TRACKID, TRACKNAME) %>%
+      mutate(merge = "YES"), by = c("merge")
+    
+  ) %>%
+  
+  mutate(sd = stringdist::stringdist(tolower(climb_name), tolower(TRACKNAME), method = "qgram", q = 2) / nchar(climb_name)) %>%
+  
+  group_by(climb_name) %>% 
+  mutate(rk = rank(sd, ties.method = "min")) %>%
+  filter(rk < 4) %>% 
+  ungroup() %>%
+  
+  filter(sd < 0.251 & rk == 1)
+
+#
+
+actual_climbs_list <- all_climbs_int %>%
+  
+  filter(source == "ACTUAL CLIMBS" & ((gradient > 0.0399 | length > 1.49) | !is.na(category)))
+
+#
+
+valid_climbs <- actual_climbs_list %>%
+  
+  select(climb_name, url, race_url) %>%
+  
+  rbind(
+    
+    matching_with_every_climb_others %>%
+      select(climb_name, url, race_url)
+    
+  ) %>%
+  rbind(
+    
+    matching_with_every_climb %>%
+      select(climb_name, url, race_url)
+    
+  ) %>%
+  
+  unique()
+
+#
+
+invalid_climbs <- all_climbs_int %>%
+  anti_join(valid_climbs, by = c("climb_name", "url", "race_url"))
+
+# NEXT STEPS
+# 1. add in Source to the above data, we don't need to check Climb Name if it comes from climb section
+# 2. filter out non-matches with dubious climb characteristics
+
+#
+#
+#
+#
+#
 #
 
 gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5), 
@@ -1054,7 +1182,7 @@ dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.
 
 #
 #
-#
+# Scraping all the Mountains on F-R ---------------------------------------
 #
 #
 
@@ -1138,3 +1266,28 @@ dbWriteTable(con, "fr_all_european_climbs", european_climbs, row.names = FALSE, 
 #
 #
 #
+
+matching_with_every_climb <- all_climbs_int %>%
+  
+  select(climb_name, url, race_url) %>%
+  
+  mutate(merge = "YES") %>%
+  
+  left_join(
+    
+    dbReadTable(con, "fr_all_european_climbs") %>%
+      select(TRACKID, TRACKNAME) %>%
+      mutate(merge = "YES"), by = c("merge")
+    
+  )
+
+#
+
+matching_with_every_climb <- matching_with_every_climb %>% 
+  
+  mutate(sd = stringdist::stringdist(tolower(climb_name), tolower(TRACKNAME), method = "qgram", q = 2) / nchar(climb_name)) %>%
+  
+  group_by(climb_name) %>% 
+  mutate(rk = rank(sd, ties.method = "min")) %>%
+  filter(rk < 4) %>% 
+  ungroup()
