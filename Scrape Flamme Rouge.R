@@ -679,7 +679,9 @@ pcs_fr_matches <- matches %>%
       filter(match == FALSE) %>%
       select(-match), by = c("fr_race" = "fr", "pcs_race" = "pcs", "year")
     
-  )
+  ) %>%
+  
+  filter(year > 2013)
 
 #
 
@@ -1089,9 +1091,11 @@ valid_climbs <- actual_climbs_list %>%
 invalid_climbs <- all_climbs_int %>%
   anti_join(valid_climbs, by = c("climb_name", "url", "race_url"))
 
-# NEXT STEPS
-# 1. add in Source to the above data, we don't need to check Climb Name if it comes from climb section
-# 2. filter out non-matches with dubious climb characteristics
+#
+
+all_climbs_data <- all_climbs_int %>%
+  
+  inner_join(valid_climbs, by = c("climb_name", "url", "race_url"))
 
 #
 #
@@ -1099,13 +1103,16 @@ invalid_climbs <- all_climbs_int %>%
 #
 #
 #
+
+# GAM has R^2 of 0.76 vs 0.71 for LM
+# including altitude improves R^2 by 0.02 or so over just VAM poly
 
 gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5), 
    
    # the KOM point values found by measuring max efforts in total watts are
    # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
    
-   data = all_climbs_int %>%
+   data = all_climbs_data %>%
      filter(!is.na(category)) %>%
      mutate(category = ifelse(category == 1, 10, 
                               ifelse(category == 2, 5, 
@@ -1114,26 +1121,40 @@ gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5),
      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
      unique() %>%
-     mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)))
+     mutate(vam_poly = ((gradient^2) * length), 
+            alt = summit - 1000))
+
+lm_mod <- lm(category ~ alt + vam_poly, 
+                    
+                    # the KOM point values found by measuring max efforts in total watts are
+                    # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+                    
+                    data = all_climbs_data %>%
+                      filter(!is.na(category)) %>%
+                      mutate(category = ifelse(category == 1, 10, 
+                                               ifelse(category == 2, 5, 
+                                                      ifelse(category == 3, 3, 
+                                                             ifelse(category == 4, 1.5, 20))))) %>% 
+                      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
+                      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
+                      unique() %>%
+                      mutate(vam_poly = ((gradient^2) * length), 
+                             alt = summit - 1000))
 
 #
 
-climbs_to_write <- all_climbs_int %>%
+climbs_to_write <- all_climbs_data %>%
   
-  mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)) %>%
+  mutate(vam_poly = ((gradient^2) * length), 
+         alt = summit - 1000) %>%
   
   cbind(
     model_category = predict(gam_mod, 
-                             all_climbs_int %>%
-                               mutate(vam_poly = ((gradient^2) * length), alt = ifelse(summit > 1500, 1, 0)))) %>%
+                             all_climbs_data %>%
+                               mutate(vam_poly = ((gradient^2) * length),
+                                      alt = summit - 1000))) %>%
   
   unique() %>%
-  
-  #filter(!(race == "Giro del Trentino")) %>%
-  
-  #mutate(race = ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2018/159", "La Route d'Occitane",
-  #                     ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2017/159", "Route du Sud - la Depeche du Midi",
-  #                            ifelse(race_url == "https://www.la-flamme-rouge.eu/maps/races/view/2019/159", "La Route d'Occitanie - La Depeche du Midi", race)))) %>%
   
   filter(gradient > 0.03 | model_category > 1.15) %>%
   
@@ -1155,13 +1176,13 @@ climbs_to_write <- all_climbs_int %>%
       readr::read_csv("f_r_climbs_missing.csv") %>%
         select(-model_category) %>%
         mutate(vam_poly = ((gradient^2) * length), 
-               alt = ifelse(summit > 1500, 1, 0)),
+               alt = summit - 1000),
       
       model_category = predict(gam_mod, 
                                readr::read_csv("f_r_climbs_missing.csv") %>%
                                  select(-model_category) %>%
                                  mutate(vam_poly = ((gradient^2) * length), 
-                                        alt = ifelse(summit > 1500, 1, 0))))
+                                        alt = summit - 1000)))
     
   ) %>%
   
