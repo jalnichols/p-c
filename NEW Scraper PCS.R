@@ -15,10 +15,12 @@ con <- dbConnect(MySQL(),
 
 pull_from_schedule <- c(
   
+  # WORLD TOUR
   'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=1.UWT&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=2.UWT&filter=Filter',
   
+  # EUROPE
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.1&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.1&filter=Filter',
@@ -27,14 +29,29 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.HC&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.Pro&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.Pro&filter=Filter',
+  
+  # ASIA
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.HC&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.Pro&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.Pro&filter=Filter',
+  
+  # AMERICAS
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.1&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.HC&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
+  
+  # WORLD CHAMPS
   'https://www.procyclingstats.com/races.php?year=2019&circuit=2&class=&filter=Filter')
 
 #
@@ -766,6 +783,20 @@ stage_data_raw$rider <- iconv(stage_data_raw$rider, from="UTF-8", to = "ASCII//T
 
 stage_data <- stage_data_raw %>%
   
+  mutate(stage = ifelse(stage_name == "Prologue", 0, stage)) %>%
+  
+  group_by(race, year) %>%
+  mutate(prologue_exists = min(stage, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(stage_number = ifelse(prologue_exists == 0,
+                               ifelse(stage == 0, 0, stage - 1), stage)) %>%
+  
+  filter(!race %in% c("World Championships MJ - ITT", "World Championships MJ - Road Race",
+                      "World Championships U23 - ITT", "World Championships U23 - Road Race",
+                      "World Championships WJ - ITT", "World Championships WJ - Road Race",
+                      "World Championships WE - ITT", "World Championships WE - Road Race")) %>%
+  
   mutate(distance = str_replace(distance, "\\(", ""),
          distance = str_replace(distance, "\\)", ""),
          distance = as.numeric(str_replace(distance, "k", ""))) %>%
@@ -921,3 +952,127 @@ f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
 
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year))
+
+#
+# combine F-R data with PCS data
+#
+
+
+stage_data <- stage_data %>%
+  
+  unique() %>%
+  
+  mutate(race = ifelse(race %in% c("la vuelta ciclista a espana", "la vuelta a espana"), "vuelta a espana", race)) %>%
+  
+  unique() %>%
+  
+  # join with stage characteristic data
+  
+  left_join(
+    
+    f_r_data %>%
+      select(-length, -slug) %>%
+      mutate(race = tolower(race)), by = c("race", "stage", "year")
+    
+  ) %>%
+  
+  # join with climb level data
+  
+  left_join(
+    
+    f_r_climbs %>%
+      
+      mutate(race = tolower(race)) %>%
+      mutate(race = ifelse(race %in% c("la vuelta ciclista a espana", "la vuelta a espana"), "vuelta a espana", race)) %>%
+      
+      left_join(f_r_data %>%
+                  select(race, stage, year, stage_length = length) %>%
+                  mutate(race = tolower(race)), by = c("race", "stage", "year")) %>%
+      
+      group_by(stage, race, year) %>%
+      mutate(position_highest = max(model_category, na.rm = T),
+             last_climb = max(end_distance, na.rm = T)) %>%
+      ungroup() %>%
+      
+      mutate(position_highest = ifelse(position_highest == model_category, end_distance / stage_length, NA),
+             last_climb = ifelse(last_climb == end_distance, model_category, NA)) %>%
+      
+      mutate(summit_finish = ifelse(abs(end_distance - stage_length) < 4, TRUE, FALSE)) %>%
+      mutate(summit_finish = ifelse(race == "tour de romandie" & stage == 4 &
+                                      year == 2019 & climb_name == "Torgon", TRUE, summit_finish)) %>%
+      
+      # increase KOM points by 25% if summit finish
+      mutate(basic_kom_points = model_category,
+             kom_points = ifelse(summit_finish == TRUE, model_category * 1.25, model_category),
+             climbing_end = ifelse((stage_length - end_distance) < 20.1, kom_points, NA)) %>%
+      
+      group_by(race, stage, year) %>%
+      summarize(cat_climb_length = sum(end_distance - start_distance, na.rm = T),
+                concentration = max(kom_points, na.rm = T),
+                number_cat_climbs = sum(kom_points >= 1, na.rm = T),
+                climbing_final_20km = sum(climbing_end, na.rm = T),
+                raw_climb_difficulty = sum(basic_kom_points, na.rm = T),
+                act_climb_difficulty = sum(kom_points, na.rm = T),
+                last_climb = max(last_climb, na.rm = T),
+                position_highest = mean(position_highest, na.rm = T),
+                summit_finish = max(summit_finish, na.rm = T)) %>%
+      ungroup(), by = c("race", "stage", "year")
+    
+  ) %>%
+  
+  mutate(cat_climb_length = ifelse(is.na(cat_climb_length),
+                                   ifelse(is.na(total_elev_change), NA, 0), cat_climb_length),
+         number_cat_climbs = ifelse(is.na(number_cat_climbs), 0, number_cat_climbs),
+         concentration = ifelse(is.na(concentration),
+                                ifelse(is.na(total_elev_change), NA, 1),
+                                ifelse(is.na(concentration), 1, concentration)),
+         climbing_final_20km = ifelse(is.na(climbing_final_20km),
+                                      ifelse(is.na(total_elev_change), NA, 0), climbing_final_20km),
+         raw_climb_difficulty = ifelse(is.na(raw_climb_difficulty),
+                                       ifelse(is.na(total_elev_change), NA, 0), raw_climb_difficulty),
+         act_climb_difficulty = ifelse(is.na(act_climb_difficulty),
+                                       ifelse(is.na(total_elev_change), NA, 0), act_climb_difficulty),
+         position_highest = ifelse(is.na(position_highest),
+                                   ifelse(is.na(total_elev_change), NA, 0), position_highest),
+         last_climb = ifelse(is.na(last_climb),
+                             ifelse(is.na(total_elev_change), NA, 0), last_climb)) %>%
+  
+  filter(!(is.na(act_climb_difficulty))) %>%
+  
+  mutate(position_highest = ifelse(position_highest > 1, 1, position_highest),
+         position_highest = ifelse(is.na(position_highest), median(position_highest, na.rm = T), position_highest),
+         summit_finish = ifelse(is.na(summit_finish), 0, summit_finish)) %>%
+  
+  unique()
+
+#
+# MISSING TOURS
+#
+
+pcs_missing_from_fr <- stage_data_raw %>%
+  
+  select(stage, race, year) %>%
+  mutate(race = tolower(race)) %>%
+  unique() %>%
+  
+  anti_join(
+    
+    stage_data %>%
+      select(stage, race, year) %>%
+      mutate(race = tolower(race)) %>%
+      unique()
+    
+  )
+
+# Write the cleaned-up data to database
+
+dbWriteTable(con, "pcs_stage_data", 
+             
+             stage_data %>%
+               mutate(stage = stage_number) %>%
+               select(-kom_progression,
+                      -prologue_exists,
+                      -stage_number), 
+             
+             overwrite = TRUE, append = FALSE, row.names = FALSE)
+
