@@ -2,9 +2,30 @@
 library(tidyverse)
 library(RMySQL)
 
+con <- dbConnect(MySQL(),
+                 host='localhost',
+                 dbname='cycling',
+                 user='jalnichols',
+                 password='braves')
+
 #
 
 stage_data <- dbReadTable(con, "pcs_stage_data")
+
+stage_data <- stage_data %>%
+  select(-climbing_final_20km, -final_5km_elev, -final_5km_gradient, -final_1km_elev,
+         -perc_gain_end, -time_at_1500m, -total_elev_change, -highest_point) %>%
+  
+  inner_join(
+    stage_data %>%
+      select(climbing_final_20km, final_5km_elev, final_5km_gradient, final_1km_elev,
+             perc_gain_end, time_at_1500m, total_elev_change, highest_point,
+             rider, stage, year, race) %>%
+      group_by(rider, stage, year, race) %>%
+      nest() %>%
+      ungroup(), by = c("rider", "stage", "year", "race")
+    
+  )
 
 #
 #
@@ -139,3 +160,143 @@ fields <- stage_data %>%
   mutate(tot = ifelse(n < 25, (tot * n) + (-1.5 * (25- n)), tot * 25))
 
 #
+#
+# take in top 200 UWT riders
+
+top_200_WT <- stage_data %>%
+  
+  inner_join(
+    
+    fields %>%
+      select(stage, race, year, tot), by = c("stage", "race", "year")
+    
+  ) %>%
+  
+  #filter(tot > 25) %>%
+  
+  group_by(rider) %>%
+  summarize(count = n()) %>%
+  ungroup() %>%
+  
+  filter(rank(-count, ties.method = 'min') < 201)
+
+# take in all events
+
+perf_by_level_data <- stage_data %>%
+  
+  inner_join(
+    
+    fields %>%
+      select(stage, race, year, tot) %>%
+      filter(year > 2016), by = c("stage", "race", "year")
+    
+  ) %>%
+  
+  inner_join(
+    
+    top_200_WT %>%
+      select(rider), by = c("rider")
+    
+  ) %>%
+  
+  select(race, year, sof = tot, stage, rnk, rider, gain_1st) %>%
+  
+  unique()
+
+# set up model
+
+model_list <- vector("list", 20)
+glmer_list <- vector("list", 20)
+
+for(m in 1:20) {
+  
+  d <- perf_by_level_data %>%
+    
+    mutate(top = ifelse(rnk < (m + 1), 1, 0))
+  
+  glm <- glm(top ~ sof, data = d, family = binomial(link = "logit"))
+  
+  model_list[[m]] <- cbind(fit = glm$fitted.values, 
+                           glm$data %>% filter(!is.na(rnk))) %>%
+    mutate(thresh = m)
+  
+  #glmer <- lme4::glmer(top ~ (1 | race:year), data = d, family = binomial(link = "logit"))
+  
+  #glmer_list[[m]] <- summary(glmer)$coefficients %>%
+  #  as_tibble()
+  
+}
+
+glm_data <- bind_rows(model_list) %>%
+  select(sof, fit, thresh) %>%
+  unique()
+
+#
+
+ggplot(glm_data, aes(x = sof, y = fit, color = as.factor(thresh)))+
+  geom_vline(xintercept = 175)+
+  geom_hline(yintercept = 0.1)+
+  geom_point(size = 1)+
+  geom_label(data = glm_data %>% group_by(thresh) %>% filter(sof == min(sof, na.rm = T)) %>% ungroup(),
+             aes(x = sof, y = fit, label = thresh),
+             size = 4)+
+  #scale_color_manual(values = c("black", "orange"), guide = F)+
+  scale_y_continuous(labels = scales::percent)+
+  guides(color = F)
+
+# TDF top 8
+
+limits <- glm_data %>% 
+  filter(sof > 170 & sof < 180 & thresh == 8) %>%
+  summarize(min(fit),
+            max(fit),
+            median(fit))
+
+# this shows the threshold by sof for 10.7% chance (top 12 for average TDF and top 5 for average worst field)
+
+filter(glm_data, fit > 0.105 & fit < 0.11) %>% 
+  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+
+# this shows threshold by sof for 5% chance (top 5-6 for average TDF and top 2 for average worst field)
+
+filter(glm_data, fit > 0.0475 & fit < 0.0525) %>% 
+  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+
+# this shows threshold by sof for 9% chance (top 10 for average TDF and top 4 for average worst field)
+
+filter(glm_data, fit > 0.0875 & fit < 0.0925) %>% 
+  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+
+# this shows threshold by limits above
+
+glm_data %>% filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>% 
+  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+
+#
+#
+# filter to TDF top 8 and scale down or up
+
+limits_actual <- glm_data %>%
+  
+  filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>%
+  
+  lm(thresh ~ sof, data = .)
+
+#
+#
+# actual limits
+
+stage_data_perf <- stage_data %>%
+  
+  cbind(
+    
+    limit = predict(limits_actual, 
+                    stage_data %>%
+                      inner_join(
+                        
+                        fields %>%
+                          select(stage, race, year, sof = tot), by = c("stage", "race", "year")))
+    
+  ) %>%
+  
+  mutate(success = ifelse(rnk < (limit + 1), 1, 0))
