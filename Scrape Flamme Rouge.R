@@ -793,12 +793,20 @@ final_1km <- all_routes %>%
   mutate(stage_end = max(length, na.rm = T)) %>%
   ungroup() %>%
   
-  filter((stage_end - distances) < 1.6) %>%
+  filter((stage_end - distances) < 1.1) %>%
   
   group_by(race, year, stage) %>%
   summarize(final_1km_elev = mean(elevations, na.rm = T),
-            final_1km_gradient = max(grades, na.rm = T)) %>%
-  ungroup()
+            max_gradient = max(grades, na.rm = T),
+            med_gradient = median(grades, na.rm = T),
+            avg_gradient = mean(grades, na.rm = T),
+            x25th_gradient = quantile(grades, probs = 0.75, na.rm = T),
+            n = n()) %>%
+  ungroup() %>%
+  
+  mutate(final_1km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
+  
+  select(stage, year, race, final_1km_elev, final_1km_gradient)
 
 #
 
@@ -808,12 +816,20 @@ final_5km <- all_routes %>%
   mutate(stage_end = max(length, na.rm = T)) %>%
   ungroup() %>%
   
-  filter((stage_end - distances) < 5.6) %>%
+  filter((stage_end - distances) < 5.1) %>%
   
-  group_by(race, stage, year) %>%
+  group_by(race, year, stage) %>%
   summarize(final_5km_elev = mean(elevations, na.rm = T),
-            final_5km_gradient = max(grades, na.rm = T)) %>%
-  ungroup()
+            max_gradient = max(grades, na.rm = T),
+            med_gradient = median(grades, na.rm = T),
+            avg_gradient = mean(grades, na.rm = T),
+            x25th_gradient = quantile(grades, probs = 0.75, na.rm = T),
+            n = n()) %>%
+  ungroup() %>%
+  
+  mutate(final_5km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
+  
+  select(stage, year, race, final_5km_elev, final_5km_gradient)
 
 #
 
