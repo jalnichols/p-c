@@ -288,6 +288,7 @@ limits_actual <- glm_data %>%
 
 stage_data_perf <- stage_data %>%
   
+  # the limit is predicted from the limits_actual model above
   cbind(
     
     limit = predict(limits_actual, 
@@ -299,4 +300,89 @@ stage_data_perf <- stage_data %>%
     
   ) %>%
   
-  mutate(success = ifelse(rnk < (limit + 1), 1, 0))
+  mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>%
+  
+  # round the limit to nearest integer
+  mutate(limit = round(limit, 0)) %>%
+
+  # success is any finish better than or equal to the limit
+  mutate(success = ifelse(rnk < (limit + 1), 1, 0)) %>%
+  
+  # find the slowest success and scale off that
+  mutate(success_time = ifelse(success == 1, total_seconds, NA)) %>%
+  
+  # find the slowest success
+  group_by(stage, race, year) %>%
+  mutate(success_time = max(success_time, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(rel_success = total_seconds - success_time)
+  
+#
+#
+# Climbing difficulty
+
+# consider four parts:
+# 1) concentration (toughest climb difficulty)
+# 2) actual climb difficulty (sum of climb difficulty)
+# 3) summit finish TRUE or FALSE
+# 4) last climb (final climb difficulty)
+
+stage_climb_difficulty <- stage_data_perf %>%
+  
+  select(stage, race, year, summit_finish, act_climb_difficulty, last_climb, concentration) %>%
+  
+  unique() %>%
+  
+  gather(stat, value, -stage, -race, -year, -summit_finish) %>%
+  
+  group_by(stat) %>%
+  mutate(sd = sd(value, na.rm = T),
+         avg = mean(value, na.rm = T)) %>%
+  ungroup() %>%
+  
+  # 20% are summit finishes, SD = 40%
+  # average stage is 10 actual climb difficulty, SD = 11 (so TDF mountains are 2 sigmas)
+  # average last climb is 3.5, sd = 4 (so cat 1 final climbs are 2 sigmas)
+  # average toughest climb is 4.5, sd = 5 (so HC climbs are 2 sigmas)
+  
+  # calculate zscores and spread out
+  mutate(zscr = (value - avg) / sd) %>%
+  
+  select(-value, -sd, -avg) %>%
+  
+  spread(stat, zscr) %>%
+  
+  # calculate ensemble score, give 1.5 points if summit, -0.5 if not
+  # then scale rest of score
+  mutate(ensemble = ifelse(summit_finish == 1, 1.5 + (0.4 * last_climb) + (0.4 * act_climb_difficulty) + (0.2 * concentration),
+                           -0.5 + (0.15 * last_climb) + (0.5 * act_climb_difficulty) + (0.35 * concentration)))
+
+#
+#
+# combine into stage data
+
+stage_data_perf <- stage_data_perf %>%
+  
+  inner_join(
+    
+    stage_climb_difficulty %>%
+      select(stage, race, year, climb_score = ensemble), by = c("stage", "race", "year")
+    
+  )
+
+#
+#
+# rider climbing performance
+
+library(lme4)
+
+climb_rider_model <- glmer(success ~ (1 | rider / climb_score), 
+                           
+                           data = stage_data_perf %>%
+                             filter(year > 2016) %>%
+                             mutate(success = ifelse(rel_success == 0, 1, success)) %>%
+                             group_by(rider) %>%
+                             filter(n() > 99) %>%
+                             ungroup(),
+                           family = "binomial")
