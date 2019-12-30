@@ -1140,6 +1140,8 @@ gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5),
      mutate(vam_poly = ((gradient^2) * length), 
             alt = summit - 1000))
 
+write_rds(gam_mod, "model-climb-difficulty.rds")
+
 lm_mod <- lm(category ~ alt + vam_poly, 
                     
                     # the KOM point values found by measuring max efforts in total watts are
