@@ -49,18 +49,16 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
-  
-  # WORLD CHAMPS
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=2&class=&filter=Filter')
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter')
 
 #
 
 store_from_schedule <- vector("list", length(pull_from_schedule))
 
-pull_years = 7
+pull_years = 1
 
 current_year = 2020
+start_year = 2019 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -73,7 +71,7 @@ for(t in 1:length(pull_from_schedule)) {
   # pull in each year
   for(y in 1:length(year_list)) {
     
-    year = 2012 + y
+    year = start_year + y
     
     url <- paste0(
       str_sub(pull_from_schedule[[t]], 1, 47),
@@ -86,6 +84,20 @@ for(t in 1:length(pull_from_schedule)) {
       
       page <- url %>%
         read_html()
+      
+      evts <- page %>%
+        html_nodes('table') %>%
+        html_table(dec = ",") %>%
+        .[[1]] %>%
+        filter(Winner != "") %>%
+        count() %>%
+        as.list() %>%
+        .[[1]]
+      
+      if(evts == 0) {
+        
+        
+      } else {
       
       events <- cbind(
         
@@ -100,20 +112,23 @@ for(t in 1:length(pull_from_schedule)) {
           html_nodes('a') %>%
           html_attr(name = "href") %>%
           enframe(name = NULL) %>%
-          .[-(1:99),] %>%
+          #.[-(1:99),] %>%
           filter(str_detect(value, "race/")) %>%
           filter(str_detect(value, as.character(year))) %>%
           filter(!str_detect(value, "stage-")) %>%
           filter(!str_detect(value, "result")) %>%
-          filter(!(str_detect(value, "2019/"))) %>%
+          filter(!(str_detect(value, "2020/"))) %>%
           unique() %>%
-          .[1:length(evts$Race),]
+          .[1:evts,]
         
       ) %>%
         
         mutate(year = year) %>%
         rename(url = value)
       
+      year_list[[y]] <- events
+      
+      }
       
     }
     
@@ -143,6 +158,8 @@ for(t in 1:length(pull_from_schedule)) {
         mutate(year = year) %>%
         rename(url = value)
       
+      year_list[[y]] <- events
+      
     }
     
     year_list[[y]] <- events
@@ -162,6 +179,8 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
   
+  unique() %>%
+  
   # manually add WC ITT and the Dubai Tour when it was 2.1
   rbind(
     
@@ -177,16 +196,12 @@ all_events <- bind_rows(store_from_schedule) %>%
       mutate(type = "Manual") %>%
       mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2)))))) %>%
   
-  rbind(
-    
-    tibble::tibble(Date = c("05.02"),
-                   Race = c("Dubai Tour"),
-                   Winner = c("PHINNEY Taylor"),
-                   Class = c("2.HC", "2.HC", "2.HC", "2.HC", "2.1"),
-                   url = c('race/dubai-tour/2014'),
-                   year = c(2014)) %>%
-      mutate(type = "Manual") %>%
-      mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))))
+  filter(lubridate::year(Date) > start_year) %>%
+  
+  select(-type) %>%
+  unique() %>%
+  
+  mutate(Type = "scraper")
 
 #
 # Write DB Table
@@ -198,13 +213,13 @@ all_events$Winner <- iconv(all_events$Winner, from="UTF-8", to = "ASCII//TRANSLI
 new_events <- all_events %>%
   anti_join(
     
-    dbReadTable(con, "all_races"), by = c("url")
+    dbReadTable(con, "pcs_all_races"), by = c("url")
     
   )
 
 all_events <- new_events
 
-dbWriteTable(con, "all_races", new_events, append = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_all_races", new_events, append = TRUE, row.names = FALSE)
 
 #
 #
@@ -318,6 +333,15 @@ all_stages$Winner <- iconv(all_stages$Winner, from="UTF-8", to = "ASCII//TRANSLI
 
 dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE)
 
+# start scraping process
+all_stages <- dbReadTable(con, "pcs_all_stages")
+
+# pull in directory of HTML downloads (about ~75 stages don't/can't download)
+html_stage_dir <- fs::dir_ls("PCS-HTML/")
+
+# download new stages (TRUE) or use old HTML (FALSE)
+dl_html <- FALSE
+
 #
 # for loop for each stage
 #
@@ -330,7 +354,12 @@ tictoc::tic()
 
 #
 
-for(r in 2495:length(all_stages$value)) {
+for(r in 1:length(all_stages$value)) {
+  
+  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+  
+  # match existence of f_name in stage directory
+  if(f_name %in% html_stage_dir) {
   
   race_url <- all_stages$url[[r]]
   
@@ -380,13 +409,14 @@ for(r in 2495:length(all_stages$value)) {
     
     # scrape the HTML for the page for multiple use
     
-    #page <- url %>%
-    #  read_html()
-    
     f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
-    download.file(url, f_name, quiet = TRUE)
-                  
+    if(dl_html == TRUE) {
+      
+      download.file(url, f_name, quiet = TRUE)
+      
+    }
+    
     page <- read_file(f_name) %>%
       read_html()
     
@@ -491,6 +521,38 @@ for(r in 2495:length(all_stages$value)) {
         
         SPD_WIN <- readr::parse_number(str_sub(spd, x+1, x+7))
         
+        # bring in parcours type information
+        
+        parcours <- page %>%
+          html_nodes('span.icon') %>%
+          html_attr(name = "class") %>%
+          enframe(name = NULL) %>%
+          filter(str_detect(value, "profile")) %>%
+          str_trim() %>%
+          as.list() %>%
+          .[[1]]
+        
+        profile_value <- page %>%
+          html_nodes('div.res-right') %>%
+          html_nodes('a') %>%
+          html_text() %>%
+          enframe(name = NULL) %>%
+          as.list() %>%
+          .[[1]] %>%
+          .[[1]]
+        
+        if(length(parcours) == 0) {
+          
+          parcours = NA
+          
+        }
+        
+        if(length(profile_value) == 0) {
+          
+          profile_value = NA
+          
+        }
+        
         # now actually process the stage including getting times correct
         
         stage <- d[[choose]] %>%
@@ -570,7 +632,8 @@ for(r in 2495:length(all_stages$value)) {
           mutate(length = length,
                  distance = distance,
                  stage_name = stage_name,
-                 kom_progression = kom) %>%
+                 stage_type = parcours,
+                 parcours_value = profile_value) %>%
           
           mutate(stage = s,
                  race = all_stages$Race[[r]],
@@ -590,7 +653,13 @@ for(r in 2495:length(all_stages$value)) {
   
   print(race_url)
   
-  Sys.sleep(runif(1, 0.5, 3.5))
+  if(dl_html == TRUE) {
+    
+    Sys.sleep(runif(1, 0.5, 3.5))
+    
+  }
+  
+  }
   
 }
 
@@ -609,6 +678,8 @@ con <- dbConnect(MySQL(),
                  password='braves')
 
 races_list <- races_list[lengths(races_list) != 0]
+
+df_list <- races_list
 
 for(f in 1:length(races_list)) { 
   
@@ -783,7 +854,13 @@ stage_data_raw$rider <- iconv(stage_data_raw$rider, from="UTF-8", to = "ASCII//T
 
 stage_data <- stage_data_raw %>%
   
+  unique() %>%
+  
   mutate(stage = ifelse(stage_name == "Prologue", 0, stage)) %>%
+  
+  mutate(stage = ifelse(stage == 0,
+                        ifelse(year == 2015 & race == "Tour de Suisse", 1,
+                               ifelse(year == 2015 & race == "Tirreno-Adriatico", 1, stage)), stage)) %>%
   
   group_by(race, year) %>%
   mutate(prologue_exists = min(stage, na.rm = T)) %>%
@@ -957,12 +1034,7 @@ f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
 # combine F-R data with PCS data
 #
 
-
 stage_data <- stage_data %>%
-  
-  unique() %>%
-  
-  mutate(race = ifelse(race %in% c("la vuelta ciclista a espana", "la vuelta a espana"), "vuelta a espana", race)) %>%
   
   unique() %>%
   
@@ -983,8 +1055,7 @@ stage_data <- stage_data %>%
     f_r_climbs %>%
       
       mutate(race = tolower(race)) %>%
-      mutate(race = ifelse(race %in% c("la vuelta ciclista a espana", "la vuelta a espana"), "vuelta a espana", race)) %>%
-      
+
       left_join(f_r_data %>%
                   select(race, stage, year, stage_length = length) %>%
                   mutate(race = tolower(race)), by = c("race", "stage", "year")) %>%
@@ -1037,11 +1108,14 @@ stage_data <- stage_data %>%
          last_climb = ifelse(is.na(last_climb),
                              ifelse(is.na(total_elev_change), NA, 0), last_climb)) %>%
   
-  filter(!(is.na(act_climb_difficulty))) %>%
+  #filter(!(is.na(act_climb_difficulty))) %>%
   
   mutate(position_highest = ifelse(position_highest > 1, 1, position_highest),
          position_highest = ifelse(is.na(position_highest), median(position_highest, na.rm = T), position_highest),
          summit_finish = ifelse(is.na(summit_finish), 0, summit_finish)) %>%
+  
+  mutate(missing_profile_data = ifelse(is.na(act_climb_difficulty), TRUE,
+                                       ifelse(is.na(total_vert_gain), TRUE, FALSE))) %>%
   
   unique()
 
@@ -1064,15 +1138,27 @@ pcs_missing_from_fr <- stage_data_raw %>%
     
   )
 
+# final cleanup before writing
+
+stage_data <- stage_data %>%
+  mutate(stage = stage_number) %>%
+  mutate(time_trial = as.numeric(time_trial),
+         grand_tour = as.numeric(grand_tour),
+         one_day_race = as.numeric(one_day_race),
+         missing_profile_data = as.numeric(missing_profile_data)) %>%
+  select(-prologue_exists,
+         -stage_number) %>%
+  filter(!(race == "brussels cycling classic" & year == 2017)) %>%
+  filter(!(race == "la poly normonde")) %>%
+  filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
+  mutate(stage = ifelse(race == "dubai tour" & year == 2014 & stage > 4,
+                        stage - 4, stage)) %>%
+  unique()
+
 # Write the cleaned-up data to database
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data %>%
-               mutate(stage = stage_number) %>%
-               select(-kom_progression,
-                      -prologue_exists,
-                      -stage_number), 
+             stage_data, 
              
              overwrite = TRUE, append = FALSE, row.names = FALSE)
-
