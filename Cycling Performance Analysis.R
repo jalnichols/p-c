@@ -10,8 +10,34 @@ con <- dbConnect(MySQL(),
 
 #
 
-stage_data <- dbReadTable(con, "pcs_stage_data")
+stage_data <- dbReadTable(con, "pcs_stage_data") %>%
+  filter(!(race %in% c("la poly normande")))
 
+#
+
+
+# Stage Similarity Data ---------------------------------------------------
+
+stage_sim <- stage_data %>%
+  filter(missing_profile_data == 0 & rnk == 1) %>%
+  select(stage_name, stage, race, year, class, time_trial, grand_tour, one_day_race, 
+         length, highest_point:summit_finish) %>%
+  select(-perc_gain_end, -final_1km_elev, -final_5km_elev, -perc_elev_change,
+         -total_elev_change) %>%
+  filter(!(race %in% c("la poly normande"))) %>%
+  filter(time_trial == 0)
+
+pca_stages <- prcomp(stage_sim[, 9:24], scale = TRUE)
+
+weightings_pca <- pca_stages$rotation
+
+pc_s <- cbind(stage_sim[ ,1:8], pca_stages$x)
+
+#PC1 is grand tour level mountain stages vs flat stages
+
+#PC2 is summit finishes vs amstel / tour of flanders, lombardia, liege, san sebastian
+
+#PC3 is colombia, tour of utah, and alpine stages vs amstel, fleche, liege, flanders, brabantse pijl
 
 # Extrapolate Climbing Data -----------------------------------------------
 
@@ -21,7 +47,7 @@ stage_data <- dbReadTable(con, "pcs_stage_data")
 # data broken out into categorized climbs
 #
 
-stage_data %>% 
+pv_mod <- stage_data %>% 
   
   filter(rnk == 1) %>% 
   
@@ -36,14 +62,46 @@ stage_data %>%
   filter((pv > 0 & act_climb_difficulty > 0) | 
            (pv==0 & act_climb_difficulty==0)) %>%
   
-  lm(act_climb_difficulty ~ pv, data = .) %>%
-  summary()
+  lm(act_climb_difficulty ~ pv, data = .)
+
+#
+
+pv_data <- cbind(
+  stage_data %>%
+  filter(rnk == 1) %>% 
+  
+  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+         pv = as.numeric(parcours_value)) %>% 
+  
+  select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+         -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+         -top_variance, -variance, -speed) %>%
+  
+  filter(est == 0),
+  
+  pred_pv = predict(
+    
+    pv_mod, 
+    stage_data %>%
+      filter(rnk == 1) %>% 
+      
+      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+             pv = as.numeric(parcours_value)) %>% 
+      
+      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+             -top_variance, -variance, -speed) %>%
+      
+      filter(est == 0)
+    
+  ))
 
 # act_climb_difficulty = 3.9 + (0.096 * parcours_value) -- R^2 = 0.68
 
-# for F-R profile data stages we can use stage type + final 1km gradient
+# for F-R profile data stages we can use stage type + the profile stats (which can be replicated from Strava data for
+# stages which F-R doesn't have profile data
 
-stage_data %>% 
+no_climbs_mod <- stage_data %>% 
   
   filter(rnk == 1) %>% 
   
@@ -56,14 +114,41 @@ stage_data %>%
   
   filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
   filter(!stage_type == "icon profile p0") %>%
-  lm(act_climb_difficulty ~ stage_type + final_1km_gradient, data = .) %>%
-  summary()
+  lm(act_climb_difficulty ~ stage_type + final_5km_gradient + total_vert_gain +
+       final_20km_vert_gain + time_at_1500m, data = .)
+
+#
+
+no_climbs_data <- cbind(
+  stage_data %>%
+    filter(rnk == 1) %>% 
+    
+    select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+           -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+           -top_variance, -variance, -speed) %>%
+    
+    filter(missing_profile_data == 0 & act_climb_difficulty == 0 & !stage_type == "icon profile p0"),
+  
+  pred_no_climbs = predict(
+    
+    no_climbs_mod, 
+    stage_data %>%
+      filter(rnk == 1) %>% 
+      
+      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+             -top_variance, -variance, -speed) %>%
+      
+      filter(missing_profile_data == 0 & act_climb_difficulty == 0 & !stage_type == "icon profile p0")
+    
+  )) %>%
+  mutate(pred_no_climbs = ifelse(pred_no_climbs < 1, 1, pred_no_climbs))
 
 # p1 = 4, p2 = 5.5, p3 = 4, p4 = 16, p5 = 21 + 25 * final_1km_grade
 
 # and for stages w/o F-R we can use stage_type to estimate act_climb_difficulty
 
-stage_data %>% 
+icon_mod <- stage_data %>% 
   
   filter(rnk == 1) %>% 
   
@@ -76,10 +161,72 @@ stage_data %>%
   
   filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
   filter(!stage_type == "icon profile p0") %>%
-  lm(act_climb_difficulty ~ stage_type, data = .) %>%
-  summary()
+  lm(act_climb_difficulty ~ stage_type, data = .)
+
+#
+
+icon_data <- cbind(
+  stage_data %>%
+    filter(rnk == 1) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    
+    select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+           -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+           -top_variance, -variance, -speed) %>%
+    
+    filter(!stage_type == "icon profile p0"),
+  
+  pred_icon = predict(
+    
+    icon_mod, 
+    stage_data %>%
+      filter(rnk == 1) %>% 
+      
+      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+             pv = as.numeric(parcours_value)) %>% 
+      
+      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
+             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
+             -top_variance, -variance, -speed) %>%
+      
+      filter(!stage_type == "icon profile p0")
+    
+  ))
 
 # p1 = 4, p2 = 5, p3 = 5, p4 = 16, p5 = 23
+
+#
+# now combine all three methods together
+#
+
+three_methods <- rbind(
+  
+  no_climbs_data %>%
+    select(race, stage, year, pred = pred_no_climbs),
+  icon_data %>%
+    select(race, stage, year, pred = pred_icon),
+  pv_data %>%
+    select(race, stage, year, pred = pred_pv)
+) %>%
+  group_by(stage, race, year) %>%
+  summarize(pred_climb_difficulty = mean(pred, na.rm = T)) %>%
+  ungroup() %>%
+  
+  rbind(
+    
+    tibble(race = c("cyclassics hamburg", "cyclassics hamburg",
+                    "gent - wevelgem", "la fleche wallone",
+                    "grand prix cycliste de quebec",
+                    "grand pric cycliste de montreal",
+                    "vattenfall cyclassics",
+                    "gp ouest france - plouay"),
+           stage = c(1,1,1,1,1,1,1,1),
+           year = c(2017, 2016, 2015, 2015,2014,2014,2015,2015),
+           pred_climb_difficulty = c(5,5,11,15,5,12,8,12))
+    
+  )
 
 #
 
@@ -102,7 +249,23 @@ stage_data <- stage_data %>%
     
     read_csv("master-teams.csv"), by = c("team", "year")
     
-  )
+  ) %>%
+  
+  left_join(
+    
+    three_methods, by = c("stage", "race", "year")
+    
+  ) %>%
+  
+  mutate(act_climb_difficulty = ifelse(act_climb_difficulty == 0, NA, act_climb_difficulty)) %>%
+  
+  mutate(pred_climb_difficulty = ifelse(is.na(act_climb_difficulty),
+                                        ifelse(is.na(pred_climb_difficulty), NA, pred_climb_difficulty), 
+                                        ifelse(is.na(pred_climb_difficulty), act_climb_difficulty,
+                                               (act_climb_difficulty + pred_climb_difficulty)/2))) %>%
+  
+  mutate(pred_climb_difficulty = ifelse(race == "grand prix cycliste de quebec", 5,
+                                        ifelse(race == "grand prix cycliste de montreal", 12, pred_climb_difficulty)))
 
 #
 #
@@ -552,7 +715,9 @@ stage_data_perf <- stage_data %>%
   mutate(success_time = max(success_time, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(rel_success = total_seconds - success_time)
+  mutate(rel_success = total_seconds - success_time,
+         points_finish = 1 / (rnk + 1) * 2,
+         points_finish = ifelse(success == 1, points_finish, 0))
 
 #
 #
