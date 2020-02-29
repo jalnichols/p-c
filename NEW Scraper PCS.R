@@ -882,7 +882,7 @@ stage_data <- stage_data_raw %>%
   
   mutate(length = ifelse(year == 2013 & race == 'E3 Prijs Vlaanderen - Harelbeke', 206, length)) %>%
   
-  mutate(rider = str_replace(rider, team, "")) %>%
+  mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))) %>%
   mutate(finished = ifelse(rnk %in% c("DNF", "OTL", "DNS", "NQ", "DSQ"), NA, total_seconds)) %>%
   mutate(total_seconds = ifelse(total_seconds > 30000, NA, total_seconds)) %>%
   
@@ -1074,13 +1074,19 @@ stage_data <- stage_data %>%
       
       # increase KOM points by 25% if summit finish
       mutate(basic_kom_points = model_category,
-             kom_points = ifelse(summit_finish == TRUE, model_category * 1.25, model_category),
+             distance_left = stage_length - end_distance,
+             distance_left = ifelse(distance_left < 0, 0, distance_left),
+             # use a decay model for kom points
+             kom_points = ((-0.3*log(distance_left))+1.7),
+             kom_points = ifelse(kom_points > 1, 1, ifelse(kom_points < 0.1, 0.1, kom_points)),
+             kom_points = kom_points * model_category,
+             #kom_points = ifelse(summit_finish == TRUE, model_category * 1.25, model_category),
              climbing_end = ifelse((stage_length - end_distance) < 20.1, kom_points, NA)) %>%
       
       group_by(race, stage, year) %>%
       summarize(cat_climb_length = sum(end_distance - start_distance, na.rm = T),
                 concentration = max(kom_points, na.rm = T),
-                number_cat_climbs = sum(kom_points >= 1, na.rm = T),
+                number_cat_climbs = sum(kom_points >= 0, na.rm = T),
                 climbing_final_20km = sum(climbing_end, na.rm = T),
                 raw_climb_difficulty = sum(basic_kom_points, na.rm = T),
                 act_climb_difficulty = sum(kom_points, na.rm = T),
