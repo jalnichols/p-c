@@ -912,7 +912,7 @@ stage_characteristics <- all_routes %>%
 # write the altitude feature data to database
 #
 
-dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, overwrite = TRUE)
+#dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, overwrite = TRUE)
 
 #
 #
@@ -1114,6 +1114,10 @@ all_climbs_data <- all_climbs_int %>%
   inner_join(valid_climbs, by = c("climb_name", "url", "race_url"))
 
 #
+
+dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, append = TRUE)
+
+#
 #
 #
 #
@@ -1122,6 +1126,10 @@ all_climbs_data <- all_climbs_int %>%
 
 # GAM has R^2 of 0.76 vs 0.71 for LM
 # including altitude improves R^2 by 0.02 or so over just VAM poly
+
+all_climbs_data <- dbReadTable(con, "fr_all_climbs_intermediate")
+
+#
 
 gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5), 
    
@@ -1141,6 +1149,8 @@ gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5),
             alt = summit - 1000))
 
 write_rds(gam_mod, "model-climb-difficulty.rds")
+
+# LM is deprecated
 
 lm_mod <- lm(category ~ alt + vam_poly, 
                     
@@ -1178,7 +1188,7 @@ climbs_to_write <- all_climbs_data %>%
   
   filter(gradient > 0) %>%
   
-  mutate(model_category = ifelse(model_category < 1.25, 1.25, model_category)) %>%
+  #mutate(model_category = ifelse(model_category < 1.25, 1.25, model_category)) %>%
   
   select(climb_name, race, stage, year, start_distance, end_distance, summit, length, time_climbed, gradient, model_category,
          vam_poly, alt) %>%
