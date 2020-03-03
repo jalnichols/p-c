@@ -182,20 +182,20 @@ all_events <- bind_rows(store_from_schedule) %>%
   unique() %>%
   
   # manually add WC ITT and the Dubai Tour when it was 2.1
-  rbind(
-    
-    tibble::tibble(Date = c("26.09", "20.09", "12.10", "23.09", "24.09", "25.09", "27.09"),
-                   Race = "World Championships ITT",
-                   Winner = c("DENNIS Rohan", "DUMOULIN Tom", "MARTIN Tony", "KIRYIENKA Vasil",
-                              "WIGGINS Bradley", "MARTIN Tony", "DENNIS Rohan"),
-                   Class = "WC",
-                   url = c('race/world-championship-itt/2018', 'race/world-championship-itt/2017', 'race/world-championship-itt/2016',
-                           'race/world-championship-itt/2015', 'race/world-championship-itt/2014', 'race/world-championship-itt/2013',
-                           'race/world-championship-itt/2019'),
-                   year = c(2018, 2017, 2016, 2015, 2014, 2013, 2019)) %>%
-      mutate(type = "Manual") %>%
-      mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2)))))) %>%
-  
+  # rbind(
+  #   
+  #   tibble::tibble(Date = c("26.09", "20.09", "12.10", "23.09", "24.09", "25.09", "27.09"),
+  #                  Race = "World Championships ITT",
+  #                  Winner = c("DENNIS Rohan", "DUMOULIN Tom", "MARTIN Tony", "KIRYIENKA Vasil",
+  #                             "WIGGINS Bradley", "MARTIN Tony", "DENNIS Rohan"),
+  #                  Class = "WC",
+  #                  url = c('race/world-championship-itt/2018', 'race/world-championship-itt/2017', 'race/world-championship-itt/2016',
+  #                          'race/world-championship-itt/2015', 'race/world-championship-itt/2014', 'race/world-championship-itt/2013',
+  #                          'race/world-championship-itt/2019'),
+  #                  year = c(2018, 2017, 2016, 2015, 2014, 2013, 2019)) %>%
+  #     mutate(type = "Manual") %>%
+  #     mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2)))))) %>%
+  # 
   filter(lubridate::year(Date) > start_year) %>%
   
   select(-type) %>%
@@ -297,7 +297,10 @@ tictoc::toc()
 # when bringing these back in, assign the stage winner of One Day Race to be the gc_winner
 
 gc_winners <- bind_rows(gc_list) %>%
-  mutate(gc_winner = value)
+  mutate(gc_winner = value) %>%
+  rbind(tibble(value = "YATES Adam",
+               event = "race/uae-tour/2020",
+               gc_winner = "YATES Adam"))
 
 gc_winners$gc_winner <- iconv(gc_winners$gc_winner, from="UTF-8", to = "ASCII//TRANSLIT")
 
@@ -313,7 +316,19 @@ all_stages <- all_events %>%
   
   inner_join(
     
-    bind_rows(stages_list), by = c("url" = "event")
+    bind_rows(stages_list) %>%
+      # UAE TOUR HAS SOME WEIRDNESS DUE TO CANCELLATION
+      filter(!event == "race/uae-tour/2020") %>%
+      rbind(
+        
+        tibble(value = c('race/uae-tour/2020/stage-1',
+                         'race/uae-tour/2020/stage-2',
+                         'race/uae-tour/2020/stage-3',
+                         'race/uae-tour/2020/stage-4',
+                         'race/uae-tour/2020/stage-5'),
+               event = "race/uae-tour/2020")
+        
+      ), by = c("url" = "event")
     
   ) %>%
   
@@ -333,14 +348,19 @@ all_stages$Winner <- iconv(all_stages$Winner, from="UTF-8", to = "ASCII//TRANSLI
 
 dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE)
 
-# start scraping process
-all_stages <- dbReadTable(con, "pcs_all_stages")
-
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
-dl_html <- FALSE
+dl_html <- TRUE
+
+# start scraping process using old data
+
+if(dl_html == FALSE) {
+  
+  all_stages <- dbReadTable(con, "pcs_all_stages")
+  
+}
 
 #
 # for loop for each stage
@@ -359,7 +379,7 @@ for(r in 1:length(all_stages$value)) {
   f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
   # match existence of f_name in stage directory
-  if(f_name %in% html_stage_dir) {
+  if(f_name %in% html_stage_dir | dl_html == TRUE) {
   
   race_url <- all_stages$url[[r]]
   
@@ -695,6 +715,8 @@ for(f in 1:length(races_list)) {
 
 #
 
+test_dl <- bind_rows(df_list)
+
 dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), append = TRUE, row.names = FALSE)
 
 stage_data <- dbReadTable(con, "pcs_stage_raw")
@@ -709,7 +731,7 @@ stage_data <- dbReadTable(con, "pcs_stage_raw")
 
 game_race_list <- vector("list", 4)
 
-pull_in_game <- c("2016", "2017", "2018", "2019")
+pull_in_game <- c("2020")
 
 for(g in 1:length(pull_in_game)) {
   
@@ -788,6 +810,8 @@ for(g in 1:length(most_picked_list)) {
   
   most_picked_list[[g]] <- res %>%
     
+    mutate(Result = as.character(Result)) %>%
+    
     mutate(Url = all_games$Url[[g]],
            Race = all_games$Race[[g]],
            year = all_games$year[[g]],
@@ -803,7 +827,7 @@ games_most_picked <- bind_rows(most_picked_list) %>%
   
   janitor::clean_names() %>%
   
-  select(picked_rider = rider_team,
+  select(picked_rider = rider,
          number_picks,
          result,
          race,
@@ -811,7 +835,7 @@ games_most_picked <- bind_rows(most_picked_list) %>%
          stage,
          url = url_2)
 
-dbWriteTable(con, "pcs_game_picks", games_most_picked, overwrite = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_game_picks", games_most_picked, append = TRUE, row.names = FALSE)
 
 # make sure to clean up the formatting on these if necessary
 
@@ -1156,6 +1180,7 @@ stage_data <- stage_data %>%
          -stage_number) %>%
   filter(!(race == "brussels cycling classic" & year == 2017)) %>%
   filter(!(race == "la poly normonde")) %>%
+  filter(!(race == 'manavgat side junior')) %>%
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
   mutate(stage = ifelse(race == "dubai tour" & year == 2014 & stage > 4,
                         stage - 4, stage)) %>%
