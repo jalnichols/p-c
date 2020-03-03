@@ -207,16 +207,16 @@ all_races <- intermediate_races %>%
 
 # find data we already have
 
-already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stages") %>%
+already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
   
-  select(url) %>%
+  select(race_url) %>%
   unique()
 
 # only scrape ones we don't have OR skip this if we want to re-scrape
 
 all_races <- all_races %>%
   
-  filter(!(url %in% already_scraped$url))
+  filter(!(url %in% already_scraped$race_url))
 
 #
 #
@@ -259,6 +259,10 @@ for(x in 1:length(all_races$url)) {
 
 stages_list <- stages_list %>%
   discard(function(x) nrow(x) == 0)
+
+# this writes a list of each stage URL
+
+dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
 
 # and for the data frame
 
