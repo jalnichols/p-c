@@ -245,6 +245,10 @@ for(x in 1:length(all_races$url)) {
 stages_list <- stages_list %>%
   discard(function(x) nrow(x) == 0)
 
+# urls for stages
+
+dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
+
 # and for the data frame
 
 all_stages <- all_races %>%
@@ -512,7 +516,10 @@ dbWriteTable(con,
 
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
-clean_climbs <- dbReadTable(con, "fr_scraped_climb_stages") %>%
+clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
+  
+  mutate(year = str_sub(race_url, 48, 51)) %>%
+  
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%F4', 'o'))) %>%   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F4', 'o'))) %>%
@@ -619,7 +626,22 @@ clean_climbs <- dbReadTable(con, "fr_scraped_climb_stages") %>%
 
 pcs <- dbGetQuery(con, "SELECT year, race FROM pcs_stage_raw GROUP BY race, year")
 
-fr <- dbGetQuery(con, "SELECT race, year FROM fr_altitude GROUP BY race, year")
+fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, year, date") %>%
+  mutate(date = str_replace_all(date, "Monday", ""),
+         date = str_replace_all(date, "Tuesday", ""),
+         date = str_replace_all(date, "Wednesday", ""),
+         date = str_replace_all(date, "Thursday", ""),
+         date = str_replace_all(date, "Friday", ""),
+         date = str_replace_all(date, "Saturday", ""),
+         date = str_replace_all(date, "Sunday", ""),
+         date = str_trim(date)) %>%
+  separate(date, c("day", "month", "year2"), sep = " ") %>%
+  inner_join(tibble(month = c("January","February","March","April","May","June",
+                              "July","August","September","October","November","December"),
+                    m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
+  mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
+  select(race, year, date) %>%
+  filter(date <= lubridate::today())
 
 #
 
@@ -737,37 +759,41 @@ all_climbs <- clean_climbs %>%
 # clean routes
 #
 
-all_routes <- dbReadTable(con, "fr_altitude") %>%
+all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%    
+  mutate(distances = as.numeric(dist),
+         alt = as.numeric(alt)) %>%
   
-  unique() %>%
-  
-  mutate(distances = as.numeric(dist)) %>%
-  
-  arrange(year, race, stage, distances) %>%
-  
-  group_by(stage, year, race, distances) %>%
-  mutate(alt = mean(alt, na.rm = T)) %>%
+  group_by(url, dist) %>%
+  summarize(alt = mean(alt, na.rm = T)) %>%
   ungroup() %>%
   
-  unique() %>%
+  inner_join(
+    
+    dbGetQuery(con, "SELECT DISTINCT url, race, race_url, year
+               FROM fr_stage_urls") %>%
+      group_by(race, year, race_url) %>%
+      mutate(stage = rank(year, ties.method = "first")) %>%
+      ungroup(), by = c("url")) %>%
+  
+  arrange(year, race, stage, dist) %>%
   
   group_by(stage, year, race) %>%
-  mutate(points = rank(distances, ties.method = "first"),
-         length = max(distances, na.rm = T),
+  mutate(points = rank(dist, ties.method = "first"),
+         length = max(dist, na.rm = T),
          highest_point = max(alt, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(grades = (alt - lag(alt)) / (1000 * (distances - lag(distances))),
-         grades = ifelse(distances == 0, 0, grades),
+  mutate(grades = (alt - lag(alt)) / (1000 * (dist - lag(dist))),
+         grades = ifelse(dist == 0, 0, grades),
          grades = ifelse(grades > 0.25, 0.25,
                          ifelse(grades < -0.25, -0.25, grades))) %>%
   
-  select(-dist) %>%
   rename(elevations = alt) %>%
   mutate(year = as.numeric(year)) %>%
+  rename(distances = dist) %>%
   
   #link with Pro cycling stats
-
+  
   left_join(
     
     pcs_fr_matches %>%
@@ -784,6 +810,58 @@ all_routes <- dbReadTable(con, "fr_altitude") %>%
                                ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
                                       ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
                                              ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
+# 
+# #
+# # old data model
+# #
+# 
+# all_routes <- dbReadTable(con, "fr_altitude") %>%
+#   
+#   unique() %>%
+#   
+#   mutate(distances = as.numeric(dist)) %>%
+#   
+#   arrange(year, race, stage, distances) %>%
+#   
+#   group_by(stage, year, race, distances) %>%
+#   mutate(alt = mean(alt, na.rm = T)) %>%
+#   ungroup() %>%
+#   
+#   unique() %>%
+#   
+#   group_by(stage, year, race) %>%
+#   mutate(points = rank(distances, ties.method = "first"),
+#          length = max(distances, na.rm = T),
+#          highest_point = max(alt, na.rm = T)) %>%
+#   ungroup() %>%
+#   
+#   mutate(grades = (alt - lag(alt)) / (1000 * (distances - lag(distances))),
+#          grades = ifelse(distances == 0, 0, grades),
+#          grades = ifelse(grades > 0.25, 0.25,
+#                          ifelse(grades < -0.25, -0.25, grades))) %>%
+#   
+#   select(-dist) %>%
+#   rename(elevations = alt) %>%
+#   mutate(year = as.numeric(year)) %>%
+#   
+#   #link with Pro cycling stats
+# 
+#   left_join(
+#     
+#     pcs_fr_matches %>%
+#       select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
+#     
+#   ) %>%
+#   
+#   rename(slug = race,
+#          race = pcs) %>%
+#   
+#   # correct for prologues
+#   mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
+#                         ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
+#                                ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
+#                                       ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
+#                                              ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
 
 # calculate stage characteristic data
 
@@ -906,7 +984,8 @@ stage_characteristics <- all_routes %>%
     
   ) %>%
   
-  filter(!is.na(race))
+  filter(!is.na(race)) %>%
+  filter(total_elev_change < 20000)
 
 #
 # write the altitude feature data to database
