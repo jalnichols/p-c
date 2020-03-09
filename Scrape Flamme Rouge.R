@@ -1214,13 +1214,14 @@ gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5),
    
    # the KOM point values found by measuring max efforts in total watts are
    # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+   # I scale up for cat 2s and up
    
    data = all_climbs_data %>%
      filter(!is.na(category)) %>%
-     mutate(category = ifelse(category == 1, 10, 
-                              ifelse(category == 2, 5, 
+     mutate(category = ifelse(category == 1, 12, 
+                              ifelse(category == 2, 6, 
                                      ifelse(category == 3, 3, 
-                                            ifelse(category == 4, 1.5, 20))))) %>% 
+                                            ifelse(category == 4, 1.5, 24))))) %>% 
      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
      unique() %>%
