@@ -181,6 +181,18 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
+  rbind(
+    
+    tibble(Date = as.Date("2020-03-08"),
+           Race = "Paris - Nice",
+           Winner = "SCHACHMANN Maximilian",
+           Class = "2.UWT",
+           url = c("race/paris-nice/2020"),
+           year = 2020,
+           type = "manual")
+    
+  ) %>%
+  
   # manually add WC ITT and the Dubai Tour when it was 2.1
   # rbind(
   #   
@@ -298,9 +310,9 @@ tictoc::toc()
 
 gc_winners <- bind_rows(gc_list) %>%
   mutate(gc_winner = value) %>%
-  rbind(tibble(value = "YATES Adam",
-               event = "race/uae-tour/2020",
-               gc_winner = "YATES Adam"))
+  rbind(tibble(value = c("YATES Adam", "SCHACHMANN Maximilian"),
+               event = c("race/uae-tour/2020", "race/paris-nice/2020"),
+               gc_winner = c("YATES Adam", "SCHACHMANN Maximilian")))
 
 gc_winners$gc_winner <- iconv(gc_winners$gc_winner, from="UTF-8", to = "ASCII//TRANSLIT")
 
@@ -331,6 +343,8 @@ all_stages <- all_events %>%
       ), by = c("url" = "event")
     
   ) %>%
+  
+  filter(!(value %in% c('race/paris-nice/2020/stage-8'))) %>%
   
   unique() %>%
   
