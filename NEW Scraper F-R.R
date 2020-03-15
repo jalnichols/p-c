@@ -216,7 +216,7 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
 
 all_races <- all_races %>%
   
-  filter(!(url %in% already_scraped$race_url))
+  filter((!(url %in% already_scraped$race_url)) | year == 2020)
 
 #
 #
@@ -264,6 +264,8 @@ stages_list <- stages_list %>%
 
 dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
 
+write_rds(stages_list, "stages-list-f-r.rds")
+
 # and for the data frame
 
 all_stages <- all_races %>%
@@ -295,7 +297,7 @@ all_stages <- dbReadTable(con, "fr_stages") %>%
   
   anti_join(dbGetQuery(con, "SELECT race_url FROM fr_climbs_scraped"), by = c("url" = "race_url")) %>%
   
-  filter(year < 2020)
+  filter(year > 2019)
 
 #
 #
@@ -310,7 +312,7 @@ tictoc::tic()
 
 #
 
-for(y in 519:length(stages_list)) {
+for(y in 1:length(stages_list)) {
   
   if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url) {
     
@@ -489,12 +491,13 @@ for(y in 519:length(stages_list)) {
     
     route_data_to_write <- bind_rows(route_list) %>%
       mutate(url = stages_list[[y]]$url[[z]],
-             race_url = stages_list[[y]]$race_url[[z]],
-             race = stages_list[[y]]$race[[z]],
+             #race_url = stages_list[[y]]$race_url[[z]],
+             #race = stages_list[[y]]$race[[z]],
              #year = stages_list[[y]]$year[[z]],
              #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
-             year = 0,
-             stage = z) %>%
+             #year = 0,
+             #stage = z
+             ) %>%
       
       mutate(dist = as.numeric(dist),
              lat = as.numeric(lat),
