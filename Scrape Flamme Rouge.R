@@ -281,6 +281,8 @@ dbWriteTable(con,
 
 # Scraping Section --------------------------------------------------------
 
+all_stages <- dbReadTable(con, "fr_stages")
+stages_list <- dbReadTable(con, "fr_stage_urls")
 
 tictoc::tic()
 
@@ -703,7 +705,7 @@ pcs_fr_matches <- matches %>%
     
   ) %>%
   
-  filter(year > 2013)
+  filter(year > 2012)
 
 #
 
@@ -810,6 +812,7 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%
                                ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
                                       ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
                                              ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
+
 # 
 # #
 # # old data model
