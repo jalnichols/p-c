@@ -1101,7 +1101,8 @@ mtn_names <- all_climbs_int %>%
 
 fr_worldwide_climbs <- dbReadTable(con, "fr_all_european_climbs") %>%
   
-  mutate(TRACKNAME = str_trim(str_replace(TRACKNAME, "(via D110 - Entraigues)", "")))
+  mutate(TRACKNAME = str_trim(str_replace(TRACKNAME, "(via D110 - Entraigues)", ""))) %>%
+  select(TRACKID, TRACKNAME)
 
 # 
 
@@ -1116,7 +1117,7 @@ matching_with_every_climb <- all_climbs_int %>%
   left_join(
     
     fr_worldwide_climbs %>%
-      select(TRACKID, TRACKNAME) %>%
+
       mutate(merge = "YES"), by = c("merge")
     
   ) %>%
@@ -1143,7 +1144,6 @@ matching_with_every_climb_others <- all_climbs_int %>%
   left_join(
     
     fr_worldwide_climbs %>%
-      select(TRACKID, TRACKNAME) %>%
       mutate(merge = "YES"), by = c("merge")
     
   ) %>%
@@ -1310,7 +1310,7 @@ climbs_to_write <- all_climbs_data %>%
   as_tibble()
   
 
-dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.names = FALSE)
+#dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.names = FALSE)
 
 #
 #
