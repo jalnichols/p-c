@@ -85,3 +85,4 @@ preds <- cbind(
   resid = residuals(basic_mod))
 
 #
+
