@@ -57,7 +57,7 @@ store_from_schedule <- vector("list", length(pull_from_schedule))
 
 pull_years = 1
 
-current_year = 2020
+current_year = year(today())
 start_year = 2019 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
@@ -181,17 +181,17 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  rbind(
-    
-    tibble(Date = as.Date("2020-03-08"),
-           Race = "Paris - Nice",
-           Winner = "SCHACHMANN Maximilian",
-           Class = "2.UWT",
-           url = c("race/paris-nice/2020"),
-           year = 2020,
-           type = "manual")
-    
-  ) %>%
+  # rbind(
+  #   
+  #   tibble(Date = as.Date("2020-03-08"),
+  #          Race = "Paris - Nice",
+  #          Winner = "SCHACHMANN Maximilian",
+  #          Class = "2.UWT",
+  #          url = c("race/paris-nice/2020"),
+  #          year = 2020,
+  #          type = "manual")
+  #   
+  # ) %>%
   
   # manually add WC ITT and the Dubai Tour when it was 2.1
   # rbind(

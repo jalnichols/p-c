@@ -1,0 +1,105 @@
+stage,race,year,climb_name,length,gradient,KM_top,KM_stage,Calc,PV,C_D
+5,tour de romandie,2018,Mont-la-Ville,3.9,4.7,29,183,22,4,1
+,,,Suchy,2.8,4.9,57,183,17,3,1
+,,,Thierrens,5.9,4.1,78,183,25,5,3
+5,tour de romandie,2017,Lac de Sauvablin,5,5.6,6,18,39,31,31
+7,criterium du dauphine,2016,Cote de Monteynard,10.6,4.7,13.5,151,59,12,4
+,,,Cote des Terrasses,2.7,6.9,33.5,151,32,6,3
+,,,Cote de Saint-Laurent-du-Cros,2.8,4.9,83,151,17,7,4
+,,,Col de Moissiere,8.3,8.2,102.5,151,140,84,54
+,,,Col du Noyer,7.5,8.4,139.5,151,132,106,107
+,,,Superdevoluy,3.8,5.9,151,151,33,33,34
+7,paris - nice,2016,Cote de Duranus,5,5,33,134,31,6,4
+,,,Cote de Levens,6.2,5.5,41,134,47,9,7
+,,,Cote de Chateauneuf,5.4,4.4,55.5,134,26,5,6
+,,,Col de Calaison,6.3,4.4,69.5,134,30,12,9
+,,,Cote de Peille,6.5,6.9,86.5,134,77,46,31
+,,,Col d'Eze,7.7,5.7,118.5,134,63,50,47
+8,criterium du dauphine,2014,Cote de Domancy,2.5,9.6,16.5,131.5,58,12,6
+,,,Col des Saises,13.4,5.2,47,131.5,91,18,17
+,,,Cote de Montagny,8,6.5,115.5,131.5,85,68,63
+,,,Montee de Courchevel Le Praz,5.9,6.2,131.5,131.5,57,57,58
+7,criterium du dauphine,2014,Cote des Gets,10.3,4.9,34,160,62,12,5
+,,,Col du Corbier,7.5,7.5,64,160,105,21,16
+,,,Pas de Morgins,6,5.7,88.5,160,49,19,12
+,,,Col de la Forclaz,12.6,8.2,142,160,212,169,151
+,,,Montee de Finhaut-Emosson,10.2,8,160,160,163,163,166
+6,criterium du dauphine,2014,Cote de la Betaz,1.5,4.4,89.5,178.5,7,1,1
+,,,Cote de Marcellax-Albanais,4.6,4.1,159,178.5,19,15,13
+,,,Cote de Ronzy,1.7,6.3,151,178.5,17,10,10
+5,criterium du dauphine,2014,Col de Manse,6.6,6.2,68.5,189.5,63,13,6
+,,,Cote du Motty,2.3,8.1,100,189.5,38,8,6
+,,,Cote du Pont-Haut,2.7,7.4,125.5,189.5,37,15,10
+,,,Col de Malissol,2,8.8,135,189.5,39,15,13
+,,,Col de la Morte,3.1,8.4,149.5,189.5,55,33,25
+,,,Cote de Laffrey,6.3,6.2,169,189.5,61,48,41
+4,criterium du dauphine,2014,Cote de Rosans,1.5,3.6,80.5,167.5,5,1,1
+,,,Col de Manse,9.6,5.2,155,167.5,65,52,52
+3,criterium du dauphine,2014,Cote de Lavet,8.7,4.4,28.5,194,42,8,2
+,,,Col de la Mure,3.8,6.3,148,194,38,23,15
+2,criterium du dauphine,2014,Cote de Saint-Marcel-l'Eclaire,5.5,6.1,5.5,156,51,10,3
+,,,Cote d'Albigny,2.3,5.5,16.5,156,17,3,1
+,,,Cote de Bard,6.3,5.3,90.5,156,44,18,12
+,,,Col de la Croix de l'Homme Mort,5.6,5.6,100.5,156,44,18,15
+,,,Col des Pradeaux,7.3,3.6,115,156,24,14,11
+,,,Col du Beal,13.6,6.6,156,156,148,148,151
+1,criterium du dauphine,2014,None,0,0,0,10.4,0,0,0
+8,criterium du dauphine,2015,Cote de'Henry-sur-Ugine,2.7,6.1,25.5,156.5,25,5,2
+,,,Cote d'Aiton,1.4,6.7,65.5,156.5,16,3,3
+,,,Cote de Saint-Georges-d'Hurtieres,4.6,5.4,76,156.5,34,7,7
+,,,Lacets de Montvernier,3.4,8.2,108,156.5,57,34,22
+,,,Cote de Saint-Andre,3,7,142,156.5,37,29,28
+,,,Modane Valfrejus,8.4,5.7,156.5,156.5,68,68,70
+7,criterium du dauphine,2015,Col de Tamie,8.5,6.4,37.5,155,87,17,8
+,,,Col de la Forclaz,8.1,7.8,60,155,123,25,19
+,,,Col de la Croix Fry,11.3,7,94.5,155,138,55,42
+,,,Col des Aravis,4.3,5.8,103,155,36,14,13
+,,,Cote des Amerands,2.7,11.2,145,155,85,85,71
+,,,Montee du Bettex,7,7.7,155,155,104,104,106
+6,criterium du dauphine,2015,Rampe du Motty,2.3,8.3,20,183,40,8,2
+,,,Cote du Barrage du Sautet,2.2,4.4,28.5,183,11,2,0
+,,,Col de la Croix-Haute,5.6,5.9,67.5,183,49,10,5
+,,,Col de Grimone,4.1,6.1,75,183,38,8,4
+,,,Col du Rousset,13.8,5.4,132,183,101,40,37
+,,,Villard de Lans,2.2,6.2,183,183,21,21,22
+5,criterium du dauphine,2015,Col des Leques,6,5.3,40,161,42,8,4
+,,,Col de Toutes Aures,6.1,3.1,67,161,15,3,2
+,,,Col de la Colle Saint-Michel,11,5.2,96,161,74,30,21
+,,,Col d'Allos,14.4,5.5,139,161,109,87,72
+,,,Pra Loup,6.2,6.5,161,161,65,65,67
+4,criterium du dauphine,2015,Col de Lescou,3.9,4.7,123,228,22,4,3
+,,,Col de Pre-Guittard,2.5,4,127.5,228,10,2,1
+,,,Cote de la Marquise,1.3,6.7,215.5,228,15,12,12
+2,criterium du dauphine,2015,Col du Chat,3,6.4,3,173,31,6,1
+,,,Col du Cuvery,9.5,5.9,74,173,83,17,12
+1,criterium du dauphine,2015,Cote d'Esserts-Blay,1.5,5,17,131.5,9,2,1
+,,,Cote du Villard,1,8,36.5,131.5,16,3,2
+,,,Cote du Cruet,2,3.9,40,131.5,8,2,1
+,,,Cote du Villard,1,8,56,131.5,16,3,4
+,,,Cote du Villard,1,8,72,131.5,16,6,5
+,,,Cote du Villard,1,8,88,131.5,16,10,7
+,,,Cote du Villard,1,8,103.5,131.5,16,10,9
+,,,Cote du Villard,1,8,119.5,131.5,16,13,13
+5,volta ciclista a catalunya,2015,Alt de Lilla,4.1,4.8,184,195,24,19,19
+,,,Belltall,8,3,162,195,18,11,9
+4,volta ciclista a catalunya,2015,Alt de Bracons,10.5,4.9,60,188.4,63,13,5
+,,,Alt de Coubet,10,5.5,92,188.4,76,15,11
+,,,Alt de la Creueta,21,4.5,147,188.4,106,64,47
+,,,La Molina,5.6,5.8,188.4,188.4,47,47,48
+2,volta ciclista a catalunya,2015,Alt de Can Bordoi,2.8,5.3,27,191.8,20,4,1
+,,,Alt de Montagut,2.1,4.5,183,191.8,11,11,9
+,,,Uncategorized,4.8,4.2,185.8,191.8,21,21,19
+1,volta ciclista a catalunya,2015,Alt de Viladrau,11.8,3.4,104,185.2,34,7,7
+,,,Alt de Coll Formic,7.8,5.2,134,185.2,53,21,19
+,,,Alt de Collsacreu,7.4,3,172,185.2,17,13,13
+6,volta ciclista a catalunya,2015,Alt de Prades,11,4,89,194.1,44,9,5
+,,,Alt del Coll Roig,3.7,5,161,194.1,23,14,12
+7,volta ciclista a catalunya,2015,Alt de Castellbisbal,3.7,3.5,19,126.6,11,2,1
+,,,Alt de Montjuic,2,5.7,73.6,126.6,16,6,6
+,,,Alt de Montjuic,2,5.7,80.6,126.6,16,10,7
+,,,Alt de Montjuic,2,5.7,87.6,126.6,16,10,8
+,,,Alt de Montjuic,2,5.7,94.6,126.6,16,10,9
+,,,Alt de Montjuic,2,5.7,101.6,126.6,16,13,10
+,,,Alt de Montjuic,2,5.7,108.6,126.6,16,13,12
+,,,Alt de Montjuic,2,5.7,115.6,126.6,16,13,13
+,,,Alt de Montjuic,2,5.7,122.6,126.6,16,16,15
