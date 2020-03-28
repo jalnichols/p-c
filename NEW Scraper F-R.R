@@ -176,8 +176,11 @@ retain_ids <- c(
   
   270, 173, 302, 102, 166, 167, 171, 260, 35, 76, 77, 78, 97,
   
-  # 1.1 Euros in 2019
+  # added remaining 1.1 races on 2020-03-26
   
+  72,74,140,146,147,156,157,267,288,319,329,689,690,759,
+  
+  # 1.1 Euros in 2019
   
   520, 749, 139, 145, 152, 691, 352, 353, 316, 802, 351, 85,
   346, 354, 348, 350, 347, 787, 341, 360, 344, 342, 340, 343, 
@@ -188,6 +191,19 @@ retain_ids <- c(
   # other multi-day Tours at 2.1 European level which are equal to weaker 2.HC European races
   
   209, 449, 71, 314, 151,
+  
+  # remaining 2.1s from 2020-03-26
+  
+  241,284,303,305,306,307,312,333,336,338,339,361,372,468,494,556,576,799,873,
+  
+  # tokyo, qinghai lake, hainan, colorado classic, saudi tour
+  838, 95,94,183,1253,
+  
+  # tour de l'avenir
+  185, 
+  
+  # #.2s which are high ranked on PCS
+  539, 744, 479, 472, 518, 532, 895,
   
   # WC / ITT
   
@@ -216,7 +232,7 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
 
 all_races <- all_races %>%
   
-  filter((!(url %in% already_scraped$race_url)) | year == 2020)
+  filter((!(url %in% already_scraped$race_url)))
 
 #
 #
