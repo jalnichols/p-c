@@ -1068,6 +1068,12 @@ f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year))
 
+supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
+  filter(!(race == "criterium du dauphine" & year == 2014)) %>%
+  filter(!(race == "volta ciclista a catalunya" & year == 2015)) %>%
+  filter(!(race == "tour de romandie" & year == 2018)) %>%
+  filter(!(race == "paris - nice" & year == 2016))
+
 #
 # combine F-R data with PCS data
 #
@@ -1093,10 +1099,61 @@ stage_data <- stage_data %>%
     f_r_climbs %>%
       
       mutate(race = tolower(race)) %>%
-
+      
       left_join(f_r_data %>%
                   select(race, stage, year, stage_length = length) %>%
                   mutate(race = tolower(race)), by = c("race", "stage", "year")) %>%
+      
+      # add in specific climbs I've gathered
+      rbind(
+        
+        cbind(supp_climbs %>%
+                filter(is.na(category)) %>%
+                fill(stage, .direction = "down") %>%
+                fill(race, .direction = "down") %>%
+                fill(year, .direction = "down") %>%
+                mutate(gradient = gradient / 100,
+                       vam_poly = (((gradient)^2)*length),
+                       alt = (20641 * vam_poly)-722,
+                       start_distance = KM_top - length,
+                       summit = alt + 1000,
+                       time_climbed = NA),
+              model_category = mgcv::predict.gam(read_rds('model-climb-difficulty.rds'),
+                                                 supp_climbs %>%
+                                                   filter(is.na(category)) %>%
+                                                   fill(stage, .direction = "down") %>%
+                                                   fill(race, .direction = "down") %>%
+                                                   fill(year, .direction = "down") %>%
+                                                   mutate(gradient = gradient / 100, 
+                                                          vam_poly = ((gradient^2)*length),
+                                                          alt = (20641 * vam_poly)-722))) %>%
+          filter(model_category > 1) %>%
+          rename(stage_length = KM_stage,
+                 end_distance = KM_top) %>%
+          select(-category)) %>%
+      
+      # when I just have category type, extrapolate
+      rbind(
+        supp_climbs %>%
+          filter(!is.na(category)) %>%
+          fill(stage, .direction = "down") %>%
+          fill(race, .direction = "down") %>%
+          fill(year, .direction = "down") %>%
+          mutate(model_category = ifelse(
+            category == "5", 16,
+            ifelse(category == "1", 10,
+                   ifelse(category == "2", 5,
+                          ifelse(category == "3", 2.5,
+                                 ifelse(category == "4", 1.25, 0)))))) %>%
+          filter(model_category > 1) %>%
+          rename(stage_length = KM_stage,
+                 end_distance = KM_top) %>%
+          select(-category) %>%
+          mutate(start_distance = NA,
+                 time_climbed = NA,
+                 summit = NA,
+                 alt = NA,
+                 vam_poly = NA)) %>%
       
       group_by(stage, race, year) %>%
       mutate(position_highest = max(model_category, na.rm = T),
