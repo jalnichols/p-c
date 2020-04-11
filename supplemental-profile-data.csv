@@ -265,3 +265,82 @@ stage,race,year,climb_name,length,gradient,KM_top,KM_stage,category
 3,santos tour down under,2015,Paracombe,1.2,9.3,143,143,NA
 5,santos tour down under,2014,Willunga Hill,2.9,7.4,129,151.5,NA
 ,,,Willunga Hill,2.9,7.4,151.5,151.5,NA
+4,tour de la provence,2019,La Cride,2.7,5.7,149.5,162.2,NA
+,,,Unknown,4.2,4.8,101,162.2,NA
+,,,Unknown,4.4,3.8,65,162.2,NA
+,,,Unknown,4.3,4.5,43,162.2,NA
+,,,Unknown,1.8,6.1,32.5,162.2,NA
+,,,Unknown,5.3,4.8,21,162.2,NA
+3,tour de la provence,2019,Le Brulat,3.1,75.5,170,181,NA
+,,,Le Brulat,3.1,75.5,140,181,NA
+,,,Le Brulat,3.1,75.5,110,181,NA
+,,,Le Brulat,3.1,75.5,80,181,NA
+,,,Le Brulat,3.1,75.5,50,181,NA
+2,tour de la provence,2019,Les Cretes,3.1,9.4,179.5,192,NA
+,,,La Coutronne,9,4.6,135.5,192,NA
+,,,Le Petit Galibier,7.2,3.7,106.5,192,NA
+,,,Montee d'Aurons,5.4,3.9,28,192,NA
+1,world-championship-itt,2018,Gnadenwald,5,6.8,35,52.1,NA
+1,circuito de getxo,2018,KOM,0.8,6.4,19,190,NA
+,,,KOM,0.8,6.4,38,190,NA
+,,,KOM,0.8,6.4,57,190,NA
+,,,KOM,0.8,6.4,76,190,NA
+,,,KOM,0.8,6.4,95,190,NA
+,,,KOM,0.8,6.4,114,190,NA
+,,,KOM,0.8,6.4,133,190,NA
+,,,KOM,0.8,6.4,152,190,NA
+,,,KOM,0.8,6.4,171,190,NA
+,,,KOM,0.8,6.4,190,190,NA
+5,volta ao algarve em bicicleta ,2018,Malhao,,,173.5,173.5,2
+,,,Vermelhos,,,153,173.5,3
+,,,Malhao,,,132.5,173.5,2
+,,,Alto da Ameixieira,,,99.5,173.5,3
+,,,Picota,,,63,173.5,3
+4,volta ao algarve em bicicleta ,2018,Neves,,,98,199,4
+,,,Santa Marta,,,121,199,4
+1,volta ao algarve em bicicleta,2018,Aldeia dos Matos,,,44,193,4
+,,,Eira da Cevada,,,84.5,193,3
+1,trofeo palma,2018,Coll de sa Creu,,,126,160,3
+4,tour de l'ain,2017,Cote de Champfromier,,,23.5,110,2
+,,,Col de Berentin,,,47,110,1
+,,,Col du Grand Colombier,,,88.5,110,5
+5,settimana internazionale coppi e bartali,2017,Valico di Fazzano,1.9,9.9,150,160,NA
+,,,Valico di Fazzano,1.9,9.9,127,160,NA
+,,,Valico di Fazzano,1.9,9.9,104,160,NA
+,,,Valico di Fazzano,1.9,9.9,81,160,NA
+,,,Montebabbio,4.9,4.6,50,160,NA
+,,,Montebabbio,4.9,4.6,21,160,NA
+3,settimana internazionale coppi e bartali,2017,Monte Tiffi,3.4,7.8,77,130,NA
+,,,Monte Tiffi,3.4,7.8,99,130,NA
+,,,Monte Tiffi,3.4,7.8,121,130,NA
+,,,Torriana,2.1,9.9,50,130,NA
+1,settimana internazionale coppi e bartali,2017,KOM,5.2,2.3,81,98,NA
+,,,KOM,5.2,2.3,67,98,NA
+,,,KOM,5.2,2.3,53,98,NA
+7,amgen tour of california,2016,Coleman Valley Rd,2.5,7.9,123,175.5,NA
+,,,Seaview Rd,1.8,7.2,87.5,175.5,NA
+,,,Hauser Bridge Rd,2.8,8.2,79,175.5,NA
+,,,King Ridge Rd,1.3,8.5,61.5,175.5,NA
+,,,King Ridge Rd,1.9,11.6,57,175.5,NA
+,,,Harrison Grade Rd,1.9,7.6,19.5,175.5,NA
+5,amgen tour of california,2016,South Lake Tahoe,1.7,5.9,212,212,NA
+,,,Carson Pass,4.7,4.6,164.5,212,NA
+,,,Kirkwood,3.9,6.3,153,212,NA
+4,amgen tour of california,2016,Pacific Hwy 1,2.8,4.3,72,217,NA
+,,,Pacific Hwy 1,3,4.7,77,217,NA
+,,,Posts,2.2,5.4,142,217,NA
+,,,Laureles Grade,5.5,5.7,209,217,NA
+,,,Mazda Raceway,1.1,10.3,214.5,217,NA
+3,amgen tour of california,2016,Portrero Rd,1.4,6.9,7.5,167.5,NA
+,,,Westlake Blvd,3.2,7.8,21.5,167.5,NA
+,,,Casitas Pass,3,5.7,121,167.5,NA
+,,,Gibraltar Road,12,8,167.5,167.5,NA
+2,amgen tour of california,2016,Angeles Crest Hwy,14.1,5.1,22.5,148.5,NA
+,,,Upper Big Tujunga Canyon,7.9,4.5,52,148.5,NA
+,,,Little Tujunga Canyon,5,6.9,111.5,148.5,NA
+,,,Little Tujunga Canyon,2.3,7.6,118.5,148.5,NA
+1,amgen tour of california,2016,Honey Springs Rd,9.5,5.5,88,175,NA
+1,gp industria & artigianato ,2016,Fornello,1.3,8.9,103,200,NA
+,,,Fornello,1.3,8.9,130,200,NA
+,,,Fornello,1.3,8.9,157,200,NA
+,,,Fornello,1.3,8.9,184,200,NA
