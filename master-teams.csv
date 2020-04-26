@@ -5,55 +5,67 @@ year,team,master_team
 2017,AG2R La Mondiale,AG2R
 2018,AG2R La Mondiale,AG2R
 2019,AG2R La Mondiale,AG2R
-2019,Corendon - Circus,Alpecin-Fenix
+2020,AG2R La Mondiale,AG2R
 2018,Corendon-Circus,Alpecin-Fenix
-2017,Androni - Sidermec - Bottecchia,Androni
+2019,Corendon - Circus,Alpecin-Fenix
+2020,Alpecin-Fenix,Alpecin-Fenix
+2014,Androni Giocattoli - Venezuela,Androni
 2015,Androni Giocattoli - Sidermec,Androni
 2016,Androni Giocattoli - Sidermec,Androni
+2017,Androni - Sidermec - Bottecchia,Androni
 2018,Androni Giocattoli - Sidermec,Androni
 2019,Androni Giocattoli - Sidermec,Androni
-2014,Androni Giocattoli - Venezuela,Androni
+2020,Androni Giocattoli - Sidermec,Androni
 2017,Aqua Blue Sport,Aqua Blue Sport
 2018,Aqua Blue Sport,Aqua Blue Sport
-2019,Team Arkéa Samsic,Arkea Samsic
-2017,Fortuneo - Oscaro,Arkea Samsic
 2016,Fortuneo - Vital Concept,Arkea Samsic
+2017,Fortuneo - Oscaro,Arkea Samsic
 2018,Team Fortuneo - Samsic,Arkea Samsic
+2019,Team Arkéa Samsic,Arkea Samsic
+2020,Team Arkéa Samsic,Arkea Samsic
 2014,Astana Pro Team,Astana
 2015,Astana Pro Team,Astana
 2016,Astana Pro Team,Astana
 2017,Astana Pro Team,Astana
 2018,Astana Pro Team,Astana
 2019,Astana Pro Team,Astana
-2019,Bahrain Merida,Bahrain McLaren
+2020,Astana Pro Team,Astana
 2017,Bahrain Merida Pro Cycling Team,Bahrain McLaren
 2018,Bahrain Merida Pro Cycling Team,Bahrain McLaren
+2019,Bahrain Merida,Bahrain McLaren
+2020,Bahrain - McLaren,Bahrain McLaren
+2014,Bardiani - CSF Pro Team,Bardiani
+2015,Bardiani - CSF Pro Team,Bardiani
 2016,Bardiani - CSF,Bardiani
 2017,Bardiani - CSF,Bardiani
 2018,Bardiani - CSF,Bardiani
 2019,Bardiani - CSF,Bardiani
-2014,Bardiani - CSF Pro Team,Bardiani
-2015,Bardiani - CSF Pro Team,Bardiani
+2020,Bardiani-CSF-Faizanè,Bardiani
 2014,BMC Racing Team,BMC Racing
 2015,BMC Racing Team,BMC Racing
 2016,BMC Racing Team,BMC Racing
 2017,BMC Racing Team,BMC Racing
 2018,BMC Racing Team,BMC Racing
 2019,CCC Team,BMC Racing
+2014,Team NetApp – Endura,BORA
 2015,Bora - Argon 18,BORA
 2016,Bora - Argon 18,BORA
 2017,BORA - hansgrohe,BORA
 2018,BORA - hansgrohe,BORA
 2019,BORA - hansgrohe,BORA
+2020,BORA - hansgrohe,BORA
+2017,Burgos-BH,Burgos
 2018,Burgos-BH,Burgos
 2019,Burgos-BH,Burgos
-2017,Burgos-BH,Burgos
+2020,Burgos-BH,Burgos
 2014,Caja Rural - Seguros RGA,Caja Rural
+2015,Caja Rural - Seguros RGA,Caja Rural
 2016,Caja Rural - Seguros RGA,Caja Rural
 2017,Caja Rural - Seguros RGA,Caja Rural
 2018,Caja Rural - Seguros RGA,Caja Rural
 2019,Caja Rural - Seguros RGA,Caja Rural
-2015,Caja Rural - Seguros RGA,Caja Rural
+2020,Caja Rural - Seguros RGA,Caja Rural
+2020,CCC Team,BMC Racing
 2015,CCC Sprandi Polkowice,CCC Poland
 2016,CCC Sprandi Polkowice,CCC Poland
 2017,CCC Sprandi Polkowice,CCC Poland
@@ -64,78 +76,89 @@ year,team,master_team
 2017,"Cofidis, Solutions Crédits",Cofidis
 2018,"Cofidis, Solutions Crédits",Cofidis
 2019,"Cofidis, Solutions Crédits",Cofidis
-2019,Delko Marseille Provence,Delko
+2020,"Cofidis, Solutions Crédits",Cofidis
 2016,Delko Marseille Provence KTM,Delko
 2017,Delko Marseille Provence KTM,Delko
 2018,Delko Marseille Provence KTM,Delko
+2019,Delko Marseille Provence,Delko
+2014,Team Europcar,Direct Energie
+2015,Team Europcar,Direct Energie
 2016,Direct Energie,Direct Energie
 2017,Direct Energie,Direct Energie
 2018,Direct Energie,Direct Energie
 2019,Direct Energie,Direct Energie
 2019,Team Total Direct Energie,Direct Energie
-2014,Team Europcar,Direct Energie
-2015,Team Europcar,Direct Energie
+2020,Team Total Direct Energie,Direct Energie
 2014,Cannondale,EF Education First
+2014,Garmin Sharp,EF Education First
+2015,Team Cannondale - Garmin,EF Education First
 2016,Cannondale Pro Cycling Team,EF Education First
 2016,Cannondale-Drapac Pro Cycling Team,EF Education First
 2017,Cannondale-Drapac Pro Cycling Team,EF Education First
-2019,EF Education First,EF Education First
-2015,Team Cannondale - Garmin,EF Education First
 2018,Drapac EF Cycling,EF Education First
-2014,Garmin Sharp,EF Education First
 2018,Team EF Education First-Drapac p/b Cannondale,EF Education First
+2019,EF Education First,EF Education First
+2020,EF Pro Cycling,EF Education First
+2017,Euskadi Basque Country - Murias,Euskadi
 2018,Euskadi - Murias,Euskadi
 2019,Euskadi Basque Country - Murias,Euskadi
-2017,Euskadi Basque Country - Murias,Euskadi
+2014,FDJ.fr,FDJ
 2015,FDJ,FDJ
 2016,FDJ,FDJ
 2017,FDJ,FDJ
-2014,FDJ.fr,FDJ
 2018,Groupama - FDJ,FDJ
 2019,Groupama - FDJ,FDJ
+2020,Groupama - FDJ,FDJ
 2016,Gazprom-RusVelo,Gazprom
 2017,Gazprom-RusVelo,Gazprom
 2018,Gazprom-RusVelo,Gazprom
 2019,Gazprom-RusVelo,Gazprom
-2019,Arapahoe - Hincapie p/b BMC,Hincapie
-2018,Holowesko - Citadel p/b Arapahoe Resources,Hincapie
+2020,Gazprom - RusVelo,Gazprom
 2017,Holowesko-Citadel Racing Team,Hincapie
+2018,Holowesko - Citadel p/b Arapahoe Resources,Hincapie
+2019,Arapahoe - Hincapie p/b BMC,Hincapie
 2014,IAM Cycling,IAM Cycling
 2015,IAM Cycling,IAM Cycling
 2016,IAM Cycling,IAM Cycling
 2017,Israel Cycling Academy,Israel Cycling Academy
 2018,Israel Cycling Academy,Israel Cycling Academy
 2019,Israel Cycling Academy,Israel Cycling Academy
+2020,Israel Start-Up Nation,Israel Cycling Academy
+2020,Team Jumbo-Visma,Jumbo-Visma
 2014,Belkin-Pro Cycling Team,Jumbo-Visma
-2019,Team Jumbo-Visma,Jumbo-Visma
 2015,Team LottoNL-Jumbo,Jumbo-Visma
 2016,Team LottoNL-Jumbo,Jumbo-Visma
 2017,Team LottoNL-Jumbo,Jumbo-Visma
 2018,Team LottoNL-Jumbo,Jumbo-Visma
+2019,Team Jumbo-Visma,Jumbo-Visma
 2014,Team Katusha,Katusha
 2015,Team Katusha,Katusha
 2016,Team Katusha,Katusha
 2017,Team Katusha Alpecin,Katusha
 2018,Team Katusha Alpecin,Katusha
 2019,Team Katusha Alpecin,Katusha
+2014,Lotto Belisol,Lotto Soudal
 2015,Lotto Soudal,Lotto Soudal
 2016,Lotto Soudal,Lotto Soudal
 2017,Lotto Soudal,Lotto Soudal
 2018,Lotto Soudal,Lotto Soudal
 2019,Lotto Soudal,Lotto Soudal
-2018,Mitchelton-Scott,Mitchelton-Scott
-2019,Mitchelton-Scott,Mitchelton-Scott
+2020,Lotto Soudal,Lotto Soudal
 2014,Orica GreenEDGE,Mitchelton-Scott
 2015,Orica GreenEDGE,Mitchelton-Scott
 2016,Orica GreenEDGE,Mitchelton-Scott
 2016,ORICA-BikeExchange,Mitchelton-Scott
 2017,ORICA-Scott,Mitchelton-Scott
+2018,Mitchelton-Scott,Mitchelton-Scott
+2019,Mitchelton-Scott,Mitchelton-Scott
+2020,Mitchelton-Scott,Mitchelton-Scott
 2014,Movistar Team,Movistar
 2015,Movistar Team,Movistar
 2016,Movistar Team,Movistar
 2017,Movistar Team,Movistar
 2018,Movistar Team,Movistar
 2019,Movistar Team,Movistar
+2020,Movistar Team,Movistar
 2015,Nippo - Vini Fantini,Nippo Vini Fantini
 2016,Nippo - Vini Fantini,Nippo Vini Fantini
 2017,Nippo - Vini Fantini,Nippo Vini Fantini
@@ -152,65 +175,74 @@ year,team,master_team
 2017,Team Dimension Data,NTT
 2018,Team Dimension Data,NTT
 2019,Team Dimension Data,NTT
-2019,Deceuninck - Quick Step,Quick Step
+2020,NTT Pro Cycling,NTT
 2014,Omega Pharma - Quick-Step,Quick Step
-2017,Quick-Step Floors,Quick Step
-2018,Quick-Step Floors,Quick Step
 2015,Etixx - Quick Step,Quick Step
 2016,Etixx - Quick Step,Quick Step
-2018,Rally Cycling,Rally
+2017,Quick-Step Floors,Quick Step
+2018,Quick-Step Floors,Quick Step
+2019,Deceuninck - Quick Step,Quick Step
+2020,Deceuninck - Quick Step,Quick Step
 2017,Rally Cycling,Rally
+2018,Rally Cycling,Rally
 2019,Rally UHC Cycling,Rally
-2018,Riwal CeramicSpeed Cycling Team,Riwal
 2017,Riwal Platform Cycling Team,Riwal
+2018,Riwal CeramicSpeed Cycling Team,Riwal
 2019,Riwal Readynez Cycling Team,Riwal
-2019,Roompot - Charles,Roompot
-2017,Roompot - Nederlandse Loterij,Roompot
-2018,Roompot - Nederlandse Loterij,Roompot
 2015,Roompot - Oranje Peloton,Roompot
 2016,Roompot - Oranje Peloton,Roompot
-2016,Tinkoff,Saxo Bank
+2017,Roompot - Nederlandse Loterij,Roompot
+2018,Roompot - Nederlandse Loterij,Roompot
+2019,Roompot - Charles,Roompot
 2014,Tinkoff - Saxo,Saxo Bank
 2015,Tinkoff - Saxo,Saxo Bank
-2019,Team INEOS,Sky
+2016,Tinkoff,Saxo Bank
 2014,Team Sky,Sky
 2015,Team Sky,Sky
 2016,Team Sky,Sky
 2017,Team Sky,Sky
 2018,Team Sky,Sky
+2019,Team INEOS,Sky
 2019,Team Sky,Sky
-2017,Sport Vlaanderen - Baloise,Sport Vlaanderen
-2018,Sport Vlaanderen - Baloise,Sport Vlaanderen
-2019,Sport Vlaanderen - Baloise,Sport Vlaanderen
+2020,Team INEOS,Sky
 2014,Topsport Vlaanderen - Baloise,Sport Vlaanderen
 2015,Topsport Vlaanderen - Baloise,Sport Vlaanderen
 2016,Topsport Vlaanderen - Baloise,Sport Vlaanderen
+2017,Sport Vlaanderen - Baloise,Sport Vlaanderen
+2018,Sport Vlaanderen - Baloise,Sport Vlaanderen
+2019,Sport Vlaanderen - Baloise,Sport Vlaanderen
+2014,Team Giant - Shimano,Sunweb
+2015,Team Giant - Alpecin,Sunweb
+2016,Team Giant - Alpecin,Sunweb
 2017,Team Sunweb,Sunweb
 2018,Team Sunweb,Sunweb
 2019,Team Sunweb,Sunweb
-2015,Team Giant - Alpecin,Sunweb
-2016,Team Giant - Alpecin,Sunweb
-2014,Team Giant - Shimano,Sunweb
+2020,Team Sunweb,Sunweb
+2014,Trek Factory Racing,Trek
+2015,Trek Factory Racing,Trek
 2016,Trek - Segafredo,Trek
 2017,Trek - Segafredo,Trek
 2018,Trek - Segafredo,Trek
 2019,Trek - Segafredo,Trek
-2014,Trek Factory Racing,Trek
-2015,Trek Factory Racing,Trek
-2017,UAE Team Emirates,UAE Team
-2018,UAE-Team Emirates,UAE Team
-2019,UAE-Team Emirates,UAE Team
+2020,Trek - Segafredo,Trek
+2020,UAE-Team Emirates,UAE Team
 2014,Lampre - Merida,UAE Team
 2015,Lampre - Merida,UAE Team
 2016,Lampre - Merida,UAE Team
+2017,UAE Team Emirates,UAE Team
+2018,UAE-Team Emirates,UAE Team
+2019,UAE-Team Emirates,UAE Team
 2017,Uno-X Hydrogen Development Team,Uno-X
-2019,Uno-X Norwegian Development Team,Uno-X
 2018,Uno-X Norwegian Development Team,Uno-X
-2019,Vital Concept - B&B Hotels,Vital Concept
+2019,Uno-X Norwegian Development Team,Uno-X
+2020,NIPPO DELKO One Provence,Nippo Vini Fantini
 2018,Vital Concept Cycling Club,Vital Concept
-2019,Wallonie-Bruxelles,Wallonie Bruxelles
-2018,WB Aqua Protect Veranclassic,Wallonie Bruxelles
+2019,Vital Concept - B&B Hotels,Vital Concept
+2020,B&B Hotels - Vital Concept p/b KTM,Vital Concept
 2017,WB Veranclassic Aqua Protect,Wallonie Bruxelles
+2018,WB Aqua Protect Veranclassic,Wallonie Bruxelles
+2019,Wallonie-Bruxelles,Wallonie Bruxelles
+2020,Circus - Wanty Gobert,Wanty Gobert
 2014,Wanty - Groupe Gobert,Wanty Gobert
 2015,Wanty - Groupe Gobert,Wanty Gobert
 2016,Wanty - Groupe Gobert,Wanty Gobert
@@ -220,503 +252,504 @@ year,team,master_team
 2017,Team Wiggins,Wiggins
 2018,Team Wiggins,Wiggins
 2019,Team Wiggins Le Col,Wiggins
+2014,Bretagne - Séché Environnement,X
+2014,Neri Sottoli,X
+2014,Team Colombia,X
+2015,Bretagne - Séché Environnement,X
+2015,Cult Energy Pro Cycling,X
+2015,Southeast,X
+2015,Team Colombia,X
+2015,UnitedHealthcare Pro Cycling Team,X
+2016,Canada,X
+2016,Poland,X
+2016,Drapac Professional Cycling,X
+2016,One Pro Cycling,X
+2016,Team Roth,X
+2016,UniSA-Australia,X
+2016,VERVA ActiveJet Pro Cycling Team,X
+2016,Wilier - Southeast,X
 2017,Albania,X
 2017,Argentina,X
-2019,Argentina,X
-2018,Argentina,X
-2018,Australia,X
 2017,Australia,X
-2018,Austria,X
 2017,Austria,X
 2017,Azerbaijan,X
-2018,Belarus,X
 2017,Belarus,X
 2017,Belgium,X
-2018,Belgium,X
-2019,Belgium,X
 2017,Brazil,X
-2019,Brazil,X
-2016,Canada,X
 2017,Canada,X
-2018,Canada,X
-2019,Canada,X
 2017,Chile,X
-2019,Chile,X
-2018,Colombia,X
-2019,Colombia,X
 2017,Colombia,X
-2019,Cuba,X
-2018,Czech Republic,X
 2017,Czech Republic,X
 2017,Denmark,X
-2018,Denmark,X
-2019,Denmark,X
-2019,Ecuador,X
 2017,Eritrea,X
-2018,Estonia,X
-2018,Ethiopia,X
 2017,France,X
-2018,France,X
-2019,France,X
 2017,Germany,X
-2018,Germany,X
-2019,Germany,X
-2019,Great Britain,X
 2017,Great Britain,X
-2018,Great Britain,X
 2017,Hong Kong China,X
-2018,Hongkong,X
-2018,Hungary,X
-2019,Hungary,X
-2018,Indonesia,X
-2018,Ireland,X
 2017,Ireland,X
 2017,Italy,X
-2018,Italy,X
-2019,Italy,X
-2018,Japan,X
-2019,Japan,X
 2017,Japan,X
-2018,Kazakhstan,X
 2017,Kazakhstan,X
-2018,Latvia,X
-2018,Lithuania,X
 2017,Lithuania,X
-2019,Luxembourg,X
-2018,Luxembourg,X
 2017,Luxembourg,X
 2017,Mexico,X
-2019,Mexico,X
 2017,Netherlands,X
-2018,Netherlands,X
-2018,New Zealand,X
 2017,New Zealand,X
-2018,Norway,X
 2017,Norway,X
 2017,Pakistan,X
-2019,Peru,X
-2016,Poland,X
 2017,Poland,X
-2018,Poland,X
-2019,Poland,X
-2018,Portugal,X
 2017,Portugal,X
-2018,Romania,X
 2017,Romania,X
 2017,Russia,X
-2018,Russia,X
-2018,Rwanda,X
-2019,Rwanda,X
 2017,Rwanda,X
-2018,Serbia,X
-2019,Serbia,X
 2017,Singapore,X
-2019,Slovakia,X
-2018,Slovakia,X
 2017,Slovenia,X
-2018,Slovenia,X
-2019,Slovenia,X
 2017,South Africa,X
 2017,Spain,X
-2018,Spain,X
-2019,Spain,X
-2018,Sweden,X
 2017,Sweden,X
-2019,Switzerland,X
-2018,Switzerland,X
-2018,Syria,X
 2017,Syria,X
 2017,Turkey,X
-2018,Turkey,X
-2019,Turkey,X
-2018,Ukraine,X
 2017,Ukraine,X
 2017,United Arab Emirates,X
-2018,United Arab Emirates,X
-2019,United States,X
-2018,United States,X
 2017,United States,X
 2017,Uruguay,X
-2019,Uruguay,X
-2018,Virgin Islands,X
-2018,Dimension Data for Qhubeka,X
-2019,Dimension Data for Qhubeka,X
 2017,Dimension Data for Qhubeka,X
 2017,0711|Cycling,X
-2019,303Project,X
-2018,303Project,X
-2018,7 Eleven - Cliqq Roadbike Philippines,X
-2019,AC Sparta Praha,X
 2017,AC Sparta Praha,X
-2018,AC Sparta Praha,X
 2017,Adria Mobil,X
-2018,Adria Mobil,X
-2019,Adria Mobil,X
-2019,Aevolo,X
-2018,Aevolo,X
 2017,AGO-Aqua Service,X
-2018,AGO-Aqua Service,X
 2017,Agrupacion Virgen De Fatima,X
-2018,Agrupacion Virgen De Fatima,X
-2019,Agrupacion Virgen De Fatima,X
-2018,Akros - Renfer SA,X
-2019,AKROS - Thömus,X
-2018,Alecto Cycling Team,X
-2019,Alecto Cycling Team,X
-2018,Amore & Vita - Prodir,X
-2019,Amore & Vita - Prodir,X
 2017,Amore & Vita - Selle SMP presented by FONDRIEST,X
 2017,Amplatz - BMC,X
 2017,An Post Chain Reaction,X
 2017,Asociacion Civil Mardan,X
-2019,Asociacion Civil Mardan,X
 2017,Astana City,X
-2018,Astana City,X
 2017,Attaque Team Gusto,X
-2018,Australian Cycling Academy - Ride Sunshine Coast,X
-2018,Aviludo - Louletano,X
 2017,Axeon Hagens Berman,X
 2017,Baby-Dump Cyclingteam,X
-2018,BEAT Cycling Club,X
-2019,BEAT Cycling Club,X
-2018,Bennelong SwissWellness Cycling Team,X
 2017,Beobank - Corendon,X
-2019,BetPlay Cycling Team,X
-2018,BHS - Almeborg-Bornholm,X
-2019,BHS - Almeborg-Bornholm,X
 2017,BHS - Almeborg-Bornholm,X
 2017,Bicicletas Strongman,X
-2018,Bicicletas Strongman Colombia Coldeportes,X
-2019,Biesse Carrera,X
-2018,Biesse Carrera Gavardo,X
-2018,Bike Aid,X
-2019,Bike Aid,X
 2017,Bike Aid,X
 2017,BIKE Channel Canyon,X
-2015,Bretagne - Séché Environnement,X
-2014,Bretagne - Séché Environnement,X
 2017,Bridgestone Anchor Cycling Team,X
-2018,Bridgestone Anchor Cycling Team,X
-2019,Canel's - Specialized,X
-2019,Canyon dhb p/b Bloor Homes,X
-2018,Canyon Eisberg,X
 2017,CCB Velotooler,X
-2019,CCC Development Team,X
-2019,Cibel,X
 2017,Cibel - Cebon,X
-2018,Cibel - Cebon,X
-2019,Coldeportes Bicicletas Strongman,X
-2019,Coldeportes Zenu,X
-2018,Coldeportes Zenu Sello Rojo,X
-2018,ColoQuick,X
-2019,ColoQuick,X
 2017,ColoQuick CULT,X
-2015,Cult Energy Pro Cycling,X
-2019,Cycling Team Friuli,X
 2017,Cylance Cycling,X
-2019,D'Amico - UM Tools,X
 2017,d'Amico - Utensilnord,X
-2018,d'Amico - Utensilnord,X
-2018,Dare Gaviota,X
 2017,Dare Viator Partizan,X
-2018,Dauner D&DQ-Akkon,X
 2017,Dauner D&DQ-Akkon,X
-2019,Dauner D&DQ-Akkon,X
-2019,DCBank Pro Cycling Team,X
 2017,Delta Cycling Rotterdam,X
-2018,Delta Cycling Rotterdam,X
-2019,Deprisa Team,X
 2017,Destil - Jo Piels Cycling Team,X
-2018,DESTIL - Parkhotel Valkenburg,X
 2017,Development Team Sunweb,X
-2018,Development Team Sunweb,X
-2019,Development Team Sunweb,X
 2017,Drapac Pat's Veg Holistic Development Team,X
-2016,Drapac Professional Cycling,X
-2019,Drapac-Cannondale Holistic Development Team,X
-2018,Dukla Banska Bystrica,X
-2019,Dukla Banska Bystrica,X
 2017,Efapel,X
-2018,Efapel,X
-2019,Efapel,X
 2017,Elevate - KHS Pro Cycling,X
-2018,Elevate - KHS Pro Cycling,X
-2019,Elevate - KHS Pro Cycling,X
 2017,Elkov - Author Cycling Team,X
-2018,Elkov - Author Cycling Team,X
-2019,Elkov - Author Cycling Team,X
-2018,EPM,X
-2019,EPM,X
-2019,Equipe continentale Groupama-FDJ,X
 2017,Equipe Cycliste Armée de Terre,X
 2017,Equipo Bolivia,X
 2017,Equipo Continental Municipalidad de Pocito,X
-2019,Equipo Continental Municipalidad de Pocito,X
 2017,Era - Circus,X
-2019,EvoPro Racing,X
-2019,Floyd's Pro Cycling,X
-2018,Fundación Euskadi,X
-2019,Fundación Euskadi,X
-2019,Giotti Victoria - Palomar,X
 2017,GM Europa Ovini,X
-2019,Guerciotti - Kiwi Atlántico,X
-2018,GW - Shimano,X
-2019,GW - Shimano,X
-2018,H&R Block Pro Cycling,X
-2018,Hagens Berman Axeon,X
-2019,Hagens Berman Axeon,X
 2017,Hangar 15 Bicycles,X
-2018,Heizomat Rad-Net,X
-2019,Heizomat Rad-Net,X
-2019,Herrmann Radteam,X
-2018,Holdsworth Pro Racing,X
 2017,HP BTP - Auber93,X
-2019,IAM Excelsior,X
 2017,Inteja Dominican Cycling Team,X
-2018,Inteja Dominican Cycling Team,X
-2019,Inteja Imca Ridea DCT,X
-2019,Interpro Cycling Academy,X
 2017,Interpro Cycling Academy,X
-2018,Interpro Stradalli Cycling,X
-2019,Iseo Serrature - Rime - Carnovali,X
 2017,IsoWhey Sports SwissWellness team,X
 2017,Italomat - Dogo,X
-2018,Java-Partizan Pro Cycling Team,X
 2017,Jelly Belly p/b Maxxis,X
-2018,Jelly Belly p/b Maxxis,X
 2017,JLT Condor,X
-2018,JLT Condor,X
-2019,Joker Fuel of Norway,X
 2017,Kinan Cycling Team,X
-2018,Kinan Cycling Team,X
-2019,Kinan Cycling Team,X
-2018,Kobánya Cycling Team,X
 2017,Kolss Cycling Team,X
-2019,Kometa Cycling Team,X
 2017,Korda Mentha Real Estate Australia,X
-2019,Korda Mentha Real Estate Australia,X
 2017,Kuwait - Cartucho.es,X
-2018,LA Aluminios,X
-2019,LA Aluminios,X
 2017,LA Aluminios-Metalusa,X
-2018,Leopard Pro Cycling,X
 2017,Leopard Pro Cycling,X
-2019,Leopard Pro Cycling,X
-2018,Liberty Seguros - Carglass,X
-2019,Ljubljana Gusto Santic,X
-2018,Ljubljana Gusto Xaurum,X
 2017,LKT Team Brandenburg,X
-2018,LKT Team Brandenburg,X
-2019,LKT Team Brandenburg,X
 2017,Lokosphinx,X
-2018,Lokosphinx,X
-2019,Lokosphinx,X
 2017,Los Cascos Esco - Agroplan,X
-2014,Lotto Belisol,Lotto Soudal
-2018,Lotto Fix All,X
 2017,Louletano - Hospital de Loulé,X
-2019,Ludofoods Louletano Aviludo,X
-2018,Lviv Cycling Team,X
 2017,Madison Genesis,X
-2018,Madison Genesis,X
-2019,Madison Genesis,X
-2019,Maloja Pushbikers,X
 2017,Manzana Postobon,X
-2018,Manzana Postobon,X
-2019,Manzana Postobon,X
-2018,Marlux - Bingoal,X
 2017,Marlux - Napoleon Games,X
 2017,Massi - Kuwait Cycling Project,X
-2018,Massi - Kuwait Team,X
-2019,Massi Vivo - Grupo Oresy,X
-2019,Matrix Powertag,X
 2017,Matrix Powertag,X
-2018,Matrix Powertag,X
-2018,Medellin,X
-2019,Medellin,X
 2017,Medellin - Inder,X
 2017,Meridiana Kamen Team,X
-2018,Meridiana Kamen Team,X
-2019,Meridiana Kamen Team,X
-2019,Metec - TKH Continental Cyclingteam p/b Mantel,X
 2017,Metec - TKH Continental Cyclingteam p/b Mantel,X
-2018,Metec - TKH Continental Cyclingteam p/b Mantel,X
-2018,Miranda - Mortágua,X
-2019,Miranda - Mortágua,X
-2018,Mitchelton - BikeExchange,X
-2018,Mobius-BridgeLane,X
-2019,Monkey Town - à Bloc CT,X
 2017,Monkey Town Continental Team,X
-2018,Monkey Town Continental Team,X
-2018,MsTina-Focus,X
 2017,Municipalidad de Rawson Somos Todos,X
-2019,Municipalidad de Rawson Somos Todos,X
-2018,My Bike - Stevens,X
 2017,Nasu Blasen,X
-2018,Nasu Blasen,X
-2019,Nasu Blasen,X
-2019,Natura4Ever - Roubaix Lille Métropole,X
-2014,Neri Sottoli,X
-2019,Neri Sottoli - Selle Italia - KTM,X
 2017,Nice Pro Cycling Team,X
-2018,Oliver's Real Food,X
-2016,One Pro Cycling,X
 2017,One Pro Cycling,X
-2018,One Pro Cycling,X
-2018,Orgullo Paisa,X
-2019,Orgullo Paisa,X
-2019,P&S Metalltechnik,X
-2018,Pannon Cycling Team,X
-2019,Pannon Cycling Team,X
-2018,Pardus - Tufo Prostejov,X
-2019,Pauwels sauzen - Bingoal,X
 2017,Pauwels sauzen - Vastgoedservice Continental Team,X
-2018,Pauwels sauzen - Vastgoedservice Continental Team,X
-2018,Polartec-Kometa,X
-2019,Pro Racing Sunshine Coast,X
-2018,Project Nice Cote D'Azur,X
 2017,Radio Popular Boavista,X
-2018,Radio Popular Boavista,X
-2019,Radio Popular Boavista,X
 2017,Rad-Net Rose Team,X
-2019,Ribble Pro Cycling,X
 2017,Rietumu Banka - Riga,X
 2017,ROG - Ljubljana,X
 2017,Roth-Akros,X
 2017,Roubaix Lille Métropole,X
-2018,Roubaix Lille Métropole,X
 2017,Sangemini - MG.Kvis,X
-2018,Sangemini - MG.Kvis,X
-2019,Sangemini - Trevigiani - MG.Kvis,X
 2017,SEG Racing Academy,X
-2018,SEG Racing Academy,X
-2019,SEG Racing Academy,X
-2018,Shimano Racing Team,X
-2019,Shimano Racing Team,X
 2017,Silber Pro Cycling,X
-2018,Silber Pro Cycling,X
 2017,Sindicato Empleados Públicos of San Juan,X
 2017,Soul Brasil Pro Cycling Team,X
-2015,Southeast,X
-2019,Sovac,X
-2018,Sovac - Natura4Ever,X
-2019,SPORT.LAND. Niederösterreich Selle SMP - St. Rich,X
 2017,Sporting Clube de Portugal/Tavira,X
-2018,Sporting Clube de Portugal/Tavira,X
-2019,Sporting Clube de Portugal/Tavira,X
-2018,St Michel - Auber93,X
-2019,St Michel - Auber93,X
 2017,Start - Vaxes Cycling Team,X
-2019,Start Cycling Team,X
-2018,Start Team Gusto,X
-2019,SwiftCarbon Pro Cycling,X
-2019,Swiss Cycling Team,X
-2019,Swiss Racing Academy,X
 2017,Switzerland,X
 2017,Synergy Baku Cycling Project,X
 2017,T.Palm - Pole Continental Wallon,X
-2018,T.Palm - Pole Continental Wallon,X
 2017,Tarteletto - Isorex,X
-2018,Tarteletto - Isorex,X
-2019,Tarteletto - Isorex,X
-2019,Team Beltrami Tsa – Hopplà – Petroli Firenze,X
-2019,Team BridgeLane,X
-2019,Team Bridgestone Cycling,X
-2018,Team CCB Foundation-Sicleri,X
-2014,Team Colombia,X
-2015,Team Colombia,X
-2019,Team Colpack,X
 2017,Team Coop,X
-2019,Team Coop,X
-2018,Team Coop,X
-2019,Team Differdange - GeBa,X
-2018,Team Differdange - Losch,X
 2017,Team Differdange - Losch,X
 2017,Team Felbermayr - Simplon Wels,X
-2018,Team Felbermayr - Simplon Wels,X
-2019,Team Felbermayr - Simplon Wels,X
 2017,Team FixIT.no,X
 2017,Team Giant - Castelli,X
 2017,Team Heizomat,X
 2017,Team Hrinkow Advarics Cycleang,X
-2018,Team Hrinkow Advarics Cycleang,X
-2019,Team Hrinkow Advarics Cycleang,X
-2018,Team Hurom,X
-2019,Team Hurom,X
-2019,Team Illuminate,X
-2018,Team Illuminate,X
 2017,Team Joker Icopal,X
-2018,Team Joker Icopal,X
-2018,Team Lotto - Kern Haus,X
 2017,Team Lotto - Kern Haus,X
-2019,Team Lotto - Kern Haus,X
-2014,Team NetApp – Endura,BORA
-2018,Team Novak,X
-2019,Team Novak,X
 2017,Team Raleigh GAC,X
-2016,Team Roth,X
 2017,Team Sapura Cycling,X
-2019,Team Sapura Cycling,X
 2017,Team Sauerland NRW p/b Henley & Partners,X
-2018,Team Sauerland NRW p/b SKS GERMANY,X
-2019,Team Sauerland NRW p/b SKS GERMANY,X
-2019,Team Skyline,X
 2017,Team Sparebanken Sør,X
 2017,Team Tre Berg - Postnord,X
 2017,Team UKYO,X
-2018,Team UKYO,X
-2019,Team UKYO,X
 2017,Team Virtu Cycling,X
-2018,Team Virtu Cycling,X
 2017,Team Vorarlberg,X
-2018,Team Vorarlberg Santic,X
-2019,Team Vorarlberg Santic,X
-2018,Team Waoo,X
-2019,Team Waoo,X
 2017,Telenet Fidea Lions,X
+2017,Tirol Cycling Team,X
+2017,Torku Sekerspor,X
+2017,Unieuro Trevigiani - Hemus 1896,X
+2017,UniSA-Australia,X
+2017,UnitedHealthcare Pro Cycling Team,X
+2017,Utsunomiya Blitzen,X
+2017,Vérandas Willems-Crelan,X
+2017,W52/FC Porto,X
+2017,Wilier Triestina - Selle Italia,X
+2017,WSA-Greenlife,X
+2018,Argentina,X
+2018,Australia,X
+2018,Austria,X
+2018,Belarus,X
+2018,Belgium,X
+2018,Canada,X
+2018,Colombia,X
+2018,Czech Republic,X
+2018,Denmark,X
+2018,Estonia,X
+2018,Ethiopia,X
+2018,France,X
+2018,Germany,X
+2018,Great Britain,X
+2018,Hongkong,X
+2018,Hungary,X
+2018,Indonesia,X
+2018,Ireland,X
+2018,Italy,X
+2018,Japan,X
+2018,Kazakhstan,X
+2018,Latvia,X
+2018,Lithuania,X
+2018,Luxembourg,X
+2018,Netherlands,X
+2018,New Zealand,X
+2018,Norway,X
+2018,Poland,X
+2018,Portugal,X
+2018,Romania,X
+2018,Russia,X
+2018,Rwanda,X
+2018,Serbia,X
+2018,Slovakia,X
+2018,Slovenia,X
+2018,Spain,X
+2018,Sweden,X
+2018,Switzerland,X
+2018,Syria,X
+2018,Turkey,X
+2018,Ukraine,X
+2018,United Arab Emirates,X
+2018,United States,X
+2018,Virgin Islands,X
+2018,Dimension Data for Qhubeka,X
+2018,303Project,X
+2018,7 Eleven - Cliqq Roadbike Philippines,X
+2018,AC Sparta Praha,X
+2018,Adria Mobil,X
+2018,Aevolo,X
+2018,AGO-Aqua Service,X
+2018,Agrupacion Virgen De Fatima,X
+2018,Akros - Renfer SA,X
+2018,Alecto Cycling Team,X
+2018,Amore & Vita - Prodir,X
+2018,Astana City,X
+2018,Australian Cycling Academy - Ride Sunshine Coast,X
+2018,Aviludo - Louletano,X
+2018,BEAT Cycling Club,X
+2018,Bennelong SwissWellness Cycling Team,X
+2018,BHS - Almeborg-Bornholm,X
+2018,Bicicletas Strongman Colombia Coldeportes,X
+2018,Biesse Carrera Gavardo,X
+2018,Bike Aid,X
+2018,Bridgestone Anchor Cycling Team,X
+2018,Canyon Eisberg,X
+2018,Cibel - Cebon,X
+2018,Coldeportes Zenu Sello Rojo,X
+2018,ColoQuick,X
+2018,d'Amico - Utensilnord,X
+2018,Dare Gaviota,X
+2018,Dauner D&DQ-Akkon,X
+2018,Delta Cycling Rotterdam,X
+2018,DESTIL - Parkhotel Valkenburg,X
+2018,Development Team Sunweb,X
+2018,Dukla Banska Bystrica,X
+2018,Efapel,X
+2018,Elevate - KHS Pro Cycling,X
+2018,Elkov - Author Cycling Team,X
+2018,EPM,X
+2018,Fundación Euskadi,X
+2018,GW - Shimano,X
+2018,H&R Block Pro Cycling,X
+2018,Hagens Berman Axeon,X
+2018,Heizomat Rad-Net,X
+2018,Holdsworth Pro Racing,X
+2018,Inteja Dominican Cycling Team,X
+2018,Interpro Stradalli Cycling,X
+2018,Java-Partizan Pro Cycling Team,X
+2018,Jelly Belly p/b Maxxis,X
+2018,JLT Condor,X
+2018,Kinan Cycling Team,X
+2018,Kobánya Cycling Team,X
+2018,LA Aluminios,X
+2018,Leopard Pro Cycling,X
+2018,Liberty Seguros - Carglass,X
+2018,Ljubljana Gusto Xaurum,X
+2018,LKT Team Brandenburg,X
+2018,Lokosphinx,X
+2018,Lotto Fix All,X
+2018,Lviv Cycling Team,X
+2018,Madison Genesis,X
+2018,Manzana Postobon,X
+2018,Marlux - Bingoal,X
+2018,Massi - Kuwait Team,X
+2018,Matrix Powertag,X
+2018,Medellin,X
+2018,Meridiana Kamen Team,X
+2018,Metec - TKH Continental Cyclingteam p/b Mantel,X
+2018,Miranda - Mortágua,X
+2018,Mitchelton - BikeExchange,X
+2018,Mobius-BridgeLane,X
+2018,Monkey Town Continental Team,X
+2018,MsTina-Focus,X
+2018,My Bike - Stevens,X
+2018,Nasu Blasen,X
+2018,Oliver's Real Food,X
+2018,One Pro Cycling,X
+2018,Orgullo Paisa,X
+2018,Pannon Cycling Team,X
+2018,Pardus - Tufo Prostejov,X
+2018,Pauwels sauzen - Vastgoedservice Continental Team,X
+2018,Polartec-Kometa,X
+2018,Project Nice Cote D'Azur,X
+2018,Radio Popular Boavista,X
+2018,Roubaix Lille Métropole,X
+2018,Sangemini - MG.Kvis,X
+2018,SEG Racing Academy,X
+2018,Shimano Racing Team,X
+2018,Silber Pro Cycling,X
+2018,Sovac - Natura4Ever,X
+2018,Sporting Clube de Portugal/Tavira,X
+2018,St Michel - Auber93,X
+2018,Start Team Gusto,X
+2018,T.Palm - Pole Continental Wallon,X
+2018,Tarteletto - Isorex,X
+2018,Team CCB Foundation-Sicleri,X
+2018,Team Coop,X
+2018,Team Differdange - Losch,X
+2018,Team Felbermayr - Simplon Wels,X
+2018,Team Hrinkow Advarics Cycleang,X
+2018,Team Hurom,X
+2018,Team Illuminate,X
+2018,Team Joker Icopal,X
+2018,Team Lotto - Kern Haus,X
+2018,Team Novak,X
+2018,Team Sauerland NRW p/b SKS GERMANY,X
+2018,Team UKYO,X
+2018,Team Virtu Cycling,X
+2018,Team Vorarlberg Santic,X
+2018,Team Waoo,X
 2018,Telenet Fidea Lions,X
-2019,Telenet Fidea Lions,X
 2018,Terengganu Cycling Team,X
 2018,Thailand Continental Cycling Team,X
-2019,Thailand Continental Cycling Team,X
-2017,Tirol Cycling Team,X
 2018,Tirol Cycling Team,X
-2019,Tirol KTM Cycling Team,X
-2017,Torku Sekerspor,X
 2018,Trevigiani Phonix - Hemus 1896,X
-2019,UD Oliveirense/InOutbuild,X
-2017,Unieuro Trevigiani - Hemus 1896,X
-2016,UniSA-Australia,X
-2017,UniSA-Australia,X
 2018,UniSA-Australia,X
-2019,UniSA-Australia,X
-2015,UnitedHealthcare Pro Cycling Team,X
-2017,UnitedHealthcare Pro Cycling Team,X
 2018,UnitedHealthcare Pro Cycling Team,X
-2017,Utsunomiya Blitzen,X
 2018,Utsunomiya Blitzen,X
-2019,Utsunomiya Blitzen,X
-2017,Vérandas Willems-Crelan,X
 2018,Vérandas Willems-Crelan,X
-2016,VERVA ActiveJet Pro Cycling Team,X
 2018,VIB Sports,X
+2018,Vito-Feirense-BlackJack,X
+2018,Vitus Pro Cycling,X
+2018,Vlasman Track/Road Continental Cycling Team,X
+2018,W52/FC Porto,X
+2018,Wilier Triestina - Selle Italia,X
+2018,WSA Pushbikers,X
+2019,Argentina,X
+2019,Belgium,X
+2019,Brazil,X
+2019,Canada,X
+2019,Chile,X
+2019,Colombia,X
+2019,Cuba,X
+2019,Denmark,X
+2019,Ecuador,X
+2019,France,X
+2019,Germany,X
+2019,Great Britain,X
+2019,Hungary,X
+2019,Italy,X
+2019,Japan,X
+2019,Luxembourg,X
+2019,Mexico,X
+2019,Peru,X
+2019,Poland,X
+2019,Rwanda,X
+2019,Serbia,X
+2019,Slovakia,X
+2019,Slovenia,X
+2019,Spain,X
+2019,Switzerland,X
+2019,Turkey,X
+2019,United States,X
+2019,Uruguay,X
+2019,Dimension Data for Qhubeka,X
+2019,303Project,X
+2019,AC Sparta Praha,X
+2019,Adria Mobil,X
+2019,Aevolo,X
+2019,Agrupacion Virgen De Fatima,X
+2019,AKROS - Thömus,X
+2019,Alecto Cycling Team,X
+2019,Amore & Vita - Prodir,X
+2019,Asociacion Civil Mardan,X
+2019,BEAT Cycling Club,X
+2019,BetPlay Cycling Team,X
+2019,BHS - Almeborg-Bornholm,X
+2019,Biesse Carrera,X
+2019,Bike Aid,X
+2019,Canel's - Specialized,X
+2019,Canyon dhb p/b Bloor Homes,X
+2019,CCC Development Team,X
+2019,Cibel,X
+2019,Coldeportes Bicicletas Strongman,X
+2019,Coldeportes Zenu,X
+2019,ColoQuick,X
+2019,Cycling Team Friuli,X
+2019,D'Amico - UM Tools,X
+2019,Dauner D&DQ-Akkon,X
+2019,DCBank Pro Cycling Team,X
+2019,Deprisa Team,X
+2019,Development Team Sunweb,X
+2019,Drapac-Cannondale Holistic Development Team,X
+2019,Dukla Banska Bystrica,X
+2019,Efapel,X
+2019,Elevate - KHS Pro Cycling,X
+2019,Elkov - Author Cycling Team,X
+2019,EPM,X
+2019,Equipe continentale Groupama-FDJ,X
+2019,Equipo Continental Municipalidad de Pocito,X
+2019,EvoPro Racing,X
+2019,Floyd's Pro Cycling,X
+2019,Fundación Euskadi,X
+2019,Giotti Victoria - Palomar,X
+2019,Guerciotti - Kiwi Atlántico,X
+2019,GW - Shimano,X
+2019,Hagens Berman Axeon,X
+2019,Heizomat Rad-Net,X
+2019,Herrmann Radteam,X
+2019,IAM Excelsior,X
+2019,Inteja Imca Ridea DCT,X
+2019,Interpro Cycling Academy,X
+2019,Iseo Serrature - Rime - Carnovali,X
+2019,Joker Fuel of Norway,X
+2019,Kinan Cycling Team,X
+2019,Kometa Cycling Team,X
+2019,Korda Mentha Real Estate Australia,X
+2019,LA Aluminios,X
+2019,Leopard Pro Cycling,X
+2019,Ljubljana Gusto Santic,X
+2019,LKT Team Brandenburg,X
+2019,Lokosphinx,X
+2019,Ludofoods Louletano Aviludo,X
+2019,Madison Genesis,X
+2019,Maloja Pushbikers,X
+2019,Manzana Postobon,X
+2019,Massi Vivo - Grupo Oresy,X
+2019,Matrix Powertag,X
+2019,Medellin,X
+2019,Meridiana Kamen Team,X
+2019,Metec - TKH Continental Cyclingteam p/b Mantel,X
+2019,Miranda - Mortágua,X
+2019,Monkey Town - à Bloc CT,X
+2019,Municipalidad de Rawson Somos Todos,X
+2019,Nasu Blasen,X
+2019,Natura4Ever - Roubaix Lille Métropole,X
+2019,Neri Sottoli - Selle Italia - KTM,X
+2019,Orgullo Paisa,X
+2019,P&S Metalltechnik,X
+2019,Pannon Cycling Team,X
+2019,Pauwels sauzen - Bingoal,X
+2019,Pro Racing Sunshine Coast,X
+2019,Radio Popular Boavista,X
+2019,Ribble Pro Cycling,X
+2019,Sangemini - Trevigiani - MG.Kvis,X
+2019,SEG Racing Academy,X
+2019,Shimano Racing Team,X
+2019,Sovac,X
+2019,SPORT.LAND. Niederösterreich Selle SMP - St. Rich,X
+2019,Sporting Clube de Portugal/Tavira,X
+2019,St Michel - Auber93,X
+2019,Start Cycling Team,X
+2019,SwiftCarbon Pro Cycling,X
+2019,Swiss Cycling Team,X
+2019,Swiss Racing Academy,X
+2019,Tarteletto - Isorex,X
+2019,Team Beltrami Tsa – Hopplà – Petroli Firenze,X
+2019,Team BridgeLane,X
+2019,Team Bridgestone Cycling,X
+2019,Team Colpack,X
+2019,Team Coop,X
+2019,Team Differdange - GeBa,X
+2019,Team Felbermayr - Simplon Wels,X
+2019,Team Hrinkow Advarics Cycleang,X
+2019,Team Hurom,X
+2019,Team Illuminate,X
+2019,Team Lotto - Kern Haus,X
+2019,Team Novak,X
+2019,Team Sapura Cycling,X
+2019,Team Sauerland NRW p/b SKS GERMANY,X
+2019,Team Skyline,X
+2019,Team UKYO,X
+2019,Team Vorarlberg Santic,X
+2019,Team Waoo,X
+2019,Telenet Fidea Lions,X
+2019,Thailand Continental Cycling Team,X
+2019,Tirol KTM Cycling Team,X
+2019,UD Oliveirense/InOutbuild,X
+2019,UniSA-Australia,X
+2019,Utsunomiya Blitzen,X
 2019,VIB Sports,X
 2019,Vino - Astana Motors,X
-2018,Vito-Feirense-BlackJack,X
 2019,Vito-Feirense-Pnb,X
-2018,Vitus Pro Cycling,X
 2019,Vitus Pro Cycling,X
 2019,Vlasman CT,X
-2018,Vlasman Track/Road Continental Cycling Team,X
 2019,Voster ATS Team,X
 2019,W52 / FC Porto,X
-2017,W52/FC Porto,X
-2018,W52/FC Porto,X
 2019,Wallonie-Bruxelles Development Team,X
 2019,Wibatech Merx 7R,X
 2019,Wildlife Generation p/b Maxxis,X
-2016,Wilier - Southeast,X
-2017,Wilier Triestina - Selle Italia,X
-2018,Wilier Triestina - Selle Italia,X
-2018,WSA Pushbikers,X
-2017,WSA-Greenlife,X
+2020,Fundación - Orbea,X
+2020,Sport Vlaanderen - Baloise,Sport Vlaanderen
+2020,St Michel - Auber93,X
