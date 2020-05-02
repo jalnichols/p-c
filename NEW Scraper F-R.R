@@ -29,7 +29,7 @@ con <- dbConnect(MySQL(),
                  user='jalnichols',
                  password='braves')
 
-# Scrape all UCI World Tour races for 2013-19
+# Scrape all UCI World Tour races for 2013-20
 
 scraper_list <- tibble(year = c(2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020),
                        page_no = c(1,1,1,1,1,2,1,2,1,2,1))
@@ -73,24 +73,41 @@ all_races <- bind_rows(result_list)
 
 # Now scraper Europe/Americas/WC/Asia Tour for 2017-19
 
+# 2 Europe Tour
+# 3 Americas Tour
+# 4 Asia Tour
+# 5 Africa Tour
+# 6 Oceania Tour
+# 8 World Champs
+# 7 Olympics
+# 1 UWT
+
 scraper_list <- tibble(year = c(2017, 2017, 2017, 2017, 2017, 
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
                                 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
                                 2020, 2020, #2
+                                2017,2018,2019,2020, #5
+                                2017,2018,2019,2020, #6
                                 2017, 2018, 2019, 2020, #3
-                                2017, 2018, 2019, 2020, #8
+                                2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, #8
                                 2017, 2018, 2018, 2019, 2020), #4
                        page_no = c(1,2,3,4,5, 
                                    1,2,3,4,5,6,7,8,9,10, 
                                    1,2,3,4,5,6,7, 8,9,
                                    1,2,
+                                   1,1,1,1,
+                                   1,1,1,1,
                                    1, 1, 1,1,
-                                   1, 1, 1,1, 
-                                   1, 1, 2, 1,1),
+                                   1, 1, 1, 1, 1, 1, 1, 1, 
+                                   1, 1, 2, 1, 1),
                        type = c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+                                5,5,5,5,
+                                6,6,6,6,
                                 3,3,3,3,
-                                8,8,8,8, 
+                                8,8,8,8,8,8,8,8,
                                 4,4,4,4,4))
+
+#
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -128,6 +145,16 @@ for(y in 1:length(scraper_list$year)) {
   
 }
 
+#
+#
+#
+
+# HERE I NEED TO BUILD A SECTION WHICH SCRAPES BASED ON IDs to pull in Avenir, Natl Championships, Olympics
+
+#
+#
+#
+
 intermediate_races <- all_races %>%
   rbind(
     
@@ -145,6 +172,10 @@ retain_ids <- c(
   # laigueglia
   
   69, 70, 79, 80, 81, 83, 98, 99, 100, 214, 262, 820, 75, 101,
+  
+  # MAJOR NATIONAL CHAMPIONSHIP ROAD RACES
+  
+  212, 179, 106, 129, 123, 113, 616, 133, 107, 119, 117, 111, 115, 394, 110, 176, 121, 131,
   
   # 1.1
   
@@ -199,11 +230,19 @@ retain_ids <- c(
   # tokyo, qinghai lake, hainan, colorado classic, saudi tour
   838, 95,94,183,1253,
   
-  # tour de l'avenir
-  185, 
+  # tour de l'avenir and other U23
+  185, 184, 712,
   
   # #.2s which are high ranked on PCS
   539, 744, 479, 472, 518, 532, 895,
+  
+  # olympics
+  
+  62, 64,
+  
+  # oceania/africa
+  
+  1242, 208, 757, 368,
   
   # WC / ITT
   
@@ -280,7 +319,9 @@ stages_list <- stages_list %>%
 
 dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
 
-write_rds(stages_list, "stages-list-f-r.rds")
+stages_list_all <- c(read_rds("stages-list-f-r.rds"), stages_list)
+
+write_rds(stages_list_all, "stages-list-f-r.rds")
 
 # and for the data frame
 
@@ -311,9 +352,8 @@ dbWriteTable(con,
 all_stages <- dbReadTable(con, "fr_stages") %>%
   unique() %>%
   
-  anti_join(dbGetQuery(con, "SELECT race_url FROM fr_climbs_scraped"), by = c("url" = "race_url")) %>%
-  
-  filter(year > 2019)
+  inner_join(all_races %>%
+               select(url), by = c("url" = "url"))
 
 #
 #
@@ -540,3 +580,837 @@ for(y in 1:length(stages_list)) {
   }
   
 }
+
+#
+#
+#
+#
+#
+
+
+# transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
+
+clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
+  
+  mutate(year = str_sub(race_url, 48, 51)) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F4', 'o'))) %>%   
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F4', 'o'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2527', "'"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E9', 'e'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E8', 'e'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E8', 'e'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%27', "'"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25EF', 'i'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E9', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F3', 'o'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EF', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E7', 'c'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E2', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E2', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F2', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%FB', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E0', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F9', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%C9', "E"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%FC', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F1', "n"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F6', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EC', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%ED', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F1', "n"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%60', "`"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%D3', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%ED', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E0', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F3', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25EC', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F3', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%F6', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25ED', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25EA', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EE', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EA', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25FC', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%FC', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%DF', "ss"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25C1', "A"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%C1', "A"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%FA', "u"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%C7', "C"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0131', "i"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u2019', "'"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u2019', "'"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2C', ","))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F2', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E1', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E5', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25E7', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E3', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%EB', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%B0', ""))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%D6', "O"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25D8', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25F8', "o"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25C5', "A"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25C6', "Ae"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2525', ""))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0160', "S"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0150', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u010D', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u0160', "S"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u0150', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'u010D', "c"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u010C', "C"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0107', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25u0153', "oe"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u010C', "C"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0107', "c"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0153', "oe"))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28 Souvenir Jacques Goddet%29', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Henri Desgrange%29', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Jacques Goddet%29', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28 Souvenir Henri Desgrange%29', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2528 Souvenir Jacques Goddet%2529', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2528Souvenir Henri Desgrange%2529', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2528Souvenir Jacques Goddet%2529', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2528 Souvenir Henri Desgrange%2529', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'Bardonecchia %28Jafferau%29', 'Jafferau'))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, 'Pas de Peyrol %2528Puy Mary%2529', 'Puy Mary'))) %>%
+  mutate(climb_name = ifelse(str_detect(climb_name, 'PORT DE CANTO'), "Port de Canto", climb_name)) %>%
+  mutate(climb_name = ifelse(str_detect(climb_name, 'Alto de Puig'), "Alto de Puig", climb_name)) %>%
+  mutate(climb_name = ifelse(str_detect(climb_name, 'Passo dello Stelvio'), "Passo dello Stelvio", climb_name)) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2528.*%2529', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28.*%29', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%2509', ''))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, "' ", "'"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%25', ''))) %>%
+  
+  unique() %>%
+  
+  mutate(year = as.numeric(year))
+
+# build matcher for PCS to FR race names
+
+pcs <- dbGetQuery(con, "SELECT year, race, date FROM pcs_stage_raw GROUP BY race, year, date") %>%
+  
+  mutate(date = as.Date(date)) %>%
+  
+  group_by(race, year) %>%
+  mutate(date = min(date, na.rm = T)) %>%
+  ungroup() %>%
+  
+  unique() %>%
+  
+  filter(!race %in% c("World Championships WE - Road Race", "World Championships WJ - Road Race",
+                      "World Championships U23 - Road Race", "World Championships MJ - ITT",
+                      "World Championships WE - ITT", "World Championships WJ - ITT",
+                      "World Championships MJ - Road Race", "World Championships U23 - ITT",
+                      "Tour of Almaty", "Tour de Taiwan", "Tour of Japan", "Tour de Korea",
+                      "Tour of Antalya", "Tour of China I", "Tour of China II", "Tour of Indonesia",
+                      "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
+                      "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
+  filter(year > 2013) %>%
+  filter(date < '2020-03-10')
+
+#
+
+fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, year, date") %>%
+  mutate(date = str_replace_all(date, "Monday", ""),
+         date = str_replace_all(date, "Tuesday", ""),
+         date = str_replace_all(date, "Wednesday", ""),
+         date = str_replace_all(date, "Thursday", ""),
+         date = str_replace_all(date, "Friday", ""),
+         date = str_replace_all(date, "Saturday", ""),
+         date = str_replace_all(date, "Sunday", ""),
+         date = str_trim(date)) %>%
+  separate(date, c("day", "month", "year2"), sep = " ") %>%
+  inner_join(tibble(month = c("January","February","March","April","May","June",
+                              "July","August","September","October","November","December"),
+                    m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
+  mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
+  select(race, year, date) %>%
+  filter(date <= '2020-03-10') %>%
+  
+  mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
+  
+  filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)"))
+
+#
+
+matches <- fr %>%
+  
+  # ignore races where I know I lack matches
+  filter(!str_detect(race, "Giro Ciclistico")) %>%
+  filter(!str_detect(race, "Avenir")) %>%
+  
+  mutate(year = as.numeric(year)) %>%
+  rename(fr_race = race) %>%
+  
+  inner_join(
+    
+    pcs %>%
+      rename(pcs_race = race), by = c("year")
+    
+  ) %>%
+  
+  mutate(sd_DL = stringdist::stringdist(tolower(pcs_race), tolower(fr_race), method = "dl") / nchar(pcs_race),
+         sd_QG = stringdist::stringdist(tolower(pcs_race), tolower(fr_race), method = "qgram", q = 2) / nchar(pcs_race)) %>%
+  
+  group_by(fr_race, year) %>%
+  mutate(rankDL = rank(sd_DL, ties.method = "min"),
+         rankQG = rank(sd_QG, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(hm = (sd_DL + sd_QG) / 2) %>%
+  
+  group_by(fr_race, year) %>%
+  mutate(rankHM = rank(hm, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(fr_race) %>% 
+  mutate(no1 = sum(rankHM == 1, na.rm = T)) %>%
+  ungroup()
+
+#
+
+pcs_fr_matches <- matches %>%
+  
+  filter(rankHM == 1 |
+           ((tolower(fr_race) == "euroeyes cyclassics") & (tolower(pcs_race) == "cyclassics hamburg"))) %>%
+  
+  rbind(
+    
+    matches %>%
+      mutate(hm = 0.75) %>%
+      inner_join(
+        read_csv('fr_pcs_matches.csv') %>%
+          filter(match == TRUE) %>%
+          select(-match), by = c("fr_race" = "fr", "pcs_race" = "pcs", "year")
+        
+      )) %>%
+  
+  filter(hm < 0.751) %>%
+  
+  anti_join(
+    
+    read_csv('fr_pcs_matches.csv') %>%
+      filter(match == FALSE) %>%
+      select(-match), by = c("fr_race" = "fr", "pcs_race" = "pcs", "year")
+    
+  ) %>%
+  
+  filter(year > 2013) %>%
+  
+  filter(date.x < (date.y + 15) & date.x > (date.y - 15))
+
+#
+
+all_climbs <- clean_climbs %>%
+  
+  #link with Pro cycling stats
+  
+  left_join(
+    
+    pcs_fr_matches %>%
+      select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
+    
+  ) %>%
+  
+  rename(slug = race,
+         race = pcs) %>%
+  
+  # removed from race
+  filter(!(url == 'https://www.la-flamme-rouge.eu/maps/loadtrack/181312' & climb_name == "Sestriere")) %>%
+  
+  # manual error correction
+  mutate(start_distance = ifelse(url == 'https://www.la-flamme-rouge.eu/maps/loadtrack/159271' &
+                                   climb_name == "Picon Blanco", 165, start_distance),
+         end_distance = ifelse(url == 'https://www.la-flamme-rouge.eu/maps/loadtrack/155641' &
+                                 climb_name == "Cote de Berland", 32, end_distance)) %>%
+  
+  filter(!is.na(race)) %>%
+  
+  # correct for prologues
+  mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
+                        ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
+                               ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
+                                      ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, stage))))) %>%
+  
+  unique() %>%
+  
+  filter(!(str_detect(climb_name, "passage sur la"))) %>%
+  filter(!(str_detect(climb_name, "Finish"))) %>%
+  filter(!(str_detect(climb_name, "Lap"))) %>%
+  filter(!(str_detect(tolower(climb_name), "km at"))) %>%
+  filter(!(str_detect(climb_name, "km @"))) %>%
+  filter(!(str_detect(tolower(climb_name), "m -"))) %>%
+  filter(!(str_detect(tolower(climb_name), "circuit"))) %>%
+  filter(!(str_detect(climb_name, "Avenue"))) %>%
+  filter(!(str_detect(climb_name, "U-turn"))) %>%
+  
+  # count climbs on stage
+  group_by(stage, race, year, climb_name) %>%
+  mutate(time_climbed = rank(end_distance, ties.method = "first")) %>%
+  ungroup()
+
+# 
+# clean routes
+#
+
+all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%    
+  mutate(distances = as.numeric(dist),
+         alt = as.numeric(alt)) %>%
+  
+  group_by(url, dist) %>%
+  summarize(alt = mean(alt, na.rm = T)) %>%
+  ungroup() %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT DISTINCT url, race, race_url, year
+               FROM fr_stage_urls") %>%
+      group_by(race, year, race_url) %>%
+      mutate(stage = rank(year, ties.method = "first")) %>%
+      ungroup(), by = c("url")) %>%
+  
+  arrange(year, race, stage, dist) %>%
+  
+  group_by(stage, year, race) %>%
+  mutate(points = rank(dist, ties.method = "first"),
+         length = max(dist, na.rm = T),
+         highest_point = max(alt, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(grades = (alt - lag(alt)) / (1000 * (dist - lag(dist))),
+         grades = ifelse(dist == 0, 0, grades),
+         grades = ifelse(grades > 0.25, 0.25,
+                         ifelse(grades < -0.25, -0.25, grades))) %>%
+  
+  rename(elevations = alt) %>%
+  mutate(year = as.numeric(year)) %>%
+  rename(distances = dist) %>%
+  
+  #link with Pro cycling stats
+  
+  left_join(
+    
+    pcs_fr_matches %>%
+      select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
+    
+  ) %>%
+  
+  rename(slug = race,
+         race = pcs) %>%
+  
+  # correct for prologues
+  mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
+                        ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
+                               ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
+                                      ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
+                                             ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
+
+# 
+# #
+# # old data model
+# #
+# 
+# all_routes <- dbReadTable(con, "fr_altitude") %>%
+#   
+#   unique() %>%
+#   
+#   mutate(distances = as.numeric(dist)) %>%
+#   
+#   arrange(year, race, stage, distances) %>%
+#   
+#   group_by(stage, year, race, distances) %>%
+#   mutate(alt = mean(alt, na.rm = T)) %>%
+#   ungroup() %>%
+#   
+#   unique() %>%
+#   
+#   group_by(stage, year, race) %>%
+#   mutate(points = rank(distances, ties.method = "first"),
+#          length = max(distances, na.rm = T),
+#          highest_point = max(alt, na.rm = T)) %>%
+#   ungroup() %>%
+#   
+#   mutate(grades = (alt - lag(alt)) / (1000 * (distances - lag(distances))),
+#          grades = ifelse(distances == 0, 0, grades),
+#          grades = ifelse(grades > 0.25, 0.25,
+#                          ifelse(grades < -0.25, -0.25, grades))) %>%
+#   
+#   select(-dist) %>%
+#   rename(elevations = alt) %>%
+#   mutate(year = as.numeric(year)) %>%
+#   
+#   #link with Pro cycling stats
+# 
+#   left_join(
+#     
+#     pcs_fr_matches %>%
+#       select(fr_race, pcs = pcs_race, year), by = c("race" = "fr_race", "year")
+#     
+#   ) %>%
+#   
+#   rename(slug = race,
+#          race = pcs) %>%
+#   
+#   # correct for prologues
+#   mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
+#                         ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
+#                                ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
+#                                       ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
+#                                              ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
+
+# calculate stage characteristic data
+
+final_1km <- all_routes %>%
+  
+  group_by(stage, year, race) %>%
+  mutate(stage_end = max(length, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter((stage_end - distances) < 1.1) %>%
+  
+  group_by(race, year, stage) %>%
+  summarize(final_1km_elev = mean(elevations, na.rm = T),
+            max_gradient = max(grades, na.rm = T),
+            med_gradient = median(grades, na.rm = T),
+            avg_gradient = mean(grades, na.rm = T),
+            x25th_gradient = quantile(grades, probs = 0.75, na.rm = T),
+            n = n()) %>%
+  ungroup() %>%
+  
+  mutate(final_1km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
+  
+  select(stage, year, race, final_1km_elev, final_1km_gradient)
+
+#
+
+final_5km <- all_routes %>%
+  
+  group_by(stage, year, race) %>%
+  mutate(stage_end = max(length, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter((stage_end - distances) < 5.1) %>%
+  
+  group_by(race, year, stage) %>%
+  summarize(final_5km_elev = mean(elevations, na.rm = T),
+            max_gradient = max(grades, na.rm = T),
+            med_gradient = median(grades, na.rm = T),
+            avg_gradient = mean(grades, na.rm = T),
+            x25th_gradient = quantile(grades, probs = 0.75, na.rm = T),
+            n = n()) %>%
+  ungroup() %>%
+  
+  mutate(final_5km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
+  
+  select(stage, year, race, final_5km_elev, final_5km_gradient)
+
+#
+
+percentage_climbing_in_final_climb <- all_routes %>%
+  
+  arrange(stage, year, race, points) %>%
+  
+  group_by(stage, year, race) %>%
+  mutate(stage_end = max(length, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(final_20km = ifelse((stage_end - distances) < 20.6, grades, NA)) %>%
+  
+  mutate(distance_chunks = distances - lag(distances),
+         distance_chunks = ifelse(distances == 0, NA, distance_chunks)) %>%
+  
+  mutate(vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * final_20km, 0),
+         total_vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * grades, 0)) %>%
+  
+  group_by(stage, year, race) %>%
+  summarize(final_20km_vert_gain = sum(vert_gain, na.rm = T),
+            total_vert_gain = sum(total_vert_gain, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(perc_gain_end = final_20km_vert_gain / total_vert_gain)
+
+#
+
+lumpiness <- all_routes %>%
+  
+  arrange(stage, year, race, points) %>%
+  
+  mutate(distance_chunks = distances - lag(distances),
+         distance_chunks = ifelse(distances == 0, NA, distance_chunks)) %>%
+  
+  mutate(total_elev_change = ifelse(abs(grades) > 0.02, abs(elevations - lag(elevations)), 0)) %>%
+  
+  group_by(stage, year, race) %>%
+  summarize(total_elev_change = sum(total_elev_change, na.rm = T),
+            stage_end = max(length, na.rm = T),
+            time_at_1500m = mean(elevations > 1499.99, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(perc_elev_change = total_elev_change / (stage_end * 1000))
+
+#
+
+stage_characteristics <- all_routes %>%
+  
+  filter(!(is.na(points))) %>%
+  filter(points == 1) %>%
+  select(-points, -distances, -elevations, -grades,
+         -race_url, -url) %>%
+  
+  inner_join(
+    
+    lumpiness %>%
+      select(-stage_end), by = c("stage", "race", "year")
+    
+  ) %>%
+  inner_join(
+    
+    percentage_climbing_in_final_climb, by = c("stage", "race", "year")
+    
+  ) %>%
+  inner_join(
+    
+    final_1km, by = c("stage", "race", "year")
+    
+  ) %>%
+  inner_join(
+    
+    final_5km, by = c("stage", "race", "year")
+    
+  ) %>%
+  
+  filter(!is.na(race)) %>%
+  filter(total_elev_change < 20000)
+
+#
+# write the altitude feature data to database
+#
+
+#dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, overwrite = TRUE)
+
+#
+#
+#
+
+climb_data_list <- all_climbs %>%
+  
+  filter(climb_name != "none")
+
+#
+
+climb_result_list <- vector("list", length(climb_data_list$climb_name))
+
+#
+
+for(c in 1:length(climb_data_list$climb_name)) {
+  
+  climb_result_list[[c]] <- all_routes %>%
+    filter(url == climb_data_list$url[[c]] &
+             distances >= climb_data_list$start_distance[[c]] &
+             distances <= climb_data_list$end_distance[[c]]) %>%
+    
+    mutate(CLIMB = climb_data_list$climb_name[[c]],
+           time_climbed = climb_data_list$time_climbed[[c]]) %>%
+    
+    group_by(url, stage, year, race, CLIMB, time_climbed) %>%
+    summarize(low = min(elevations, na.rm = T),
+              segments = n()) %>%
+    ungroup() %>%
+    
+    mutate(summit = climb_data_list$altitude[[c]],
+           length = climb_data_list$end_distance[[c]] - climb_data_list$start_distance[[c]])
+  
+}
+
+#
+
+climb_results <- bind_rows(climb_result_list) %>%
+  
+  rename(climb_name = CLIMB) %>%
+  
+  mutate(low = ifelse(race == "Tour de France" & stage == 6 & year == 2016,
+                      ifelse(climb_name == "Cote d'Aubin", 264, 
+                             ifelse(climb_name == "Cote de Saint-Antonin-Noble-Val", 164,
+                                    ifelse(climb_name == "Col des Estaques", 202, low))), low)) %>%
+  
+  mutate(low = ifelse(race == "Giro d'Italia" & year == 2014 & stage == 11,
+                      ifelse(climb_name == "Passo Cento Croci", 450,
+                             ifelse(climb_name == "Naso di Gatto", 100, low)), low)) %>%
+  
+  mutate(summit = ifelse(race == "Giro d'Italia" & year == 2013 & stage == 18,
+                         ifelse(climb_name == "Polsa", 1201, summit), summit))
+
+#
+
+all_climbs_int <- all_climbs %>%
+  
+  inner_join(climb_results %>%
+               select(url, stage, race, year, climb_name, time_climbed,
+                      length, summit, low), by = c("url", "stage", "race", "year", "climb_name", "time_climbed")) %>%
+  
+  mutate(start_distance = ifelse(race == "Tour de Suisse" & year == 2018 & stage == 3 & time_climbed == 3,
+                                 ifelse(climb_name == "Hagenfirst", 173.1, start_distance), start_distance),
+         length = ifelse(race == "Tour de Suisse" & year == 2018 & stage == 3 & time_climbed == 3,
+                         ifelse(climb_name == "Hagenfirst", 3.9, length), length),
+         start_distance = ifelse(race == "Vuelta a Burgos" & year == 2017 & stage == 1 & time_climbed == 2,
+                                 ifelse(climb_name == "Castillo de Burgos", 154.1, start_distance), start_distance),
+         length = ifelse(race == "Vuelta a Burgos" & year == 2017 & stage == 1 & time_climbed == 2,
+                         ifelse(climb_name == "Castillo de Burgos", 1, length), length),
+         start_distance = ifelse(race == "Paris - Nice" & year == 2017 & stage == 6,
+                                 ifelse(climb_name == "Fayence", 192.2, start_distance), start_distance),
+         start_distance = ifelse(race == "Paris - Nice" & year == 2017 & stage == 7,
+                                 ifelse(climb_name == "Cote de Gattieres", 5, start_distance), start_distance),
+         length = ifelse(race == "Paris - Nice" & year == 2017 & stage == 6,
+                         ifelse(climb_name == "Fayence", 1.3, length), length),
+         start_distance = ifelse(race == "Amgen Tour of California" & year == 2017 & stage == 2,
+                                 ifelse(climb_name == "Del Puerto Canyon", 60.3, start_distance), start_distance),
+         low = ifelse(race == "Amgen Tour of California" & year == 2017 & stage == 2,
+                      ifelse(climb_name == "Del Puerto Canyon", 492, low), low),
+         start_distance = ifelse(race == "Amgen Tour of California" & year == 2017 & stage == 4,
+                                 ifelse(climb_name == "Ojai Santa Paula Rd", 62, start_distance), start_distance),
+         end_distance = ifelse(race == "Criterium du Dauphine" & year == 2017 & stage == 7,
+                               ifelse(climb_name == "Cote de Berland", 29.6, end_distance), end_distance),
+         low = ifelse(race == "Criterium du Dauphine" & year == 2017 & stage == 7,
+                      ifelse(climb_name == "Cote de Berland", 404, low), low)) %>%
+  
+  mutate(length = end_distance - start_distance) %>%
+  
+  mutate(gradient = (summit - low) / (1000 * length))
+
+#
+
+mtn_names <- all_climbs_int %>%
+  filter(!is.na(category)) %>%
+  mutate(mtn = str_sub(climb_name, 1, str_locate(climb_name, " ") %>% .[, 2])) %>%
+  
+  group_by(mtn) %>%
+  summarize(n = n(), 
+            len = mean(length, na.rm = T), 
+            grade = mean(gradient, na.rm = T)) %>%
+  arrange(-n)
+
+#
+
+fr_worldwide_climbs <- dbGetQuery(con, "SELECT TRACKID, TRACKNAME FROM fr_all_european_climbs") %>%
+  
+  mutate(TRACKNAME = str_trim(str_replace(TRACKNAME, "(via D110 - Entraigues)", ""))) %>%
+  select(TRACKID, TRACKNAME)
+
+# 
+
+matching_with_every_climb <- all_climbs_int %>%
+  
+  filter(source == "ACTUAL CLIMBS" & is.na(category) & (gradient < 0.04 | length < 1.5)) %>%
+  
+  select(climb_name, url, race_url, source) %>%
+  
+  mutate(merge = "YES") %>%
+  
+  left_join(
+    
+    fr_worldwide_climbs %>%
+      
+      mutate(merge = "YES"), by = c("merge")
+    
+  ) %>%
+  
+  mutate(sd = stringdist::stringdist(tolower(climb_name), tolower(TRACKNAME), method = "qgram", q = 2) / nchar(climb_name)) %>%
+  
+  group_by(climb_name) %>% 
+  mutate(rk = rank(sd, ties.method = "min")) %>%
+  filter(rk < 4) %>% 
+  ungroup() %>%
+  
+  filter(sd < 0.300 & rk == 1)
+
+#
+
+matching_with_every_climb_others <- all_climbs_int %>%
+  
+  select(climb_name, url, race_url, source) %>%
+  
+  mutate(merge = "YES") %>%
+  
+  filter(source != "ACTUAL CLIMBS") %>%
+  
+  left_join(
+    
+    fr_worldwide_climbs %>%
+      mutate(merge = "YES"), by = c("merge")
+    
+  ) %>%
+  
+  mutate(sd = stringdist::stringdist(tolower(climb_name), tolower(TRACKNAME), method = "qgram", q = 2) / nchar(climb_name)) %>%
+  
+  group_by(climb_name) %>% 
+  mutate(rk = rank(sd, ties.method = "min")) %>%
+  filter(rk < 4) %>% 
+  ungroup() %>%
+  
+  filter(sd < 0.251 & rk == 1)
+
+#
+
+actual_climbs_list <- all_climbs_int %>%
+  
+  filter(source == "ACTUAL CLIMBS" & ((gradient > 0.0399 | length > 1.49) | !is.na(category)))
+
+#
+
+valid_climbs <- actual_climbs_list %>%
+  
+  select(climb_name, url, race_url) %>%
+  
+  rbind(
+    
+    matching_with_every_climb_others %>%
+      select(climb_name, url, race_url)
+    
+  ) %>%
+  rbind(
+    
+    matching_with_every_climb %>%
+      select(climb_name, url, race_url)
+    
+  ) %>%
+  
+  unique()
+
+#
+
+invalid_climbs <- all_climbs_int %>%
+  anti_join(valid_climbs, by = c("climb_name", "url", "race_url"))
+
+#
+
+all_climbs_data <- all_climbs_int %>%
+  
+  inner_join(valid_climbs, by = c("climb_name", "url", "race_url"))
+
+#
+
+dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, append = TRUE)
+
+#
+#
+#
+#
+#
+#
+
+# GAM has R^2 of 0.76 vs 0.71 for LM
+# including altitude improves R^2 by 0.02 or so over just VAM poly
+
+all_climbs_data <- dbReadTable(con, "fr_all_climbs_intermediate")
+
+#
+
+gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5), 
+                    
+                    # the KOM point values found by measuring max efforts in total watts are
+                    # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+                    # I scale up for cat 2s and up
+                    
+                    data = all_climbs_data %>%
+                      filter(!is.na(category)) %>%
+                      mutate(category = ifelse(category == 1, 12, 
+                                               ifelse(category == 2, 6, 
+                                                      ifelse(category == 3, 3, 
+                                                             ifelse(category == 4, 1.5, 24))))) %>% 
+                      filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
+                      select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
+                      unique() %>%
+                      mutate(vam_poly = ((gradient^2) * length), 
+                             alt = summit - 1000))
+
+write_rds(gam_mod, "model-climb-difficulty.rds")
+
+# LM is deprecated
+
+lm_mod <- lm(category ~ alt + vam_poly, 
+             
+             # the KOM point values found by measuring max efforts in total watts are
+             # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+             
+             data = all_climbs_data %>%
+               filter(!is.na(category)) %>%
+               mutate(category = ifelse(category == 1, 10, 
+                                        ifelse(category == 2, 5, 
+                                               ifelse(category == 3, 3, 
+                                                      ifelse(category == 4, 1.5, 20))))) %>% 
+               filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
+               select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
+               unique() %>%
+               mutate(vam_poly = ((gradient^2) * length), 
+                      alt = summit - 1000))
+
+#
+
+climbs_to_write <- all_climbs_data %>%
+  
+  mutate(vam_poly = ((gradient^2) * length), 
+         alt = summit - 1000) %>%
+  
+  cbind(
+    model_category = predict(gam_mod, 
+                             all_climbs_data %>%
+                               mutate(vam_poly = ((gradient^2) * length),
+                                      alt = summit - 1000))) %>%
+  
+  unique() %>%
+  
+  filter(gradient > 0.03 | model_category > 1.15) %>%
+  
+  filter(gradient > 0) %>%
+  
+  #mutate(model_category = ifelse(model_category < 1.25, 1.25, model_category)) %>%
+  
+  select(climb_name, race, stage, year, start_distance, end_distance, summit, length, time_climbed, gradient, model_category,
+         vam_poly, alt) %>%
+  
+  unique() %>%
+  
+  mutate(race = ifelse(race == "Vuelta a Espana" & year == 2018, "La Vuelta a Espana", race)) %>%
+  
+  rbind(
+    
+    cbind(
+      
+      readr::read_csv("f_r_climbs_missing.csv") %>%
+        select(-model_category) %>%
+        mutate(vam_poly = ((gradient^2) * length), 
+               alt = summit - 1000),
+      
+      model_category = predict(gam_mod, 
+                               readr::read_csv("f_r_climbs_missing.csv") %>%
+                                 select(-model_category) %>%
+                                 mutate(vam_poly = ((gradient^2) * length), 
+                                        alt = summit - 1000)))
+    
+  ) %>%
+  
+  filter(!(str_detect(climb_name, "passage sur la"))) %>%
+  filter(!(str_detect(climb_name, "Finish"))) %>%
+  filter(!(str_detect(climb_name, "Lap"))) %>%
+  filter(!(str_detect(tolower(climb_name), "km at"))) %>%
+  filter(!(str_detect(climb_name, "km @"))) %>%
+  filter(!(str_detect(tolower(climb_name), "m -"))) %>%
+  filter(!(str_detect(tolower(climb_name), "circuit"))) %>%
+  filter(!(str_detect(climb_name, "Avenue"))) %>%
+  filter(!(str_detect(climb_name, "U-turn"))) %>%
+  
+  as_tibble()
+
+
+#dbWriteTable(con, "flamme_rouge_climbs", climbs_to_write, overwrite = TRUE, row.names = FALSE)
