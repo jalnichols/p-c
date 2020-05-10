@@ -253,8 +253,8 @@ store_from_schedule <- store_from_schedule[lengths(store_from_schedule) != 0]
 
 all_events <- bind_rows(store_from_schedule) %>%
 
-  mutate(type = str_sub(type, 61, nchar(type)),
-         type = str_replace(type, '&filter=Filter', "")) %>%
+  #mutate(type = str_sub(type, 61, nchar(type)),
+  #       type = str_replace(type, '&filter=Filter', "")) %>%
   
   mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
   
@@ -274,8 +274,6 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  mutate(Type = "scraper") %>%
-  
   select(-spec_url)
 
 #
@@ -288,13 +286,14 @@ all_events$Winner <- iconv(all_events$Winner, from="UTF-8", to = "ASCII//TRANSLI
 new_events <- all_events %>%
   anti_join(
     
-    dbReadTable(con, "pcs_all_races"), by = c("url")
+    dbReadTable(con, "pcs_all_races") %>%
+      filter(type != "scraper"), by = c("url")
     
   )
 
 all_events <- new_events
 
-dbWriteTable(con, "pcs_all_races", new_events, append = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_all_races", new_events, row.names = FALSE, append = TRUE)
 
 #
 #
