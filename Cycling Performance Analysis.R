@@ -10,10 +10,37 @@ con <- dbConnect(MySQL(),
 
 #
 
+race_data <- dbReadTable(con, "pcs_all_races") %>%
+  mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
+         Circuit = str_sub(type, 53, nchar(type))) %>%
+  separate(Circuit, c("Circuit", "delete"), sep = "&") %>%
+  mutate(Circuit = str_replace(Circuit, "circuit=", "")) %>%
+  
+  inner_join(
+    
+    tibble(Tour = c("Missing", "Americas Tour", "Europe Tour", "World Championships", "World Tour", "Asia Tour",
+                       "Oceania Tour", "Africa Tour", "Olympic Games"),
+           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3")), by = c("Circuit")
+    
+  ) %>%
+  
+  mutate(Tour = ifelse(str_detect(Race, "National Champ"), "National Championship", Tour)) %>%
+  
+  select(Race, Tour, URL = url, Year = year)
+
+#
+
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   unique() %>%
   mutate(rider = ifelse(rider == "Gaudu  David ", "Gaudu David", rider)) %>%
   filter(!(race %in% c("la poly normande"))) %>%
+  
+  left_join(
+    
+    race_data %>%
+      mutate(Race = tolower(Race)), by = c("race" = "Race", "year" = "Year")
+    
+  ) %>%
   
   left_join(
     
@@ -29,17 +56,60 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
          uphill_finish = ifelse(missing_profile_data == 1 & is.na(final_1km_gradient) & stage_type == 'icon profile p0',
                                 NA, uphill_finish))
 
+#
+#
+#
+
+missing_stage_types <- stage_data %>%
+  
+  filter(str_detect(parcours_value, "\\*") | stage_type == "icon profile p0") %>%
+  filter(missing_profile_data == 1 & rnk == 1) %>%
+  select(stage, race, year, class, parcours_value, stage_type) %>%
+  
+  # these are corrected later on
+  filter(!race %in% 
+           
+           c("grand prix cycliste de quebec", 
+             "grand prix cycliste de montreal", 
+             "il lombardia",
+             "la fleche wallonne",
+             "clasica ciclista san sebastian",
+             "amstel gold race",
+             "liege - bastogne - liege",
+             "milano-sanremo",
+             "tre valli varesine",
+             'strade bianche', 
+             "giro dell'emilia",
+             'chrono des nations',
+             'japan cup cycle road race', 
+             "le samyn",
+             'trofeo laigueglia',
+             "milano-torino")) %>%
+  # remove the ones I manually adjust thru spreadsheet
+  anti_join(
+    
+    read_csv("pred-climb-difficulty-replacements.csv"), by = c("stage", "race", "year"))
+
 # Strength of Peloton -----------------------------------------------------
 
-
+#
+#
+#
+#
 # Determine strength of peloton for each stage
 
 strength_of_peloton <- stage_data %>%
   
   # most non-European UWT races are not UWT quality
-  mutate(class = ifelse(race %in% c("gree-tour of guangxi", "presidential cycling tour of turkey"), "2.1",
+  # demote down a level or two
+  mutate(class = ifelse(race %in% c("gree-tour of guangxi", "presidential cycling tour of turkey",
+                                    "tour of beijing", "gree - tour of guangxi"), "2.1",
                         ifelse(race %in% c("amgen tour of california", "tour de pologne",
-                                           "cadel evans great road race", "santos tour down under"), "2.HC", class))) %>%
+                                           "cadel evans great road race", "santos tour down under"), "2.HC", class)),
+         class = ifelse(race %in% c("tour of qinghai lake", "le tour de langkawi",
+                                    "tour of hainan", "usa pro challenge", 
+                                    "the larry h. miller tour of utah",
+                                    "colorado classic"), "2.1", class)) %>%
   
   mutate(rnk = ifelse(is.na(rnk),200,rnk)) %>%
   
@@ -65,13 +135,18 @@ strength_of_peloton <- stage_data %>%
          qual = ifelse(is.na(bunch_sprint), qual / 1.5,
                        ifelse(bunch_sprint == 1, qual / 3, qual))) %>%
   
-  select(stage, race, year, rider, rnk, qual) %>%
+  select(stage, race, year, rider, rnk, qual, class, tour = Tour) %>%
   
   unique() %>%
   
   # gives pts based on finish ONLY for those w/i threshold
   mutate(pts = 1 / (rnk + 3),
          pts = ifelse(rnk < (qual+1), pts, 0)) %>%
+  
+  # adjusts for tour strength
+  mutate(pts = ifelse(tour %in% c("Oceania Tour", "Asia Tour"), pts * 0.5,
+                      ifelse(tour %in% c("National Championships"), pts * 0.35,
+                             ifelse(tour %in% c("Africa Tour"), pts * 0.2, pts)))) %>%
   
   mutate(year2 = ifelse(year == 2020, 2019, year)) %>%
   
@@ -80,6 +155,56 @@ strength_of_peloton <- stage_data %>%
   mutate(t5 = sum(pts*4, na.rm = T)/(n()+10),
          n=n()+10) %>%
   ungroup() 
+
+#
+
+by_tour <- strength_of_peloton %>%
+  
+  filter(!tour %in% c("Missing")) %>%
+  
+  group_by(rider, tour) %>%
+  summarize(pts = mean(pts, na.rm = T),
+            n = n()) %>%
+  ungroup() %>%
+  
+  mutate(pts = ifelse(pts == 0, 0.001, pts)) %>%
+  
+  inner_join(
+    
+    strength_of_peloton %>%
+      
+      filter(!tour %in% c("Missing")) %>%
+      
+      group_by(rider, tour) %>%
+      summarize(pts = mean(pts, na.rm = T),
+                n = n()) %>%
+      ungroup() %>%
+      mutate(pts = ifelse(pts == 0, 0.001, pts)), by = c("rider")
+    
+  ) %>%
+  
+  filter(tour.x != tour.y) %>%
+  
+  mutate(ratio = pts.x / pts.y,
+         hm = (2) / ((1 / n.x) + (1 / n.y))) %>%
+  
+  group_by(tour.x, tour.y) %>%
+  summarize(straight_avg = mean(ratio, na.rm = T),
+            harmonic_mean = sum(hm * ratio, na.rm = T) / sum(hm, na.rm = T),
+            n = sum(hm, na.rm = T)) %>%
+  ungroup() %>% 
+  
+  mutate(blended = (straight_avg + harmonic_mean)/2) %>% 
+  
+  filter(!tour.x %in% c("Olympic Games")) %>%
+  filter(!tour.y %in% c("Olympic Games")) %>% 
+  
+  group_by(tour.y) %>% 
+  mutate(rk = rank(blended, ties.method = 'min')) %>%
+  ungroup()
+
+# above analysis suggests WorldTour/World Champs level 1 | Europe HC/PRO/.1 + top Americas | Asia/Oceania | Natl Champs | Africa
+# before downgrading the pts for the last four tours in the strength_of_peloton code
 
 #
 
