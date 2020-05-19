@@ -31,6 +31,8 @@ GC_races <- dbGetQuery(con, "SELECT * FROM pcs_all_races") %>%
                                               'vuelta-ciclista-a-la-provincia-de-san-juan',
                                               'colombia-21', 'dauphine'))
 
+#
+
 New_GC_races <- expand_grid(
   
   url = c("vuelta-a-espana", "giro-d-italia", "tour-de-france", "volta-a-catalunya", 
@@ -39,11 +41,10 @@ New_GC_races <- expand_grid(
           'ruta-del-sol', 'volta-ao-algarve', 'la-route-d-occitanie',
           'tour-cycliste-international-la-provence', 'vuelta-a-la-comunidad-valenciana',
           'criterium-international', 'tour-of-the-alps', 'vuelta-a-burgos',
-          'tour-of-oman','dauphine', 'tour-de-l-avenir' 
-          #'euskal-bizikleta'
+          'tour-of-oman','dauphine', 'tour-de-l-avenir'
   ),
   
-  year = seq(1989,2013,1)
+  year = seq(1980,2013,1)
   
 ) %>%
   
@@ -57,21 +58,42 @@ GC_all <- GC_races %>%
   
   rbind(New_GC_races) %>%
   
-  filter(url %in% as.list(dbGetQuery(con, "SELECT url FROM pcs_gc_results_OLD") %>% unique() %>% .[[1]])) %>%
+  #filter(url %in% as.list(dbGetQuery(con, "SELECT url FROM pcs_gc_results_OLD") %>% unique() %>% .[[1]])) %>%
   
   rbind(
     
     tibble(url = 'euskal-bizikleta',
-           year = seq(1989,2004,1)) %>%
+           year = seq(1987,2004,1)) %>%
       mutate(url = paste0("race/", url, "/", year)),
     tibble(url = 'tour-mediterraneen',
-           year = seq(1989,2011,1)) %>%
+           year = seq(1980,2011,1)) %>%
       mutate(url = paste0("race/", url, "/", year)),
     tibble(url = 'gp-du-midi-libre',
-           year = seq(1989,2002,1)) %>%
+           year = seq(1980,2002,1)) %>%
       mutate(url = paste0("race/", url, "/", year)),
     tibble(url = 'setmana-catalana',
-           year = seq(1989,2005,1)) %>%
+           year = seq(1981,2005,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'vuelta-ciclista-a-la-region-de-murcia',
+           year = seq(1985,2013,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'circuit-sarthe',
+           year = seq(1980,2013,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'vuelta-a-castilla-y-leon',
+           year = seq(1985,2013,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'vuelta-asturias',
+           year = seq(1980,2013,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'vuelta-ciclista-a-la-rioja',
+           year = seq(1980,2008,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'coors-classic',
+           year = seq(1980,1988,1)) %>%
+      mutate(url = paste0("race/", url, "/", year)),
+    tibble(url = 'tour-du-pont',
+           year = seq(1989,1996,1)) %>%
       mutate(url = paste0("race/", url, "/", year))
   )
 
@@ -79,7 +101,30 @@ GC_all <- GC_races %>%
 
 dl_html <- TRUE
 
-for(g in 645:length(GC_all$url)) {
+if(dl_html == TRUE) {
+  
+  GC_all <- GC_all %>%
+    
+    filter(!(url %in% as.list(dbGetQuery(con, "SELECT url FROM pcs_gc_results") %>% unique() %>% .[[1]]))) %>%
+    filter(!(str_detect(url, "tour-of-california") & (year < 2006))) %>%
+    filter(!(str_detect(url, "tour-cycliste-international-la-provence") & (year < 2014))) %>%
+    filter(!(str_detect(url, "vuelta-a-la-comunidad-valenciana") & (year < 2016) & (year > 2008))) %>%
+    filter(!(str_detect(url, "vuelta-ciclista-a-la-region-de-murcia") & (year < 2019) & (year > 2012))) %>%
+    filter(!(str_detect(url, "tour-of-the-alps") & (year == 1986))) %>%
+    filter(!(str_detect(url, "vuelta-a-burgos") & (year == 1980))) %>%
+    filter(!(str_detect(url, "vuelta-a-burgos") & (year == 2006))) %>%
+    filter(!(str_detect(url, "tour-de-l-avenir") & (year == 1991))) %>%
+    filter(!(str_detect(url, "tour-of-oman") & (year < 2010))) %>%
+    filter(!(str_detect(url, "vuelta-a-castilla-y-leon") & (year == 1990))) %>%
+    filter(!(str_detect(url, "vuelta-ciclista-a-la-rioja") & (year > 2008)))
+  
+}
+
+#
+#
+#
+
+for(g in 3:length(GC_all$url)) {
   
   f_name <- paste0("PCS-HTML/", "GC-", str_replace_all(GC_all$url[[g]], "/", ""))
   
@@ -119,7 +164,11 @@ for(g in 645:length(GC_all$url)) {
                             'race/criterium-international/2010',
                             'race/criterium-international/2011',
                             'race/criterium-international/2012',
+                            'race/tour-de-france/1987',
+                            'race/tour-de-l-avenir/1988',
                             'race/tour-mediterraneen/2006',
+                            'race/vuelta-asturias/1986',
+                            'race/circuit-sarthe/2000',
                             'race/setmana-catalana/1992')) {
     
     n = 3
@@ -139,7 +188,8 @@ for(g in 645:length(GC_all$url)) {
                                    'race/tour-mediterraneen/1995',
                                    'race/tour-mediterraneen/1996',
                                    'race/tour-mediterraneen/1998',
-                                   'race/tour-mediterraneen/2003')) {
+                                   'race/tour-mediterraneen/2003',
+                                   'race/circuit-sarthe/1983')) {
     
     n = 1
     
@@ -168,6 +218,8 @@ for(g in 645:length(GC_all$url)) {
            year = GC_all$year[[g]])
   
   dbWriteTable(con, "pcs_gc_results", df, append=T, row.names = F)
+  
+  rm(df)
   
 }
 
@@ -212,13 +264,13 @@ pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
 # leading up to date
 #
 
-store_list <- vector("list", 29)
+store_list <- vector("list", 40)
 
-y = seq(1992, 2020, 1)
+y = seq(1983, 2020, 1)
 
 y = as.Date(paste0(y,"-07-10"))
 
-for(x in 1:29) {
+for(x in 1:length(y)) {
   
   D <- as.Date(y[[x]])
   
@@ -336,11 +388,11 @@ corr_gc_tdf <- pcs_gc_results %>%
 
 #
 
-y = seq(1989, 2020, 1)
+y = seq(1980, 1989, 1)
 
-for(x in 1:31) {
+for(x in 1:length(y)) {
   
-  url <- paste0("https://www.procyclingstats.com/race/paris-nice/", y[[x]] , "/startlist/alphabetical-with-filters") %>%
+  url <- paste0("https://www.procyclingstats.com/race/vuelta-a-espana/", y[[x]] , "/startlist/alphabetical-with-filters") %>%
     read_html()
   
   st <- url %>%
@@ -352,7 +404,7 @@ for(x in 1:31) {
            team = Team) %>%
     mutate(rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"),
            year = y[[x]],
-           race = 'paris-nice')
+           race = 'vuelta-a-espana')
   
   dbWriteTable(con, "startlists", st, append = T, row.names = F)
   
