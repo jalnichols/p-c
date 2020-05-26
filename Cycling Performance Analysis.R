@@ -32,7 +32,17 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   unique() %>%
-  mutate(rider = ifelse(rider == "Gaudu  David ", "Gaudu David", rider)) %>%
+  mutate(rider = ifelse(rider == "Gaudu  David ", "Gaudu David", rider),
+         team = ifelse(str_detect(team, "Cofidis"), "Cofidis", team)) %>%
+  
+  mutate(team = iconv(team, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+  
+  left_join(
+    
+    read_csv("master-teams.csv"), by = c("team", "year")
+    
+  ) %>%
+  
   filter(!(race %in% c("la poly normande"))) %>%
   
   left_join(
@@ -462,12 +472,6 @@ stage_data <- stage_data %>%
       group_by(rider, stage, year, race) %>%
       nest() %>%
       ungroup(), by = c("rider", "stage", "year", "race")
-    
-  ) %>%
-  
-  left_join(
-    
-    read_csv("master-teams.csv"), by = c("team", "year")
     
   ) %>%
   
@@ -1078,6 +1082,160 @@ gbm_predict = cbind(
   pred = predict(gbm_model, 
                  as.matrix(bs_data %>% select(pred_climb_difficulty, length, one_day_race, 
                                                         uphill_finish, grand_tour), reshape=T)))
+
+#
+#
+#
+
+who_is_in_bunch_sprints <- stage_data_perf %>%
+  filter(time_trial == 0 & !is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(bunch_sprint == 1 & year > 2013) %>%
+  
+  mutate(in_bunch = ifelse(gain_1st <= 5, 1, 0),
+         best_on_team = ifelse(in_bunch == 1 & tm_pos == 1, 1, 0),
+         and_top_3 = ifelse(best_on_team == 1 & rnk <= 3, 1, 0),
+         and_win = ifelse(best_on_team == 1 & rnk == 1, 1, 0),
+         points_per_opp = ifelse(best_on_team == 1, points_finish, NA)) %>%
+  
+  group_by(rider, master_team) %>%
+  summarize(in_bunch = mean(in_bunch, na.rm = T),
+            sprints = n(),
+            top_on_team = mean(best_on_team, na.rm = T),
+            and_top_3 = mean(and_top_3, na.rm = T),
+            points_per_opp = mean(points_per_opp, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(delivering = and_top_3 / top_on_team)
+
+#
+#
+#
+
+most_in_bunch_sprints <- stage_data_perf %>%
+  filter(time_trial == 0 & !is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(year > 2013) %>%
+  
+  group_by(rider, master_team) %>%
+  summarize(stages = n(),
+            sof = mean(sof, na.rm = T),
+            sprint_stages = mean(bunch_sprint == 1, na.rm = T)) %>%
+  ungroup()
+
+#
+
+most_in_climbing_stages <- stage_data_perf %>%
+  filter(time_trial == 0 & !is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(year > 2013) %>%
+  
+  group_by(rider) %>%
+  summarize(stages = n(),
+            sof = mean(sof, na.rm = T),
+            climbing_stages = mean(bunch_sprint == 0 & pred_climb_difficulty >= 8, na.rm = T)) %>%
+  ungroup()
+
+#
+#
+#
+
+when_leader <- stage_data_perf %>%
+  filter(!is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(year > 2017) %>%
+  mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA)) %>%
+  
+  group_by(rider, 
+           master_team, 
+           type = ifelse(bunch_sprint == 0 & pred_climb_difficulty >= 8, "climbing", 
+                         ifelse(bunch_sprint == 1, "sprints", 
+                                ifelse(time_trial == 1, "time trial", "other")))) %>%
+  summarize(stages = n(),
+            sof = mean(sof, na.rm = T),
+            median = median(tm_pos, na.rm = T),
+            leader = mean(tm_pos == 1, na.rm = T),
+            second = mean(tm_pos == 2, na.rm = T),
+            opportunities = sum(tm_pos == 1, na.rm = T),
+            points_per_opp = mean(points_per_opp, na.rm = T),
+            points = mean(points_finish, na.rm = T)) %>%
+  ungroup()
+
+#
+#
+#
+
+team_best <- stage_data_perf %>%
+  filter(!is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(year > 2017 & tm_pos == 1) %>%
+  mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA)) %>%
+  
+  group_by(master_team, 
+           type = ifelse(bunch_sprint == 0 & pred_climb_difficulty >= 8, "climbing", 
+                         ifelse(bunch_sprint == 1, "sprints", 
+                                ifelse(time_trial == 1, "time trial", "other")))) %>%
+  summarize(stages = n(),
+            sof = mean(sof, na.rm = T),
+            median = median(tm_pos, na.rm = T),
+            points_per_opp = mean(points_per_opp, na.rm = T),
+            points = mean(points_finish, na.rm = T)) %>%
+  ungroup()
 
 #
 # old logistic model
