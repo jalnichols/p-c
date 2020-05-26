@@ -933,6 +933,9 @@ stage_data_raw$race <- iconv(stage_data_raw$race, from="UTF-8", to = "ASCII//TRA
 
 stage_data_raw$rider <- iconv(stage_data_raw$rider, from="UTF-8", to = "ASCII//TRANSLIT")
 
+stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team, 
+                                          id = "Latin-ASCII")
+
 #
 
 stage_data <- stage_data_raw %>%
@@ -967,6 +970,7 @@ stage_data <- stage_data_raw %>%
   mutate(length = ifelse(year == 2013 & race == 'E3 Prijs Vlaanderen - Harelbeke', 206, length)) %>%
   
   mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))) %>%
+  
   mutate(finished = ifelse(rnk %in% c("DNF", "OTL", "DNS", "NQ", "DSQ"), NA, total_seconds)) %>%
   mutate(total_seconds = ifelse(total_seconds > 30000, NA, total_seconds)) %>%
   
@@ -1037,7 +1041,11 @@ stage_data <- stage_data_raw %>%
   
   group_by(team, stage, race, year) %>%
   mutate(tm_pos = rank(rnk, ties.method = "first")) %>%
-  ungroup()
+  ungroup() %>%
+  
+  # correct stage for prologue races
+  mutate(stage = stage_number) %>%
+  select(-stage_number)
 
 #
 
@@ -1289,13 +1297,11 @@ pcs_missing_from_fr <- stage_data_raw %>%
 # final cleanup before writing
 
 stage_data <- stage_data %>%
-  mutate(stage = stage_number) %>%
   mutate(time_trial = as.numeric(time_trial),
          grand_tour = as.numeric(grand_tour),
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
-  select(-prologue_exists,
-         -stage_number) %>%
+  select(-prologue_exists) %>%
   filter(!(race == "brussels cycling classic" & year == 2017)) %>%
   filter(!(race == "la poly normonde")) %>%
   filter(!(race == 'manavgat side junior')) %>%
@@ -1330,6 +1336,8 @@ dbWriteTable(con, "pcs_stage_data",
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
+html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
+
 # download new stages (TRUE) or use old HTML (FALSE)
 dl_html <- FALSE
 
@@ -1341,6 +1349,15 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016")))
   
+  all_stages <- all_stages %>%
+    mutate(path = paste0("PCS-HTML-GT/", 
+                         str_replace_all(str_replace(value, "https://www.procyclingstats.com/race/", ""), "/", ""))) %>%
+    filter(path %in% html_stage_dir) %>%
+    
+    filter(!(value %in% c("race/giro-d-italia/2001/stage-18", "race/giro-d-italia/2018/stage-21",
+                          "race/vuelta-a-espana/1991/stage-11", "race/vuelta-a-espana/1993/stage-12",
+                          "race/vuelta-a-espana/2002/stage-13")))
+  
 }
 
 #
@@ -1349,7 +1366,7 @@ if(dl_html == FALSE) {
 
 tictoc::tic()
 
-for(r in 1437:length(all_stages$value)) {
+for(r in 1:length(all_stages$value)) {
   
   f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
@@ -1741,3 +1758,150 @@ basic_pred <- cbind(
   group_by(stage, race, year) %>%
   mutate(pred = pred / sum(pred, na.rm = T)) %>%
   ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+# Scrape PCS Rankings -----------------------------------------------------
+
+race_data <- dbReadTable(con, "pcs_all_races") %>%
+  mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
+         Circuit = str_sub(type, 53, nchar(type))) %>%
+  separate(Circuit, c("Circuit", "delete"), sep = "&") %>%
+  mutate(Circuit = str_replace(Circuit, "circuit=", "")) %>%
+  
+  inner_join(
+    
+    tibble(Tour = c("Missing", "Americas Tour", "Europe Tour", "World Championships", "World Tour", "Asia Tour",
+                    "Oceania Tour", "Africa Tour", "Olympic Games"),
+           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3")), by = c("Circuit")
+    
+  ) %>%
+  
+  mutate(Tour = ifelse(str_detect(Race, "National Champ"), "National Championship", Tour)) %>%
+  
+  select(Race, Tour, URL = url, Year = year) %>%
+  
+  filter(Year > 2013) %>%
+  
+  filter(!(str_detect(URL, "race/81st-schaal-schels/"))) %>% 
+  filter(!(str_detect(URL, "race/heistse-pijl/"))) %>%
+  filter(!(str_detect(URL, "race/bruges-cycling-classic/"))) %>%
+  filter(!(str_detect(URL, "race/grote-prijs-jean-pierre-monsere/2019")))
+
+#
+#
+#
+
+html_stage_dir <- fs::dir_ls("PCS-HTML/")
+
+#
+
+tictoc::tic()
+
+for(r in 1038:length(race_data$URL)) {
+  
+  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(race_data$URL[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""), "pcs-ranks")
+  
+  # match existence of f_name in stage directory
+  if(f_name %in% html_stage_dir) {
+    
+    race_url <- paste0("https://www.procyclingstats.com/race/", race_data$URL[[r]], "/startlist/riders-ranked")
+    
+    # no need to download, proceed to clean and store
+    
+    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(race_data$URL[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""), "pcs-ranks")
+    
+    page <- read_file(f_name) %>%
+      read_html()
+    
+    # bring in the list of tables
+    
+    d <- page %>%
+      html_nodes('table') %>%
+      html_table()
+    
+    sprint_ranks_race <- d[[1]] %>%
+      janitor::clean_names() %>%
+      
+      select(rider,
+             points) %>%
+      
+      mutate(race = race_data$Race[[r]],
+             year = race_data$Year[[r]],
+             url = race_data$URL[[r]]) %>%
+      
+      mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+             rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"))
+    
+    #
+    
+    dbWriteTable(con,
+                 "pcs_ranks_race",
+                 sprint_ranks_race,
+                 row.names = FALSE,
+                 append = TRUE)
+    
+    print(str_sub(f_name, 10, nchar(f_name)))
+    
+  } else {
+    
+    # if the file is not download, download and do everything the same
+    
+    race_url <- paste0("https://www.procyclingstats.com/race/", race_data$URL[[r]], "/startlist/riders-ranked")
+    
+    # no need to download, proceed to clean and store
+    
+    download.file(race_url, f_name, quiet = TRUE)
+    
+    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(race_data$URL[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""), "pcs-ranks")
+
+    page <- read_file(f_name) %>%
+      read_html()
+    
+    # bring in the list of tables
+    
+    d <- page %>%
+      html_nodes('table') %>%
+      html_table()
+    
+    sprint_ranks_race <- d[[1]] %>%
+      janitor::clean_names() %>%
+      
+      select(rider,
+             points) %>%
+      
+      mutate(race = race_data$Race[[r]],
+             year = race_data$Year[[r]],
+             url = race_data$URL[[r]]) %>%
+      
+      mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+             rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"))
+    
+    #
+    
+    dbWriteTable(con,
+                 "pcs_ranks_race",
+                 sprint_ranks_race,
+                 row.names = FALSE,
+                 append = TRUE)
+    
+    print(str_sub(f_name, 10, nchar(f_name)))
+    
+  }
+  
+  Sys.sleep(runif(1,1,5))
+  
+}
+
+tictoc::toc()
