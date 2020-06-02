@@ -1809,7 +1809,7 @@ html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
 tictoc::tic()
 
-for(r in 1038:length(race_data$URL)) {
+for(r in 1:length(race_data$URL)) {
   
   f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(race_data$URL[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""), "pcs-ranks")
   

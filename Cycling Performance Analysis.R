@@ -60,6 +60,40 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
   mutate(stage_type = ifelse(is.na(new_st), stage_type, paste0("icon profile p", new_st))) %>%
   
+  left_join(
+    
+    tibble(
+      
+      race = c("tour of china ii", "tour of china i", "the larry h.miller tour of utah",
+               "tour of taiwan", "tour of indonesia", "tour of china i", "tour of qinghai lake",
+               "trofeo serra de tramuntana, deia-lluc", "trofeo serra de tramuntana", "trofeo serra de tramuntana",
+               "tour of qinghai lake", "tour of qinghai lake", "tour of qinghai lake", "tour of qinghai lake",
+               "tour of utah", "tour of china i", "vuelta a castilla y leon", "int. osterreich-rundfahrt-tour of austria", "int. osterreich-rundfahrt-tour of austria", "tour of qinghai lake", "tour of qinghai lake",
+               "tour of qinghai lake", "tour of china ii", "tour of china i", "tour de wallonie",
+               "tour of iran (azarbaijan)", "tour of iran (azarbaijan)", "tour of iran (azarbaijan)",
+               "tour of japan", "tour du gevaudan languedoc-roussillon", "vuelta a burgos",
+               "tour of qinghai lake", "tour of qinghai lake", "tour of qinghai lake",
+               "tour of qinghai lake", "usa pro challenge","amgen tour of california",
+               "the larry h.miller tour of utah", "tour of china i", "tour de korea", "tour de korea",
+               "tour de korea"),
+      
+      stage = c(4,6,5,3,3,3,4,1,1,1,3,4,6,7,2,3,2,3,8,3,6,7,4,5,2,2,2,3,4,1,4,3,6,8,10,
+                7,7,5,6,3,4,6),
+      
+      year = c(2015,2014,2014,2020,2018,2016,2016,2013,2014,2015,2016,2016,2016,2016,2016,2016,
+               2015,2015,2015,2015,2015,2015,2015,2015,2015,2016,2017,2017,2017,2014,2014,
+               2014,2014,2014,2014,2014,2014,2014,2014,2014,2014,2014),
+      
+      NEW = c("p2", "p2","p2","p2","p2","p2","p2","p4","p4","p4","p2","p2","p2","p2","p2","p2",
+              "p2","p2","p2","p2","p2","p2","p2","p3","p2","p2","p2","p2","p2","p2","p2",
+              "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3")
+      
+    ), by = c("year", "stage", "race")
+    
+  ) %>%
+  
+  mutate(stage_type = ifelse(is.na(NEW), stage_type, paste0("icon profile ", NEW))) %>%
+  
   mutate(uphill_finish = ifelse(stage_type %in% c('icon profile p5', 'icon profile p3'), TRUE,
                                 ifelse(summit_finish == 1 & missing_profile_data == 0, TRUE,
                                        ifelse(missing_profile_data == 0 & final_1km_gradient > 0.04, TRUE, FALSE))),
@@ -145,7 +179,7 @@ strength_of_peloton <- stage_data %>%
          qual = ifelse(is.na(bunch_sprint), qual / 1.5,
                        ifelse(bunch_sprint == 1, qual / 3, qual))) %>%
   
-  select(stage, race, year, rider, rnk, qual, class, tour = Tour) %>%
+  select(stage, race, year, rider, rnk, qual, class, tour = Tour, master_team) %>%
   
   unique() %>%
   
@@ -257,6 +291,28 @@ individual_races_sop <- strength_of_peloton %>%
   select(race, stage, year, sop)
 
 #
+
+individual_races_team_sop <- strength_of_peloton %>%
+  inner_join(best_possible_sop, by = c("year2")) %>%
+  
+  # remove current race from calc
+  mutate(t5 = ((t5*n) - (pts*2))/(n-1)) %>%
+  
+  # sum up total points rating for all of race
+  group_by(race, stage, year, master_team) %>%
+  mutate(total = sum(t5, na.rm = T),
+            top150 = mean(top150, na.rm = T)) %>%
+  filter(rank(-t5, ties.method = "first") == 1) %>%
+  ungroup() %>%
+  
+  group_by(race, stage, year) %>%
+  mutate(best = max(total, na.rm = T),
+         rk = rank(-total, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(rel_to_best = total / best)
+
+#
 #
 #
 #
@@ -273,7 +329,7 @@ individual_races_sop <- strength_of_peloton %>%
 
 pv_mod <- stage_data %>% 
   
-  filter(rnk == 1) %>% 
+  filter(rnk == 1 & time_trial == FALSE) %>% 
   
   mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
          pv = as.numeric(parcours_value)) %>% 
@@ -292,7 +348,7 @@ pv_mod <- stage_data %>%
 
 pv_data <- cbind(
   stage_data %>%
-  filter(rnk == 1) %>% 
+    filter(rnk == 1 & time_trial == FALSE) %>% 
   
   mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
          pv = as.numeric(parcours_value)) %>% 
@@ -307,7 +363,7 @@ pv_data <- cbind(
     
     pv_mod, 
     stage_data %>%
-      filter(rnk == 1) %>% 
+      filter(rnk == 1 & time_trial == FALSE) %>%  
       
       mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
              pv = as.numeric(parcours_value)) %>% 
@@ -327,7 +383,7 @@ pv_data <- cbind(
 
 no_climbs_mod <- stage_data %>% 
   
-  filter(rnk == 1) %>% 
+  filter(rnk == 1 & time_trial == FALSE) %>% 
   
   mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
          pv = as.numeric(parcours_value)) %>% 
@@ -346,7 +402,7 @@ no_climbs_mod <- stage_data %>%
 
 no_climbs_data <- cbind(
   stage_data %>%
-    filter(rnk == 1) %>% 
+    filter(rnk == 1 & time_trial == FALSE) %>% 
     
     select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
            -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
@@ -358,7 +414,7 @@ no_climbs_data <- cbind(
     
     no_climbs_mod, 
     stage_data %>%
-      filter(rnk == 1) %>% 
+      filter(rnk == 1 & time_trial == FALSE) %>% 
       
       select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
              -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
@@ -376,7 +432,7 @@ no_climbs_data <- cbind(
 
 icon_mod <- stage_data %>% 
   
-  filter(rnk == 1) %>% 
+  filter(rnk == 1 & time_trial == FALSE) %>% 
   
   mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
          pv = as.numeric(parcours_value)) %>% 
@@ -395,7 +451,7 @@ icon_mod <- stage_data %>%
 
 icon_data <- cbind(
   stage_data %>%
-    filter(rnk == 1) %>% 
+    filter(rnk == 1 & time_trial == FALSE) %>% 
     
     mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
            pv = as.numeric(parcours_value)) %>% 
@@ -410,7 +466,7 @@ icon_data <- cbind(
     
     icon_mod, 
     stage_data %>%
-      filter(rnk == 1) %>% 
+      filter(rnk == 1 & time_trial == FALSE) %>% 
       
       mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
              pv = as.numeric(parcours_value)) %>% 
@@ -1227,6 +1283,7 @@ team_best <- stage_data_perf %>%
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA)) %>%
   
   group_by(master_team, 
+           rider,
            type = ifelse(bunch_sprint == 0 & pred_climb_difficulty >= 8, "climbing", 
                          ifelse(bunch_sprint == 1, "sprints", 
                                 ifelse(time_trial == 1, "time trial", "other")))) %>%
@@ -1234,7 +1291,78 @@ team_best <- stage_data_perf %>%
             sof = mean(sof, na.rm = T),
             median = median(tm_pos, na.rm = T),
             points_per_opp = mean(points_per_opp, na.rm = T),
-            points = mean(points_finish, na.rm = T)) %>%
+            success = mean(success, na.rm = T)) %>%
+  ungroup()
+
+#
+
+team_best <- stage_data_perf %>%
+  filter(!is.na(bunch_sprint)) %>%
+  mutate(length = length - 200) %>%
+  
+  select(-data) %>%
+  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
+         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
+         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -URL, 
+         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
+  
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  
+  filter(year > 2013) %>%
+  mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA)) %>%
+  
+  group_by(team, race, stage, year) %>%
+  mutate(points_per_opp = max(points_per_opp, na.rm = T),
+         first_rnk = min(rnk, na.rm = T)) %>%
+  
+  group_by(master_team, 
+           rider,
+           type = ifelse(bunch_sprint == 0 & pred_climb_difficulty >= 8, "climbing", 
+                         ifelse(bunch_sprint == 1, "sprints", 
+                                ifelse(time_trial == 1, "time trial", "other")))) %>%
+  summarize(stages = n(), win = mean(first_rnk == 1, na.rm = T), podium = mean(first_rnk < 4, na.rm = T),
+            sof = mean(sof, na.rm = T), pers_win = mean(rnk == 1, na.rm = T),
+            
+            median = median(tm_pos, na.rm = T),
+            points_per_opp = mean(points_per_opp, na.rm = T),
+            success = mean(success, na.rm = T)) %>%
+  ungroup()
+
+#
+
+teammates_in_race <- stage_data_perf %>%
+  filter(!is.na(bunch_sprint)) %>% 
+  filter(!is.na(pred_climb_difficulty)) %>% 
+  filter(year > 2018) %>% 
+  filter(bunch_sprint == 1) %>% 
+  filter(master_team == 'UAE Team') %>% 
+  
+  select(rider, rnk, stage, race, year) %>% 
+  unique() %>% 
+  
+  group_by(stage, race, year) %>% 
+  mutate(first_rnk = min(rnk, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  inner_join(stage_data_perf %>%
+               filter(!is.na(bunch_sprint)) %>% 
+               filter(!is.na(pred_climb_difficulty)) %>% 
+               filter(year > 2018) %>% 
+               filter(bunch_sprint == 1) %>%
+               filter(master_team == 'UAE Team') %>% 
+               
+               select(rider, rnk, stage, race, year) %>% 
+               unique(), by = c("stage", "race", "year")) %>% 
+  
+  filter(rider.x != rider.y) %>% 
+  
+  group_by(rider.x, rider.y) %>% 
+  summarize(win_rate = mean(first_rnk == 1, na.rm = T),
+            stages = n(), 
+            X_wins = mean(rnk.x == 1, na.rm = T), 
+            Y_wins = mean(rnk.y == 1, na.rm = T)) %>% 
   ungroup()
 
 #
