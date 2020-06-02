@@ -31,8 +31,8 @@ con <- dbConnect(MySQL(),
 
 # Scrape all UCI World Tour races for 2013-20
 
-scraper_list <- tibble(year = c(2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020),
-                       page_no = c(1,1,1,1,1,2,1,2,1,2,1))
+scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020),
+                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1))
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -82,7 +82,8 @@ all_races <- bind_rows(result_list)
 # 7 Olympics
 # 1 UWT
 
-scraper_list <- tibble(year = c(2017, 2017, 2017, 2017, 2017, 
+scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 
+                                2017, 2017, 2017, 2017, 2017, 
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
                                 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
                                 2020, 2020, #2
@@ -91,7 +92,8 @@ scraper_list <- tibble(year = c(2017, 2017, 2017, 2017, 2017,
                                 2017, 2018, 2019, 2020, #3
                                 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, #8
                                 2017, 2018, 2018, 2019, 2020), #4
-                       page_no = c(1,2,3,4,5, 
+                       page_no = c(1,1,1,1,1,1,
+                                   1,2,3,4,5, 
                                    1,2,3,4,5,6,7,8,9,10, 
                                    1,2,3,4,5,6,7, 8,9,
                                    1,2,
@@ -100,7 +102,8 @@ scraper_list <- tibble(year = c(2017, 2017, 2017, 2017, 2017,
                                    1, 1, 1,1,
                                    1, 1, 1, 1, 1, 1, 1, 1, 
                                    1, 1, 2, 1, 1),
-                       type = c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+                       type = c(2,2,2,2,2,2,
+                                2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
                                 5,5,5,5,
                                 6,6,6,6,
                                 3,3,3,3,
@@ -163,6 +166,10 @@ intermediate_races <- all_races %>%
 # NON UWT events to retain data
 
 retain_ids <- c(
+  
+  # now World Tour races / defunct
+  
+  54, 55, 888, 66, 39, 73, 50,
   
   # 1.HC
   
@@ -404,11 +411,70 @@ for(y in 1:length(stages_list)) {
     # with the generic sprints (some of this contains climb data)
     generic_sprints <- json[[3]]$stagegenericsprints
     
+    # with the generic sprints (some of this contains climb data)
+    cobbles <- json[[3]]$stagecobbles
+    
     # and the distance / altitude data
     other_jsons <- json[[2]]
     
     # and lat/long data
     lat_longs <- json[[1]]
+    
+    # if there are cobbles listed inside the JSON, scrape them
+    
+    if(length(cobbles) > 0) {
+      
+      cobbles_list <- vector('list', length(cobbles))
+      
+      for(c in 1:length(cobbles)) {
+        
+        difficulty = cobbles[[c]]$difficulty
+        
+        if(is.null(difficulty)) {
+          
+          difficulty <- as.numeric(NA)
+          
+        }
+        
+        marker = cobbles[[c]]$marker$icon
+        
+        if(is.null(marker)) {
+          
+          marker <- as.numeric(NA)
+          
+        }
+        
+        cobbles_list[[c]] <- tibble(
+          
+          sector_name = cobbles[[c]]$name %>% str_replace_all("%20", " "),
+          start_distance = cobbles[[c]]$startdistance,
+          end_distance = cobbles[[c]]$distance,
+          difficulty = as.numeric(difficulty),
+          icon = marker,
+          source = "COBBLES"
+          
+        )
+        
+      }
+      
+    } else {
+      
+      cobbles_list <- vector('list', 1)
+      
+      c = 1
+      
+      cobbles_list[[c]] <- tibble(
+        
+        sector_name = "none",
+        start_distance = as.numeric(NA),
+        end_distance = as.numeric(NA),
+        difficulty = as.numeric(NA),
+        icon = "no cobbles",
+        source = "MISSING"
+        
+      )
+      
+    }
     
     # if there are climbs listed inside the JSON, scrape them
     
@@ -457,6 +523,19 @@ for(y in 1:length(stages_list)) {
     #combine all climbs for that stage
     
     df <- bind_rows(climbs_list) %>%
+      mutate(url = stages_list[[y]]$url[[z]],
+             race_url = stages_list[[y]]$race_url[[z]],
+             race = stages_list[[y]]$race[[z]],
+             #year = stages_list[[y]]$year[[z]],
+             
+             # this data is wrong when all_stages != stages_list in terms of length
+             #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
+             year = 0,
+             stage = z)
+    
+    # same process for cobbles
+    
+    cobs <- bind_rows(cobbles_list) %>%
       mutate(url = stages_list[[y]]$url[[z]],
              race_url = stages_list[[y]]$race_url[[z]],
              race = stages_list[[y]]$race[[z]],
@@ -526,6 +605,12 @@ for(y in 1:length(stages_list)) {
     } else {
       
       dbWriteTable(con, "fr_climbs_scraped", gen_sprs, row.names = F, append = TRUE)
+      
+    }
+    
+    if(length(cobbles)>0) {
+      
+      dbWriteTable(con, "fr_cobbles", cobs, row.names = F, append = TRUE)
       
     }
     
@@ -673,6 +758,21 @@ clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0107', "c"))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0153', "oe"))) %>%
   
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%28', ""))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%29', ""))) %>% 
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%D8', "O"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%C8', "E"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E4', "a"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%AA', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%22', ''))) %>%
+  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%E1', "a"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0103', "a"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0219', "s"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0142', "l"))) %>%  
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0119', "e"))) %>%
+  mutate(climb_name = str_trim(str_replace_all(climb_name, '%u0144', "n"))) %>%
+  
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28 Souvenir Jacques Goddet%29', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Henri Desgrange%29', ''))) %>%
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%28Souvenir Jacques Goddet%29', ''))) %>%
@@ -716,7 +816,7 @@ pcs <- dbGetQuery(con, "SELECT year, race, date FROM pcs_stage_raw GROUP BY race
                       "Tour of Antalya", "Tour of China I", "Tour of China II", "Tour of Indonesia",
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
-  filter(year > 2013) %>%
+  filter(year > 2012) %>%
   filter(date < '2020-03-10')
 
 #
@@ -806,9 +906,11 @@ pcs_fr_matches <- matches %>%
     
   ) %>%
   
-  filter(year > 2013) %>%
+  filter(year > 2012) %>%
   
-  filter(date.x < (date.y + 15) & date.x > (date.y - 15))
+  filter(date.x < (date.y + 5) & date.x > (date.y - 5)) %>%
+  
+  unique()
 
 #
 
@@ -1202,10 +1304,10 @@ mtn_names <- all_climbs_int %>%
 
 #
 
-fr_worldwide_climbs <- dbGetQuery(con, "SELECT TRACKID, TRACKNAME FROM fr_all_european_climbs") %>%
+fr_worldwide_climbs <- dbGetQuery(con, "SELECT DISTINCT TRACKNAME FROM fr_all_european_climbs") %>%
   
   mutate(TRACKNAME = str_trim(str_replace(TRACKNAME, "(via D110 - Entraigues)", ""))) %>%
-  select(TRACKID, TRACKNAME)
+  select(TRACKNAME)
 
 # 
 
@@ -1338,22 +1440,22 @@ write_rds(gam_mod, "model-climb-difficulty.rds")
 
 # LM is deprecated
 
-lm_mod <- lm(category ~ alt + vam_poly, 
-             
-             # the KOM point values found by measuring max efforts in total watts are
-             # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
-             
-             data = all_climbs_data %>%
-               filter(!is.na(category)) %>%
-               mutate(category = ifelse(category == 1, 10, 
-                                        ifelse(category == 2, 5, 
-                                               ifelse(category == 3, 3, 
-                                                      ifelse(category == 4, 1.5, 20))))) %>% 
-               filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
-               select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
-               unique() %>%
-               mutate(vam_poly = ((gradient^2) * length), 
-                      alt = summit - 1000))
+# lm_mod <- lm(category ~ alt + vam_poly, 
+#              
+#              # the KOM point values found by measuring max efforts in total watts are
+#              # HC ~20, 1st ~10, 2nd ~5, 3rd ~3, 4th ~1.5
+#              
+#              data = all_climbs_data %>%
+#                filter(!is.na(category)) %>%
+#                mutate(category = ifelse(category == 1, 10, 
+#                                         ifelse(category == 2, 5, 
+#                                                ifelse(category == 3, 3, 
+#                                                       ifelse(category == 4, 1.5, 20))))) %>% 
+#                filter(race %in% c("Vuelta a Espana", "Tour de France", "Giro d'Italia")) %>%
+#                select(gradient, length, summit, category, time_climbed, stage, year, climb_name) %>%
+#                unique() %>%
+#                mutate(vam_poly = ((gradient^2) * length), 
+#                       alt = summit - 1000))
 
 #
 
