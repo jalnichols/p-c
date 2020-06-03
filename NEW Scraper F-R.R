@@ -375,7 +375,7 @@ tictoc::tic()
 
 #
 
-for(y in 1:length(stages_list)) {
+for(y in 394:length(stages_list)) {
   
   if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url) {
     
@@ -910,6 +910,15 @@ pcs_fr_matches <- matches %>%
   
   filter(date.x < (date.y + 5) & date.x > (date.y - 5)) %>%
   
+  unique() %>%
+  
+  select(fr_race, pcs_race, year) %>%
+  
+  rbind(read_csv('fr_pcs_matches.csv') %>%
+          filter(match == TRUE) %>%
+          select(-match) %>%
+          rename(fr_race = fr,
+                 pcs_race = pcs)) %>%
   unique()
 
 #
