@@ -16,11 +16,11 @@ con <- dbConnect(MySQL(),
 pull_from_schedule <- c(
   
   # WORLD TOUR
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=1.UWT&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=2.UWT&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter',
   
   # EUROPE
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=&filter=Filter',
+  
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.1&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.1&filter=Filter',
@@ -34,6 +34,8 @@ pull_from_schedule <- c(
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.Pro&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=CC&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2013&circuit=21&class=&filter=Filter',
   
   # OLYMPICS AND WORLD CHAMPS
   
@@ -358,7 +360,7 @@ for(e in 1:length(all_events$url)) {
   
   print(e)
   
-  Sys.sleep(1)
+  Sys.sleep(2.5)
   
 }
 
@@ -956,7 +958,6 @@ stage_data <- stage_data_raw %>%
                                ifelse(stage == 0, 0, stage - 1), stage)) %>%
   
   filter(!race %in% c("World Championships MJ - ITT", "World Championships MJ - Road Race",
-                      "World Championships U23 - ITT", "World Championships U23 - Road Race",
                       "World Championships WJ - ITT", "World Championships WJ - Road Race",
                       "World Championships WE - ITT", "World Championships WE - Road Race",
                       "World Championships - ITT")) %>%
