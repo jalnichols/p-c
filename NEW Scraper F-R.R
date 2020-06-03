@@ -1407,11 +1407,19 @@ invalid_climbs <- all_climbs_int %>%
 
 all_climbs_data <- all_climbs_int %>%
   
-  inner_join(valid_climbs, by = c("climb_name", "url", "race_url"))
+  inner_join(valid_climbs, by = c("climb_name", "url", "race_url")) %>%
+  
+  mutate(length = ifelse(climb_name == "Alto de Jaizkibel" & year == 2013 & race == "Clasica Ciclista San Sebastian", 7.24, length),
+         length = ifelse(climb_name == "Cote D'Ereffe" & year == 2018 & race == "Baloise Belgium Tour	", 1.62, length),
+         gradient = ifelse(climb_name == "Alto de Jaizkibel" & year == 2013 & race == "Clasica Ciclista San Sebastian", 0.06, gradient),
+         gradient = ifelse(climb_name == "Cote D'Ereffe" & year == 2018 & race == "Baloise Belgium Tour	", 0.062, gradient)
+         ) %>%
+  
+  unique()
 
 #
 
-dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, append = TRUE)
+#dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, overwrite = TRUE)
 
 #
 #
@@ -1423,7 +1431,8 @@ dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, 
 # GAM has R^2 of 0.76 vs 0.71 for LM
 # including altitude improves R^2 by 0.02 or so over just VAM poly
 
-all_climbs_data <- dbReadTable(con, "fr_all_climbs_intermediate")
+all_climbs_data <- dbReadTable(con, "fr_all_climbs_intermediate") %>%
+  unique()
 
 #
 
