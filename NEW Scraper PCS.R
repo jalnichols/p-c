@@ -413,7 +413,7 @@ dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
-dl_html <- TRUE
+dl_html <- FALSE
 
 # start scraping process using old data
 
@@ -719,7 +719,9 @@ for(r in 1:length(all_stages$value)) {
           mutate(stage = s,
                  race = all_stages$Race[[r]],
                  year = all_stages$year[[r]],
-                 date = all_stages$Date[[r]]) %>%
+                 date = all_stages$Date[[r]],
+                 url = all_stages$url[[r]],
+                 Class = all_stages$Class[[r]]) %>%
           
           mutate(rnk = as.character(rnk))
         
@@ -775,10 +777,12 @@ for(f in 1:length(races_list)) {
 }
 
 #
+#
+#
 
 test_dl <- bind_rows(df_list)
 
-dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), append = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), overwrite = TRUE, row.names = FALSE)
 
 stage_data <- dbReadTable(con, "pcs_stage_raw")
 
@@ -941,16 +945,17 @@ stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team,
 #
 
 stage_data <- stage_data_raw %>%
-  
+  rename(class = Class) %>%
   unique() %>%
   
   mutate(stage = ifelse(stage_name == "Prologue", 0, stage)) %>%
   
   mutate(stage = ifelse(stage == 0,
                         ifelse(year == 2015 & race == "Tour de Suisse", 1,
-                               ifelse(year == 2015 & race == "Tirreno-Adriatico", 1, stage)), stage)) %>%
+                               ifelse(year == 2015 & race == "Tirreno-Adriatico", 1, 
+                                      ifelse(year == 2017 & race == "Olympia's Tour	", 1, stage))), stage)) %>%
   
-  group_by(race, year) %>%
+  group_by(race, year, url, class) %>%
   mutate(prologue_exists = min(stage, na.rm = T)) %>%
   ungroup() %>%
   
@@ -975,7 +980,7 @@ stage_data <- stage_data_raw %>%
   mutate(finished = ifelse(rnk %in% c("DNF", "OTL", "DNS", "NQ", "DSQ"), NA, total_seconds)) %>%
   mutate(total_seconds = ifelse(total_seconds > 30000, NA, total_seconds)) %>%
   
-  group_by(stage, race, year) %>%
+  group_by(stage, race, year, url, class) %>%
   mutate(last_place = max(total_seconds, na.rm = T)) %>%
   ungroup() %>%
   
@@ -1001,7 +1006,7 @@ stage_data <- stage_data_raw %>%
          x5 = ifelse(rnk == 5, total_seconds, NA),
          top_var = ifelse(rnk < 41, total_seconds, NA)) %>%
   
-  group_by(stage, race, year) %>%
+  group_by(stage, race, year, url, class) %>%
   mutate(variance = round(sd(variance_valid, na.rm = T),0),
          top_variance = round(sd(top_var, na.rm = T),0),
          x10 = mean(x10, na.rm = T),
@@ -1040,7 +1045,7 @@ stage_data <- stage_data_raw %>%
   
   # find rider position in team for stage
   
-  group_by(team, stage, race, year) %>%
+  group_by(team, stage, race, year, url, class) %>%
   mutate(tm_pos = rank(rnk, ties.method = "first")) %>%
   ungroup() %>%
   
@@ -1073,11 +1078,12 @@ gc_performance <- winners %>%
     
     stage_data %>%
       mutate(rider = str_to_title(tolower(rider))) %>%
-      mutate(race = tolower(race)), by = c("race", "year", "winner" = "rider")
+      mutate(race = tolower(race)) %>% unique(), by = c("race", "year", "winner" = "rider", "class", "url")
     
   ) %>%
   
-  select(gc_winner = winner, race, year, stage, gc_seconds = total_seconds, class, date)
+  select(gc_winner = winner, race, year, stage, gc_seconds = total_seconds, class, date, url) %>%
+  unique()
 
 #
 
@@ -1087,7 +1093,7 @@ stage_data <- stage_data %>%
   
   left_join(
     
-    gc_performance, by = c("year", "race", "stage")
+    gc_performance, by = c("year", "race", "stage", "class", "url")
     
   ) %>%
   
@@ -1101,13 +1107,13 @@ stage_data <- stage_data %>%
   
   mutate(gc_pos = ifelse(rider == gc_winner, rnk, NA)) %>%
   
-  group_by(race, stage, year) %>%
+  group_by(race, stage, year, url, class) %>%
   mutate(gc_pos = mean(gc_pos, na.rm = T) + 5) %>%
   ungroup() %>%
   
   mutate(back_5 = ifelse(gc_pos == rnk, total_seconds, NA)) %>%
   
-  group_by(race, stage, year) %>%
+  group_by(race, stage, year, url, class) %>%
   mutate(back_5_seconds = mean(back_5, na.rm = T)) %>%
   ungroup() %>%
   
@@ -1124,10 +1130,17 @@ f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year))
 
 supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
+  fill(stage, race, year) %>%
   filter(!(race == "criterium du dauphine" & year == 2014)) %>%
   filter(!(race == "volta ciclista a catalunya" & year == 2015)) %>%
   filter(!(race == "tour de romandie" & year == 2018)) %>%
-  filter(!(race == "paris - nice" & year == 2016))
+  filter(!(race == "paris - nice" & year == 2016)) %>%
+  
+  anti_join(
+    
+    f_r_climbs %>%
+      select(race, year, stage) %>%
+      unique(), by = c("race", 'year', 'stage'))
 
 #
 # combine F-R data with PCS data
@@ -1265,8 +1278,6 @@ stage_data <- stage_data %>%
          last_climb = ifelse(is.na(last_climb),
                              ifelse(is.na(total_elev_change), NA, 0), last_climb)) %>%
   
-  #filter(!(is.na(act_climb_difficulty))) %>%
-  
   mutate(position_highest = ifelse(position_highest > 1, 1, position_highest),
          position_highest = ifelse(is.na(position_highest), median(position_highest, na.rm = T), position_highest),
          summit_finish = ifelse(is.na(summit_finish), 0, summit_finish)) %>%
@@ -1282,14 +1293,14 @@ stage_data <- stage_data %>%
 
 pcs_missing_from_fr <- stage_data_raw %>%
   
-  select(stage, race, year) %>%
+  select(stage, race, year, class = Class, url) %>%
   mutate(race = tolower(race)) %>%
   unique() %>%
   
   anti_join(
     
     stage_data %>%
-      select(stage, race, year) %>%
+      select(stage, race, year, class, url) %>%
       mutate(race = tolower(race)) %>%
       unique()
     
@@ -1303,9 +1314,23 @@ stage_data <- stage_data %>%
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
   select(-prologue_exists) %>%
+  filter(!(str_detect(url, "81st-sch"))) %>%
+  
+  # world championships rr 2016 joins twice onto profile data
+  
+  filter(!(race == 'elfstedenronde' & url == 'race/bruges-cycling-classic/2018')) %>%
+  filter(!(race == 'elfstedenronde' & url == 'race/bruges-cycling-classic/2019')) %>%
+  filter(!(race == 'carrefour market heistse pijl' & url == 'race/heistse-pijl/2017')) %>%
+  filter(!(race == 'market heistse pijl' & url == 'race/heistse-pijl/2018')) %>%
+  filter(!(race == 'heistse pijl - heist op den berg' & url == 'race/heistse-pijl/2016')) %>%
+  filter(!(race == 'heylen vastgoed heistse pijl' & url == 'race/heistse-pijl/2019')) %>%
+  filter(!(race == 'ride bruges (bruges cycling classic)' & url == 'race/circuit-des-xi-villes/2017')) %>%
+  filter(!(race == 'riga - jurmala grand prix	' & url == 'race/jurmala-gp/2013')) %>%
+  
   filter(!(race == "brussels cycling classic" & year == 2017)) %>%
   filter(!(race == "la poly normonde")) %>%
   filter(!(race == 'manavgat side junior')) %>%
+  
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
   mutate(stage = ifelse(race == "dubai tour" & year == 2014 & stage > 4,
                         stage - 4, stage)) %>%
