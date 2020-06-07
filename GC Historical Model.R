@@ -388,24 +388,25 @@ corr_gc_tdf <- pcs_gc_results %>%
 
 #
 
-y = seq(1980, 1989, 1)
+y = seq(2019, 2019, 1)
 
 for(x in 1:length(y)) {
   
-  url <- paste0("https://www.procyclingstats.com/race/vuelta-a-espana/", y[[x]] , "/startlist/alphabetical-with-filters") %>%
+  url <- paste0("https://www.procyclingstats.com/race/tour-de-france/", y[[x]] , "/startlist/alphabetical-with-filters") %>%
     read_html()
   
   st <- url %>%
     html_nodes('table') %>%
     html_table() %>%
     .[[1]] %>%
-    .[,2:3] %>%
+    .[, 1:3] %>%
     select(rider = Ridername,
-           team = Team) %>%
+           team = Team,
+           bib = `#`) %>%
     mutate(rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"),
            year = y[[x]],
-           race = 'vuelta-a-espana')
+           race = 'tour-de-france')
   
-  dbWriteTable(con, "startlists", st, append = T, row.names = F)
+  dbWriteTable(con, "pcs_startlists", st, overwrite = T, row.names = F)
   
 }
