@@ -12,7 +12,7 @@ con <- dbConnect(MySQL(),
 
 #
 
-STAGE <- 19
+STAGE <- 20
 
 d <- readr::read_rds(paste0('Stage Telemetry/tdf-stage', STAGE, '-telemetry.rds'))
 
@@ -39,7 +39,12 @@ for(x in 1:length(d)) {
                    distance_left = d[[x]]$Riders[[g]]$DistanceToFinish,
                    rolling_speed = d[[x]]$Riders[[g]]$CurrentSpeedRollAvg,
                    gradient = d[[x]]$Riders[[g]]$Gradient,
-                   yellow = d[[x]]$Riders[[g]]$HasYellowJersey)
+                   yellow = d[[x]]$Riders[[g]]$HasYellowJersey,
+                   latitude = d[[x]]$Riders[[g]]$Latitude,
+                   longitude = d[[x]]$Riders[[g]]$Longitude,
+                   segment_id = d[[x]]$Riders[[g]]$CurrentSegmentId,
+                   speed_over_mins = d[[x]]$Riders[[g]]$SpeedOverXMins
+                   )
       
       grp_list[[g]] <- df
       
@@ -61,7 +66,7 @@ for(x in 1:length(d)) {
 
 relevant_distances <- tibble(
   
-  start = c(29, 86, 8, 19, 11, 51.5, 33, 12, 43, 23.5),
+  start = c(29, 86, 8, 19, 11, 51, 33, 12, 43, 23.5),
   end = c(19, 74, 0, 0, 0, 38, 0, 0, 31, 17.5),
   
   climb = c("Lautaret to Galibier", "Izoard final 12km", "Planche Belles Filles",
@@ -89,9 +94,6 @@ all_data <- bind_rows(results_list) %>%
   filter(actual_time <= min(dl_025, na.rm = T)) %>%
   ungroup() %>%
   
-  #mutate(on_front = ifelse(distance_left > 43, "QSP",
-  #                         ifelse(distance_left > 8.2, "Jumbo",
-  #                         ifelse(distance_left > 6.6, "FDJ", "Pinot")))) %>%
   mutate(yellow_secs = ifelse(yellow == TRUE, behind_leader, NA)) %>%
   
   group_by(block) %>%
@@ -122,23 +124,53 @@ all_data <- bind_rows(results_list) %>%
       unique() %>%
       mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))), by = c("bib")
     
-  )
+  ) %>%
+  
+  filter(!yellow_secs == "-Inf") %>%
+  
+  mutate(stage = STAGE,
+         race = "Tour de France",
+         year = 2019)
+#
+
+#dbWriteTable(con, "aso_telemetry", all_data, row.names = F, append = TRUE)
+
+#
+
+all_data <- dbReadTable(con, "aso_telemetry")
 
 #
 
 dist_vs_time <- expand_grid(dist = seq(0.1,10,0.1), speed = seq(10,50,1)) %>% mutate(tm_needed = (dist / speed)*3600)
+
+#
+# amateur speed vs gradient model
+#
  
+am_mod <- mgcv::gam(rolling_speed ~ s(gradient, k = 5) + s(left_to_summit, k = 5), 
+                data = all_data %>%
+                  filter(gradient >= 0 & (behind_leader - yellow_secs) <= 15) %>% 
+                  inner_join(relevant_distances %>%
+                               filter(climb %in% c("Vall Thorens full", "Tourmalet all", "Prat d'Albis", "Iseran", "Lautaret to Galibier"))) %>%
+                  filter(distance_left <= start & distance_left >= end) %>%
+                  mutate(left_to_summit = distance_left - end))
+
+preds <- expand_grid(gradient = seq(0,9),
+                     left_to_summit = seq(0.5, 17.5)) %>%
+  mutate(pred_speed = predict(am_mod, expand_grid(gradient = seq(0,9),
+                                                  left_to_summit = seq(0.5, 17.5))))
+
 #
 #
 # ANALYSIS PARAMETERS
 
-start_d <- 50.25
-end_d <- 37.75
+start_d <- 41
+end_d <- 19
 
 #
 
 yellow_grp <- all_data %>% 
-  filter(distance_left >= 37.5 & distance_left <= 51.5 & in_yellow_grp == 1) %>% 
+  filter(distance_left >= end_d & distance_left <= start_d & in_yellow_grp == 1) %>% 
   group_by(bib, rider) %>% 
   count(sort = TRUE)
 
@@ -156,9 +188,11 @@ choose_riders <- c(51, 211, 65)
 
 choose_riders <- c(6,8,3,1,2)
 
-choose_riders <- c(2, 21, 65, 108, 1)
+choose_riders <- c(2, 21, 65, 108, 1, 31)
 
 #
+
+choose_riders <- c(1,2,3,6,8, 31)
 
 ggplot(all_data %>% 
          filter(distance_left >= end_d & distance_left <= start_d & bib %in% choose_riders),
@@ -166,12 +200,22 @@ ggplot(all_data %>%
            y = rolling_speed, 
            color = as.factor(rider)))+
   geom_point()+
-  geom_smooth(se = F, span = 0.35)+
-  scale_x_reverse()+
-  labs(x = "KMs left (Galibier summit is 19km, Lautaret summit is 29km)", 
+  geom_smooth(se = F, span = 0.4)+
+  scale_x_reverse(breaks = seq(start_d, end_d, -1))+
+  labs(x = "KMs left (Galiber summit is 19km)", 
        y = "Speed rolling average in KM/H", 
-       title = "Quintana vs breakaway on Galibier (2019 TDF St18)")+
-  scale_color_discrete(name = "")
+       title = "Stage 18 INEOS")+
+  scale_color_manual(values = c("black", "gold", "red", "#37B36C", "purple", "orange"), name = "")+
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.text = element_text(size = 15),
+    legend.text = element_text(size = 15)
+    
+  )
+
+#
+
+ggsave("st-18-ineos.png", height = 10, width = 16)
   
 #
 #
