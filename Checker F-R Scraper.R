@@ -74,7 +74,7 @@ for(y in 1:length(scraper_list$year)) {
 
 all_races <- bind_rows(result_list)
 
-current_races <- dbGetQuery(con, "SELECT DISTINCT race_url, year FROM fr_stage_urls")
+current_races <- dbGetQuery(con, "SELECT DISTINCT race_url, year FROM fr_stages_url")
 
 all_races <- all_races %>%
   
@@ -245,3 +245,299 @@ dbWriteTable(con,
              append = TRUE
              
 )
+
+#
+# start scraping stages
+#
+
+all_stages <- dbReadTable(con, "fr_stages") %>%
+  unique() %>%
+  
+  inner_join(all_races %>%
+               select(url), by = c("url" = "url"))
+
+#
+
+tictoc::tic()
+
+#
+
+for(y in 1:length(stages_list)) {
+  
+  if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url) {
+    
+    print("didn't pull it")
+    
+  } else {
+    
+    
+    # run through each race in the stages_list (denoted by y)
+    # each stage in that race will be denoted by z below
+    
+    for(z in 1:length(stages_list[[y]]$url)) {
+      
+      # this pulls out the json data
+      
+      q = 0
+      
+      json <- NULL
+      
+      while(is.null(json) & q < 5) {
+        
+        q = q + 1
+        
+        try(
+          json <- rjson::fromJSON(readLines(stages_list[[y]]$url[[z]]))
+        )
+        
+      }
+      
+      # with the climbs / sprints data
+      actual_climbs <- json[[3]]$stageclimbs
+      
+      # with the generic sprints (some of this contains climb data)
+      generic_sprints <- json[[3]]$stagegenericsprints
+      
+      # with the generic sprints (some of this contains climb data)
+      cobbles <- json[[3]]$stagecobbles
+      
+      # and the distance / altitude data
+      other_jsons <- json[[2]]
+      
+      # and lat/long data
+      lat_longs <- json[[1]]
+      
+      # if there are cobbles listed inside the JSON, scrape them
+      
+      if(length(cobbles) > 0) {
+        
+        cobbles_list <- vector('list', length(cobbles))
+        
+        for(c in 1:length(cobbles)) {
+          
+          difficulty = cobbles[[c]]$difficulty
+          
+          if(is.null(difficulty)) {
+            
+            difficulty <- as.numeric(NA)
+            
+          }
+          
+          marker = cobbles[[c]]$marker$icon
+          
+          if(is.null(marker)) {
+            
+            marker <- as.numeric(NA)
+            
+          }
+          
+          cobbles_list[[c]] <- tibble(
+            
+            sector_name = cobbles[[c]]$name %>% str_replace_all("%20", " "),
+            start_distance = cobbles[[c]]$startdistance,
+            end_distance = cobbles[[c]]$distance,
+            difficulty = as.numeric(difficulty),
+            icon = marker,
+            source = "COBBLES"
+            
+          )
+          
+        }
+        
+      } else {
+        
+        cobbles_list <- vector('list', 1)
+        
+        c = 1
+        
+        cobbles_list[[c]] <- tibble(
+          
+          sector_name = "none",
+          start_distance = as.numeric(NA),
+          end_distance = as.numeric(NA),
+          difficulty = as.numeric(NA),
+          icon = "no cobbles",
+          source = "MISSING"
+          
+        )
+        
+      }
+      
+      # if there are climbs listed inside the JSON, scrape them
+      
+      if(length(actual_climbs) > 0) {
+        
+        climbs_list <- vector('list', length(actual_climbs))
+        
+        for(c in 1:length(actual_climbs)) {
+          
+          category = actual_climbs[[c]]$category
+          
+          if(is.null(category)) {
+            
+            category <- as.numeric(NA)
+            
+          }
+          
+          climbs_list[[c]] <- tibble(
+            
+            climb_name = actual_climbs[[c]]$name %>% str_replace_all("%20", " "),
+            start_distance = actual_climbs[[c]]$startdistance,
+            end_distance = actual_climbs[[c]]$distance,
+            category = as.numeric(category),
+            altitude = actual_climbs[[c]]$altitude,
+            source = "ACTUAL CLIMBS"
+            
+          )
+          
+        }
+        
+      } else {
+        
+        climbs_list <- vector('list', 1)
+        
+        c = 1
+        
+        climbs_list[[c]] <- tibble(climb_name = "none",
+                                   start_distance = as.numeric(NA),
+                                   end_distance = as.numeric(NA),
+                                   altitude = as.numeric(NA),
+                                   category = as.numeric(NA),
+                                   source = "MISSING")
+        
+      }
+      
+      #combine all climbs for that stage
+      
+      df <- bind_rows(climbs_list) %>%
+        mutate(url = stages_list[[y]]$url[[z]],
+               race_url = stages_list[[y]]$race_url[[z]],
+               race = stages_list[[y]]$race[[z]],
+               year = 0,
+               stage = z)
+      
+      # same process for cobbles
+      
+      cobs <- bind_rows(cobbles_list) %>%
+        mutate(url = stages_list[[y]]$url[[z]],
+               race_url = stages_list[[y]]$race_url[[z]],
+               race = stages_list[[y]]$race[[z]],
+               year = 0,
+               stage = z)
+      
+      # clean up generic sprints
+      #
+      
+      gen_spr_list <- vector('list', length(generic_sprints))
+      
+      # if generic sprints has data present (anything appearing on the F-R stage profiles) scrape them
+      
+      if(length(generic_sprints) > 0) {
+        
+        for(c in 1:length(gen_spr_list)) {
+          
+          category = generic_sprints[[c]]$difficulty
+          
+          if(is.null(category)) {
+            
+          } else {
+            
+            gen_spr_list[[c]] <- tibble(
+              
+              climb_name = generic_sprints[[c]]$name %>% str_replace_all("%20", " "),
+              start_distance = generic_sprints[[c]]$startdistance,
+              end_distance = generic_sprints[[c]]$distance,
+              category = as.numeric(category),
+              altitude = generic_sprints[[c]]$altitude,
+              source = "GENERIC SPRINTS")
+            
+          }
+          
+        }
+        
+        gen_sprs <- bind_rows(gen_spr_list) %>%
+          
+          filter(!is.na(category)) %>%
+          
+          mutate(category = as.numeric(NA)) %>%
+          
+          mutate(url = stages_list[[y]]$url[[z]],
+                 race_url = stages_list[[y]]$race_url[[z]],
+                 race = stages_list[[y]]$race[[z]],
+                 year = 0,
+                 stage = z)
+        
+      } else {
+        
+        gen_sprs = df
+        
+      }
+      
+      # use actual_climbs, if blank use climbs from generic sprints
+      
+      if(length(actual_climbs) > 0) {
+        
+        dbWriteTable(con, "fr_climbs_scraped", df, row.names = F, append = TRUE)
+        
+      } else {
+        
+        dbWriteTable(con, "fr_climbs_scraped", gen_sprs, row.names = F, append = TRUE)
+        
+      }
+      
+      if(length(cobbles)>0) {
+        
+        dbWriteTable(con, "fr_cobbles", cobs, row.names = F, append = TRUE)
+        
+      }
+      
+      # Now I can pull in distance, altitude data
+      
+      route_list <- vector("list", length(other_jsons))
+      
+      for(a in 1:length(other_jsons)) {
+        
+        route_list[[a]] <- tibble(alt = other_jsons[[a]]$altitude,
+                                  lat = other_jsons[[a]]$position$A,
+                                  long = other_jsons[[a]]$position$k,
+                                  dist = other_jsons[[a]]$distance
+        )
+        
+      }
+      
+      # write to DB table
+      
+      route_data_to_write <- bind_rows(route_list) %>%
+        mutate(url = stages_list[[y]]$url[[z]]
+        ) %>%
+        
+        mutate(dist = as.numeric(dist),
+               lat = as.numeric(lat),
+               long = as.numeric(long))
+      
+      #
+      #
+      
+      dbWriteTable(con, "fr_route_data", route_data_to_write, row.names = F, append = TRUE)
+      
+      #
+      #
+      
+      Sys.sleep(runif(1, 3, 7))
+      
+    }
+
+    print(y)
+    
+    Sys.sleep(runif(1, 5, 13))
+    
+  }
+  
+}
+
+#
+
+tictoc::toc()
+
+#
+
