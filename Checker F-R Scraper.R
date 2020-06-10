@@ -1,4 +1,8 @@
 
+print('####################################')
+print(lubridate::now())
+print("####################################")
+
 library(tidyverse)
 library(rvest)
 library(DBI)
@@ -585,3 +589,7 @@ print("finished scraping races")
 }
 
 }
+
+print("########################################")
+print("END")
+print("########################################")
