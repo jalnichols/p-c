@@ -3,9 +3,7 @@ library(tidyverse)
 library(rvest)
 library(DBI)
 
-setwd("~/p-c")
-
-readRenviron("~/.Renviron")
+readRenviron("p-c/.Renviron")
 
 con <- DBI::dbConnect(
   RMariaDB::MariaDB(), 
@@ -13,6 +11,8 @@ con <- DBI::dbConnect(
   password = Sys.getenv("MYSQL_P"), 
   db = "cycling", 
   host = Sys.getenv("MYSQL_H"))
+
+print("connected to DB")
 
 #
 #
@@ -76,15 +76,19 @@ for(y in 1:length(scraper_list$year)) {
 # this filters out 2020 races which haven't happened yet
 #
 
+print("scraped pages successfully")
+
 all_races <- bind_rows(result_list)
 
-current_races <- dbGetQuery(con, "SELECT DISTINCT race_url, year FROM fr_stages_url")
+current_races <- dbGetQuery(con, "SELECT DISTINCT race_url, year FROM fr_stage_urls")
 
 all_races <- all_races %>%
   
   anti_join(current_races, by = c("url" = "race_url", "year")) %>%
   
   filter(year < lubridate::year(lubridate::today()))
+
+print("WT done")
 
 #
 # NOW non-World Tour races
@@ -161,6 +165,8 @@ for(y in 1:length(scraper_list$year)) {
 
 #
 
+print("scraped other pages")
+
 all_ME_races <- bind_rows(result_list)
 
 all_ME_races <- all_ME_races %>%
@@ -170,6 +176,8 @@ all_ME_races <- all_ME_races %>%
   filter(!str_detect(race, "UCI Road World Championships")) %>%
   filter(!str_detect(race, "Africa Cup - TTT")) %>%
   filter(year < lubridate::year(lubridate::today()))
+
+print("all races ready")
 
 #
 # combine
@@ -222,11 +230,15 @@ for(x in 1:length(all_races$url)) {
 stages_list <- stages_list %>%
   discard(function(x) nrow(x) == 0)
 
+print("stages scraped...")
+
 #
 # this writes a list of each stage URL
 #
 
 dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
+
+print("new stages written to fr_stage_urls")
 
 #
 # join stages + races
@@ -256,6 +268,8 @@ dbWriteTable(con,
              
 )
 
+print("new stages written to fr_stages")
+
 #
 # start scraping stages
 #
@@ -267,6 +281,8 @@ all_stages <- dbReadTable(con, "fr_stages") %>%
                select(url), by = c("url" = "url"))
 
 #
+
+print("Starting scraping new stages...")
 
 tictoc::tic()
 
@@ -537,7 +553,7 @@ for(y in 1:length(stages_list)) {
       
     }
 
-    print(y)
+    print(paste0(stages_list[[y]]$race_url[[1]], z))
     
     Sys.sleep(runif(1, 5, 13))
     
