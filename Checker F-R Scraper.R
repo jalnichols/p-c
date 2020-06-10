@@ -67,6 +67,8 @@ for(y in 1:length(scraper_list$year)) {
   result_list[[y]] <- df
 
   print(paste0("page:", scraper_list$page_no[[y]], " year:", scraper_list$year[[y]]))
+  
+  Sys.sleep(runif(1,0.5,3.5))
     
 }
 
@@ -161,6 +163,8 @@ for(y in 1:length(scraper_list$year)) {
   print(paste0('https://www.la-flamme-rouge.eu/maps/races?count=0&page=', scraper_list$page_no[[y]],
                '&calendar%5B0%5D=', scraper_list$type[[y]], '&year%5B0%5D=', scraper_list$year[[y]], '&years=&name='))
   
+  Sys.sleep(runif(1,0.5,3.5))
+  
 }
 
 #
@@ -190,6 +194,8 @@ if(length(all_races$url)==0) {
   print("no races to scrape")
   
 } else {
+  
+print(all_races)
 
 #
 # Now we can scrape for all stages linked to above races
@@ -230,7 +236,14 @@ for(x in 1:length(all_races$url)) {
 stages_list <- stages_list %>%
   discard(function(x) nrow(x) == 0)
 
+print(length(stages_list))
 print("stages scraped...")
+
+if(length(stages_list)==0) {
+  
+  print("no stages need to be scraped...")
+  
+} else {
 
 #
 # this writes a list of each stage URL
@@ -568,5 +581,7 @@ tictoc::toc()
 #
 
 print("finished scraping races")
+
+}
 
 }
