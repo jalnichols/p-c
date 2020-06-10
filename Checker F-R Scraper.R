@@ -3,6 +3,10 @@ library(tidyverse)
 library(rvest)
 library(DBI)
 
+setwd("~/p-c")
+
+readRenviron("~/.Renviron")
+
 con <- DBI::dbConnect(
   RMariaDB::MariaDB(), 
   user = Sys.getenv("MYSQL_U"), 
@@ -172,6 +176,12 @@ all_ME_races <- all_ME_races %>%
 #
 
 all_races <- rbind(all_ME_races, all_races)
+
+if(length(all_races$url)==0) {
+  
+  print("no races to scrape")
+  
+} else {
 
 #
 # Now we can scrape for all stages linked to above races
@@ -541,3 +551,6 @@ tictoc::toc()
 
 #
 
+print("finished scraping races")
+
+}
