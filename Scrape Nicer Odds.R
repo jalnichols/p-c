@@ -64,13 +64,18 @@ list_races <- cbind(
     filter(!value == "") %>%
     select(race = value)) %>%
   
+  mutate(third_level = ifelse(str_sub(race, nchar(race)-3, nchar(race)) %in% c("2018", "2019", "2020", "2021", "2022"), race, NA)) %>%
+  fill(third_level) %>%
+  mutate(race = ifelse(race==third_level, race, paste0(third_level, " ", race))) %>%
+  
   mutate(old = ifelse(str_detect(race, "Old odds"), 1, NA)) %>%
   fill(old) %>%
   filter(is.na(old)) %>%
   filter(str_detect(race, paste0(lubridate::year(lubridate::today())))) %>%
+  filter(nchar(url)>5) %>%
   
   mutate(URL = paste0("https://www.nicerodds.co.uk", url)) %>%
-  select(-url, -old)
+  select(-url, -old, -third_level)
 
 #
 # Now  hit each URL and pull in data

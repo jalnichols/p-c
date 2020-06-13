@@ -5,7 +5,8 @@ library(rjson)
 
 url <- 'https://fep-api.dimensiondata.com/v2/stages/344/rider-telemetry' # stage 15 = 339
 
-#
+# enter the estimated end of stage time below
+# enter file to save data in below
 
 list_jsons <- vector("list", 2000)
 
