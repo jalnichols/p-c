@@ -1362,7 +1362,7 @@ dbWriteTable(con, "pcs_stage_data",
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
-html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
+#html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
 dl_html <- FALSE
@@ -1735,7 +1735,25 @@ tictoc::toc()
 
 stage_by_stage_GC <- dbReadTable(con, "pcs_stage_by_stage_gc") %>%
   
-  mutate(rider = str_to_title(tolower(rider))) %>% 
+  mutate(rider = str_to_title(tolower(rider)),
+         gc_time = str_replace(gc_time, "//+", ""),
+         gc_time = str_replace(gc_time, ",,", ""),
+         old_gc_time = gc_time,
+         gcn = nchar(gc_time)) %>% 
+  
+  mutate(duplic = ifelse(str_sub(gc_time, 1, floor(gcn/2)) == str_sub(gc_time, ceiling(gcn/2)+1, gcn), TRUE, FALSE),
+         gc_time = ifelse(duplic == TRUE, str_sub(gc_time, 1, floor(gcn/2)), gc_time)) %>%
+  
+  separate(gc_time, into = c("hours","minutes", "seconds"), sep = ":") %>%
+  mutate(h = is.na(seconds),
+         seconds = ifelse(h == TRUE, minutes, seconds),
+         minutes = ifelse(h == TRUE, hours, minutes),
+         hours = ifelse(h == TRUE, 0, hours),
+         seconds = as.numeric(seconds),
+         minutes = as.numeric(minutes),
+         hours = as.numeric(hours),
+         total_seconds_back = (seconds + (minutes*60) + (hours*3600)),
+         total_seconds_back = ifelse(gc_rnk == "1", 0, total_seconds_back)) %>%
   
   filter(!gc_rnk == "") %>%
   
@@ -1784,6 +1802,14 @@ basic_pred <- cbind(
   group_by(stage, race, year) %>%
   mutate(pred = pred / sum(pred, na.rm = T)) %>%
   ungroup()
+
+#
+
+time_win_glm <- glm(win ~ stages_left * log(gc_rnk+1),
+                     family = "binomial",
+                     data = stage_by_stage_GC %>%
+                       mutate(win = ifelse(final == 1, 1, 0)) %>%
+                       filter(stages_left > 0))
 
 #
 #
