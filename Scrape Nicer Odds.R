@@ -1,6 +1,6 @@
 
-library("tidyverse")
-library("rvest")
+library(tidyverse)
+library(rvest)
 library(DBI)
 
 readRenviron("p-c/.Renviron")
