@@ -409,6 +409,11 @@ all_stages$Winner <- iconv(all_stages$Winner, from="UTF-8", to = "ASCII//TRANSLI
 
 dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE)
 
+#
+#
+#
+#
+#
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
