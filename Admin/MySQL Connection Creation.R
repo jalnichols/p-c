@@ -14,3 +14,8 @@ con <- DBI::dbConnect(
 
 dbSendQuery(con, "CREATE DATABASE IF NOT EXISTS cycling")
 
+#
+
+dbSendQuery(con, "CREATE DATABASE IF NOT EXISTS golf_dfs")
+
+
