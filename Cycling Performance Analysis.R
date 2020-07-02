@@ -140,6 +140,14 @@ missing_stage_types <- stage_data %>%
 #
 #
 #
+# how can we do strength of peloton by stage type (very crudely)
+
+
+
+#
+#
+#
+#
 # Determine strength of peloton for each stage
 
 strength_of_peloton <- stage_data %>%
@@ -3340,6 +3348,7 @@ GC_pred_data <- stage_data_perf %>%
   
   # how many seconds back divided by GC stages left are you?
   mutate(GC_left = GC_all - (GC_all * percent_through),
+         GC_left = ifelse(stage == 10 & race == "tour de france" & year == 2015, 8, GC_left),
          seconds_per_GC_stage_back = total_seconds_back / GC_left) %>%
   
   # log the ranks
@@ -3571,13 +3580,13 @@ ensemble_data <- cbind(
 
 # model itself
 
-ens_mod <- glm(podium ~ with_GC + naive_prob + by_gc_pred + basic + prior_GT + tm_rk, 
+ens_GT_mod <- glm(podium ~ with_GC + naive_prob + by_gc_pred + basic + prior_GT + tm_rk, 
                data = ensemble_data, family = "binomial")
 
 # only with_GC and naive_prob are significant (because basic and by gc are already being used in naive_prob)
 # keeping by_gc_pred as well
 
-summary(ens_mod)
+summary(ens_GT_mod)
 
 # predictions
 
@@ -3593,14 +3602,20 @@ GC_relevant <- cbind(
   mutate(gc_relev_rk = rank(-coef, ties.method = "min")) %>%
   ungroup() %>%
   
-  mutate(r_limit = limit * 2,
-         r_limit = ifelse(r_limit >= 12, 12, r_limit)) %>%
+  mutate(r_limit = ifelse(GC_left >= 9, 12,
+                          ifelse(GC_left <= 1, 8, round((0.5 * GC_left)+7.5, 0)))) %>%
   
   mutate(relevant = ifelse(gc_relev_rk <= (r_limit), 1, 0)) %>% 
-  
-  select(stage, race, year, rider, team, limit, date, final, seconds_per_GC_stage_back, GC_left, coef, gc_relev_rk, relevant)
+
+  select(stage, race, year, rider, team, date, final, seconds_per_GC_stage_back, GC_left, coef, gc_relev_rk, relevant) %>%
+  mutate(race_type = "Grand Tour")
 
 #
+# write to a database table
+#
+
+dbWriteTable(con, "gc_relevance", GC_relevant, row.names = F, append = T)
+
 #
 #
 
@@ -3787,13 +3802,19 @@ GC_relevant_NONGT <- cbind(
   mutate(gc_relev_rk = rank(-coef, ties.method = "min")) %>%
   ungroup() %>%
   
-  mutate(r_limit = limit * 2,
-         r_limit = ifelse(r_limit >= 8, 8, r_limit)) %>%
+  mutate(r_limit = ifelse(GC_left >= 9, 12,
+                          ifelse(GC_left <= 1, 8, round((0.5 * GC_left)+7.5, 0)))) %>%
   
   mutate(relevant = ifelse(gc_relev_rk <= (r_limit), 1, 0)) %>% 
   
-  select(stage, race, year, rider, team, limit, date, final, seconds_per_GC_stage_back, GC_left, coef, gc_relev_rk, relevant)
+  select(stage, race, year, rider, team, date, final, seconds_per_GC_stage_back, GC_left, coef, gc_relev_rk, relevant) %>%
+  mutate(race_type = "Stage Race")
 
+#
+# write to DB
+#
+
+dbWriteTable(con, "gc_relevance", GC_relevant_NONGT, row.names = F, append = T)
 
 #
 # what do distributions of finishing position look like based on GC rank entering (old_rk above)
