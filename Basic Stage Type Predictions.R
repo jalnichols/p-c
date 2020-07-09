@@ -16,7 +16,7 @@ con <- dbConnect(MySQL(),
 
 # going to start very easy with rankings of bunch_sprint performance
 
-BS_dates <- stage_data_perf %>%
+BS_dates <- dbReadTable(con, "stage_data_perf") %>%
   filter(!is.na(bunch_sprint)) %>%
   mutate(length = length - 200) %>%
   
@@ -48,7 +48,8 @@ BS_data <- stage_data_perf %>%
   
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA),
          sof_per_opp = ifelse(tm_pos == 1, sof, NA),
-         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA)) %>%
+         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
+         pred_climb_diff_succ = ifelse(points_finish > 0, pred_climb_difficulty, NA)) %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -85,8 +86,10 @@ for(b in 1:length(BS_dates$date)) {
       sof_overall = mean(sof, na.rm = T),
       
       pcd_leader = mean(pred_climb_diff_opp, na.rm = T),
+      pcd_success = mean(pred_climb_diff_succ, na.rm = T),
       pcd_overall = mean(pred_climb_difficulty, na.rm = T),
       
+      successes = sum(points_finish > 0, na.rm = T),
       opportunities = sum(tm_pos == 1, na.rm = T),
       races = n()) %>%
     ungroup() %>%
@@ -153,15 +156,22 @@ predicting_bunch_sprints <- BS_data %>%
   
   select(-points_per_opp, -sof_per_opp, -pred_climb_diff_opp) %>%
   
-  left_join(
+  inner_join(
     
     bunch_sprints_performance_table, by = c("rider", "date")) %>%
   
   #
-  # change so NAs are replaced by zeroes
+  # need to regress points_per_opp as some riders have won on their only opportunity
+  # filtered to tm_pos == 1 and regressed a number of combinations of N and regress amt between 0.01 and 0.024 (raw average and weighted avg of ppo)
+  # N = 8 and 0.01 was the best R2 of about 0.333
   #
   
-  mutate(points_per_opp = (0.12 + (opportunities * points_per_opp)) / (12 + opportunities)) %>%
+  mutate(points_per_opp = (0.08 + (opportunities * points_per_opp)) / (8 + opportunities)) %>%
+  
+  # also adjust pcd_success to consider riders who don't have successes or even opportunities
+  
+  mutate(pcd_success = ((pcd_overall * 1) + (pcd_success * successes * 2) + (pcd_leader * opportunities)) / 
+           (opportunities + 1 + (successes * 2))) %>%
   
   group_by(stage, race, year) %>%
   mutate(field_points_per_race = mean(points_per_race, na.rm = T),
@@ -191,7 +201,23 @@ predicting_bunch_sprints <- BS_data %>%
   mutate(win = rnk == 1,
          rel_ppo = points_per_opp - field_points_per_race,
          rel_team_tmldr = team_leader - team_team_leader,
-         rel_team_domestique = domestique - team_domestique)
+         rel_team_domestique = domestique - team_domestique) %>%
+  
+  mutate(pcd_abs_diff = abs(pred_climb_difficulty - pcd_success)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(rel_pcd_abs_diff = mean(pcd_abs_diff) - pcd_abs_diff) %>%
+  ungroup() %>%
+  
+  # calculate race outcome in terms of rider pcd_success
+  
+  mutate(results_pcd_success = ifelse(points_finish > 0, pcd_success, NA),
+         results_points_finish = ifelse(points_finish > 0, points_finish, NA)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(results_pcd_success = mean(results_pcd_success, na.rm = T),
+         results_points_finish = mean(results_points_finish, na.rm = T)) %>%
+  ungroup()
 
 ##################################################
 
@@ -202,7 +228,7 @@ predicting_bunch_sprints <- BS_data %>%
 # 2. a lot of success in opportunities
 # 3. more of team leader than other teammates
 
-win_model <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite,
+win_model <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite + rel_pcd_abs_diff,
                  
                  data = predicting_bunch_sprints,
                  
@@ -273,6 +299,7 @@ adjusted_preds <- bind_rows(adjust_win_probs) %>%
     rel_team_tmldr,
     rel_elite,
     rank_ppo,
+    rel_pcd_abs_diff,
     
     win_prob = new_win_prob)
 
@@ -363,7 +390,8 @@ OTH_data <- stage_data_perf %>%
   
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA),
          sof_per_opp = ifelse(tm_pos == 1, sof, NA),
-         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA)) %>%
+         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
+         pred_climb_diff_succ = ifelse(points_finish > 0, pred_climb_difficulty, NA)) %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -401,8 +429,10 @@ for(b in 1:length(BS_dates$date)) {
       sof_overall = mean(sof, na.rm = T),
       
       pcd_leader = mean(pred_climb_diff_opp, na.rm = T),
+      pcd_success = mean(pred_climb_diff_succ, na.rm = T),
       pcd_overall = mean(pred_climb_difficulty, na.rm = T),
       
+      successes = sum(points_finish > 0, na.rm = T),
       opportunities = sum(tm_pos == 1, na.rm = T),
       races = n()) %>%
     ungroup() %>%
@@ -474,10 +504,17 @@ predicting_hills <- OTH_data %>%
     hills_performance_table, by = c("rider", "date")) %>%
   
   #
-  # change so NAs are replaced by zeroes
+  # need to regress points_per_opp as some riders have won on their only opportunity
+  # filtered to tm_pos == 1 and regressed a number of combinations of N and regress amt between 0.01 and 0.024 (raw average and weighted avg of ppo)
+  # N = 8 and 0.01 was the best R2 of about 0.129
   #
   
-  mutate(points_per_opp = (0.12 + (opportunities * points_per_opp)) / (12 + opportunities)) %>%
+  mutate(points_per_opp = (0.08 + (opportunities * points_per_opp)) / (8 + opportunities)) %>%
+  
+  # also adjust pcd_success to consider riders who don't have successes or even opportunities
+  
+  mutate(pcd_success = ((pcd_overall * 1) + (pcd_success * successes * 2) + (pcd_leader * opportunities)) / 
+           (opportunities + 1 + (successes * 2))) %>%
   
   group_by(stage, race, year) %>%
   mutate(field_points_per_race = mean(points_per_race, na.rm = T),
@@ -507,14 +544,38 @@ predicting_hills <- OTH_data %>%
   mutate(win = rnk == 1,
          rel_ppo = points_per_opp - field_points_per_race,
          rel_team_tmldr = team_leader - team_team_leader,
-         rel_team_domestique = domestique - team_domestique)
+         rel_team_domestique = domestique - team_domestique) %>%
+  
+  mutate(pcd_abs_diff = abs(pred_climb_difficulty - pcd_success)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(rel_pcd_abs_diff = mean(pcd_abs_diff) - pcd_abs_diff) %>%
+  ungroup() %>%
+  
+  # calculate race outcome in terms of rider pcd_success
+  
+  mutate(results_pcd_success = ifelse(points_finish > 0, pcd_success, NA),
+         results_points_finish = ifelse(points_finish > 0, points_finish, NA)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(results_pcd_success = mean(results_pcd_success, na.rm = T),
+         results_points_finish = mean(results_points_finish, na.rm = T)) %>%
+  ungroup()
+
+#
+#
+#
+
+predicting_hills %>% select(stage, race, year, pred_climb_difficulty, results_pcd_success) %>% unique() %>%
+  ggplot(aes(x = pred_climb_difficulty, y = results_pcd_success))+geom_point()+geom_smooth(method = "lm")
+
 
 ##################################################
 
 # win probability
 
 
-win_model_H <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite + rel_in_pack,
+win_model_H <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite + rel_in_pack + rel_pcd_abs_diff,
                  
                  data = predicting_hills,
                  
@@ -586,6 +647,7 @@ adjusted_preds_H <- bind_rows(adjust_win_probs_H) %>%
     rel_elite,
     rank_ppo,
     in_pack,
+    rel_pcd_abs_diff,
     
     win_prob = new_win_prob)
 
@@ -635,7 +697,6 @@ preds_tmldr_H <- cbind(
 #
 #
 
-
 # Climbing Races -------------------------------------------------------------
 
 #
@@ -673,9 +734,11 @@ CLM_data <- stage_data_perf %>%
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%
   
+  
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA),
          sof_per_opp = ifelse(tm_pos == 1, sof, NA),
-         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA)) %>%
+         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
+         pred_climb_diff_succ = ifelse(points_finish > 0, pred_climb_difficulty, NA)) %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -713,8 +776,10 @@ for(b in 1:length(BS_dates$date)) {
       sof_overall = mean(sof, na.rm = T),
       
       pcd_leader = mean(pred_climb_diff_opp, na.rm = T),
+      pcd_success = mean(pred_climb_diff_succ, na.rm = T),
       pcd_overall = mean(pred_climb_difficulty, na.rm = T),
       
+      successes = sum(points_finish > 0, na.rm = T),
       opportunities = sum(tm_pos == 1, na.rm = T),
       races = n()) %>%
     ungroup() %>%
@@ -786,10 +851,17 @@ predicting_climbing <- CLM_data %>%
     climbing_performance_table, by = c("rider", "date")) %>%
   
   #
-  # change so NAs are replaced by zeroes
+  # need to regress points_per_opp as some riders have won on their only opportunity
+  # filtered to tm_pos == 1 and regressed a number of combinations of N and regress amt between 0.01 and 0.024 (raw average and weighted avg of ppo)
+  # N = 4 and 0.01 was the best R2 of about 0.109
   #
   
-  mutate(points_per_opp = (0.12 + (opportunities * points_per_opp)) / (12 + opportunities)) %>%
+  mutate(points_per_opp = (0.04 + (opportunities * points_per_opp)) / (4 + opportunities)) %>%
+  
+  # also adjust pcd_success to consider riders who don't have successes or even opportunities
+  
+  mutate(pcd_success = ((pcd_overall * 1) + (pcd_success * successes * 2) + (pcd_leader * opportunities)) / 
+           (opportunities + 1 + (successes * 2))) %>%
   
   group_by(stage, race, year) %>%
   mutate(field_points_per_race = mean(points_per_race, na.rm = T),
@@ -819,18 +891,29 @@ predicting_climbing <- CLM_data %>%
   mutate(win = rnk == 1,
          rel_ppo = points_per_opp - field_points_per_race,
          rel_team_tmldr = team_leader - team_team_leader,
-         rel_team_domestique = domestique - team_domestique)
+         rel_team_domestique = domestique - team_domestique)  %>%
+  
+  mutate(pcd_abs_diff = abs(pred_climb_difficulty - pcd_success)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(rel_pcd_abs_diff = mean(pcd_abs_diff) - pcd_abs_diff) %>%
+  ungroup() %>%
+  
+  # calculate race outcome in terms of rider pcd_success
+  
+  mutate(results_pcd_success = ifelse(points_finish > 0, pcd_success, NA),
+         results_points_finish = ifelse(points_finish > 0, points_finish, NA)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(results_pcd_success = mean(results_pcd_success, na.rm = T),
+         results_points_finish = mean(results_points_finish, na.rm = T)) %>%
+  ungroup()
 
 ##################################################
 
 # win probability
 
-# three pillars of win prob for bunch sprints
-# 1. ranking well vs others in race
-# 2. a lot of success in opportunities
-# 3. more of team leader than other teammates
-
-win_model_C <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite + rel_in_pack,
+win_model_C <- glm(win ~ rel_team_tmldr + rank_ppo + rel_elite + rel_in_pack + rel_pcd_abs_diff,
                    
                    data = predicting_climbing,
                    
@@ -902,6 +985,7 @@ adjusted_preds_C <- bind_rows(adjust_win_probs_C) %>%
     rel_elite,
     rank_ppo,
     in_pack,
+    rel_pcd_abs_diff,
     
     win_prob = new_win_prob)
 
