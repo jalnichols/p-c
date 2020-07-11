@@ -12,14 +12,6 @@ con <- dbConnect(MySQL(),
                  password='braves')
 
 #
-#
-#
-
-# bring in data
-
-stage_data_perf <- dbReadTable(con, "stage_data_perf")
-
-#
 # CODE BELOW SETS UP models in Stan which predict success given rider/pred_climb_difficulty
 #
 # AND tm_pos == 1 given rider/pred_climb_difficulty
@@ -27,15 +19,17 @@ stage_data_perf <- dbReadTable(con, "stage_data_perf")
 # AND success given weight:pred_climb_difficulty + rider/pred_climb_difficulty
 #
 
-mod_data <- stage_data_perf %>%
+mod_data <- dbReadTable(con, "stage_data_perf") %>%
   
   filter(time_trial == 0) %>%
   
-  filter(year >= 2018 & 
+  filter(year >= 2018 & year <= 2020 &
            (class %in% c("1.UWT", "WC", "CC", "Olympics", "2.UWT") |
            sof >= 0.20) &
            !is.na(pred_climb_difficulty)) %>%
   mutate(success = ifelse(is.na(success), 0, success)) %>%
+  
+  mutate(rider = str_to_title(tolower(rider))) %>%
   
   left_join(
     
@@ -51,7 +45,10 @@ mod_data <- stage_data_perf %>%
   ungroup() %>%
   
   mutate(team_ldr = ifelse(tm_pos == 1, 1, 0)) %>%
-  mutate(team_ldr = ifelse(is.na(team_ldr), 0, team_ldr))
+  mutate(team_ldr = ifelse(is.na(team_ldr), 0, team_ldr)) %>%
+  
+  mutate(win = ifelse(rnk == 1, 1, 0),
+         win = ifelse(is.na(rnk), 0, win))
 
 #
 
@@ -77,11 +74,11 @@ mod1 <- brm(success ~ (1 + pred_climb_difficulty | rider),
             
             prior = prior1,
             
-            warmup = 2000, iter = 7000, chains = 1)
+            warmup = 400, iter = 1600, chains = 4, cores = 4)
 
 summary(mod1)
 
-point_est_intercept = brms::fixef(mod1)
+brms::fixef(mod1)
 
 mod1_ranefs <- brms::ranef(mod1) %>%
   .[[1]] %>% 
@@ -153,23 +150,24 @@ mod3_ranefs <- brms::ranef(mod3) %>%
                ungroup(), by = c("rowname" = "rider"))
 
 #
-# WHO WILL BE TEAM LEADER?
+#
+# use LMER
+#
 #
 
-mod2_data <- stage_data_perf %>%
-  filter(year >= 2018 & 
-           class %in% c("1.HC", "1.Pro", "1.UWT", "WC", "CC", "Olympics",
-                        "2.HC", "2.Pro", "2.UWT",
-                        "1.1", "2.1") &
-           !is.na(pred_climb_difficulty)) %>%
-  mutate(team_ldr = ifelse(tm_pos == 1, 1, 0)) %>%
-  mutate(team_ldr = ifelse(is.na(team_ldr), 0, team_ldr))
+mod4 <- lme4::glmer(success ~ pred_climb_difficulty:weight + (1 + pred_climb_difficulty | rider),
+            
+            data = mod_data,
+            
+            family = binomial("logit"))
 
+#
+# WHO WILL BE TEAM LEADER?
 #
 
 get_prior(team_ldr ~ (1 + pred_climb_difficulty | rider),
           
-          data = mod2_data)
+          data = mod_data)
 
 #
 
@@ -181,35 +179,220 @@ prior2 <- c(
 
 #
 
-mod2 <- brm(success ~ (1 + pred_climb_difficulty | rider),
+mod2 <- brm(team_ldr ~ (1 + pred_climb_difficulty | rider),
             
-            data = mod2_data,
+            data = mod_data,
             
             family = bernoulli(),
             
             prior = prior2,
             
-            warmup = 2000, iter = 7000, chains = 1)
+            warmup = 500, iter = 3000, chains = 1, cores = 4)
 
 summary(mod2)
 
-coef(mod2)
+fixef(mod2)
 
 mod2_ranefs <- brms::ranef(mod2) %>%
   .[[1]] %>% 
   as.data.frame() %>% 
   rownames_to_column() %>%
-  inner_join(mod2_data %>%
+  inner_join(mod_data %>%
                group_by(rider) %>%
                count() %>%
                ungroup(), by = c("rowname" = "rider"))
 
 preds <- cbind(
   
-  pred = predict(mod1, mod1_data %>%
+  pred = predict(mod2, mod_data %>%
                    select(rider, stage, race, year, pred_climb_difficulty, date, team, success)),
   
-  mod1_data %>%
+  mod_data %>%
     select(rider, stage, race, year, pred_climb_difficulty, date, team, success)
   
 )
+
+#
+#
+# Add in SOF, probably not a big deal considering success already includes implicit sof adjustment
+#
+#
+
+get_prior(success ~ (1 + pred_climb_difficulty | rider) + sof,
+          
+          data = mod_data)
+
+#
+
+prior5 <- c(
+  prior(normal(0, 3), class = Intercept),
+  prior(uniform(-10, 10), class = b, coef = sof),
+  prior(lkj(2), class = cor),
+  prior(cauchy(0, 10), class = sd)
+)
+
+#
+
+mod5 <- brm(success ~ (1 + pred_climb_difficulty | rider) + sof,
+            
+            data = mod_data,
+            
+            family = bernoulli(),
+            
+            prior = prior5,
+            
+            warmup = 500, iter = 2000, chains = 4, cores = 4)
+
+# this takes 2.5 hours to run, but sof adds nothing to the model (-0.01 coef with 0.11 error)
+
+summary(mod5)
+
+brms::fixef(mod5)
+
+mod5_ranefs <- brms::ranef(mod5) %>%
+  .[[1]] %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>%
+  inner_join(mod_data %>%
+               group_by(rider) %>%
+               count() %>%
+               ungroup(), by = c("rowname" = "rider"))
+
+#
+#
+# Win model using SOF
+#
+#
+
+#
+#
+# Add in SOF to win model, might add something
+#
+#
+
+get_prior(win ~ (1 + pred_climb_difficulty | rider) + sof,
+          
+          data = mod_data)
+
+#
+
+prior6 <- c(
+  prior(normal(0, 3), class = Intercept),
+  prior(uniform(-10, 10), class = b, coef = sof),
+  prior(lkj(2), class = cor),
+  prior(cauchy(0, 10), class = sd)
+)
+
+# this model ran and shows about a -2 coef for the highest sof races (typically TDF stages) vs 0.2 race
+
+mod6 <- brm(win ~ (1 + pred_climb_difficulty | rider) + sof,
+            
+            data = mod_data,
+            
+            family = bernoulli(),
+            
+            prior = prior6,
+            
+            warmup = 500, iter = 2000, chains = 4, cores = 4)
+
+summary(mod6)
+
+brms::fixef(mod6)
+
+mod6_ranefs <- brms::ranef(mod6) %>%
+  .[[1]] %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>%
+  inner_join(mod_data %>%
+               group_by(rider) %>%
+               count() %>%
+               ungroup(), by = c("rowname" = "rider"))
+
+#
+#
+# model points_finish -- this is absolute shit as I can't get the distribution correct
+#
+#
+
+get_prior(points_finish ~ (1 + pred_climb_difficulty | rider),
+          
+          data = mod_data,
+          
+          family = Beta())
+
+#
+
+prior8 <- c(
+  prior(normal(0, 3), class = Intercept),
+  prior(lkj(2), class = cor),
+  prior(cauchy(0, 10), class = sd)
+)
+
+#
+
+mod8 <- brm(points_finish ~ (1 + pred_climb_difficulty | rider),
+            
+            data = mod_data %>%
+              mutate(points_finish = ifelse(points_finish >= 1, 0.999, points_finish)),
+            
+            family = zero_inflated_beta(),
+            
+            prior = prior8,
+            
+            warmup = 400, iter = 1600, chains = 4, cores = 4)
+
+summary(mod8)
+
+brms::fixef(mod8)
+
+mod8_ranefs <- brms::ranef(mod8) %>%
+  .[[1]] %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>%
+  inner_join(mod_data %>%
+               group_by(rider) %>%
+               count() %>%
+               ungroup(), by = c("rowname" = "rider"))
+
+
+preds <- cbind(
+  
+  pred = predict(mod8, mod_data %>%
+                   select(rider, stage, race, year, pred_climb_difficulty, date, team, success) %>%
+                   filter(race == "uae tour" & year == 2020)),
+  
+  mod_data %>%
+    select(rider, stage, race, year, pred_climb_difficulty, date, team, success) %>%
+    filter(race == "uae tour" & year == 2020)
+  
+)
+
+
+#
+#
+# LME4 Model
+#
+#
+
+mod7 <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) + races,
+            
+            data = mod_data %>%
+              group_by(rider) %>%
+              mutate(races = n()) %>%
+              ungroup(),
+            
+            family = binomial("logit"))
+
+summary(mod7)
+
+lme4::fixef(mod7)
+
+mod7_ranefs <- lme4::ranef(mod7) %>%
+  .[[1]] %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>%
+  inner_join(mod_data %>%
+               group_by(rider) %>%
+               count() %>%
+               ungroup(), by = c("rowname" = "rider"))
+
