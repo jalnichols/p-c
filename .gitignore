@@ -12,3 +12,7 @@ WCS-HTML
 brms-model-pcdintweight-pcdrider.rds
 stages-list-f.rds
 YT-Shots/
+brms-model-pointsfinish-pcdrider.rds
+brms-model-success-pcdrider.rds
+brms-model-tmldr-pcdrider.rds
+brms-model-win-pcdrider.rds
