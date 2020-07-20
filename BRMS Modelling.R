@@ -23,7 +23,7 @@ mod_data <- dbReadTable(con, "stage_data_perf") %>%
   
   filter(time_trial == 0) %>%
   
-  filter(year >= 2018 & year <= 2020 &
+  filter(year >= 2015 & year <= 2017 &
            (class %in% c("1.UWT", "WC", "CC", "Olympics", "2.UWT") |
            sof >= 0.20) &
            !is.na(pred_climb_difficulty)) %>%
@@ -59,12 +59,12 @@ get_prior(success ~ (1 + pred_climb_difficulty | rider),
 #
 
 prior1 <- c(
-  prior(normal(0, 3), class = Intercept),
+  prior(normal(-2, 3), class = Intercept),
   prior(lkj(2), class = cor),
-  prior(cauchy(0, 10), class = sd)
+  prior(cauchy(0, 4), class = sd)
 )
 
-#
+# 4 cores, 4 chains, 1500 iters per chain takes 2 hours to run
 
 mod1 <- brm(success ~ (1 + pred_climb_difficulty | rider),
             
@@ -74,7 +74,7 @@ mod1 <- brm(success ~ (1 + pred_climb_difficulty | rider),
             
             prior = prior1,
             
-            warmup = 400, iter = 1600, chains = 4, cores = 4)
+            warmup = 500, iter = 1500, chains = 4, cores = 4)
 
 summary(mod1)
 
@@ -155,7 +155,7 @@ mod3_ranefs <- brms::ranef(mod3) %>%
 #
 #
 
-mod4 <- lme4::glmer(success ~ pred_climb_difficulty:weight + (1 + pred_climb_difficulty | rider),
+mod4 <- lme4::glmer(team_ldr ~ (1 + pred_climb_difficulty | rider),
             
             data = mod_data,
             
