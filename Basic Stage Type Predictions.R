@@ -1026,3 +1026,4 @@ preds_tmldr_C <- cbind(
   group_by(stage, race, year, team) %>%
   mutate(total_tmldr = sum(tmldr_prob, na.rm = T)) %>%
   ungroup()
+
