@@ -1,47 +1,93 @@
-Stage,Type,x1989,x1990,x1991,x1992,x1993,x1994,x1995,x1996,x1997,x1998,x1999,x2000,x2001,x2002,x2003,x2004,x2005,x2006,x2007,x2008,x2009,x2010,x2011,x2012,x2013,x2014,x2015,x2016,x2017,x2018,x2019
-0,Stage,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,NA,ITT,ITT,ITT,ITT,NA,ITT,ITT,NA,NA,ITT,NA,ITT,NA,NA,NA,NA,NA,NA,NA
-1,Stage,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Plain,ITT,Plain,Plain,Plain,Plain,ITT,Plain,Plain,Plain,ITT,Plain,Plain,Plain,Plain,Hills,ITT,Plain,Plain,Plain,Plain
-2,Stage,TTT,TTT,TTT,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,Hills,Hills,Plain,Plain,Plain,Plain,TTT
-3,Stage,Plain,Plain,Plain,Plain,Plain,TTT,TTT,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Cobbles,Plain,Hills,Hills,Plain,Hills,Plain,Plain,TTT,Hills
-4,Stage,Plain,Plain,Plain,TTT,TTT,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,TTT,TTT,TTT,TTT,Plain,Plain,ITT,TTT,Plain,Plain,Plain,TTT,Plain,Plain,Plain,Plain,Plain,Plain
-5,Stage,ITT,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Hills,Cobbles,Cobbles,Hills,Summit,Hills,Plain
-6,Stage,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Hills,Summit
-7,Stage,Plain,ITT,Plain,Plain,Plain,Plain,Hills,Mountains,Plain,ITT,Plain,Plain,Hills,Plain,Hills,Plain,Plain,ITT,Mountains,Hills,Summit,Hills,Plain,Summit,Hills,Plain,Plain,Hills,Plain,Plain,Plain
-8,Stage,Plain,Plain,ITT,Plain,Plain,Plain,ITT,ITT,Plain,Plain,ITT,Plain,Plain,Plain,Mountains,Plain,Hills,Plain,Summit,Plain,Mountains,Summit,Hills,Hills,Summit,Hills,Hills,Mountains,Mountains,Plain,Hills
-9,Stage,Summit,Hills,Plain,ITT,ITT,ITT,Summit,Mountains,Mountains,Plain,Summit,Plain,Plain,ITT,Summit,Plain,Hills,Plain,Mountains,Mountains,Mountains,Mountains,Hills,ITT,Mountains,Mountains,TTT,Summit,Mountains,Cobbles,Plain
-10,Stage,Mountains,Summit,Plain,Plain,Mountains,Plain,Summit,Hills,Summit,Mountains,Summit,Summit,Summit,Plain,Plain,Hills,Summit,Mountains,Plain,Summit,Plain,Hills,Plain,Mountains,Plain,Summit,Summit,Hills,Plain,Mountains,Plain
-11,Stage,Hills,Summit,Plain,Hills,Summit,Summit,Hills,Hills,Hills,Summit,Hills,Hills,ITT,Summit,Plain,Hills,Mountains,Summit,Plain,Hills,Plain,Plain,Plain,Summit,ITT,Hills,Mountains,Plain,Plain,Summit,Plain
-12,Stage,Plain,ITT,Mountains,Hills,Plain,Summit,Hills,Hills,ITT,Plain,Hills,Summit,Summit,Summit,ITT,Summit,Hills,Hills,Hills,Plain,Plain,Hills,Summit,Hills,Plain,Hills,Summit,Summit,Summit,Summit,Mountains
-13,Stage,Plain,Hills,Summit,Summit,Plain,Plain,Plain,Hills,Summit,Plain,Hills,Plain,Summit,Plain,Summit,Summit,Plain,Plain,ITT,Plain,Hills,Plain,Mountains,Plain,Plain,Summit,Hills,ITT,Mountains,Plain,ITT
-14,Stage,Hills,Hills,Plain,Summit,Plain,Plain,Summit,Hills,Summit,Hills,Plain,Mountains,Summit,Summit,Mountains,Plain,Summit,Hills,Summit,Plain,Plain,Summit,Summit,Mountains,Hills,Summit,Hills,Plain,Plain,Hills,Summit
-15,Stage,ITT,Plain,Hillsy,Hills,Summit,Mountains,Summit,Plain,Mountains,Summit,Summit,Summit,Plain,Summit,Summit,Mountains,Summit,Summit,Mountains,Summit,Summit,Mountains,Plain,Plain,Summit,Plain,Hills,Mountains,Hills,Hills,Summit
-16,Stage,Mountains,Summit,Plain,Hills,Mountains,Summit,NA,Summit,Hills,Mountains,Mountains,Mountains,Plain,Summit,Hills,ITT,Mountains,Summit,Summit,Mountains,Mountains,Mountains,Hills,Mountains,Mountains,Mountains,Hills,Plain,Plain,Mountains,Plain
-17,Stage,Summit,Mountains,Summit,Plain,Mountains,Summit,Plain,Mountains,Plain,NA,Plain,Hills,Plain,Mountains,Plain,Mountains,Plain,Mountains,Hills,Summit,Mountains,Summit,Mountains,Summit,ITT,Summit,Summit,Summit,Mountains,Summit,Hills
-18,Stage,Hills,Plain,Mountains,Plain,Plain,Mountains,Plain,Hills,Hills,Hills,Plain,Plain,ITT,Hills,Plain,Hills,Hills,Plain,Plain,Hills,ITT,Plain,Summit,Plain,Summit,Summit,Mountains,ITT,Summit,Plain,Mountains
-19,Stage,Mountains,Plain,Hillsy,ITT,ITT,ITT,ITT,Plain,Plain,Plain,ITT,ITT,Plain,ITT,ITT,ITT,Hills,ITT,ITT,Plain,Plain,ITT,Summit,ITT,Mountains,Plain,Summit,Summit,Plain,Mountains,NA
-20,Stage,Plain,ITT,Hillsy,Plain,Plain,Hills,Plain,ITT,ITT,ITT,Plain,Plain,Plain,Plain,Plain,Plain,ITT,Plain,Plain,ITT,Mountains,Plain,ITT,Plain,Summit,ITT,Summit,Mountains,ITT,ITT,Summit
-21,Stage,ITT,Plain,ITT,Plain,NA,Plain,NA,Plain,Plain,Plain,NA,Plain,NA,NA,NA,NA,Plain,NA,NA,Plain,Plain,NA,Plain,NA,Plain,Plain,Plain,Plain,Plain,Plain,Plain
-22,Stage,NA,NA,Plain,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-0,KOM,0,0,0,0,0,0,0,0,0,0,0,NA,0,0,0,0,NA,0,0,NA,NA,0,NA,0,NA,NA,NA,NA,NA,NA,NA
-1,KOM,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-2,KOM,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0
-3,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,5,5,0,0,0,0,0,0
-4,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-5,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,10,10,0,0
-6,KOM,0,0,0,0,0,0,0,5,0,0,0,0,5,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0
-7,KOM,0,0,0,0,0,0,0,40,0,0,0,0,10,0,25,0,0,0,15,10,30,15,0,15,5,0,0,10,0,0,0
-8,KOM,0,0,0,0,0,0,0,10,0,0,0,0,0,0,45,0,10,0,35,0,25,20,5,25,30,15,0,45,15,0,0
-9,KOM,45,5,0,0,0,0,35,15,50,0,50,0,0,0,35,0,15,0,50,20,30,35,20,25,45,25,0,55,60,0,0
-10,KOM,45,25,0,0,35,0,60,10,50,60,40,55,60,0,0,25,35,30,0,40,0,15,0,0,0,50,20,10,0,55,0
-11,KOM,0,50,0,20,60,20,10,10,10,50,10,0,20,35,0,10,50,60,0,10,0,0,0,55,0,0,35,0,50,55,0
-12,KOM,0,0,25,15,0,55,5,5,5,0,10,30,30,50,0,20,10,5,5,0,0,10,50,20,0,0,45,20,30,65,0
-13,KOM,0,5,65,55,0,0,0,10,25,0,5,0,65,0,20,50,0,0,0,0,20,0,20,0,0,30,0,0,0,0,0
-14,KOM,10,15,0,65,0,0,20,5,50,0,0,40,50,20,50,0,30,10,45,0,0,30,50,25,5,40,10,0,15,10,0
-15,KOM,0,0,0,5,50,20,60,0,40,50,50,50,0,25,50,30,65,45,50,30,15,30,0,0,20,0,5,45,0,15,0
-16,KOM,30,50,0,5,40,30,NA,20,10,50,60,40,0,60,20,20,30,55,60,40,30,60,5,60,10,25,10,0,0,25,0
-17,KOM,60,30,30,0,30,40,0,50,0,NA,0,5,0,35,0,55,5,50,0,60,45,40,20,45,5,50,20,30,55,40,0
-18,KOM,15,0,40,0,0,30,0,10,15,5,0,0,0,15,0,10,15,0,0,10,0,0,60,0,55,40,35,5,30,0,0
-19,KOM,20,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,50,0,65,0,45,45,0,55,0
-20,KOM,0,0,5,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,35,0,40,45,0,0,20
-21,KOM,0,0,0,0,NA,0,NA,0,0,0,NA,0,NA,NA,NA,NA,0,NA,NA,0,0,NA,0,NA,0,0,0,0,0,0,0
-22,KOM,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Stage,Race,Type,x1989,x1990,x1991,x1992,x1993,x1994,x1995,x1996,x1997,x1998,x1999,x2000,x2001,x2002,x2003,x2004,x2005,x2006,x2007,x2008,x2009,x2010,x2011,x2012,x2013,x2014,x2015,x2016,x2017,x2018,x2019
+0,Tour de France,Stage,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,ITT,NA,ITT,ITT,ITT,ITT,NA,ITT,ITT,NA,NA,ITT,NA,ITT,NA,NA,NA,NA,NA,NA,NA
+1,Tour de France,Stage,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Plain,ITT,Plain,Plain,Plain,Plain,ITT,Plain,Plain,Plain,ITT,Plain,Plain,Plain,Plain,Hills,ITT,Plain,Plain,Plain,Plain
+2,Tour de France,Stage,TTT,TTT,TTT,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,Hills,Hills,Plain,Hills,Plain,Plain,TTT
+3,Tour de France,Stage,Plain,Plain,Plain,Plain,Plain,TTT,TTT,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Cobbles,Plain,Hills,Hills,Plain,Wall,Plain,Hills,TTT,Hills
+4,Tour de France,Stage,Plain,Plain,Plain,TTT,TTT,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,TTT,TTT,TTT,TTT,Plain,Plain,ITT,TTT,Plain,Plain,Plain,TTT,Plain,Cobbles,Plain,Plain,Plain,Hills
+5,Tour de France,Stage,ITT,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,TTT,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Hills,Cobbles,Plain,Hills,Summit,Hills,Plain
+6,Tour de France,Stage,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Plain,Plain,Hills,Plain,Plain,Wall,Summit
+7,Tour de France,Stage,Plain,ITT,Plain,Plain,Plain,Plain,Hills,Mountains,Plain,ITT,Plain,Plain,Hills,Plain,Hills,Plain,Plain,ITT,Mountains,Hills,Summit,Hills,Plain,Summit,Hills,Hills,Plain,Hills,Plain,Plain,Plain
+8,Tour de France,Stage,Plain,Plain,ITT,Plain,Plain,Plain,ITT,Mountain ITT,Plain,Plain,ITT,Plain,Plain,Plain,Mountains,Plain,Hills,Plain,Summit,Plain,Mountains,Summit,Hills,Hills,Summit,Wall,Wall,Mountains,Mountains,Plain,Hills
+9,Tour de France,Stage,Summit,Hills,Plain,ITT,ITT,ITT,Summit,Mountains,Mountains,Plain,Summit,Plain,Plain,ITT,Summit,Plain,Hills,Plain,Mountains,Mountains,Mountains,Mountains,Hills,ITT,Mountains,Mountains,TTT,Summit,Mountains,Cobbles,Plain
+10,Tour de France,Stage,Mountains,Summit,Plain,Plain,Mountains,Plain,Summit,Hills,Summit,Mountains,Summit,Summit,Summit,Plain,Plain,Hills,Summit,Mountains,Plain,Summit,Plain,Hills,Plain,Mountains,Plain,Summit,Summit,Hills,Plain,Mountains,Plain
+11,Tour de France,Stage,Hills,Summit,Plain,Hills,Summit,Summit,Hills,Hills,Hills,Summit,Hills,Hills,Mountain ITT,Summit,Plain,Hills,Mountains,Summit,Plain,Hills,Plain,Plain,Plain,Summit,ITT,Hills,Summit,Plain,Plain,Summit,Plain
+12,Tour de France,Stage,Plain,Mountain ITT,Mountains,Hills,Plain,Summit,Hills,Hills,ITT,Plain,Hills,Summit,Summit,Summit,ITT,Summit,Hills,Hills,Hills,Plain,Plain,Hills,Summit,Hills,Plain,Hills,Summit,Summit,Summit,Summit,Mountains
+13,Tour de France,Stage,Plain,Hills,Summit,Summit,Plain,Plain,Plain,Hills,Summit,Plain,Hills,Plain,Summit,Plain,Summit,Summit,Plain,Plain,ITT,Plain,Hills,Plain,Mountains,Plain,Plain,Summit,Hills,ITT,Mountains,Plain,ITT
+14,Tour de France,Stage,Hills,Summit,Plain,Summit,Plain,Plain,Summit,Hills,Summit,Hills,Plain,Mountains,Summit,Summit,Mountains,Plain,Summit,Hills,Summit,Plain,Plain,Summit,Summit,Mountains,Hills,Summit,Wall,Plain,Hills,Wall,Summit
+15,Tour de France,Stage,ITT,Plain,Hills,Hills,Summit,Mountains,Summit,Plain,Mountains,Summit,Summit,Summit,Plain,Summit,Summit,Mountains,Summit,Summit,Mountains,Summit,Summit,Mountains,Plain,Plain,Summit,Plain,Hills,Mountains,Hills,Hills,Summit
+16,Tour de France,Stage,Mountains,Summit,Plain,Hills,Mountains,Summit,NA,Summit,Hills,Mountains,Mountains,Mountains,Plain,Summit,Hills,Mountain ITT,Mountains,Summit,Summit,Mountains,Mountains,Mountains,Hills,Mountains,Hills,Mountains,Hills,Hills,Plain,Mountains,Plain
+17,Tour de France,Stage,Summit,Mountains,Summit,Plain,Mountains,Summit,Plain,Mountains,Plain,NA,Plain,Hills,Plain,Mountains,Plain,Mountains,Plain,Mountains,Hills,Summit,Mountains,Summit,Mountains,Summit,Mountain ITT,Summit,Summit,Summit,Mountains,Summit,Hills
+18,Tour de France,Stage,Hills,Plain,Mountains,Plain,Plain,Mountains,Plain,Hills,Hills,Hills,Plain,Plain,ITT,Hills,Plain,Hills,Hills,Plain,Plain,Hills,ITT,Plain,Summit,Plain,Summit,Summit,Mountains,Mountain ITT,Summit,Plain,Mountains
+19,Tour de France,Stage,Mountains,Plain,Hills,ITT,ITT,Mountain ITT,ITT,Plain,Plain,Plain,ITT,ITT,Plain,ITT,ITT,ITT,Hills,ITT,ITT,Plain,Plain,ITT,Summit,ITT,Mountains,Plain,Summit,Summit,Plain,Mountains,NA
+20,Tour de France,Stage,Plain,ITT,Hills,Plain,Plain,Hills,Plain,ITT,ITT,ITT,Plain,Plain,Plain,Plain,Plain,Plain,ITT,Plain,Plain,ITT,Mountains,Plain,ITT,Plain,Summit,ITT,Summit,Mountains,ITT,ITT,Summit
+21,Tour de France,Stage,ITT,Plain,ITT,Plain,NA,Plain,NA,Plain,Plain,Plain,NA,Plain,NA,NA,NA,NA,Plain,NA,NA,Plain,Plain,NA,Plain,NA,Plain,Plain,Plain,Plain,Plain,Plain,Plain
+22,Tour de France,Stage,NA,NA,Plain,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+0,Tour de France,KOM,0,0,0,0,0,0,0,0,0,0,0,NA,0,0,0,0,NA,0,0,NA,NA,0,NA,0,NA,NA,NA,NA,NA,NA,NA
+1,Tour de France,KOM,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2,Tour de France,KOM,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0
+3,Tour de France,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,5,5,0,0,0,0,0,0
+4,Tour de France,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5,Tour de France,KOM,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,10,10,0,0
+6,Tour de France,KOM,0,0,0,0,0,0,0,5,0,0,0,0,5,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0
+7,Tour de France,KOM,0,0,0,0,0,0,0,40,0,0,0,0,10,0,25,0,0,0,15,10,30,15,0,15,5,0,0,10,0,0,0
+8,Tour de France,KOM,0,0,0,0,0,0,0,10,0,0,0,0,0,0,45,0,10,0,35,0,25,20,5,25,30,15,0,45,15,0,0
+9,Tour de France,KOM,45,5,0,0,0,0,35,15,50,0,50,0,0,0,35,0,15,0,50,20,30,35,20,25,45,25,0,55,60,0,0
+10,Tour de France,KOM,45,25,0,0,35,0,60,10,50,60,40,55,60,0,0,25,35,30,0,40,0,15,0,0,0,50,20,10,0,55,0
+11,Tour de France,KOM,0,50,0,20,60,20,10,10,10,50,10,0,20,35,0,10,50,60,0,10,0,0,0,55,0,0,35,0,50,55,0
+12,Tour de France,KOM,0,0,25,15,0,55,5,5,5,0,10,30,30,50,0,20,10,5,5,0,0,10,50,20,0,0,45,20,30,65,0
+13,Tour de France,KOM,0,5,65,55,0,0,0,10,25,0,5,0,65,0,20,50,0,0,0,0,20,0,20,0,0,30,0,0,0,0,0
+14,Tour de France,KOM,10,15,0,65,0,0,20,5,50,0,0,40,50,20,50,0,30,10,45,0,0,30,50,25,5,40,10,0,15,10,0
+15,Tour de France,KOM,0,0,0,5,50,20,60,0,40,50,50,50,0,25,50,30,65,45,50,30,15,30,0,0,20,0,5,45,0,15,0
+16,Tour de France,KOM,30,50,0,5,40,30,NA,20,10,50,60,40,0,60,20,20,30,55,60,40,30,60,5,60,10,25,10,0,0,25,0
+17,Tour de France,KOM,60,30,30,0,30,40,0,50,0,NA,0,5,0,35,0,55,5,50,0,60,45,40,20,45,5,50,20,30,55,40,0
+18,Tour de France,KOM,15,0,40,0,0,30,0,10,15,5,0,0,0,15,0,10,15,0,0,10,0,0,60,0,55,40,35,5,30,0,0
+19,Tour de France,KOM,20,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,50,0,65,0,45,45,0,55,0
+20,Tour de France,KOM,0,0,5,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,35,0,40,45,0,0,20
+21,Tour de France,KOM,0,0,0,0,NA,0,NA,0,0,0,NA,0,NA,NA,NA,NA,0,NA,NA,0,0,NA,0,NA,0,0,0,0,0,0,0
+22,Tour de France,KOM,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+0,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,ITT,ITT,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+1,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Hills,Plain,Plain,ITT,TTT,TTT,TTT,ITT,ITT,ITT,TTT,ITT,TTT,TTT,TTT,TTT,TTT,TTT,TTT,TTT,ITT,TTT
+2,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Plain,Plain,Plain,Plain,Hills,Mountains,Hills,Hills,Plain,Plain,Hills,Plain,Hills,Plain,Plain,Wall,Plain,Wall,Plain,Plain,Hills,Hills
+3,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Plain,Plain,Plain,Hills,Plain,Plain,Hills,Plain,Plain,Hills,Hills,Plain,Hills,Hills,Summit,Wall,Hills,Hills,Wall,Mountains,Plain,Plain
+4,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Hills,Hills,Mountains,Hills,Plain,Hills,Plain,Plain,Plain,Summit,Plain,Plain,Hills,Summit,Summit,Hills,Hills,Hills,Wall,Plain,Summit,Plain
+5,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Plain,Mountains,Plain,Summit,Summit,Plain,Hills,Hills,Summit,Mountains,ITT,Plain,Plain,Hills,Plain,Hills,Plain,Plain,Plain,Wall,Hills,Summit
+6,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,Wall,ITT,Hills,Hills,Summit,ITT,Hills,Summit,Plain,Plain,Plain,Plain,Plain,Hills,Wall,Plain,Wall,Hills,Hills,Hills,Plain,Summit
+7,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Plain,Plain,Hills,ITT,Plain,Summit,Hills,Plain,Plain,Plain,Summit,ITT,Plain,Plain,Plain,Plain,Hills,Summit,Hills,Plain,Hills,Wall
+8,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Mountains,Summit,ITT,Summit,Mountains,Summit,ITT,Plain,Hills,ITT,Summit,Summit,Mountains,Mountains,Summit,Summit,Plain,Hills,Wall,Wall,Hills,Hills
+9,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,ITT,ITT,Hills,Summit,Plain,Hills,Summit,Summit,ITT,Summit,Summit,Mountains,Mountains,Hills,Summit,Hills,Hills,Summit,Wall,Wall,Wall,Summit,Summit
+10,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Summit,Plain,Summit,Summit,ITT,Plain,Summit,Summit,Plain,Summit,Hills,Hills,Hills,ITT,Plain,Summit,ITT,Hills,Summit,Mountains,Plain,ITT
+11,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Summit,Summit,Plain,Summit,Mountains,Hills,Hills,Summit,Hills,Hills,Plain,Hills,Summit,Summit,ITT,ITT,Summit,Summit,Wall,Summit,Hills,Hills
+12,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Hills,Summit,Hills,Mountain ITT,Plain,Plain,Summit,Hills,Plain,Plain,Mountains,Summit,Hills,Plain,Wall,Plain,Plain,Plain,Hills,Hills,Hills,Hills
+13,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Hills,Summit,Summit,Hills,Hills,ITT,Plain,Hills,Plain,Plain,Summit,Summit,Plain,Mountains,Plain,Hills,Hills,Hills,Hills,Plain,Wall,Summit
+14,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Plain,Plain,Hills,Hills,Hills,Hills,Mountains,Summit,ITT,Hills,Summit,Summit,Summit,Summit,Wall,Summit,Wall,Summit,Summit,Summit,Wall,Hills
+15,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Plain,Hills,Summit,Summit,Summit,Summit,Mountain ITT,Summit,Plain,Mountains,Hills,Hills,Summit,Summit,Summit,Summit,Summit,Summit,Summit,Summit,Summit,Summit
+16,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Summit,Hills,Plain,Hills,Hills,Summit,Plain,Plain,Summit,Hills,Hills,Plain,Summit,Plain,Summit,Summit,Summit,Summit,Plain,ITT,ITT,Summit
+17,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Unknown,Plain,Hills,Hills,Hills,Plain,Hills,Summit,Mountains,Mountains,Plain,Plain,Plain,ITT,Summit,Summit,Hills,Plain,ITT,Wall,Summit,Summit,Hills
+18,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Hills,Summit,Plain,Plain,Summit,Hills,Mountains,Hills,Summit,Hills,Plain,Hills,Plain,Hills,Plain,Wall,Wall,Hills,Plain,Wall,Plain,Mountains
+19,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Mountains,Mountains,Summit,Hills,Mountains,Mountains,Mountains,Plain,Hills,Summit,Mountains,Mountains,Plain,Hills,Plain,Wall,Hills,Hills,ITT,Hills,Summit,Plain
+20,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,Summit,ITT,ITT,Summit,Plain,Mountain ITT,Summit,ITT,ITT,ITT,Mountain ITT,ITT,Summit,Hills,Summit,Summit,Summit,Mountains,Summit,Summit,Summit,Summit
+21,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,ITT,ITT,Plain,NA,ITT,ITT,Plain,ITT,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,Plain,ITT,Plain,Plain,Plain,Plain,Plain
+22,Vuelta a Espana,Stage,NA,NA,NA,NA,NA,NA,NA,NA,NA,Plain,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+0,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,NA,ITT,NA,ITT,ITT,ITT,NA,ITT,ITT,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+1,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Hills,Hills,Plain,Hills,Plain,Plain,Plain,Hills,ITT,TTT,TTT,TTT,ITT,TTT,ITT,Plain,TTT,TTT,ITT,Plain,ITT,ITT
+2,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Hills,Plain,Hills,Plain,Hills,Hills,Hills,Plain,Plain,Hills,Hills,Plain,Plain,Plain,Plain,TTT,Plain,Plain,Plain,Hills,Plain,Hills
+3,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountain ITT,Plain,Hills,Plain,Hills,Plain,Hills,Summit,Hills,Hills,Plain,Plain,Plain,Plain,Hills,Plain,Hills,Plain,Hills,Plain,Plain,Plain,Plain
+4,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Plain,Plain,Hills,Summit,Plain,Plain,Plain,Plain,Plain,Summit,Hills,Summit,ITT,NA,TTT,Summit,Plain,Hills,Hills,Summit,Hills,Hills
+5,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Hills,Summit,Hills,Plain,Summit,Hills,Plain,Hills,TTT,Hills,Hills,Summit,Plain,Hills,Plain,Hills,Hills,Summit,Plain,Plain,Hills,Plain
+6,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Summit,Plain,Plain,Plain,Hills,Plain,Plain,Plain,Plain,Mountains,Hills,Mountains,Hills,Plain,Hills,Plain,Summit,Plain,Summit,Hills,Summit,Hills
+7,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Mountains,Plain,Plain,Hills,Hills,Summit,Summit,Hills,Mountains,Hills,Summit,Plain,Hills,Summit,Summit,Hills,Plain,Hills,Plain,Plain,Plain,Hills
+8,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Plain,Summit,Mountains,Mountains,Hills,Plain,Plain,ITT,Summit,Plain,Hills,Hills,Summit,Plain,Summit,ITT,Summit,Summit,Hills,Hills,Summit,Hills
+9,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,Hills,ITT,Summit,Plain,Plain,Plain,Plain,Hills,Hills,Plain,Plain,Plain,Plain,Summit,Plain,Hills,Summit,Hills,ITT,Summit,Summit,Mountain ITT
+10,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Plain,Hills,Hills,Plain,Plain,Mountains,Plain,Plain,Hills,Summit,Mountain ITT,Mountains,Plain,Plain,Hills,Summit,Plain,Plain,Wall,ITT,Plain,Plain
+11,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Summit,Hills,ITT,Plain,Summit,Plain,Hills,Summit,ITT,Plain,Hills,Plain,Hills,Hills,Plain,Wall,Hills,Hills,Hills,Mountains,Hills,Plain
+12,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,Plain,Plain,Hills,Plain,Hills,Summit,Plain,Hills,Hills,Mountains,Plain,Mountain ITT,Hills,Plain,Hills,Plain,ITT,Hills,Plain,Plain,Plain,Hills
+13,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Hills,Mountains,Mountains,Summit,Summit,Plain,ITT,Summit,Mountains,Mountain ITT,Plain,Plain,Hills,Summit,Plain,Plain,Plain,Plain,Mountains,Plain,Plain,Summit
+14,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Summit,Mountains,Mountains,Mountains,ITT,Summit,Plain,Mountains,Mountains,Mountains,Summit,Summit,Mountains,Summit,Summit,Summit,Summit,ITT,Mountains,Summit,Summit,Mountains
+15,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,ITT,Summit,Plain,ITT,Plain,ITT,Plain,Hills,Plain,Summit,Summit,Mountains,Summit,Summit,Summit,Summit,Summit,Summit,Mountain ITT,Hills,Hills,Mountains
+16,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Hills,Plain,Plain,Plain,Mountains,Plain,Mountains,Hills,Summit,Hills,Mountain ITT,Summit,Mountain ITT,Mountain ITT,Hills,Hills,Summit,Summit,Summit,Mountains,ITT,Mountains
+17,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Hills,Mountains,Plain,Plain,Mountains,Summit,Plain,Hills,Summit,Summit,Summit,Plain,Summit,Summit,Mountains,Mountains,Plain,Plain,Hills,Plain,Hills,Plain,Wall
+18,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,ITT,Summit,ITT,Summit,NA,Plain,Summit,Summit,ITT,Hills,Plain,Hills,Plain,Plain,Mountains,Plain,Mountain ITT,Summit,Mountains,Hills,Summit,Summit,Plain
+19,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Summit,Summit,Mountains,Plain,ITT,Summit,Summit,Summit,Summit,Mountains,Summit,Summit,Summit,Summit,Summit,NA,Mountain ITT,Summit,Summit,Summit,Summit,Summit
+20,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Summit,Hills,Summit,Mountain ITT,Mountains,Plain,Plain,Plain,Plain,Summit,ITT,Mountains,Hills,Summit,Summit,Summit,Summit,Summit,Summit,Summit,Mountains,Summit,Summit
+21,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Mountains,ITT,Mountains,Plain,Plain,NA,ITT,NA,NA,Plain,Plain,ITT,ITT,ITT,ITT,ITT,Plain,Plain,Plain,Plain,ITT,Plain,ITT
+22,Giro d'Italia,Stage,NA,NA,NA,NA,NA,NA,NA,NA,Plain,Plain,Plain,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
