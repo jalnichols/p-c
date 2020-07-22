@@ -93,6 +93,16 @@ for(u in 1:length(list_races$URL)) {
     html_nodes('table.autooddstable') %>%
     html_table(fill=TRUE)
   
+  race_name <- page %>%
+    html_nodes(xpath = '//*[@id="mainplh_Content02"]/h2') %>%
+    html_text()
+  
+  if(length(race_name)==0) {
+    
+    race_name = "Unknown"
+    
+  }
+  
   para <- page %>%
     html_nodes(xpath = '//*[@id="mainplh_Content02"]') %>%
     html_nodes('p') %>%
@@ -137,7 +147,8 @@ for(u in 1:length(list_races$URL)) {
         mutate(Updated = lubridate::now()) %>%
         filter(!is.na(Highest)) %>%
         gather(OddType, Odds, -Rider, -Race, -URL, -Year, -Updated) %>%
-        mutate(content_paragraph = para)
+        mutate(content_paragraph = para,
+               race_name = race_name)
       
       DBI::dbWriteTable(con, "nicerodds_raceodds", df, append = TRUE, row.names = FALSE)
       
@@ -162,7 +173,8 @@ for(u in 1:length(list_races$URL)) {
         mutate(Updated = lubridate::now()) %>%
         filter(!is.na(Highest)) %>%
         gather(OddType, Odds, -Rider, -Race, -URL, -Year, -Updated) %>%
-        mutate(content_paragraph = para)
+        mutate(content_paragraph = para,
+               race_name = race_name)
       
       DBI::dbWriteTable(con, "nicerodds_raceodds", df, append = TRUE, row.names = FALSE)
       
