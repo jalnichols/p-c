@@ -497,6 +497,19 @@ icon_data <- cbind(
   ))
 
 #
+# write models to folder
+#
+
+# coef(icon_mod)
+# write_rds(icon_mod, "Stored models/pcd-icon-mod.rds")
+
+# coef(no_climbs_mod)
+# write_rds(no_climbs_mod, "Stored models/pcd-no_climbs-mod.rds")
+
+# coef(pv_mod)
+# write_rds(pv_mod, "Stored models/pcd-pv-mod.rds")
+
+#
 # now combine all three methods together
 #
 
@@ -863,6 +876,11 @@ limits_actual <- glm_data %>%
   
   loess(thresh ~ sof, data = .)
 
+# write this limits model which gives # of riders inside success limit as a function of sof on 0 to 1 basis
+# eg, sof = 0.3 (roughly average) = 2.7 rounded to 3
+
+write_rds(limits_actual, "sof-limits-mod.rds")
+
 #
 #
 # actual limits
@@ -887,10 +905,12 @@ stage_data_perf <- stage_data %>%
   
   # round the limit to nearest integer
   mutate(limit = round(limit, 0),
-         limit = ifelse(limit<1,1,limit)) %>%
+         limit = ifelse(is.na(limit), 1, limit),
+         limit = ifelse(limit<1,1,
+                        ifelse(limit>10,10,limit))) %>%
   
   # success is any finish better than or equal to the limit
-  mutate(success = ifelse(rnk < (limit + 1), 1, 0)) %>%
+  mutate(success = ifelse(rnk <= limit, 1, 0)) %>%
   
   # find the slowest success and scale off that
   mutate(success_time = ifelse(success == 1, total_seconds, NA)) %>%
@@ -1135,7 +1155,13 @@ bs_data <- stage_data_perf %>%
   select(-parcours_value, -stage_type, -variance, -top_variance, -rel_speed, -speed,
          -gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, -gain_gc,
          -tm_pos, -gc_winner, -gc_seconds, -gc_pos, -back_5_seconds, -gain_back_5,
-         -NEW, -new_st, -limit, -success, -success_time, -rel_success, -leader_rating, -points_finish)
+         -NEW, -new_st, -limit, -success, -success_time, -rel_success, -leader_rating, -points_finish) %>%
+  
+  mutate(stage_no = stage - 1) %>%
+  group_by(race, year) %>%
+  mutate(perc_thru = stage_no / max(stage_no)) %>%
+  ungroup() %>%
+  mutate(perc_thru = ifelse(is.na(perc_thru), 0, perc_thru))
 
 #
 
@@ -1281,7 +1307,15 @@ bind_rows(xgb_list) %>% summarize(mean(bscore), mean(insample))
 
 # final predictions
 
-bs_glm <- glm(bunch_sprint ~ grand_tour + one_day_race + sq_pcd + pred_climb_difficulty + length + summit_finish + finalGT + cobbles,
+bs_glm <- glm(bunch_sprint ~ grand_tour +
+                perc_thru +
+                one_day_race + 
+                sq_pcd + 
+                pred_climb_difficulty + 
+                length + 
+                summit_finish + 
+                finalGT + 
+                cobbles,
               family = "binomial",
               data = bs_data)
 
@@ -1298,7 +1332,10 @@ bs_glm_pred <- cbind(
   
   select(stage, race, year, bunch_sprint, predicted_bs = pred)
 
-#
+# write model and predictions
+
+coef(bs_glm)
+write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
 
 dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, overwrite = T)
 
