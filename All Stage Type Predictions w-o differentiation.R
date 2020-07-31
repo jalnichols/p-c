@@ -234,6 +234,9 @@ predicting_all <- All_data %>%
     
     performance_table, by = c("rider", "date", "bunch_sprint")) %>%
   
+  # add some regression to the numbers here
+  mutate(points_per_opp = (0.05 + (opportunities * points_per_opp)) / (5 + opportunities)) %>%
+  
   select(-win_seconds, -total_seconds, -gain_gc, -missing_profile_data,
          -limit, -cobbles, -first_race, -latest_race, -leader_rating,
          -pred_climb_diff_succ) %>%
@@ -258,7 +261,7 @@ predicting_all <- All_data %>%
            predicted_bs, points_finish, success, date,
            sof, team_ldr,
            stat) %>%
-  summarize(new_value = sum(value * races, na.rm = T) / sum(races, na.rm = T) * 2) %>%
+  summarize(new_value = mean(value, na.rm = T)) %>%
   ungroup() %>%
   
   spread(stat, new_value) %>%
@@ -339,26 +342,51 @@ predicting_all <- All_data %>%
   
   inner_join(
     
-    dbReadTable(con, "lme4_rider_teamleader") %>%
+    dbReadTable(con, "lme4_rider_teamleader")  %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
+      
+      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+      # we adjust here
+      group_by(date) %>%
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+      ungroup() %>%
+      
+      # this transforms them back to input into the regression equation
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+             random_intercept = random_intercept_new * sd(random_intercept)) %>%
+      
+      select(-pcd_impact_new, -random_intercept_new) %>%
       
       rename(pcd_tmldr_impact = pcd_impact,
              bs_tmldr_impact = bunchsprint_impact) %>%
       
-      filter(date <= as.Date('2020-04-01') | date >= as.Date('2020-08-01')) %>%
-      group_by(date) %>%
-      mutate(pcd_tmldr_impact = (pcd_tmldr_impact - mean(pcd_tmldr_impact, na.rm = T)) / sd(pcd_tmldr_impact)) %>%
-      ungroup(), by = c("rider", "date")
+      filter(date <= as.Date('2020-04-01') | date >= as.Date('2020-08-01')), by = c("rider", "date")
     
   ) %>%
   
   inner_join(
     
-    lme4_success_table %>%
+    lme4_success_table  %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
+      
+      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+      # we adjust here
       group_by(date) %>%
-      mutate(pcd_impact = (pcd_impact - mean(pcd_impact, na.rm = T))/sd(pcd_impact)) %>%
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
       ungroup() %>%
+      
+      # this transforms them back to input into the regression equation
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+             random_intercept = random_intercept_new * sd(random_intercept)) %>%
+      
+      select(-pcd_impact_new, -random_intercept_new) %>%
+      
       rename(success_intercept = random_intercept,
              pcd_success_impact = pcd_impact,
              bs_success_impact = bunchsprint_impact), by = c("rider", "date")) %>%
@@ -391,7 +419,24 @@ predicting_all <- All_data %>%
   
   group_by(stage, race, year, team) %>%
   mutate(teammates_rel_sof = (sum(rel_sof_race, na.rm = T) - rel_sof_race) / (n() - 1)) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(rider_match = str_to_title(rider)) %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("rider_match" = "rider")) %>%
+  
+  mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(rel_age = age - mean(age, na.rm = T)) %>%
+  ungroup() %>%
+  
+  select(-age, -rider_match, -dob) %>%
+  mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age))
 
 #
 # how does pcd_impact map onto fit for pred_climb_difficulty?
@@ -439,6 +484,8 @@ ggplot(link_pcdimpact_w_pcdperf, aes(x = f, y = value))+
 # set basic gam smoother to find non-linear impact of f on value (success/leader/wins) above
 gam_link_pcd <- mgcv::gam(value ~ s(f, k = 5),
                           data = link_pcdimpact_w_pcdperf %>% filter(!stat == 'Range'))
+
+write_rds(gam_link_pcd, "Stored models/gam_pcd_linked.rds")
 
 # predict based on -12 to +5 (reasonable ranges)
 pred_link_pcd <- cbind(
@@ -502,7 +549,8 @@ tmldr_model_All <- glm(tmldr ~
                        
                        data = predicting_all %>%
                          mutate(tmldr = tm_pos == 1),
-                       family = "binomial")
+                       family = "binomial"
+                       )
 
 summary(tmldr_model_All)
 
@@ -522,46 +570,38 @@ library(xgboost)
 # this slightly improves overall model
 #
 
-xgb.train_BS1 <- xgb.DMatrix(
+xgb.train <- xgb.DMatrix(
   
   data = as.matrix(predicting_all %>%
-                     filter(year < 2019 & bunch_sprint == 1) %>%
+                     filter(year < 2019) %>%
                      select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
                             mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race)),
+                            pcd_optimal_race) %>%
+                     mutate(int_pcdo_elite = pcd_optimal_race * rel_elite)),
   
   label = predicting_all %>%
-    filter(year < 2019 & bunch_sprint == 1) %>%
+    filter(year < 2019) %>%
     mutate(tmldr = tm_pos == 1) %>%
     select(tmldr) %>%
-    .[[1]],
-  
-  weight = predicting_all %>%
-    filter(year < 2019 & bunch_sprint == 1) %>%
-    select(predicted_bs) %>%
     .[[1]]
   
 )
 
 # test
 
-xgb.test_BS1 <- xgb.DMatrix(
+xgb.test <- xgb.DMatrix(
   
   data = as.matrix(predicting_all %>%
-                     filter(year >= 2019 & bunch_sprint == 1) %>%
+                     filter(year >= 2019) %>%
                      select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
                             mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race)),
+                            pcd_optimal_race) %>%
+                     mutate(int_pcdo_elite = pcd_optimal_race * rel_elite)),
   
   label = predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 1) %>%
+    filter(year >= 2019) %>%
     mutate(tmldr = tm_pos == 1) %>%
     select(tmldr) %>%
-    .[[1]],
-  
-  weight = predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 1) %>%
-    select(predicted_bs) %>%
     .[[1]]
   
 )
@@ -583,189 +623,70 @@ params <- list(
 
 # run xgboost model
 
-gbm_model_BS1 <- xgb.train(params = params,
-                       data = xgb.train_BS1,
+gbm_model <- xgb.train(params = params,
+                       data = xgb.train,
                        nrounds = 10000,
                        nthreads = 4,
                        early_stopping_rounds = 1000,
-                       watchlist = list(val1 = xgb.train_BS1,
-                                        val2 = xgb.test_BS1),
-                       verbose = 1)
+                       watchlist = list(val1 = xgb.train,
+                                        val2 = xgb.test),
+                       verbose = 0)
 
 #
 #
 # xgb Importance
 
-xgb.importance(model = gbm_model_BS1)
+xgb.importance(model = gbm_model)
 
-gbm_model_BS1$best_score
+gbm_model$best_score
+
+#
+# write model
+#
+
+write_rds(gbm_model, "Stored models/predict_teamleader_xgb.rds")
 
 #
 #
 # this outputs GBM predictions for all data
 
-gbm_predict_TMLDR_BS1 = cbind(
+gbm_predict_TMLDR = cbind(
   
   
-  pred = predict(gbm_model_BS1, 
+  pred = predict(gbm_model, 
                  as.matrix(predicting_all %>%
-                             filter(year >= 2019 & bunch_sprint == 1) %>%
+                             filter(year >= 2019) %>%
                              select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
                                     mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                    pcd_optimal_race), reshape=T)),
+                                    pcd_optimal_race) %>%
+                             mutate(int_pcdo_elite = pcd_optimal_race * rel_elite), reshape=T)),
   
   predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 1) %>%
+    filter(year >= 2019) %>%
     select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
            rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
            mod_rel_pcd_corr, elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race))
+           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race) %>%
+    mutate(int_pcdo_elite = pcd_optimal_race * rel_elite))
 
 #
-# Next run same train/test split on bunch_sprint == 0, weighting the same
-#
-#
 
-xgb.train_BS0 <- xgb.DMatrix(
-  
-  data = as.matrix(predicting_all %>%
-                     filter(year < 2019 & bunch_sprint == 0) %>%
-                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-                            mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race)),
-  
-  label = predicting_all %>%
-    filter(year < 2019 & bunch_sprint == 0) %>%
-    mutate(tmldr = tm_pos == 1) %>%
-    select(tmldr) %>%
-    .[[1]],
-  
-  weight = predicting_all %>%
-    filter(year < 2019 & bunch_sprint == 0) %>%
-    mutate(predicted_bs = 1-predicted_bs) %>%
-    select(predicted_bs) %>%
-    .[[1]]
-  
-)
-
-#
-# test
-
-xgb.test_BS0 <- xgb.DMatrix(
-  
-  data = as.matrix(predicting_all %>%
-                     filter(year >= 2019 & bunch_sprint == 0) %>%
-                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-                            mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race)),
-  
-  label = predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 0) %>%
-    mutate(tmldr = tm_pos == 1) %>%
-    select(tmldr) %>%
-    .[[1]],
-  
-  weight = predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 0) %>%
-    mutate(predicted_bs = 1-predicted_bs) %>%
-    select(predicted_bs) %>%
-    .[[1]])
-
-#
-# outline parameters
-
-params <- list(
-  
-  booster = "gbtree",
-  eta = 0.3,
-  max_depth = 4,
-  gamma = 0,
-  subsample = 1,
-  colsample_bytree = 1,
-  tree_method = "hist",
-  objective = "binary:logistic"
-  
-)
-
-# run xgboost model
-
-gbm_model_BS0 <- xgb.train(params = params,
-                       data = xgb.train_BS0,
-                       nrounds = 10000,
-                       nthreads = 4,
-                       early_stopping_rounds = 1000,
-                       watchlist = list(val1 = xgb.train_BS0,
-                                        val2 = xgb.test_BS0),
-                       verbose = 1)
-
-# xgb Importance
-
-xgb.importance(model = gbm_model_BS0)
-
-gbm_model_BS0$best_score
-
-#
-#
-# this outputs GBM predictions for all data
-
-gbm_predict_TMLDR_BS0 = cbind(
+gbm_predict_TMLDR_all = cbind(
   
   
-  pred = predict(gbm_model_BS0, 
+  pred = predict(gbm_model, 
                  as.matrix(predicting_all %>%
-                             filter(year >= 2019 & bunch_sprint == 0) %>%
                              select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
                                     mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                    pcd_optimal_race), reshape=T)),
+                                    pcd_optimal_race) %>%
+                             mutate(int_pcdo_elite = pcd_optimal_race * rel_elite), reshape=T)),
   
   predicting_all %>%
-    filter(year >= 2019 & bunch_sprint == 0) %>%
     select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
            rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-           mod_rel_pcd_corr, elite_pcd_corr, pcd_succ_vs_race, sof_vs_team, 
-           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race))
-
-
-#
-# Team Leader predictions weighting using predicted_bs
-#
-
-gbm_predict_TMLDR <- rbind(
-  
-  gbm_predict_TMLDR_BS0 %>%
-    mutate(predicted_bs = 1 - predicted_bs) %>%
-    mutate(BSTYPE = 0),
-  
-  gbm_predict_TMLDR_BS1 %>%
-    mutate(BSTYPE = 1)
-  
-) %>%
-  
-  group_by(stage, race, year, team, BSTYPE) %>%
-  mutate(pred2 = pred / sum(pred, na.rm = T)) %>%
-  ungroup() %>%
-  
-  mutate(pred = predicted_bs * pred,
-         pred2 = predicted_bs * pred2) %>%
-  unique() %>%
-  
-  group_by(stage, race, year, rider, team, win, tm_pos, pred_climb_difficulty, one_day_race) %>%
-  summarize(pred_tmldr = sum(pred2, na.rm = T)) %>%
-  ungroup() %>%
-  
-  group_by(stage, race, year, team) %>%
-  filter(n()>1) %>%
-  ungroup()
-
-#
-
-ggplot(gbm_predict_TMLDR, 
-       aes(x = pred_tmldr, y = as.numeric(tm_pos==1)))+
-  
-  geom_smooth(se=F)+
-  scale_y_continuous(breaks = c(0,0.25,0.5,0.75,1))+
-  facet_wrap(~one_day_race)
-
+           mod_rel_pcd_corr, elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
+           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race, rel_age) %>%
+    mutate(int_pcdo_elite = pcd_optimal_race * rel_elite))
 
 #
 #
@@ -780,53 +701,13 @@ ggplot(gbm_predict_TMLDR,
 predicting_win <- predicting_all %>%
   
   inner_join(
-    
-    rbind(
-      
-      cbind(
-
-        pred = predict(gbm_model_BS0, 
-                       as.matrix(predicting_all %>%
-                                   filter(bunch_sprint == 0) %>%
-                                   select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-                                          mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                          pcd_optimal_race), reshape=T)),
-        
-        predicting_all %>%
-          filter(bunch_sprint == 0) %>%
-          select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
-                 rel_glmer_pred, rel_elite, mod_rel_pcd_corr, mod_elite_pcd_corr,
-                 pcd_succ_vs_race, sof_vs_team, rel_succ_pred, No1_Team_succ, 
-                 tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race)) %>%
-        mutate(predicted_bs = 1 - predicted_bs) %>%
-        mutate(BSTYPE = 0),
-      
-      cbind(
-        
-        
-        pred = predict(gbm_model_BS1, 
-                       as.matrix(predicting_all %>%
-                                   filter(bunch_sprint == 1) %>%
-                                   select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-                                          mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                          pcd_optimal_race), reshape=T)),
-        
-        predicting_all %>%
-          filter(bunch_sprint == 1) %>%
-          select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
-                 rel_glmer_pred, rel_elite, mod_rel_pcd_corr, mod_elite_pcd_corr,
-                 pcd_succ_vs_race, sof_vs_team, rel_succ_pred, No1_Team_succ, 
-                 tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race)) %>%
-        mutate(BSTYPE = 1)
-      
-    ) %>%
-      
-      group_by(stage, race, year, team, BSTYPE) %>%
+    gbm_predict_TMLDR_all %>%
+      group_by(stage, race, year, team) %>%
       mutate(pred2 = pred / sum(pred, na.rm = T)) %>%
       ungroup() %>%
       rename(modeled_tmldr = pred2) %>%
-      select(stage, race, year, team, rider, BSTYPE, modeled_tmldr), 
-    by = c("stage", "race", "year", "team", "rider", "bunch_sprint" = "BSTYPE")
+      select(stage, race, year, team, rider, modeled_tmldr), 
+    by = c("stage", "race", "year", "team", "rider")
     
   ) %>%
   unique()
@@ -841,25 +722,29 @@ predicting_win <- predicting_all %>%
 #
 #
 
-train_BS1_W <- predicting_win %>%
-  filter(year < 2019 & bunch_sprint == 1)
+train_W <- predicting_win %>%
+  filter(year < 2019) %>% 
+  filter(!is.na(teammates_rel_sof))
 
-test_BS1_W <- predicting_win %>%
-  filter(year >= 2019 & bunch_sprint == 1)
+test_W <- predicting_win %>%
+  filter(year >= 2019) %>% 
+  filter(!is.na(teammates_rel_sof))
 
 ####
 ####
 ####
 ####
+
+regular_train <- train_W
 
 cols <- c("modeled_tmldr", "rank_ppo", "rel_elite", "rel_in_pack", "rel_pcd_abs_diff",
-          "mod_rel_pcd_corr", "rel_succ_pred", "pcd_succ_vs_race", "rel_sof_race",
-          "pcd_optimal_race", "teammates_rel_sof")
+          "mod_rel_pcd_corr", "rel_succ_pred", "rel_sof_race",
+          "pcd_optimal_race", "teammates_rel_sof","rel_age")
 
-pre_proc_val <- caret::preProcess(train_BS1_W[,cols], method = c("center", "scale"))
+pre_proc_val <- caret::preProcess(train_W[,cols], method = c("center", "scale"))
 
-train_BS1_W[,cols] = predict(pre_proc_val, train_BS1_W[,cols])
-test_BS1_W[,cols] = predict(pre_proc_val, test_BS1_W[,cols])
+train_W[,cols] = predict(pre_proc_val, train_W[,cols])
+test_W[,cols] = predict(pre_proc_val, test_W[,cols])
 
 #
 #
@@ -871,16 +756,16 @@ for(v in 1:length(cols)) {
   
   # run single variable logistic model
   mod <- glm(win ~ .,
-             data = train_BS1_W[, c(cols[[v]], "win")],
-             weights = train_BS1_W$predicted_bs,
+             data = train_W[, c(cols[[v]], "win")],
+             weights = train_W$predicted_bs,
              family = "binomial")
   
   # summary
   summary(mod)
   
   # predict test set out of sample
-  pred <- cbind(coef = predict(mod, test_BS1_W),
-                test_BS1_W) %>%
+  pred <- cbind(coef = predict(mod, test_W),
+                test_W) %>%
     mutate(pred = exp(coef)/(1+exp(coef)))
   
   # brier score for accuracy
@@ -893,7 +778,7 @@ for(v in 1:length(cols)) {
   print(pROC::auc(roc_obj))
   
   ggsave(
-    filename = paste0("Images/bs1", cols[[v]], ".png"),
+    filename = paste0("Images/each-var-", cols[[v]], ".png"),
     plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
       labs(title = cols[[v]], subtitle = pROC::auc(roc_obj))
   )
@@ -906,16 +791,27 @@ for(v in 1:length(cols)) {
 
 # run single variable logistic model
 mod <- glm(win ~ .,
-           data = train_BS1_W[, c(cols, "win")],
-           weights = train_BS1_W$predicted_bs,
+           data = train_W[, c(cols, "win")],
            family = "binomial")
 
 # summary
 summary(mod)
 
+# run without scaling/centering
+reg_mod <- glm(win ~ .,
+           data = regular_train[, c(cols, "win")],
+           family = "binomial")
+
+# summary
+summary(reg_mod)
+
+# write model // this writes an un-standardized/normalized version
+
+write_rds(reg_mod, "Stored models/basic-winprob-glm.rds")
+
 # predict test set out of sample
-pred <- cbind(coef = predict(mod, test_BS1_W),
-              test_BS1_W) %>%
+pred <- cbind(coef = predict(mod, test_W),
+              test_W) %>%
   mutate(pred = exp(coef)/(1+exp(coef)))
 
 # ROC / AUC
@@ -923,7 +819,7 @@ roc_obj <- pROC::roc(pred$win, pred$pred)
 print(pROC::auc(roc_obj))
 
 ggsave(
-  filename = paste0("Images/bs1-all.png"),
+  filename = paste0("Images/all.png"),
   plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
     labs(title = "all variables", subtitle = pROC::auc(roc_obj))
 )
@@ -935,24 +831,24 @@ ggsave(
 #
 
 cols <- c("modeled_tmldr", "rank_ppo", "rel_elite", "rel_in_pack", "rel_pcd_abs_diff",
-          "mod_rel_pcd_corr", "rel_succ_pred", "pcd_succ_vs_race", "rel_sof_race", "win",
-          "pcd_optimal_race", "teammates_rel_sof")
+          "mod_rel_pcd_corr", "rel_succ_pred", "rel_sof_race", "win",
+          "pcd_optimal_race", "teammates_rel_sof", "rel_age")
 
-TRdummies <- caret::dummyVars(win ~ ., data = train_BS1_W[,cols])
+TRdummies <- caret::dummyVars(win ~ ., data = train_W[,cols])
 
-TSdummies <- caret::dummyVars(win ~ ., data = test_BS1_W[,cols])
+TSdummies <- caret::dummyVars(win ~ ., data = test_W[,cols])
 
-train_dummies = predict(TRdummies, newdata = train_BS1_W[,cols])
+train_dummies = predict(TRdummies, newdata = train_W[,cols])
 
-test_dummies = predict(TSdummies, newdata = test_BS1_W[,cols])
+test_dummies = predict(TSdummies, newdata = test_W[,cols])
 
 # set up matrices
 
 x = as.matrix(train_dummies)
-y_train = train_BS1_W$win
+y_train = train_W$win
 
 x_test = as.matrix(test_dummies)
-y_test = test_BS1_W$win
+y_test = test_W$win
 
 # run to find optimal lambda
 
@@ -962,8 +858,7 @@ lambdas <- 10^seq(2, -3, by = -.1)
 lasso_reg <- glmnet::cv.glmnet(x, 
                                y_train,
                                alpha = 1, 
-                               lambda = lambdas, 
-                               weights = train_BS1_W$predicted_bs,
+                               lambda = lambdas,
                                family = "binomial", 
                                standardize = TRUE, 
                                nfolds = 5)
@@ -973,210 +868,35 @@ lambda_best <- lasso_reg$lambda.min
 
 # run the lasso model
 
-lasso_model_BS1 <- glmnet::glmnet(x, 
+lasso_model_all <- glmnet::glmnet(x, 
                               y_train, 
                               alpha = 1, 
-                              lambda = lambda_best, 
-                              weights = train_BS1_W$predicted_bs,
+                              lambda = lambda_best,
                               standardize = TRUE, 
                               family = "binomial")
 
 #
 
-lasso_model_BS1$beta
+lasso_model_all$beta
 
 #
 
-predictions_train_BS1 <- cbind(coef = predict(lasso_model_BS1, s = lambda_best, newx = x),
-                           train_BS1_W) %>%
+predictions_train_all <- cbind(coef = predict(lasso_model_all, s = lambda_best, newx = x),
+                           train_W) %>%
   rename(pred = `1`) %>%
   mutate(pred = exp(pred) / (1+exp(pred)))
 
-predictions_test_BS1 <- cbind(coef = predict(lasso_model_BS1, s = lambda_best, newx = x_test),
-                          test_BS1_W) %>%
-  rename(pred = `1`) %>%
-  mutate(pred = exp(pred) / (1+exp(pred)))
-
-# ROC / AUC
-roc_obj <- pROC::roc(predictions_test_BS1$win, predictions_test_BS1$pred)
-print(pROC::auc(roc_obj))
-
-ggsave(
-  filename = paste0("Images/bs1-all-lasso.png"),
-  plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
-    labs(title = "all variables", subtitle = pROC::auc(roc_obj))
-)
-
-#
-# bunch_sprint == 0
-#
-
-train_BS0_W <- predicting_win %>%
-  filter(year < 2019 & bunch_sprint == 0)
-
-test_BS0_W <- predicting_win %>%
-  filter(year >= 2019 & bunch_sprint == 0)
-
-####
-####
-####
-####
-
-cols <- c("modeled_tmldr", "rank_ppo", "rel_elite", "rel_in_pack", "rel_pcd_abs_diff",
-          "mod_rel_pcd_corr", "rel_succ_pred", "pcd_succ_vs_race", "rel_sof_race",
-          "mod_elite_pcd_corr", "pcd_optimal_race", "teammates_rel_sof")
-
-pre_proc_val <- caret::preProcess(train_BS0_W[,cols], method = c("center", "scale"))
-
-train_BS0_W[,cols] = predict(pre_proc_val, train_BS0_W[,cols])
-test_BS0_W[,cols] = predict(pre_proc_val, test_BS0_W[,cols])
-
-#
-#
-# run logistic regression on each variable
-
-for(v in 1:length(cols)) {
-  
-  print(cols[[v]])
-  
-  # run single variable logistic model
-  mod <- glm(win ~ .,
-             data = train_BS0_W[, c(cols[[v]], "win")],
-             weights = 1 - train_BS0_W$predicted_bs,
-             family = "binomial")
-  
-  # summary
-  summary(mod)
-  
-  # predict test set out of sample
-  pred <- cbind(coef = predict(mod, test_BS1_W),
-                test_BS1_W) %>%
-    mutate(pred = exp(coef)/(1+exp(coef)))
-  
-  # brier score for accuracy
-  brierScore <- mean((pred$pred-pred$win)^2)
-  
-  print(brierScore)
-  
-  # ROC / AUC
-  roc_obj <- pROC::roc(pred$win, pred$pred)
-  print(pROC::auc(roc_obj))
-  
-  ggsave(
-    filename = paste0("Images/bs0", cols[[v]], ".png"),
-    plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
-      labs(title = cols[[v]], subtitle = pROC::auc(roc_obj))
-  )
-  
-}
-
-#
-#
-# run full logistic regression model
-
-mod <- glm(win ~ .,
-           data = train_BS0_W[, c(cols, "win")],
-           weights = 1 - train_BS0_W$predicted_bs,
-           family = "binomial")
-
-# summary
-summary(mod)
-
-# predict test set out of sample
-pred <- cbind(coef = predict(mod, test_BS1_W),
-              test_BS1_W) %>%
-  mutate(pred = exp(coef)/(1+exp(coef)))
-
-# ROC / AUC
-roc_obj <- pROC::roc(pred$win, pred$pred)
-print(pROC::auc(roc_obj))
-
-ggsave(
-  filename = paste0("Images/bs0-all.png"),
-  plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
-    labs(title = cols[[v]], subtitle = pROC::auc(roc_obj))
-)
-
-#
-#
-# set up LASSO model
-#
-#
-
-cols <- c("modeled_tmldr", "rank_ppo", "rel_elite", "rel_in_pack", "rel_pcd_abs_diff",
-          "mod_rel_pcd_corr", 
-          "rel_succ_pred", "pcd_succ_vs_race", "rel_sof_race", "win", "pcd_optimal_race",
-          "teammates_rel_sof")
-
-TRdummies <- caret::dummyVars(win ~ ., data = train_BS0_W[,cols])
-
-TSdummies <- caret::dummyVars(win ~ ., data = test_BS0_W[,cols])
-
-train_dummies = predict(TRdummies, newdata = train_BS0_W[,cols])
-
-test_dummies = predict(TSdummies, newdata = test_BS0_W[,cols])
-
-# set up matrices
-
-x = as.matrix(train_dummies)
-y_train = train_BS0_W$win
-
-x_test = as.matrix(test_dummies)
-y_test = test_BS0_W$win
-
-# I STILL NEED TO ADD WEIGHTS TO THIS PART
-
-# run to find optimal lambda
-
-lambdas <- 10^seq(2, -3, by = -.1)
-
-lambdas <- c(lambdas, seq(0.01, 0.1, 0.01)) %>% unique()
-
-# Setting alpha = 1 implements lasso regression
-lasso_reg <- glmnet::cv.glmnet(x, 
-                               y_train,
-                               alpha = 1, 
-                               lambda = lambdas, 
-                               weights = train_BS0_W$predicted_bs,
-                               family = "binomial", 
-                               standardize = TRUE, 
-                               nfolds = 5)
-
-# Best 
-lambda_best <- lasso_reg$lambda.min 
-
-# run the lasso model
-
-lasso_model_BS0 <- glmnet::glmnet(x, 
-                              y_train, 
-                              alpha = 1, 
-                              lambda = lambda_best, 
-                              weights = train_BS0_W$predicted_bs,
-                              standardize = TRUE, 
-                              family = "binomial")
-
-#
-
-lasso_model_BS0$beta
-
-#
-
-predictions_train_BS0 <- cbind(coef = predict(lasso_model_BS0, s = lambda_best, newx = x),
-                           train_BS0_W) %>%
-  rename(pred = `1`) %>%
-  mutate(pred = exp(pred) / (1+exp(pred)))
-
-predictions_test_BS0 <- cbind(coef = predict(lasso_model_BS0, s = lambda_best, newx = x_test),
-                          test_BS0_W) %>%
+predictions_test_all <- cbind(coef = predict(lasso_model_all, s = lambda_best, newx = x_test),
+                          test_W) %>%
   rename(pred = `1`) %>%
   mutate(pred = exp(pred) / (1+exp(pred)))
 
 # ROC / AUC
-roc_obj <- pROC::roc(predictions_test_BS0$win, predictions_test_BS0$pred)
+roc_obj <- pROC::roc(predictions_test_all$win, predictions_test_all$pred)
 print(pROC::auc(roc_obj))
 
 ggsave(
-  filename = paste0("Images/bs0-all-lasso.png"),
+  filename = paste0("Images/all-lasso.png"),
   plot = pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
     labs(title = "all variables", subtitle = pROC::auc(roc_obj))
 )
@@ -1187,36 +907,12 @@ ggsave(
 #
 #
 
-predictions_test_BS0_ADJ <- predictions_test_BS0 %>%
+predictions_test_ADJ <- predictions_test_all %>%
   
   # 1. reduce win probabilities for riders ranked >3 on their team to 0
   # and re-distribute within the team
   group_by(team, race, stage, year) %>%
   mutate(win_prob = ifelse(rank(-pred, ties.method = "min")<=3, pred, 0)) %>%
-  mutate(win_prob = win_prob / sum(win_prob, na.rm = T) * sum(pred, na.rm = T)) %>%
-  ungroup() %>%
-  
-  # 2. then adjust so that win_prob / sum(win_prob) and everything = 1
-  group_by(race, stage, year) %>%
-  mutate(win_prob = win_prob / sum(win_prob, na.rm = T)) %>%
-  ungroup() %>%
-  
-  # 3. select relevant data and remove the rest
-  select(rider, team, win_prob, stage, race, year, pred_climb_difficulty, predicted_bs, rnk,
-         modeled_tmldr, pcd_optimal_race, rank_ppo, rel_elite, rel_sof_race)
-
-#
-#
-# naive adjustments below for BS==1 (only two team leaders)
-#
-#
-
-predictions_test_BS1_ADJ <- predictions_test_BS1 %>%
-  
-  # 1. reduce win probabilities for riders ranked >2 on their team to 0
-  # and re-distribute within the team
-  group_by(team, race, stage, year) %>%
-  mutate(win_prob = ifelse(rank(-pred, ties.method = "min")<=2, pred, 0)) %>%
   mutate(win_prob = win_prob / sum(win_prob, na.rm = T) * sum(pred, na.rm = T)) %>%
   ungroup() %>%
   
@@ -1238,19 +934,19 @@ predictions_test_BS1_ADJ <- predictions_test_BS1 %>%
 
 # BS==0
 
-preds_races_All_0 <- predictions_test_BS0 %>%
+preds_races_All <- predictions_test_all %>%
   select(stage, race, year) %>%
   unique()
 
-adjust_win_probs_All_0 <- vector("list", length(preds_races_All_0$race))
+adjust_win_probs_All <- vector("list", length(preds_races_All$race))
 
-for(x in 1:length(preds_races_All_0$race)) {
+for(x in 1:length(preds_races_All$race)) {
   
-  R = preds_races_All_0$race[[x]]
-  S = preds_races_All_0$stage[[x]]
-  Y = preds_races_All_0$year[[x]]
+  R = preds_races_All$race[[x]]
+  S = preds_races_All$stage[[x]]
+  Y = preds_races_All$year[[x]]
   
-  d <- predictions_test_BS0 %>%
+  d <- predictions_test_all %>%
     filter(stage == S & race == R & year == Y) %>%
     mutate(odds = ((1-pred)/pred)+1)
   
@@ -1263,7 +959,7 @@ for(x in 1:length(preds_races_All_0$race)) {
   out <- cbind(d, res) %>%
     select(-rownum)
   
-  adjust_win_probs_All_0[[x]] <- out
+  adjust_win_probs_All[[x]] <- out
   
 }
 
@@ -1271,7 +967,7 @@ for(x in 1:length(preds_races_All_0$race)) {
 #
 #
 
-adjusted_preds_All <- bind_rows(adjust_win_probs_All_0) %>%
+adjusted_preds_All <- bind_rows(adjust_win_probs_All) %>%
   select(
     
     rider,
