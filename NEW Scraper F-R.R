@@ -31,8 +31,8 @@ con <- dbConnect(MySQL(),
 
 # Scrape all UCI World Tour races for 2013-20
 
-scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020),
-                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1))
+scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020),
+                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2))
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -85,25 +85,25 @@ all_races <- bind_rows(result_list)
 scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 
                                 2017, 2017, 2017, 2017, 2017, 
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
-                                2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
-                                2020, 2020, #2
-                                2017,2018,2019,2020, #5
-                                2017,2018,2019,2020, #6
+                                2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
+                                2020, 2020, 2020, 2020, 2020, 2020, #2
+                                2017, 2018, 2019, 2020, #5
+                                2017, 2018, 2019, 2020, #6
                                 2017, 2018, 2019, 2020, #3
                                 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, #8
                                 2017, 2018, 2018, 2019, 2020), #4
                        page_no = c(1,1,1,1,1,1,
                                    1,2,3,4,5, 
                                    1,2,3,4,5,6,7,8,9,10, 
-                                   1,2,3,4,5,6,7, 8,9,
-                                   1,2,
-                                   1,1,1,1,
-                                   1,1,1,1,
-                                   1, 1, 1,1,
+                                   1,2,3,4,5,6,7,8,9,10,
+                                   1,2,3,4,5,6,
+                                   1, 1, 1, 1,
+                                   1, 1, 1, 1,
+                                   1, 1, 1, 1,
                                    1, 1, 1, 1, 1, 1, 1, 1, 
                                    1, 1, 2, 1, 1),
                        type = c(2,2,2,2,2,2,
-                                2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+                                2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
                                 5,5,5,5,
                                 6,6,6,6,
                                 3,3,3,3,
@@ -163,98 +163,6 @@ intermediate_races <- all_races %>%
     
     bind_rows(result_list))
 
-# NON UWT events to retain data
-
-retain_ids <- c(
-  
-  # now World Tour races / defunct
-  
-  54, 55, 888, 66, 39, 73, 50,
-  
-  # 1.HC
-  
-  # scheldeprijs, Nokere, tre valli varesine,
-  # milan torino, paris tours, brussels, gp indus, kuurne
-  # brabantse, almeria, drenthe, gran piemonte, emilia
-  # laigueglia
-  
-  69, 70, 79, 80, 81, 83, 98, 99, 100, 214, 262, 820, 75, 101,
-  
-  # MAJOR NATIONAL CHAMPIONSHIP ROAD RACES
-  
-  212, 179, 106, 129, 123, 113, 616, 133, 107, 119, 117, 111, 115, 394, 110, 176, 121, 131,
-  
-  # 1.1
-  
-  # Meml Pantani, Toscano, Ventoux
-  
-  349, 86, 828,
-  
-  # 2.1
-  
-  # Occitanie, Provence, Julio Alvarez, deutschland
-  # castilla/leon, madrid, adriatica ionica,
-  # colombia, l'ain, austria, valencia
-  # san juan, slovenia, murcia, japan cup
-  
-  159, 158, 274, 440, 287, 285, 505, 359, 337, 334, 210,
-  204, 309, 213, 82, 227,
-  
-  # 2.HC
-  
-  # Dunkirk, belgium, wallonia, norway, arctic
-  # denmark, britain, luxembourg
-  # dubai, oman, alps
-  # burgos, ruta del sol, algarve, utah, langkawi
-  
-  180, 175, 91, 168, 89, 87, 88, 264, 162, 148,
-  66, 90, 92, 93, 96, 61, 173,
-  
-  # other HC level European races
-  
-  270, 173, 302, 102, 166, 167, 171, 260, 35, 76, 77, 78, 97,
-  
-  # added remaining 1.1 races on 2020-03-26
-  
-  72,74,140,146,147,156,157,267,288,319,329,689,690,759,
-  
-  # 1.1 Euros in 2019
-  
-  520, 749, 139, 145, 152, 691, 352, 353, 316, 802, 351, 85,
-  346, 354, 348, 350, 347, 787, 341, 360, 344, 342, 340, 343, 
-  330, 327, 328, 318, 317, 310, 315, 308, 335, 311, 304, 299, 
-  286, 560, 528, 269, 271, 273, 272, 73, 268, 265, 266, 263, 
-  453, 261, 326, 246, 243, 242, 207, 202, 201, 200, 199,
-  
-  # other multi-day Tours at 2.1 European level which are equal to weaker 2.HC European races
-  
-  209, 449, 71, 314, 151,
-  
-  # remaining 2.1s from 2020-03-26
-  
-  241,284,303,305,306,307,312,333,336,338,339,361,372,468,494,556,576,799,873,
-  
-  # tokyo, qinghai lake, hainan, colorado classic, saudi tour
-  838, 95,94,183,1253,
-  
-  # tour de l'avenir and other U23
-  185, 184, 712,
-  
-  # #.2s which are high ranked on PCS
-  539, 744, 479, 472, 518, 532, 895,
-  
-  # olympics
-  
-  62, 64,
-  
-  # oceania/africa
-  
-  1242, 208, 757, 368,
-  
-  # WC / ITT
-  
-  9, 14)
-
 #
 
 all_races <- intermediate_races %>%
@@ -263,9 +171,7 @@ all_races <- intermediate_races %>%
   
   separate(id, c("trash", "id"), sep = "/") %>%
   
-  select(-trash) %>%
-  
-  filter(str_detect(class, "UWT") | id %in% retain_ids)
+  select(-trash)
 
 # find data we already have
 
@@ -276,9 +182,9 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
 
 # only scrape ones we don't have OR skip this if we want to re-scrape
 
-all_races <- all_races %>%
-  
-  filter((!(url %in% already_scraped$race_url)))
+# all_races <- all_races %>%
+#   
+#   filter((!(url %in% already_scraped$race_url)))
 
 #
 #
@@ -343,24 +249,22 @@ all_stages <- all_races %>%
 #
 
 dbWriteTable(con,
-             
              "fr_stages",
-             
              all_stages,
-             
              row.names = FALSE,
-             
              append = TRUE
-             
 )
 
-#
+
+# bring in 
 
 all_stages <- dbReadTable(con, "fr_stages") %>%
   unique() %>%
   
   inner_join(all_races %>%
                select(url), by = c("url" = "url"))
+
+stages_list <- read_rds( "stages-list-f-r.rds")
 
 #
 #
@@ -375,7 +279,7 @@ tictoc::tic()
 
 #
 
-for(y in 394:length(stages_list)) {
+for(y in 1:length(stages_list)) {
   
   if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url) {
     
@@ -526,12 +430,13 @@ for(y in 394:length(stages_list)) {
       mutate(url = stages_list[[y]]$url[[z]],
              race_url = stages_list[[y]]$race_url[[z]],
              race = stages_list[[y]]$race[[z]],
-             #year = stages_list[[y]]$year[[z]],
+             year = stages_list[[y]]$year[[z]],
              
              # this data is wrong when all_stages != stages_list in terms of length
              #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
              year = 0,
-             stage = z)
+             stage = z,
+             updated = lubridate::now())
     
     # same process for cobbles
     
@@ -539,12 +444,13 @@ for(y in 394:length(stages_list)) {
       mutate(url = stages_list[[y]]$url[[z]],
              race_url = stages_list[[y]]$race_url[[z]],
              race = stages_list[[y]]$race[[z]],
-             #year = stages_list[[y]]$year[[z]],
+             year = stages_list[[y]]$year[[z]],
              
              # this data is wrong when all_stages != stages_list in terms of length
              #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
              year = 0,
-             stage = z)
+             stage = z,
+             updated = lubridate::now())
     
     # clean up generic sprints
     #
@@ -588,7 +494,8 @@ for(y in 394:length(stages_list)) {
                #year = stages_list[[y]]$year[[z]],
                #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
                year = 0,
-               stage = z)
+               stage = z,
+               updated = lubridate::now())
       
     } else {
       
@@ -642,7 +549,8 @@ for(y in 394:length(stages_list)) {
       
       mutate(dist = as.numeric(dist),
              lat = as.numeric(lat),
-             long = as.numeric(long))
+             long = as.numeric(long),
+             updated = lubridate::now())
     
     #
     #
@@ -652,15 +560,16 @@ for(y in 394:length(stages_list)) {
     #
     #
     
-    Sys.sleep(runif(1, 3, 7))
+    Sys.sleep(runif(1, 1, 5))
     
   }
   
   #climbs_stages_list[[y]] <- bind_rows(data_list)
   
-  print(y)
+  print(stages_list[[y]]$race)
+  print(stages_list[[y]]$year)
   
-  Sys.sleep(runif(1, 5, 13))
+  Sys.sleep(runif(1, 1, 5))
   
   }
   

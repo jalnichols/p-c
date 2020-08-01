@@ -19,7 +19,6 @@ pull_from_schedule <- c(
   'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter',
   
   # EUROPE
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.1&filter=Filter',
   
@@ -98,10 +97,10 @@ pull_from_schedule <- c(
 
 store_from_schedule <- vector("list", length(pull_from_schedule))
 
-pull_years = 8
+pull_years = 1
 
 current_year = year(today())
-start_year = 2012 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2019 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -418,7 +417,7 @@ dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE
 html_stage_dir <- fs::dir_ls("PCS-HTML/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
-dl_html <- FALSE
+dl_html <- TRUE
 
 # start scraping process using old data
 
@@ -472,6 +471,7 @@ for(r in 1:length(all_stages$value)) {
      (race_url == "race/volta-a-catalunya/2017" & s == 2) |
      (race_url == "race/giro-d-italia/2018" & s == 21) |
      (race_url == "race/vuelta-a-espana/2015" & s == 1) |
+     (race_url == "race/dookola-mazowsza/2020" & s == 1) |
      (race_url == "race/60th-tour-de-picardie/2016" & s == 1) |
      (str_detect(race_url, "hammer-") == TRUE)) {
     
@@ -787,9 +787,7 @@ for(f in 1:length(races_list)) {
 
 test_dl <- bind_rows(df_list)
 
-dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), overwrite = TRUE, row.names = FALSE)
-
-stage_data <- dbReadTable(con, "pcs_stage_raw")
+dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), append = TRUE, row.names = FALSE)
 
 #
 #
