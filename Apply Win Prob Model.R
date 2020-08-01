@@ -15,7 +15,7 @@ con <- dbConnect(MySQL(),
 # read in the field
 #
 
-field <- 'https://www.procyclingstats.com/race/la-route-d-occitanie/2020/gc/startlist/alphabetical-with-filters' %>%
+field <- 'https://www.procyclingstats.com/race/vuelta-a-burgos/2020/stage-5/startlist/alphabetical-with-filters' %>%
   read_html() %>%
   html_nodes('table') %>%
   html_table() %>%
@@ -37,14 +37,14 @@ field <- 'https://www.procyclingstats.com/race/la-route-d-occitanie/2020/gc/star
 
 conditions <- field %>%
   
-  mutate(length = 164,
-         pred_climb_difficulty = 20,
+  mutate(length = 158,
+         pred_climb_difficulty = 13,
          summit_finish = 1,
          one_day_race = 0,
          grand_tour = 0,
          finalGT = 0,
          cobbles = 0,
-         perc_thru = 0.5
+         perc_thru = 0.8
          ) %>%
   
   mutate(length = length - 200,
@@ -208,11 +208,24 @@ adding_stats <- rbind(
              pcd_success_impact = pcd_impact,
              bs_success_impact = bunchsprint_impact), by = c("rider", "date")) %>%
   
+  # add in cobbles performance
+  inner_join(
+    
+    dbReadTable(con, "performance_rider_cobbles")  %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
+      
+      rename(cobbles_intercept = cobbles), by = c("rider")) %>%
+  
   # calculate team leader and success predictions using random effects
-  mutate(glmer_pred = (random_intercept + (pred_climb_difficulty * pcd_tmldr_impact) + (predicted_bs * bs_tmldr_impact)),
+  mutate(glmer_pred = -2 + (random_intercept + (pred_climb_difficulty * pcd_tmldr_impact) + (predicted_bs * bs_tmldr_impact)),
          glmer_pred = exp(glmer_pred) / (1+exp(glmer_pred))) %>%
   
-  mutate(succ_pred = (success_intercept + (pred_climb_difficulty * pcd_success_impact) + (predicted_bs * bs_success_impact)),
+  mutate(succ_pred = -5.2 +
+           ((cobbles_intercept * cobbles) + 
+              success_intercept + 
+              (pred_climb_difficulty * pcd_success_impact) + 
+              (predicted_bs * bs_success_impact)),
          succ_pred = exp(succ_pred) / (1+exp(succ_pred))) %>%
 
   mutate(mod_pcd_corr_both = (0.67*pcd_success_impact)+(0.33*pcd_tmldr_impact),
@@ -252,8 +265,8 @@ adding_stats <- rbind(
 
 # who are the top riders
 adding_stats %>%
-  arrange(rank_ppo) %>%
-  select(rider, team, rel_elite)
+  arrange(-rel_succ_pred) %>%
+  select(rider, team, rel_elite, rel_succ_pred)
 
 #
 # adjust to create pcd_optimal stat
@@ -323,7 +336,7 @@ predicting_winner <- cbind(
   # 1. reduce win probabilities for riders ranked >3 on their team to 0
   # and re-distribute within the team
   group_by(team) %>%
-  mutate(win_prob = ifelse((rank(-pred, ties.method = "min")<=3) | pred > 0.01, pred, 0)) %>%
+  mutate(win_prob = ifelse((rank(-pred, ties.method = "min")<=5), pred, 0)) %>%
   mutate(win_prob = win_prob / sum(win_prob, na.rm = T) * sum(pred, na.rm = T)) %>%
   ungroup() %>%
   
@@ -332,7 +345,7 @@ predicting_winner <- cbind(
   
   # 3. select relevant data and remove the rest
   select(rider, team, win_prob, pred_climb_difficulty, predicted_bs,
-         modeled_tmldr, pcd_optimal_race, rank_ppo, rel_elite, rel_sof_race,
+         modeled_tmldr, pcd_optimal_race, rank_ppo, rel_elite, teammates_rel_sof,
          rel_age, rel_succ_pred)
 
 # most likely winners
@@ -350,9 +363,9 @@ dbWriteTable(con,
              "predictions_modeled_winprob",
              
              predicting_winner %>%
-               mutate(race = "Route d'Occitanie",
+               mutate(race = "Vuelta a Burgos",
                       year = 2020,
-                      stage = as.numeric(3)) %>%
+                      stage = as.numeric(5)) %>%
                mutate(updated = lubridate::now()),
 
              append = TRUE,
