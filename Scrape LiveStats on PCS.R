@@ -113,7 +113,12 @@ for(r in 1:length(races_live$url)) {
           html_nodes('table.riders2') %>%
           html_table() %>%
           .[[1]] %>%
-          select(rider = X3) %>%
+          gather(position, stat, -X1) %>%
+          mutate(lgth = nchar(stat)) %>%
+          group_by(X1) %>%
+          filter(lgth == max(lgth, na.rm = T)) %>%
+          ungroup() %>%
+          select(rider = stat) %>%
           
           mutate(time_gap = time,
                  group = grp_no)
