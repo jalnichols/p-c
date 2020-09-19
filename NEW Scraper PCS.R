@@ -305,7 +305,7 @@ dbWriteTable(con, "pcs_all_races", new_events, row.names = FALSE, append = TRUE)
 stages_list <- vector("list", length(all_events$url))
 gc_list <- vector("list", length(all_events$url))
 
-#
+# this section doesn't work any more
 
 tictoc::tic()
 
@@ -315,31 +315,43 @@ for(e in 1:length(all_events$url)) {
   
   page <- paste0('https://www.procyclingstats.com/', 
                  all_events$url[[e]],
-                 '/gc/stages/winners') %>%
+                 '/gc/history') %>%
+    
+    read_html()
+  
+  page2 <- paste0('https://www.procyclingstats.com/', 
+                 all_events$url[[e]],
+                 '/gc/stages') %>%
     
     read_html()
 
   # pull in stages
   
-  as <- page %>%
+  as <- page2 %>%
     html_nodes('body > div.wrapper > div.content > div.statDivLeft > ul.list.table') %>%
     html_nodes('a') %>%
     html_attr(name = "href") %>%
     enframe(name = NULL) %>% 
     filter(str_detect(value, 'race/'))
   
-  # pull in GC winner
-  
+  # this part will break if there's multiple races in one year
   gc_winner <- page %>% 
-    html_nodes('body > div.wrapper > div.content > div.statDivLeft > ul.list.table') %>%
-    html_nodes('a') %>%
-    html_text() %>%
-    enframe(name = NULL) %>%
-    .[nrow(.), ]
+    html_nodes('table') %>%
+    html_table()
   
-  if(length(gc_winner) == 0) {
+  if(length(gc_winner)==0) {
     
     gc_winner = tibble(value = "One Day Race")
+    
+    
+  }  else {
+    
+    gc_winner <- gc_winner %>%
+      .[[1]] %>%
+      filter(Season == all_events$year[[e]]) %>%
+      select(Winner) %>%
+      .[1,1] %>%
+      enframe(name = NULL)
     
   }
   
@@ -1368,7 +1380,7 @@ html_stage_dir <- fs::dir_ls("PCS-HTML/")
 #html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
-dl_html <- FALSE
+dl_html <- TRUE
 
 # start scraping process using old data
 
@@ -1376,7 +1388,9 @@ if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
     
-    filter(!(url %in% c("race/60th-tour-de-picardie/2016")))
+    filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
+    
+    filter(Date > as.Date('2020-07-25'))
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 
