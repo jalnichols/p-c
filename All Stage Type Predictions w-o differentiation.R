@@ -73,7 +73,10 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC")) |
            (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
            (sof > 0.25 & class %in% c("2.1", "1.1"))) %>%
-  unique()
+  unique() %>% 
+  
+  left_join(read_csv("cobbles.csv")) %>% 
+  mutate(cobbles = ifelse(is.na(cobbles), 0, cobbles))
 
 # per date glmer models using pcd interaction and rider random effects
 
@@ -99,46 +102,76 @@ for(b in 1:length(All_dates$date)) {
   
   dx <- All_data %>% filter(between(date, minD, maxD)==TRUE)
   
+  dy <- All_data %>% filter(between(date, minD - 366, maxD)==TRUE)
+  
   # run a lme4 model for rider success and impact of pcd on success
   
   tictoc::tic()
   
-  mod_succ <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) + (0 + bunch_sprint | rider),
-                       data = dx,
-                       family = binomial("logit"),
-                       nAGQ=0,
-                       control=lme4::glmerControl(optimizer = "nloptwrap"))
+  # mod_succ <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) + (0 + bunch_sprint | rider),
+  #                      data = dx,
+  #                      family = binomial("logit"),
+  #                      nAGQ=0,
+  #                      control=lme4::glmerControl(optimizer = "nloptwrap"))
   
   tictoc::toc()
   
-  random_effects <- lme4::ranef(mod_succ)[[1]] %>%
-   rownames_to_column() %>%
-   rename(rider = rowname,
-          random_intercept = `(Intercept)`,
-          pcd_impact = pred_climb_difficulty,
-          bunchsprint_impact = bunch_sprint) %>%
-  #what date are we predicting
-  mutate(Date = as.Date(maxD + 1))
+  # random_effects <- lme4::ranef(mod_succ)[[1]] %>%
+  #  rownames_to_column() %>%
+  #  rename(rider = rowname,
+  #         random_intercept = `(Intercept)`,
+  #         pcd_impact = pred_climb_difficulty,
+  #         bunchsprint_impact = bunch_sprint) %>%
+  # #what date are we predicting
+  # mutate(Date = as.Date(maxD + 1))
   
   ################################################
   
-  dbWriteTable(con, "lme4_rider_success", random_effects, append = TRUE, row.names = FALSE)
+  # dbWriteTable(con, "lme4_rider_success", random_effects, append = TRUE, row.names = FALSE)
   
   ################################################
   
   tictoc::tic()
   
-  mod4 <- lme4::glmer(team_ldr ~ (1 + pred_climb_difficulty | rider) + (0 + bunch_sprint | rider),
-                      data = dx,
-                      family = binomial("logit"),
-                      nAGQ=0,
-                      control=lme4::glmerControl(optimizer = "nloptwrap"))
+  # mod4 <- lme4::glmer(team_ldr ~ (1 + pred_climb_difficulty | rider) + (0 + bunch_sprint | rider),
+  #                     data = dx,
+  #                     family = binomial("logit"),
+  #                     nAGQ=0,
+  #                     control=lme4::glmerControl(optimizer = "nloptwrap"))
   
   tictoc::toc()
   
   # summary
   
-  random_effects <- lme4::ranef(mod4)[[1]] %>%
+  # random_effects <- lme4::ranef(mod4)[[1]] %>%
+  #   rownames_to_column() %>%
+  #   rename(rider = rowname,
+  #          random_intercept = `(Intercept)`,
+  #          pcd_impact = pred_climb_difficulty,
+  #          bunchsprint_impact = bunch_sprint) %>%
+  #   #what date are we predicting
+  #   mutate(Date = as.Date(maxD + 1))
+  
+  ################################################
+  
+  #dbWriteTable(con, "lme4_rider_teamleader", random_effects, append = TRUE, row.names = FALSE)
+  
+  ################################################
+  
+  # run a lme4 model for rider success and impact of pcd on success
+  # SOLELY for races where they finished as team's leader
+  
+  tictoc::tic()
+  
+  mod_succwhenopp <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) + (0 + bunch_sprint | rider),
+                          data = dy %>% filter(tm_pos == 1),
+                          family = binomial("logit"),
+                          nAGQ=0,
+                          control=lme4::glmerControl(optimizer = "nloptwrap"))
+  
+  tictoc::toc()
+  
+  random_effects <- lme4::ranef(mod_succwhenopp)[[1]] %>%
     rownames_to_column() %>%
     rename(rider = rowname,
            random_intercept = `(Intercept)`,
@@ -149,7 +182,7 @@ for(b in 1:length(All_dates$date)) {
   
   ################################################
   
-  dbWriteTable(con, "lme4_rider_teamleader", random_effects, append = TRUE, row.names = FALSE)
+  dbWriteTable(con, "lme4_rider_succwhenopp", random_effects, append = TRUE, row.names = FALSE)
   
   ################################################
   
@@ -303,7 +336,7 @@ predicting_all <- All_data %>%
   mutate(points_per_opp = (0.05 + (opportunities * points_per_opp)) / (5 + opportunities)) %>%
   
   select(-win_seconds, -total_seconds, -gain_gc, -missing_profile_data,
-         -limit, -cobbles, -first_race, -latest_race, -leader_rating,
+         -limit, -first_race, -latest_race, -leader_rating,
          -pred_climb_diff_succ) %>%
   
   # this process combines the bs == 1 and bs == 0 stats
@@ -311,7 +344,7 @@ predicting_all <- All_data %>%
   gather(stat, value, -rnk, -rider, -team, -master_team, -length,
          -stage, -race, -year, -class, -grand_tour, -one_day_race,
          -tm_pos, -Tour, -uphill_finish, -pred_climb_difficulty,
-         -bunch_sprint, -predicted_bs, -points_finish, -success,
+         -bunch_sprint, -predicted_bs, -points_finish, -success, -cobbles,
          -sof, -team_ldr, -date, -races) %>%
   
   mutate(multiplier = ifelse(bunch_sprint == 1, predicted_bs, 1-predicted_bs),
@@ -324,7 +357,7 @@ predicting_all <- All_data %>%
            stage, race, year, class, grand_tour, one_day_race,
            tm_pos, Tour, uphill_finish, pred_climb_difficulty,
            predicted_bs, points_finish, success, date,
-           sof, team_ldr,
+           sof, team_ldr, cobbles,
            stat) %>%
   summarize(new_value = mean(value, na.rm = T)) %>%
   ungroup() %>%
@@ -435,6 +468,35 @@ predicting_all <- All_data %>%
   
   inner_join(
     
+    dbReadTable(con, "lme4_rider_succwhenopp")  %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
+      mutate(date = as.Date(Date)) %>%
+      select(-Date) %>%
+      
+      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+      # we adjust here
+      group_by(date) %>%
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+      ungroup() %>%
+      
+      # this transforms them back to input into the regression equation
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+             random_intercept = random_intercept_new * sd(random_intercept)) %>%
+      
+      select(-pcd_impact_new, -random_intercept_new) %>%
+      
+      rename(pcd_succwhenopp_impact = pcd_impact,
+             bs_succwhenopp_impact = bunchsprint_impact,
+             succwhenopp_intercept = random_intercept) %>%
+      
+      filter(date <= as.Date('2020-04-01') | date >= as.Date('2020-08-01')), by = c("rider", "date")
+    
+  ) %>%
+  
+  inner_join(
+    
     lme4_success_table  %>%
       
       mutate(rider = str_to_title(rider)) %>%
@@ -476,6 +538,13 @@ predicting_all <- All_data %>%
               (predicted_bs * bs_success_impact)),
          succ_pred = exp(succ_pred) / (1+exp(succ_pred))) %>%
   
+  mutate(succwhenopp_pred = -2.7 +
+           ((cobbles_intercept * cobbles) + 
+              succwhenopp_intercept + 
+              (pred_climb_difficulty * pcd_succwhenopp_impact) + 
+              (predicted_bs * bs_succwhenopp_impact)),
+         succwhenopp_pred = exp(succwhenopp_pred) / (1+exp(succwhenopp_pred))) %>%
+  
   mutate(mod_pcd_corr_both = (0.67*pcd_success_impact)+(0.33*pcd_tmldr_impact),
          mod_bs_imp_both = (0.5*bs_tmldr_impact)+(0.5*bs_success_impact)) %>%
   
@@ -489,7 +558,9 @@ predicting_all <- All_data %>%
   
   group_by(stage, race, year, team) %>%
   mutate(rel_glmer_pred = glmer_pred - mean(glmer_pred, na.rm = T),
-         rel_succ_pred = succ_pred - mean(succ_pred, na.rm = T)) %>%
+         rel_succ_pred = succ_pred - mean(succ_pred, na.rm = T),
+         rel_succwhenopp_pred = succwhenopp_pred - mean(succwhenopp_pred, na.rm = T)) %>%
+  
   mutate(No1_Team = ifelse(rank(-glmer_pred, ties.method = "min")==1, 1, 0),
          No1_Team_succ = ifelse(rank(-succ_pred, ties.method = "min")==1, 1, 0)) %>%
   ungroup() %>%
@@ -516,6 +587,21 @@ predicting_all <- All_data %>%
   mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age))
 
 #
+# average of pcd_impact, random_intercept, bs_impact, cobbles_impact for top 5 on each race
+#
+
+race_top5_averages <- predicting_all %>%
+  
+  filter(rnk <= 5) %>%
+  
+  group_by(stage, race, year, pred_climb_difficulty, predicted_bs, cobbles) %>%
+  summarize(pcd = mean(pcd_success_impact, na.rm = T),
+            suc = mean(rel_succ_pred, na.rm = T),
+            bs = mean(bs_success_impact, na.rm = T),
+            cob = mean(cobbles_intercept, na.rm = T)) %>%
+  ungroup()
+
+#
 # how does pcd_impact map onto fit for pred_climb_difficulty?
 #
 
@@ -533,7 +619,7 @@ predicting_all %>%
   
   group_by(f = ifelse(mod_pcd_corr_both < -0.2, -0.24, 
                       ifelse(mod_pcd_corr_both > 0.15, 0.18, 
-                             floor(mod_pcd_corr_both)))) %>%
+                             floor(mod_pcd_corr_both / 0.03)))) %>%
   summarize(win = median(w, na.rm = T),
             ldr = median(l, na.rm = T),
             succ = median(s, na.rm = T), 
@@ -572,7 +658,7 @@ pred_link_pcd <- cbind(
   
 )
 
-# plot to check (0 pcd_impacts will optimally fit at 6 pcd)
+# plot to check (0 pcd_impacts will optimally fit at 7 pcd)
 ggplot(pred_link_pcd, aes(x = f, y = pcd_optimal))+geom_point()
 
 # now use to create pcd_impact variable
@@ -597,21 +683,6 @@ predicting_all <- predicting_all %>%
 #
 # team leader
 
-tmldr_model_All <- glm(tmldr ~ 
-                         rel_elite:pcd_optimal_race +
-                         No1_Team + 
-                         rel_glmer_pred +
-                         No1_Team_succ +
-                         pcd_optimal_race +
-                         rel_succ_pred,
-                       
-                       data = predicting_all %>%
-                         mutate(tmldr = tm_pos == 1),
-                       family = "binomial"
-                       )
-
-summary(tmldr_model_All)
-
 # XGBoost -----------------------------------------------------------------
 
 #
@@ -632,10 +703,10 @@ xgb.train <- xgb.DMatrix(
   
   data = as.matrix(predicting_all %>%
                      filter(year < 2019) %>%
-                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
+                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
                             mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race) %>%
-                     mutate(int_pcdo_elite = pcd_optimal_race * rel_elite)),
+                            pcd_optimal_race, rel_succwhenopp_pred, rel_elite) %>%
+                     mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred)),
   
   label = predicting_all %>%
     filter(year < 2019) %>%
@@ -651,10 +722,10 @@ xgb.test <- xgb.DMatrix(
   
   data = as.matrix(predicting_all %>%
                      filter(year >= 2019) %>%
-                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
+                     select(rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
                             mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                            pcd_optimal_race) %>%
-                     mutate(int_pcdo_elite = pcd_optimal_race * rel_elite)),
+                            pcd_optimal_race, rel_succwhenopp_pred, rel_elite) %>%
+                     mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred)),
   
   label = predicting_all %>%
     filter(year >= 2019) %>%
@@ -714,18 +785,36 @@ gbm_predict_TMLDR = cbind(
   pred = predict(gbm_model, 
                  as.matrix(predicting_all %>%
                              filter(year >= 2019) %>%
-                             select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
+                             select(rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
                                     mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                    pcd_optimal_race) %>%
-                             mutate(int_pcdo_elite = pcd_optimal_race * rel_elite), reshape=T)),
+                                    pcd_optimal_race, rel_succwhenopp_pred, rel_elite) %>%
+                             mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred), reshape=T)),
   
   predicting_all %>%
     filter(year >= 2019) %>%
-    select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
-           rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-           mod_rel_pcd_corr, elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race) %>%
-    mutate(int_pcdo_elite = pcd_optimal_race * rel_elite))
+    select(rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
+           mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
+           pcd_optimal_race, rel_succwhenopp_pred, tm_pos, rel_elite) %>%
+    mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred))
+
+#
+
+# predict test set out of sample
+pred <- gbm_predict_TMLDR %>%
+  mutate(pred = exp(pred)/(1+exp(pred)),
+         leader = tm_pos==1)
+
+# brier score for accuracy
+brierScore <- mean((pred$pred-pred$leader)^2)
+
+print(brierScore)
+
+# ROC / AUC
+roc_obj <- pROC::roc(pred$leader, pred$pred)
+print(pROC::auc(roc_obj))
+
+pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
+  labs(title = "Predict team leader", subtitle = pROC::auc(roc_obj))
 
 #
 
@@ -734,17 +823,16 @@ gbm_predict_TMLDR_all = cbind(
   
   pred = predict(gbm_model, 
                  as.matrix(predicting_all %>%
-                             select(rel_team_tmldr, No1_Team, rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
+                             select(rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
                                     mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-                                    pcd_optimal_race) %>%
-                             mutate(int_pcdo_elite = pcd_optimal_race * rel_elite), reshape=T)),
+                                    pcd_optimal_race, rel_succwhenopp_pred, rel_elite) %>%
+                             mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred), reshape=T)),
   
   predicting_all %>%
-    select(stage, race, year, rider, team, pred_climb_difficulty, rel_team_tmldr, No1_Team, 
-           rel_glmer_pred, rel_elite, No1_Team_succ, rel_succ_pred,
-           mod_rel_pcd_corr, elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
-           tm_pos, win, predicted_bs, one_day_race, pcd_optimal_race, rel_age) %>%
-    mutate(int_pcdo_elite = pcd_optimal_race * rel_elite))
+    select(stage, race, year, team, rider, rel_team_tmldr, No1_Team, rel_glmer_pred, No1_Team_succ, rel_succ_pred,
+           mod_rel_pcd_corr, mod_elite_pcd_corr, pcd_succ_vs_race, sof_vs_team,
+           pcd_optimal_race, rel_succwhenopp_pred, rel_elite) %>%
+    mutate(int_pcdo_succ = pcd_optimal_race * rel_succwhenopp_pred))
 
 #
 #
@@ -768,7 +856,13 @@ predicting_win <- predicting_all %>%
     by = c("stage", "race", "year", "team", "rider")
     
   ) %>%
-  unique()
+  unique() %>%
+  
+  mutate(tot_pred_succ = (modeled_tmldr * rel_succwhenopp_pred)) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(tot_pred_succ = tot_pred_succ - mean(tot_pred_succ, na.rm = T)) %>%
+  ungroup()
 
 #
 # moving onto win probability
@@ -782,11 +876,13 @@ predicting_win <- predicting_all %>%
 
 train_W <- predicting_win %>%
   filter(year < 2019) %>% 
-  filter(!is.na(teammates_rel_sof))
+  filter(!is.na(teammates_rel_sof)) %>%
+  mutate(win = as.numeric(win))
 
 test_W <- predicting_win %>%
   filter(year >= 2019) %>% 
-  filter(!is.na(teammates_rel_sof))
+  filter(!is.na(teammates_rel_sof)) %>%
+  mutate(win = as.numeric(win))
 
 ####
 ####
@@ -797,19 +893,20 @@ regular_train <- train_W
 
 cols <- c("modeled_tmldr", 
           "rank_ppo", "rel_elite", 
-          "rel_in_pack", 
-          #"rel_pcd_abs_diff",
-          #"mod_rel_pcd_corr", 
+          "tot_pred_succ",
+          "rel_in_pack",
           "rel_succ_pred", 
           "rel_sof_race", 
           "pcd_optimal_race", 
           "teammates_rel_sof", 
           "rel_age")
 
-pre_proc_val <- caret::preProcess(train_W[,cols], method = c("center", "scale"))
+#pre_proc_val <- caret::preProcess(train_W[,cols], method = c("center", "scale"))
 
-train_W[,cols] = predict(pre_proc_val, train_W[,cols])
-test_W[,cols] = predict(pre_proc_val, test_W[,cols])
+#pre_proc_val <- caret::preProcess(train_W[,cols])
+
+#train_W[,cols] = predict(pre_proc_val, train_W[,cols])
+#test_W[,cols] = predict(pre_proc_val, test_W[,cols])
 
 #
 #
@@ -895,16 +992,16 @@ ggsave(
 #
 #
 
-cols <- c("modeled_tmldr", "rank_ppo", "rel_elite", 
-          "rel_in_pack", 
-          #"rel_pcd_abs_diff",
-          #"mod_rel_pcd_corr", 
+cols <- c("modeled_tmldr", 
+          "rank_ppo", "rel_elite", 
+          "tot_pred_succ",
+          "rel_in_pack",
           "rel_succ_pred", 
           "rel_sof_race", 
-          "win",
           "pcd_optimal_race", 
           "teammates_rel_sof", 
-          "rel_age")
+          "rel_age", 
+          "win")
 
 TRdummies <- caret::dummyVars(win ~ ., data = train_W[,cols])
 
@@ -944,10 +1041,11 @@ lambda_best <- lasso_reg$lambda.min
 tictoc::tic()
 
 lasso_model_all <- glmnet::glmnet(x, 
-                              y_train, 
-                              alpha = 1, 
-                              lambda = lambda_best,
-                              family = "binomial")
+                      y_train,
+                      alpha = 1, 
+                      lambda = lambda_best, 
+                      standardize = TRUE,
+                      family = "binomial")
 
 tictoc::toc()
 

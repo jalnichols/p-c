@@ -15,7 +15,7 @@ con <- dbConnect(MySQL(),
 # read in the field
 #
 
-field <- 'https://www.procyclingstats.com/race/vuelta-a-burgos/2020/stage-5/startlist/alphabetical-with-filters' %>%
+field <- 'https://www.procyclingstats.com/race/milano-sanremo/2020/startlist/alphabetical-with-filters' %>%
   read_html() %>%
   html_nodes('table') %>%
   html_table() %>%
@@ -37,14 +37,14 @@ field <- 'https://www.procyclingstats.com/race/vuelta-a-burgos/2020/stage-5/star
 
 conditions <- field %>%
   
-  mutate(length = 158,
-         pred_climb_difficulty = 13,
-         summit_finish = 1,
-         one_day_race = 0,
+  mutate(length = 299,
+         pred_climb_difficulty = 3,
+         summit_finish = 0,
+         one_day_race = 1,
          grand_tour = 0,
          finalGT = 0,
          cobbles = 0,
-         perc_thru = 0.8
+         perc_thru = 0
          ) %>%
   
   mutate(length = length - 200,
@@ -61,7 +61,7 @@ conditions_w_bs <- cbind(
   bs_pred = predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), conditions)) %>%
   
   mutate(predicted_bs = exp(bs_pred)/(1+exp(bs_pred))) %>%
-  select(rider, team, pred_climb_difficulty, predicted_bs)
+  select(rider, team, pred_climb_difficulty, predicted_bs, cobbles)
 
 # predicted bunch sprint
 conditions_w_bs %>%
@@ -85,7 +85,12 @@ adding_stats <- rbind(
   
   inner_join(
     
-    performance_table %>%
+    dbReadTable(con, "performance_rider_allpcd") %>%
+      
+      mutate(date = as.Date(Date)) %>%
+      select(-Date) %>%
+      
+      filter(date %in% c(as.Date('2020-04-01'), as.Date('2020-08-01'))) %>%
       select(-first_race, -latest_race) %>%
       mutate(rider = str_to_title(tolower(rider))), by = c("rider", "date", "bunch_sprint")) %>%
   
@@ -95,7 +100,7 @@ adding_stats <- rbind(
   # this process combines the bs == 1 and bs == 0 stats
   # weighting the combination by predicted_bs and # of races in that category
   gather(stat, value, -rider, -team, -pred_climb_difficulty,
-         -bunch_sprint, -predicted_bs, -date, -races) %>%
+         -bunch_sprint, -predicted_bs, -date, -races, -cobbles) %>%
   
   mutate(multiplier = ifelse(bunch_sprint == 1, predicted_bs, 1-predicted_bs),
          
@@ -104,7 +109,7 @@ adding_stats <- rbind(
   select(-bunch_sprint) %>%
   
   group_by(rider, team, pred_climb_difficulty,
-           predicted_bs, date,
+           predicted_bs, date, cobbles,
            stat) %>%
   summarize(new_value = mean(value, na.rm = T)) %>%
   ungroup() %>%
@@ -181,13 +186,18 @@ adding_stats <- rbind(
       rename(pcd_tmldr_impact = pcd_impact,
              bs_tmldr_impact = bunchsprint_impact) %>%
       
-      filter(date <= as.Date('2020-04-01') | date >= as.Date('2020-08-01')), by = c("rider", "date")
+      filter(date %in% c(as.Date('2020-04-01'), as.Date('2020-08-01'))), by = c("rider", "date")
     
   ) %>%
   
   inner_join(
     
-    lme4_success_table %>%
+    dbReadTable(con, "lme4_rider_success") %>%
+      
+      mutate(date = as.Date(Date)) %>%
+      select(-Date) %>%
+      
+      filter(date %in% c(as.Date('2020-04-01'), as.Date('2020-08-01'))) %>%
       
       mutate(rider = str_to_title(rider)) %>%
       
@@ -363,9 +373,9 @@ dbWriteTable(con,
              "predictions_modeled_winprob",
              
              predicting_winner %>%
-               mutate(race = "Vuelta a Burgos",
+               mutate(race = "Circuito de Getxo",
                       year = 2020,
-                      stage = as.numeric(5)) %>%
+                      stage = as.numeric(NA)) %>%
                mutate(updated = lubridate::now()),
 
              append = TRUE,
