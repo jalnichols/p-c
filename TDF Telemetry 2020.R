@@ -56,9 +56,9 @@ riders <- 'https://racecenter.letour.fr/api/allCompetitors-2020' %>%
   jsonlite::fromJSON() %>%
   select(Bib = bib, firstname, lastname, lastnameshort) %>%
   
-  mutate(GC = ifelse(Bib %in% c("1", "3", "11", "14", "22", "31", "51", '61', '71', '81',
-                                '76', '81', '91', '94', '101', '104', '121',
-                                '131', '161', '141', '218'), "GC","Helper"))
+  mutate(GC = ifelse(Bib %in% c("1", "11", "14", "22", "31", "51", '61', '71',
+                                '81', '91', '94', '101', '104', '121',
+                                '131', '161', '141'), "GC","Helper"))
 
 #
 
@@ -148,7 +148,8 @@ climbing <- all_stages %>%
   # Peyresource St8
   # Marie Blanque St9
   # Puy Mary and Neronne St13
-  filter((StageId == "0400" & kmToFinish < 10.5) |
+  filter((StageId == "0400" & kmToFinish < 10.5 & kmToFinish > 0) |
+           (StageId == "0200" & kmToFinish > 9 & kmToFinish < 14.5) |
            (StageId == "0600" & kmToFinish > 13.5 & kmToFinish < 25) |
            (StageId == "0800" & kmToFinish > 10 & kmToFinish < 19.5) |
            (StageId == "0900" & kmToFinish > 18.5 & kmToFinish < 26) |
@@ -178,13 +179,183 @@ climbing <- all_stages %>%
   ungroup() %>%
   
   group_by(StageId) %>%
-  filter(abs((meters / max(meters))-1) < 0.3) %>%
+  filter((meters / max(meters, na.rm = T) > 0.90)) %>%
   mutate(rk = rank(-kph, ties.method = "first")) %>%
   mutate(x20th = ifelse(rk == 10, kph, NA)) %>%
   mutate(x20th = mean(x20th, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(RelTo20th = kph / x20th)
+  mutate(RelTo20th = kph / x20th) %>%
+  
+  group_by(StageId) %>%
+  mutate(max_meters = max(meters, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(implied_seconds = max_meters / m_s)
+
+#
+
+ggplot(
+  
+  climbing %>%
+    inner_join(riders) %>%
+    filter(Bib %in% c('11', '14', '61', '71', '81', '101', '161', '141', '121', '131', '94')),
+  
+  aes(x = implied_seconds / 60, y = kph, color = str_sub(StageId,1,2)))+
+  
+  geom_point(size=4, alpha = 0.5)+
+  geom_smooth(method = "lm", alpha = 0.5)+
+  
+  labs(x = "climb duration (mins)",
+       y = "climbing speed (km/h)",
+       color = "Stage",
+       title = "Climbing speeds in 2020 TDF")+
+  
+  theme(axis.text = element_text(size = 16))
+
+#
+
+ggplot(
+  
+  climbing %>%
+    inner_join(riders) %>%
+    
+    mutate(top5 = ifelse(Bib %in% c('11', '131', '61', '101', '94'), 1, 0)) %>%
+    
+    group_by(GC, StageId) %>%
+    filter(top5 == 1 | rank(-kph, ties.method = "first") <= 5) %>%
+    ungroup(),
+  
+  aes(y = str_sub(StageId,1,2),  x = kph, color = GC))+
+
+  geom_boxplot()+
+  
+  labs(y = "Stage",
+       x = "climbing speed (km/h)",
+       color = "Stage",
+       title = "Climbing speeds in 2020 TDF")+
+  
+  theme(axis.text = element_text(size = 16))
+
+#
+
+top_groups <- climbing %>%
+  inner_join(riders) %>%
+  
+  mutate(top5 = ifelse(Bib %in% c('11', '131', '61', '101', '94'), 1, 0)) %>%
+  
+  mutate(type = ifelse(top5 == 1, "Top 5\nFinishers",
+                       ifelse(GC == "GC", "Other GC\nRiders", "Remaining\nPeloton"))) %>%
+  
+  group_by(type, StageId) %>%
+  filter(top5 == 1 | rank(-kph, ties.method = "first") <= 5) %>%
+  ungroup() %>%
+  
+  group_by(type, StageId) %>%
+  summarize(avg = mean(kph, na.rm = T)) %>%
+  ungroup()
+
+
+top_groups$type <- factor(top_groups$type, levels = c("Top 5\nFinishers", "Other GC\nRiders", "Remaining\nPeloton"))
+
+#
+
+ggplot(
+  
+  top_groups,
+  
+  aes(y = str_sub(StageId,1,2),  x = avg, fill = type))+
+  
+  geom_point(size = 7, shape = 21, stroke = 2, color = "black", alpha = 0.5)+
+  
+  labs(y = "Stage",
+       x = "climbing speed (km/h)",
+       title = "Climbing speeds in 2020 TDF",
+       subtitle = "Top 5 on each decisive climb from each group")+
+  
+  scale_x_continuous(breaks = c(17.5, 20, 22.5, 25, 27.5))+
+  
+  theme(axis.text = element_text(size = 16),
+        plot.title = element_text(size = 18, face = "bold"),
+        plot.subtitle = element_text(size = 14, face = "bold"),
+        legend.position = "bottom")+
+  
+  scale_fill_manual(values = c("gold", "gray30", "dark red"), name = "")
+
+ggsave("climbing-speeds-tdf-2020.png", height = 7, width = 11)
+
+#
+
+interesting <- climbing %>%
+  
+  mutate(Bib = as.character(Bib)) %>%
+  
+  left_join(tibble(StageId = c('0200', '0200', '0200',
+                               '0600', '0600', '0600',
+                               '0800', '0800', '0800',
+                               '0900', '0900',
+                               '1300', '1300', '1300',
+                               '1500', '1500', '1500',
+                               '1600', '1600', '1600',
+                               '1700', '1700', '1700',
+                               '1800', '1800', '1800'),
+                   
+                   Bib = c('161', '204', '41',
+                           '146', '132', '124',
+                           '118', '106', '36',
+                           '1', '204',
+                           '24', '28', '76',
+                           '16', '62', '141',
+                           '24', '3', '58',
+                           '141', '16', '3',
+                           '3', '5', '18'),
+                   Keep = 1), by = c("StageId", "Bib")) %>%
+  
+  filter(Keep == 1 | Bib %in% c('94', '11', '101', '131', '61')) %>%
+  
+  mutate(stage_winner = ifelse(StageId == '0200' & Bib == '41', 1,
+                               ifelse(StageId == '0400' & Bib == '11', 1,
+                                      ifelse(StageId == '0600' & Bib == '146', 1,
+                                             ifelse(StageId == '0800' & Bib == '36', 1,
+                                                    ifelse(StageId == '0900' & Bib == '131', 1,
+                                                           ifelse(StageId == '1300' & Bib == '76', 1,
+                                                                  ifelse(StageId == '1500' & Bib == '131', 1,
+                                                                         ifelse(StageId == '1600' & Bib == '24', 1,
+                                                                                ifelse(StageId == '1700' & Bib == '141', 1,
+                                                                                       ifelse(StageId == '1800' & Bib == '5', 1, 0)))))))))))
+
+#
+
+ggplot(
+  
+  interesting %>%
+    mutate(top5 = ifelse(is.na(Keep), "GC Top 5", "Other riders")),
+  
+  aes(y = str_sub(StageId,1,2),  x = kph, label = Bib, fill = top5, shape = as.factor(stage_winner)))+
+  
+  geom_point(size = 4, alpha = 0.5, color = "black")+
+  ggrepel::geom_label_repel(color = "black", fill = "white", size = 4)+
+  
+  labs(y = "Stage",
+       x = "climbing speed (km/h)",
+       title = "Climbing speeds in 2020 TDF",
+       subtitle = "Top 5 on each decisive climb from each group // stage winner as triangle")+
+  
+  scale_x_continuous(breaks = c(15, 17.5, 20, 22.5, 25, 27.5, 30))+
+  
+  scale_shape_manual(values = c(21, 24))+
+  
+  theme(axis.text = element_text(size = 16),
+        plot.title = element_text(size = 18, face = "bold"),
+        plot.subtitle = element_text(size = 14, face = "bold"))+
+  
+  scale_fill_manual(values = c("gold", "dark red"), name = "")+
+  
+  guides(shape = F)
+
+#
+
+ggsave("climbing-speeds-tdf-2020.png", height = 6.2, width = 11)
 
 #
 
@@ -343,3 +514,221 @@ ggplot(puy_mary %>% filter(kmToFinish < 5.4),
   scale_fill_gradient2(low = "blue", mid = "white", high = "red")
 
 
+#
+#
+#
+#
+#
+#
+#
+#
+
+jumbo_on_climbs <- all_stages %>%
+  
+  mutate(within_01 = ifelse(kmToFinish < 0.1, TimeStamp, NA)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(TimeStamp <= within_01) %>%
+  ungroup() %>%
+  
+  filter(Gradient > 0 & kmToFinish > 0) %>%
+  
+  # Orcieres Merlette St4
+  # Lusette St6
+  # Peyresource St8
+  # Marie Blanque St9
+  # Puy Mary and Neronne St13
+  filter((StageId == "0400" & kmToFinish < 10.5 & kmToFinish > 0) |
+           (StageId == "0200" & kmToFinish > 9 & kmToFinish < 14.5) |
+           (StageId == "0600" & kmToFinish > 13.5 & kmToFinish < 25) |
+           (StageId == "0800" & kmToFinish > 10 & kmToFinish < 19.5) |
+           (StageId == "0900" & kmToFinish > 18.5 & kmToFinish < 26) |
+           (StageId == "1300" & kmToFinish > 0 & kmToFinish < 5.4) |
+           (StageId == '1500' & kmToFinish > 0 & kmToFinish < 17.7) |
+           (StageId == '1600' & kmToFinish > 20 & kmToFinish < 33) |
+           (StageId == '1700' & kmToFinish > 0 & kmToFinish < 22) |
+           (StageId == '1800' & kmToFinish > 31.5 & kmToFinish < 37.5)) %>%
+  
+  filter((Bib >= 11 & Bib <= 18) | Bib %in% c(61, 101, 141, 131, 62, 63, 148, 1, 5, 81, 121)) %>%
+  
+  arrange(StageId, Bib, TimeStamp) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(dist_diff = 1000 * (lag(kmToFinish) - kmToFinish),
+         time_diff = TimeStamp - lag(TimeStamp)) %>%
+  ungroup() %>%
+  
+  filter(dist_diff >= 0 & time_diff > 0) %>%
+  
+  mutate(ms_diff = dist_diff / time_diff,
+         ms_diff = ifelse(ms_diff > 10, 10, ms_diff)) %>%
+  
+  mutate(top5 = ifelse(Bib %in% c(11,131,141,101,61), ms_diff, NA)) %>%
+  
+  group_by(TimeStamp) %>%
+  mutate(top5 = mean(top5, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter(!is.na(top5)) %>% 
+  
+  select(top5, ms_diff, dist_diff, time_diff, Bib, kmToFinish, Gradient, StageId, TimeStamp) %>%
+  
+  mutate(VsPR = (ms_diff / top5)-1) %>%
+  
+  filter(VsPR < 1) %>%
+  
+  mutate(VsPR = ifelse(VsPR < -3, -3, VsPR)) %>%
+  
+  mutate(speed_last_5 = ((VsPR) + lag(VsPR, 1) + lag(VsPR, 2) + lag(VsPR, 3) + lag(VsPR, 4)) / 5,
+         raw_speed_last_5 = ((ms_diff) + lag(ms_diff, 1) + lag(ms_diff, 2) + lag(ms_diff, 3) + lag(ms_diff, 4)) / 5,
+         leaders_speed_last_5 = ((top5) + lag(top5, 1) + lag(top5, 2) + lag(top5, 3) + lag(top5, 4)) / 5,
+         Gradient_last_5 = ((Gradient) + lag(Gradient, 1) + lag(Gradient, 2) + lag(Gradient, 3) + lag(Gradient)) / 5) %>%
+  
+  inner_join(riders)
+
+#
+
+top5_speed_vs_gradient <- lm(raw_speed_last_5 ~ Gradient_last_5, 
+                             data = jumbo_on_climbs %>% 
+                               filter(Bib %in% c('11','101','131','61','94')))
+                               
+summary(top5_speed_vs_gradient)
+
+jumbo_on_climbs <- cbind(
+  
+  pred_speed_grade = predict(top5_speed_vs_gradient, jumbo_on_climbs),
+  
+  jumbo_on_climbs) %>%
+  
+  mutate(leaders_vs_expected = leaders_speed_last_5 / pred_speed_grade)
+
+#
+
+ggplot(jumbo_on_climbs %>% filter(StageId == '1500' & Bib %in% c('12','14','16','18', '62', '148')), 
+       
+       aes(x = (((TimeStamp / 3600)-444024) * 60)-25357, 
+           y = speed_last_5, 
+           color = as.factor(lastnameshort)))+
+  
+  geom_hline(yintercept = 0)+
+  geom_line(size = 1, color = "black")+
+  geom_point(size=2)+
+  
+  facet_wrap(~lastnameshort)+
+  
+  labs(x = "minutes from start of climb",
+       y = "percent faster/slower than GC leaders",
+       title = 'Domestiques on Grand Colombier',
+       subtitle = "speed relative to GC leaders")+
+  
+  scale_y_continuous(labels = scales::percent)
+
+#
+#
+#
+
+ggplot(jumbo_on_climbs %>% filter(StageId == '1500' & Bib %in% c('1', '81')), 
+       
+       aes(x = (((TimeStamp / 3600)-444024) * 60)-25357, 
+           y = speed_last_5, 
+           color = as.factor(lastnameshort)))+
+  
+  geom_hline(yintercept = 0)+
+  geom_line(size = 1, color = "black")+
+  geom_point()+
+  
+  facet_wrap(~lastnameshort, ncol = 1)+
+  
+  labs(x = "minutes from start of climb",
+       y = "percent faster/slower than GC leaders",
+       title = 'Bernal & Quintana on Grand Colombier',
+       subtitle = "speed relative to GC leaders")+
+  
+  scale_y_continuous(labels = scales::percent)+
+  
+  scale_color_manual(values = c("navy", "dark red"), guide=F)+
+  
+  theme(axis.text = element_text(size = 14),
+        plot.title = element_text(size = 18, face = "bold"),
+  )
+
+#
+
+ggplot(jumbo_on_climbs %>% filter(StageId == '1500' & Bib %in% c('11')) %>%
+         
+         mutate(mins_climb = (((TimeStamp / 3600)-444024) * 60)-25357) %>%
+         
+         mutate(section = ifelse(mins_climb < 24, 'WvA',
+                                 ifelse(mins_climb < 30, 'Bennett',
+                                        ifelse(mins_climb < 42, "TomDom", "Finish")))), 
+       
+       aes(x = mins_climb, 
+           y = leaders_speed_last_5 * 3600 / 1000, 
+           color = as.factor(section)))+
+  
+  geom_line(size = 1, color = "black")+
+  geom_point(size=3)+
+  
+  labs(x = "minutes from start of climb",
+       y = "KM / hour",
+       title = 'GC group on Grand Colombier',
+       subtitle = "rolling average of speed last 2 minutes")+
+  
+  guides(color = FALSE)+
+  
+  theme(axis.text = element_text(size = 16),
+        plot.title = element_text(size = 24, face = "bold"),
+        )
+
+ggsave("gc-group-grand-colombier.png", height = 6.2, width = 11)
+
+#
+
+ggplot(jumbo_on_climbs %>%
+         
+         filter(StageId == '1800' & Bib %in% c('11')) %>%
+
+         group_by(StageId) %>%
+         mutate(mins_climb = (TimeStamp - min(TimeStamp, na.rm = T)) / 60) %>%
+         ungroup(), 
+       
+       aes(x = mins_climb, 
+           y = leaders_vs_expected))+
+  
+  geom_hline(yintercept = 1)+
+  
+  geom_point(size=3, color = "gold")+
+  geom_smooth(color = "#404040", size = 2, se = F, span = 0.4)+
+  
+  scale_y_continuous(labels = scales::percent)+
+  
+  labs(x = "minutes from start of climb",
+       y = "vs expected speed based on gradient",
+       title = 'GC group on Stage 16 St. Nizier Climb',
+       subtitle = "relative to expected speed (>100% is faster than expected)")+
+  
+  guides(color = FALSE)+
+  
+  theme(axis.text = element_text(size = 14),
+        plot.title = element_text(size = 18, face = "bold"),
+  )
+
+ggsave("gc-group-4-orc-merl.png", height = 6.2, width = 11)
+
+#
+#
+#
+#
+#
+
+leaders_speed <- jumbo_on_climbs %>%
+  
+  filter(Bib %in% c(11, 131, 18)) %>%
+  
+  group_by(StageId, lastnameshort, Bib) %>%
+  
+  summarize(speed_own = mean(raw_speed_last_5, na.rm = T),
+            vs_gradient = median(raw_speed_last_5 / pred_speed_grade, na.rm = T),
+            measurements = n()) %>%
+  ungroup()

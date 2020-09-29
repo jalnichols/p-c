@@ -237,7 +237,8 @@ natl_champs <- c("race/nc-spain",
                  "race/nc-colombia",
                  "race/nc-south-africa",
                  "race/nc-united-states",
-                 "race/nc-australia")
+                 "race/nc-australia",
+                 "race/nc-slovenia")
 
 extra_races <- c("race/world-championship",
                  "race/world-championship-itt",

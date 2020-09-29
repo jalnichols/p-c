@@ -53,6 +53,16 @@ for(y in 1:length(scraper_list$year)) {
     select(-trash) %>%
     mutate(url = paste0('https://www.la-flamme-rouge.eu', str_sub(url, 1, nchar(url) - 4)))
   
+  img <- pg %>%
+    html_nodes('tr') %>%
+    html_nodes('td') %>%
+    html_nodes('a') %>%
+    html_nodes('img') %>%
+    html_attr(name = "alt") %>%
+    enframe(name = NULL) %>% 
+    filter(!is.na(value)) %>%
+    rename(tour = value)
+  
   df <- pg %>%
     html_nodes('table') %>%
     html_table(header = TRUE) %>%
@@ -60,9 +70,9 @@ for(y in 1:length(scraper_list$year)) {
     as_tibble() %>%
     
     # attach races URL from above
-    cbind(r) %>%
+    cbind(r, img) %>%
     janitor::clean_names() %>%
-    select(date, race = name, stages, class = clas, url) %>%
+    select(date, race = name, stages, class = clas, url, tour) %>%
     mutate(year = scraper_list$year[[y]])
   
   result_list[[y]] <- df
@@ -131,6 +141,16 @@ for(y in 1:length(scraper_list$year)) {
     select(-trash) %>%
     mutate(url = paste0('https://www.la-flamme-rouge.eu', str_sub(url, 1, nchar(url) - 4)))
   
+  img <- pg %>%
+    html_nodes('tr') %>%
+    html_nodes('td') %>%
+    html_nodes('a') %>%
+    html_nodes('img') %>%
+    html_attr(name = "alt") %>%
+    enframe(name = NULL) %>% 
+    filter(!is.na(value)) %>%
+    rename(tour = value)
+  
   df <- pg %>%
     html_nodes('table') %>%
     html_table(header = TRUE) %>%
@@ -138,9 +158,9 @@ for(y in 1:length(scraper_list$year)) {
     as_tibble() %>%
     
     # attach races URL from above
-    cbind(r) %>%
+    cbind(r, img) %>%
     janitor::clean_names() %>%
-    select(date, race = name, stages, class = clas, url) %>%
+    select(date, race = name, stages, class = clas, url, tour) %>%
     mutate(year = scraper_list$year[[y]],
            class = as.character(class))
   
@@ -173,6 +193,10 @@ all_races <- intermediate_races %>%
   
   select(-trash)
 
+#
+
+dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
+
 # find data we already have
 
 already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
@@ -182,9 +206,9 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
 
 # only scrape ones we don't have OR skip this if we want to re-scrape
 
-# all_races <- all_races %>%
-#   
-#   filter((!(url %in% already_scraped$race_url)))
+ all_races <- all_races %>%
+   
+   filter((!(url %in% already_scraped$race_url)))
 
 #
 #
@@ -566,6 +590,7 @@ for(y in 1:length(stages_list)) {
   
   #climbs_stages_list[[y]] <- bind_rows(data_list)
   
+  print(y)
   print(stages_list[[y]]$race)
   print(stages_list[[y]]$year)
   
@@ -585,7 +610,7 @@ for(y in 1:length(stages_list)) {
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
 clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
-  
+  filter(updated >= '2020-07-31') %>%
   mutate(year = str_sub(race_url, 48, 51)) %>%
   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
@@ -707,9 +732,15 @@ clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
 
 # build matcher for PCS to FR race names
 
-pcs <- dbGetQuery(con, "SELECT year, race, date FROM pcs_stage_raw GROUP BY race, year, date") %>%
+pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages 
+                  FROM pcs_stage_raw GROUP BY race, year, date, class") %>%
   
-  mutate(date = as.Date(date)) %>%
+  filter(!is.na(class)) %>%
+  
+  mutate(date = as.Date(date),
+         class = ifelse(class == "UWT",
+                        ifelse(stages > 1, "2.UWT", "1.UWT"), class),
+         class = ifelse(class == "1.2U23", "1.2U", class)) %>%
   
   group_by(race, year) %>%
   mutate(date = min(date, na.rm = T)) %>%
@@ -726,11 +757,18 @@ pcs <- dbGetQuery(con, "SELECT year, race, date FROM pcs_stage_raw GROUP BY race
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date < '2020-03-10')
+  filter(date <= '2020-08-01') %>%
+  
+  filter(!class == 'NC')
 
 #
 
 fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, year, date") %>%
+  
+  inner_join(dbReadTable(con, "fr_races")) %>%
+  
+  select(date, race, year, class, tour, stages) %>%
+  
   mutate(date = str_replace_all(date, "Monday", ""),
          date = str_replace_all(date, "Tuesday", ""),
          date = str_replace_all(date, "Wednesday", ""),
@@ -744,20 +782,22 @@ fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, yea
                               "July","August","September","October","November","December"),
                     m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
   mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
-  select(race, year, date) %>%
-  filter(date <= '2020-03-10') %>%
+  select(race, year, date, class, tour) %>%
+  filter(date <= '2020-08-01') %>%
   
   mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
   
-  filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)"))
+  filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)")) %>%
+  
+  mutate(class = ifelse(class == "CM", "WC", class))
 
 #
 
 matches <- fr %>%
   
   # ignore races where I know I lack matches
-  filter(!str_detect(race, "Giro Ciclistico")) %>%
-  filter(!str_detect(race, "Avenir")) %>%
+  #filter(!str_detect(race, "Giro Ciclistico")) %>%
+  #filter(!str_detect(race, "Avenir")) %>%
   
   mutate(year = as.numeric(year)) %>%
   rename(fr_race = race) %>%
@@ -765,7 +805,7 @@ matches <- fr %>%
   inner_join(
     
     pcs %>%
-      rename(pcs_race = race), by = c("year")
+      rename(pcs_race = race), by = c("year", "class")
     
   ) %>%
   
@@ -884,7 +924,7 @@ all_climbs <- clean_climbs %>%
 # clean routes
 #
 
-all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%    
+all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data WHERE updated > '2020-07-15'") %>%    
   mutate(distances = as.numeric(dist),
          alt = as.numeric(alt)) %>%
   
@@ -1362,6 +1402,10 @@ gam_mod = mgcv::gam(category ~ alt + s(vam_poly, k = 5),
                       unique() %>%
                       mutate(vam_poly = ((gradient^2) * length), 
                              alt = summit - 1000))
+
+summary(gam_mod)
+
+summary(read_rds("model-climb-difficulty.rds"))
 
 write_rds(gam_mod, "model-climb-difficulty.rds")
 
