@@ -193,10 +193,6 @@ all_races <- intermediate_races %>%
   
   select(-trash)
 
-#
-
-dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
-
 # find data we already have
 
 already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
@@ -209,7 +205,10 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
  all_races <- all_races %>%
    
    filter((!(url %in% already_scraped$race_url)))
-
+ #
+ 
+ dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
+ 
 #
 #
 #
@@ -610,7 +609,7 @@ for(y in 1:length(stages_list)) {
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
 clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
-  filter(updated >= '2020-07-31') %>%
+  filter(updated >= '2020-07-01') %>%
   mutate(year = str_sub(race_url, 48, 51)) %>%
   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
@@ -757,7 +756,7 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date <= '2020-08-01') %>%
+  filter(date <= '2020-10-10') %>%
   
   filter(!class == 'NC')
 
@@ -783,7 +782,7 @@ fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, yea
                     m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
   mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
   select(race, year, date, class, tour) %>%
-  filter(date <= '2020-08-01') %>%
+  filter(date <= '2020-10-10') %>%
   
   mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
   

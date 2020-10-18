@@ -947,7 +947,7 @@ stage_data_perf <- stage_data %>%
 #
 #
 
-dbSendQuery(con, "DELETE FROM stage_data_perf")
+#dbSendQuery(con, "DELETE FROM stage_data_perf")
 
 dbWriteTable(con, "stage_data_perf",
              
@@ -1353,6 +1353,36 @@ dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, o
 
 #
 #
+# STAGE TIME STATS
+#
+#
+
+stage_time_stats <- stage_data_perf %>%
+  
+  filter(time_trial == 0) %>%
+  
+  group_by(stage, race, year, one_day_race, pred_climb_difficulty, gain_1st) %>%
+  mutate(n = n()) %>%
+  ungroup() %>%
+  
+  mutate(n = ifelse(rnk == 200, NA, n)) %>%
+  
+  mutate(weighted_time = ifelse(rnk == 200, NA, (1 / log(rnk+1)))) %>%
+  
+  group_by(stage, race, year, one_day_race, pred_climb_difficulty) %>%
+  mutate(mode_time = ifelse(n == max(n, na.rm = T), gain_1st, NA),
+         largest_grp = ifelse(n == max(n, na.rm = T), max(n, na.rm = T), NA)) %>%
+  summarize(mode_time = max(mode_time, na.rm = T),
+            unique_groups = n_distinct(gain_1st),
+            largest_grp = max(largest_grp, na.rm = T),
+            DNF = mean(rnk == 200, na.rm = T),
+            last_place = max(gain_1st, na.rm = T),
+            weighted_time = sum(weighted_time * gain_1st, na.rm = T) / sum(weighted_time, na.rm = T),
+            riders = n()) %>%
+  ungroup()
+
+#
+#
 # BREAKAWAYS
 #
 #
@@ -1401,21 +1431,23 @@ pcd_by_rider <- stage_data_perf %>%
   
   mutate(team_pcd = ifelse(tm_pos == 1, pred_climb_difficulty, NA)) %>%
   
-  select(rider, master_team, year, race, team_pcd, pred_climb_difficulty) %>%
+  select(rider, master_team, year, race, team_pcd, pred_climb_difficulty, one_day_race) %>%
   unique() %>%
   
   group_by(master_team, year) %>%
   mutate(team_pcd = mean(team_pcd, na.rm = T)) %>%
   ungroup() %>% 
 
-  select(rider, master_team, year, race, team_pcd, pred_climb_difficulty) %>%
+  select(rider, master_team, year, race, team_pcd, pred_climb_difficulty, one_day_race) %>%
   unique() %>%
   
   group_by(rider, master_team, year) %>%
   summarize(pcd = mean(pred_climb_difficulty, na.rm = T), 
             rel_tm_pcd = mean(pred_climb_difficulty - team_pcd, na.rm = T),
-            races = n()) %>% 
-  ungroup()
+            all_races = n()) %>% 
+  ungroup() %>%
+  
+  mutate(ODR_tilt = one_day_races / (one_day_races + stage_races))
 
 #
 # weighted pcd based on stage rank
@@ -1428,16 +1460,20 @@ weighted_pcd <- stage_data_perf %>%
   group_by(rider, master_team, year) %>%
   summarize(weighted_pcd = sum(pred_climb_difficulty * weight, na.rm = T) / sum(weight, na.rm = T), 
             races = n(), 
+            one_day_races = sum(one_day_race == 1, na.rm = T),
+            stage_races = sum(one_day_race == 0 & stage == 1, na.rm = T),
             leader = mean(tm_pos == 1, na.rm = T)) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(ODR_tilt = one_day_races / (one_day_races + stage_races))
 
 #
 
 ggplot(weighted_pcd %>% 
-         filter(year == 2019 & master_team == 'Quick Step' & races >= 10),
+         filter(year == 2020 & master_team == 'Jumbo Visma' & races >= 10),
        aes(x = leader, y = weighted_pcd, label = rider))+
   
-  geom_point(size = 3, shape = 21, color = "navy", fill = "light blue", stroke = 2)+
+  geom_point(size = 3, shape = 21, color = "navy", fill = "yellow", stroke = 2)+
   
   ggrepel::geom_label_repel(size=3)+
   
@@ -1447,7 +1483,7 @@ ggplot(weighted_pcd %>%
   
   labs(x = "Leader: % of races as #1 on team", 
        y = "Parcours fit: climbing difficulty of better performances", 
-       title = "Cofidis 2019 team plot", 
+       title = "Circus-Wanty 2020 team plot", 
        subtitle = "how often is rider the team leader / which parcours fit a rider")+
   expand_limits(y = c(0,15))
 
@@ -1554,7 +1590,7 @@ when_leader <- stage_data_perf %>%
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%
   
-  filter(year > 2012) %>%
+  filter(year > 2019) %>%
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA)) %>%
   
   group_by(rider, 
@@ -4857,3 +4893,11 @@ x <- bind_rows(ll_list) %>%
   group_by(rider) %>%
   summarize(wins = mean(rk==1, na.rm = T))
 
+#
+#
+#
+#
+#
+#
+#
+#
