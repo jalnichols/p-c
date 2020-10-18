@@ -91,7 +91,8 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter')
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter')
 
 #
 
@@ -276,7 +277,19 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  select(-spec_url)
+  select(-spec_url) %>%
+  
+  rbind(
+    
+    tibble(Date = as.Date('2020-10-03'),
+           Race = "Giro d'Italia",
+           Winner = "Kelderman Wilco",
+           Class = "2.UWT",
+           url = "/race/giro-d-italia/2020",
+           year = 2020,
+           type = 'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter')
+    
+  )
 
 #
 # Write DB Table
@@ -1090,6 +1103,8 @@ gc_performance <- winners %>%
          class = Class,
          url, year) %>%
   
+  mutate(winner = ifelse(race == "giro d'italia" & year == 2020, "Nibali Vincenzo", winner)) %>%
+  
   inner_join(
     
     stage_data %>%
@@ -1359,6 +1374,135 @@ dbWriteTable(con, "pcs_stage_data",
              stage_data, 
              
              overwrite = TRUE, append = FALSE, row.names = FALSE)
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+library(tidyverse)
+library(lubridate)
+library(rvest)
+library(RMySQL)
+
+con <- dbConnect(MySQL(),
+                 host='localhost',
+                 dbname='cycling',
+                 user='jalnichols',
+                 password='braves')
+
+#
+
+all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
+                        FROM pcs_stage_data
+                        WHERE year > 2013") %>%
+  
+  arrange(-year) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC")) %>%
+  
+  filter(stage != 0) %>%
+  
+  group_by(race, year, class) %>%
+  filter(stage == min(stage, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT race, year, url FROM pcs_all_startlists"), by = c("race", "year", "url"))
+
+#
+#
+#
+
+for(r in 1:length(all_races$url)) {
+  
+  if(all_races$one_day_race[[r]] == 0) {
+  
+  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""), "stage-", 
+                   str_trim(str_replace(all_races$stage_name[[r]], "Stage ", "")))
+  
+  } else {
+  
+  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""))
+  
+  }
+  
+  page <- read_file(f_name) %>%
+    read_html()
+  
+  # bring in the list of tables
+  
+  d <- page %>%
+    html_nodes('table') %>%
+    html_table()
+  
+  if(length(d) == 0) {
+    
+  } else {
+    
+    # find which table to choose by searching for the one generically displayed (will be stage standings)
+    choose <- page %>%
+      html_nodes('div') %>%
+      html_attr(name = "class") %>%
+      enframe(name = NULL) %>%
+      filter(value %in% c("resultCont hide", "resultCont ")) %>%
+      tibble::rowid_to_column() %>%
+      .[[1]] %>%
+      .[[1]]
+  
+  }
+  
+  #
+  
+  startlist <- d[[choose]]
+  
+  if(max((colnames(startlist) == "BIB") == TRUE) == 1) {
+  
+  startlist <- startlist %>%
+    
+    .[, 1:7] %>%
+    
+    select(rider = Rider,
+           team = Team,
+           bib = BIB) %>%
+    unique() %>%
+    
+    mutate(race = all_races$race[[r]],
+           year = all_races$year[[r]],
+           url = all_races$url[[r]])
+  
+  startlist$race <- iconv(startlist$race, from="UTF-8", to = "ASCII//TRANSLIT")
+  
+  startlist$rider <- iconv(startlist$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+  
+  startlist$team <- stringi::stri_trans_general(str = startlist$team, 
+                                                id = "Latin-ASCII")
+    
+  startlist <- startlist %>%
+    
+    mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)))
+  
+  #
+  
+  dbWriteTable(con, "pcs_all_startlists", startlist, row.names = FALSE, append = TRUE)
+  
+  print(r)
+  
+  }
+  
+}    
+
+#
+#
+#
+
+startlists <- dbGetQuery(con, "SELECT rider, bib, race, year, url FROM pcs_all_startlists")
 
 #
 #
