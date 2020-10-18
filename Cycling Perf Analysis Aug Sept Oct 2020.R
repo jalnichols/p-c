@@ -3,6 +3,8 @@ library(tidyverse)
 library(DBI)
 library(RMySQL)
 
+dbDisconnect(con)
+
 con <- dbConnect(MySQL(),
                  host='localhost',
                  dbname='cycling',
@@ -13,9 +15,15 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2016") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
   
-  mutate(date = as.Date(date))
+  mutate(date = as.Date(date)) %>%
+  
+  left_join(
+   
+    dbGetQuery(con, "SELECT rider, bib, race, year FROM pcs_all_startlists"), by = c("rider", "year", "race") 
+    
+  )
 
 #####
 #####
@@ -190,89 +198,6 @@ all_pre_mtn <- bind_rows(res_list) %>%
 #
 #
 #
-
-#
-
-library(tidyverse)
-library(RMySQL)
-library(BradleyTerry2)
-
-#
-
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
-#
-#
-#
-
-All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf
-                       WHERE time_trial = 0 AND year >= 2017") %>%
-  
-  filter(!is.na(bunch_sprint)) %>%
-  filter(!is.na(pred_climb_difficulty)) %>%
-  
-  mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA),
-         sof_per_opp = ifelse(tm_pos == 1, sof, NA),
-         pred_climb_diff_opp = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
-         pred_climb_diff_succ = ifelse(points_finish > 0, pred_climb_difficulty, NA),
-         team_ldr = ifelse(tm_pos == 1, 1, 0)) %>%
-  
-  mutate(date = as.Date(date)) %>%
-  
-  select(-stage_name, -speed, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th,
-         -time_trial, -gc_winner, -gc_pos, -parcours_value, -stage_type) %>%
-  
-  filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC")) |
-           (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
-           (sof > 0.25 & class %in% c("2.1", "1.1"))) %>%
-  unique()
-
-#
-#
-#
-
-sprint_h2h_data <- All_data %>%
-  
-  filter(bunch_sprint == 1) %>%
-  filter(!is.na(rnk)) %>%
-  filter(rnk < 21)
-
-#
-
-sprint_h2h <- sprint_h2h_data %>%
-  
-  rename(rnk1 = rnk,
-         rider1 = rider) %>%
-  
-  inner_join(
-    
-    sprint_h2h_data %>%
-      select(rider2 = rider,
-             stage, race, year,
-             rnk2 = rnk), by = c("stage", "race", "year")) %>%
-  
-  filter(!rider1 == rider2) %>%
-  
-  mutate(adv1 = ifelse(rnk1 < rnk2, 1, 0),
-         adv2 = ifelse(rnk1 > rnk2, 1, 0)) %>%
-  
-  filter(year >= 2017) %>%
-  
-  group_by(rider1, rider2) %>%
-  summarize(win1 = sum(adv1, na.rm = T),
-            win2 = sum(adv2, na.rm = T)) %>%
-  ungroup()
-
-#
-
-mod1 <- BradleyTerry2::BTm(cbind(win1, win2), rider1, rider2,
-            formula = ~ rider, id = "rider",
-            data = sprint_h2h)
-
 #
 #
 #
@@ -294,8 +219,17 @@ uphill_TT <- all_stage_data %>%
   mutate(x5th = mean(x5th, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(rel_speed = speed / x5th)
-
+  filter(x5th > 35) %>%
+  
+  mutate(rel_speed = speed / x5th) %>%
+  
+  group_by(rider, Y = year >= 2019) %>%
+  summarize(med_rnk = median(rnk, na.rm = T),
+            peak = quantile(rel_speed, probs = 0.8, na.rm = T),
+            avg = mean(rel_speed, na.rm = T),
+            TTs = n()) %>%
+  ungroup()
+  
 #
 #
 #
@@ -444,6 +378,12 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   
   # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
   
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+  
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
   separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
@@ -466,12 +406,59 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   ungroup() %>% 
   
   inner_join(all_stage_data %>%
-               filter(year %in% c("2019", "2020")), by = c("date", "pcs" = "rider")) %>% 
+               filter(year %in% c("2019", "2020")) %>%
+               mutate(date = ifelse(race == "tour de romandie" & year == 2019,
+                                    as.Date(date + 1), as.Date(date)),
+                      date = ifelse(race == "giro d'italia" & year == 2019,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "giro d'italia" & year == 2020,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "tour de france" & year == 2019,
+                                    ifelse(stage < 11, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "la vuelta ciclista a espana" & year == 2019,
+                                    ifelse(stage < 10, date, ifelse(stage < 17, date + 1, date + 2)), date),
+                      date = ifelse(race == "volta a portugal em bicicleta edicao especial" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "volta a portugal santander" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "skoda-tour de luxembourg" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "sibiu cycling tour" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "sibiu cycling tour" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "tour de hongrie" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "boucles de la mayenne" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "zlm tour" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "int. osterreich-rundfahrt-tour of austria" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "the larry h.miller tour of utah" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "tour de france" & year == 2020,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date)) %>%
+               mutate(date = as.Date(date, origin = '1970-01-01')), by = c("date", "pcs" = "rider")) %>% 
+  
+  # if two results exist for same day matching distance, it's probably a recon and TT which
+  # means drop the lower watts
+  
+  # also, many riders include distance outside the TT as part of their strava activity
+  # so maybe accept any riders +/- 10 km? or maybe we just can't get accurate TT data
   
   mutate(distance = distance * 1.609) %>% 
   filter((distance / length) > 0.9) %>%
-  filter((distance / length) < 1.1) %>% 
-  filter(weighted_avg_power > 175) %>% 
+  filter((distance / length) < 1.1) %>%
+  
+  # clear out anomalous data
+  mutate(wattskg = weighted_avg_power / weight) %>% 
+  
+  # these average about 4.07 with 0.44 SD such that 99.8% of data should fall between 2.75 and 5.39
+  mutate(M = mean(wattskg, na.rm = T), 
+         S = sd(wattskg, na.rm = T)) %>% 
+
+  filter(abs((wattskg - M) / S) < 3 | is.na(weight)) %>%
   
   group_by(rider = pcs) %>% 
   mutate(rel = weighted_avg_power / mean(weighted_avg_power, na.rm = T)) %>% 
@@ -482,8 +469,9 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 #
 
 stage_level_power %>% 
-  group_by(stage, race, year, date) %>% 
-  summarize(power = mean(weighted_avg_power, na.rm = T), 
+  
+  group_by(stage, race, year, date, time_trial, length, pred_climb_difficulty, class) %>% 
+  summarize(power = mean(wattskg, na.rm = T), 
             relative = mean(rel, na.rm = T), 
             n = n()) %>% ungroup() %>% 
   filter(n >= 5) %>% 
@@ -494,9 +482,10 @@ stage_level_power %>%
 # impact of rnk, DNF, and specific race on rel power
 #
 
-po_mod <- lme4::lmer(rel ~ log(rnk+1) + DNF + (1 | spec_race), 
+po_mod <- lm(rel ~ log(rnk+1) * pred_climb_difficulty + DNF + time_trial + length, 
                      
                      data = stage_level_power %>% 
+
                        mutate(DNF = ifelse(rnk == 200, 1, 0)) %>% 
                        mutate(spec_race = paste0(year,"-",stage,"-",race)))
 
@@ -504,4 +493,713 @@ po_mod <- lme4::lmer(rel ~ log(rnk+1) + DNF + (1 | spec_race),
 
 summary(po_mod)
 
-race_level_ranefs <- lme4::ranef(po_mod)[[1]] %>% rownames_to_column()
+preds <- cbind(pred = predict(po_mod, stage_level_power %>% 
+                                mutate(DNF = ifelse(rnk == 200, 1, 0)) %>% 
+                                mutate(spec_race = paste0(year,"-",stage,"-",race)), allow.new.levels = TRUE),
+               stage_level_power %>% 
+                 mutate(DNF = ifelse(rnk == 200, 1, 0)) %>% 
+                 mutate(spec_race = paste0(year,"-",stage,"-",race)))
+
+#
+
+r_mod <- lme4::lmer(rel ~ (1 | race) + pred_climb_difficulty + time_trial, data = stage_level_power)
+
+summary(r_mod)
+
+race_impacts <- lme4::ranef(r_mod)[[1]] %>% rownames_to_column()
+
+#
+#
+#
+
+stage_level_power %>% 
+
+  filter(time_trial == FALSE) %>%
+  
+  group_by(rider) %>%
+  summarize(SD = sd(rel, na.rm = T), 
+            Watts_KG = mean(weighted_avg_power / weight, na.rm = T),
+            top20 = quantile((weighted_avg_power/weight), probs = 0.8, na.rm = T),
+            races = n()) %>%
+  ungroup() -> rider_level_power
+
+#
+# predictive modelling of power
+#
+
+train <- stage_level_power %>%
+  
+  group_by(rider) %>%
+  filter(n() >= 10) %>%
+  ungroup() %>%
+  
+  filter(year == 2019) %>%
+  mutate(DNF = ifelse(rnk == 200, 1, 0)) %>% 
+  mutate(spec_race = paste0(year,"-",stage,"-",race)) %>%
+  
+  mutate(pred_climb_difficulty = ifelse(is.na(pred_climb_difficulty),
+                                        ifelse(time_trial == 1, 2, NA), pred_climb_difficulty)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  mutate(log_rnk = log(rnk + 1))
+
+#
+
+test <- stage_level_power %>%
+  
+  group_by(rider) %>%
+  filter(n() >= 10) %>%
+  ungroup() %>%
+  
+  filter(year == 2020) %>%
+  mutate(DNF = ifelse(rnk == 200, 1, 0)) %>% 
+  mutate(spec_race = paste0(year,"-",stage,"-",race)) %>%
+  
+  mutate(pred_climb_difficulty = ifelse(is.na(pred_climb_difficulty),
+                                        ifelse(time_trial == 1, 2, NA), pred_climb_difficulty)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  mutate(log_rnk = log(rnk + 1))
+
+#
+
+po_mod <- lm(rel ~ log(rnk + 1) * pred_climb_difficulty + DNF + time_trial + length + one_day_race, 
+             
+             data = train)
+
+summary(po_mod)
+
+#
+
+preds <- cbind(pred = predict(po_mod, test, allow.new.levels = TRUE),
+               test)
+
+test_mod <- lm(rel ~ pred, data = preds)
+
+summary(test_mod)
+
+#
+#
+#
+
+library(xgboost)
+
+# train
+
+xgb.train <- xgb.DMatrix(
+  data = as.matrix(train %>%
+
+                     select(log_rnk,
+                            pred_climb_difficulty,
+                            DNF,
+                            time_trial,
+                            length,
+                            one_day_race)),
+  label = train$rel
+)
+
+# test
+
+xgb.test <- xgb.DMatrix(
+  
+  data = as.matrix(test %>%
+
+                     select(log_rnk,
+                            pred_climb_difficulty,
+                            DNF,
+                            time_trial,
+                            length,
+                            one_day_race)),
+  label = test$rel
+  
+)
+
+# outline parameters
+
+params <- list(
+  
+  booster = "gbtree",
+  eta = 0.01,
+  max_depth = 4,
+  #gamma = 0.33,
+  subsample = 1,
+  colsample_bytree = 1,
+  objective = "reg:squarederror"
+  
+)
+
+# run xgboost model
+
+gbm_model <- xgb.train(params = params,
+                       data = xgb.train,
+                       nrounds = 10000,
+                       nthreads = 4,
+                       early_stopping_rounds = 10,
+                       watchlist = list(val1 = xgb.train,
+                                        val2 = xgb.test),
+                       verbose = 1)
+
+# this outputs GBM predictions for all data
+
+gbm_predict = cbind(
+  
+  test %>%
+    
+    select(rider,
+           stage,
+           race,
+           year,
+           log_rnk,
+           pred_climb_difficulty,
+           DNF,
+           time_trial,
+           length,
+           one_day_race,
+           rel),
+  
+  pred = predict(gbm_model, 
+                 as.matrix(test %>% 
+
+                             select(log_rnk,
+                                    pred_climb_difficulty,
+                                    DNF,
+                                    time_trial,
+                                    length,
+                                    one_day_race)), reshape=T))
+
+#
+
+test_mod_xgb <- lm(rel ~ pred, data = gbm_predict)
+
+summary(test_mod_xgb)
+
+#
+
+xgb.importance(model = gbm_model)
+
+#
+#
+#
+#
+
+all_act_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
+                  FROM strava_activity_data 
+                  WHERE Stat IN ('Weighted Avg Power', 'Distance')") %>% 
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+  
+  # clean up the dates
+  mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
+  separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
+  mutate(date = paste0(str_trim(date),", ", Y)) %>% 
+  select(-weekday, -drop, -Y) %>% 
+  
+  # clean up the stat values
+  mutate(VALUE = str_replace(VALUE, "mi", ""), 
+         VALUE = str_replace(VALUE, "W", ""), 
+         VALUE = as.numeric(VALUE)) %>% 
+  
+  mutate(date = lubridate::mdy(date)) %>% 
+  unique() %>% 
+  spread(Stat, VALUE) %>% 
+  filter(!is.na(`Weighted Avg Power`)) %>% 
+  janitor::clean_names() %>% 
+  
+  mutate(in_race = ifelse(activity_id %in% stage_level_power$activity_id, 1, 0)) %>%
+  
+  filter(weighted_avg_power > 0 & distance > 5)
+
+#
+
+pow_mod_all <- lme4::lmer(weighted_avg_power ~ (1 | pcs) + distance * in_race, data = all_act_power)
+
+#
+
+summary(pow_mod_all)
+
+r <- lme4::ranef(pow_mod_all)[[1]] %>% rownames_to_column()
+
+# a race is 315 - 0.35 * distance so a 150 km race is 261 watts and a 20 km TT is 308 watts
+# a training session is 195 + 0.61 * distance
+
+#
+#
+#
+#
+#
+#
+#
+#
+
+segment_data_races <- stage_level_power %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT * FROM strava_segment_data"), by = c("activity_id")
+    
+  ) %>%
+  
+  group_by(rider) %>% 
+  mutate(rel_power = Power / mean(Power, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  select(-win_seconds, -total_seconds, -gain_1st, -gain_3rd, -gain_5th, -stage_type, -parcours_value,
+         -gain_10th, -gain_20th, -gain_40th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
+         -limit, -success, -points_finish, -leader_rating, -cobbles) %>%
+  
+  mutate(rowname = as.numeric(rowname)) %>% 
+  
+  mutate(time = Distance / Speed * 3600)
+
+#
+
+segment_data_races %>% group_by(rider, weight) %>% count(sort=TRUE) -> segs_riders
+
+#
+
+max_effort <- segment_data_races %>%
+  
+  group_by(rider) %>%
+  
+  filter(n() > 1500) %>%
+  
+  arrange(-time) %>%
+  
+  mutate(keep = max(time, na.rm = T)) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = ifelse(Power > lag(Power), Power, NA)) %>%
+  filter(!is.na(best) | keep == time) %>%
+  
+  mutate(best = Power) %>%
+  
+  ungroup() %>%
+  
+  filter(keep != time) %>%
+  
+  mutate(wattskg = best/weight) %>%
+  
+  filter(time >= 15 & time <= 3700)
+
+#
+#
+#
+
+ggplot(max_effort %>% filter(time < 3700 & time > 14), aes(x = time, y = best / weight))+
+  geom_smooth(se = F, size = 2, color = "black")+
+  
+  geom_line(data = max_effort %>%
+              filter(rider %in% c("Naesen Oliver", "Declercq Tim", "Colbrelli Sonny", "Bol Cees")), aes(x = time, y = best / weight, color = rider), size = 2)+
+  
+  scale_x_log10(breaks = c(15, 30, 60, 120, 300, 600, 1200, 1800, 2700))+
+  scale_y_continuous(breaks = seq(3.5,12.5,0.5))+
+  theme(panel.grid.minor = element_blank(), legend.position = "bottom")+
+  
+  labs(x = "Time of Effort",
+       y = "Power output",
+       title = "Best Efforts (vs Avg Pro in black)", color = "")
+
+#
+
+loess_fit <- loess(wattskg ~ time, data = max_effort, span = 0.2)
+
+#
+
+power_vs_avg <- cbind(exp = predict(loess_fit, max_effort),
+               max_effort) %>%
+  
+  mutate(rel_to_exp = wattskg / exp)
+
+#
+#
+#
+
+segment_intensity <- segment_data_races %>%
+  
+  group_by(stage, race, year, rider, Type) %>%
+  mutate(race_position = rowname / max(rowname, na.rm = T)) %>%
+  ungroup() %>%
+  
+  group_by(Segment, Gradient, VerticalGain, Distance, stage, race, year, date) %>%
+  summarize(Wattskg = median(Power/weight, na.rm = T),
+         riders = n_distinct(rider),
+         race_position = mean(race_position, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter(riders >= 10 & Gradient > 0.03 & Distance >= 0.5 & Distance <= 25)
+
+#
+#
+#
+
+seg_inten_fit <- mgcv::gam(Wattskg ~ s(race_position, k = 5) + Gradient * Distance, data = segment_intensity)
+
+possible <- expand_grid(Gradient = seq(0.03,0.12,0.01), Distance = seq(0.5, 25, 0.5), race_position = seq(0,1,0.1))
+
+model_fit <- cbind(pred = predict(seg_inten_fit, possible),
+                   possible)
+
+#
+#
+#
+
+key_segments <- segment_data_races %>%
+  
+  group_by(Segment, Distance, VerticalGain, Gradient, rider, stage, race, year) %>%
+  filter(min(time) == time) %>%
+  ungroup() %>%
+  
+  select(-rowname, -Tour, -gc_winner, -time_trial, -pcs, -activity_id, -
+         -distance, -VAM, -HR, -Type, -Time, -rel_power) %>%
+
+  inner_join(read_csv('key-segments-strava.csv'), by = c("stage", "race", "year", "Segment")) %>%
+  
+  unique() %>%
+  
+  mutate(wattskg = Power / weight) %>%
+  
+  filter(wattskg > 2)
+
+#
+#
+#
+
+key_segs_averages <- key_segments %>%
+
+  inner_join(rider_level_power %>%
+               filter(races >= 10) %>%
+               select(rider, avgwattskg = Watts_KG), by = c("rider")) %>%
+  
+  mutate(vs_avg = wattskg / avgwattskg * 4.07) %>%
+  
+  mutate(top25 = ifelse(rnk <= 25, wattskg, NA),
+         top25_rel = ifelse(rnk <= 25, vs_avg, NA)) %>%
+  
+  group_by(Climb, Segment, Distance, VerticalGain, Gradient, stage, race, year) %>%
+  summarize(x80 = quantile(wattskg, probs = 0.8),
+            x80_rel = quantile(vs_avg, probs = 0.8),
+            median = median(wattskg, na.rm = T),
+            median_rel = median(vs_avg, na.rm = T),
+            top25 = mean(top25, na.rm = T),
+            top25_rel = mean(top25_rel, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(est = 6.47 - (0.1 * Distance),
+         vs_est = top25_rel - est)
+
+#
+
+seg_inten_fit <- lm(wattskg ~ log(rnk+1) +
+                      pred_climb_difficulty + 
+                      VerticalGain + 
+                      Gradient * Distance, data = key_segments)
+
+summary(seg_inten_fit)
+
+estimates <- cbind(key_segments,
+                   est = predict(seg_inten_fit, key_segments)) %>%
+  
+  mutate(vs_model = wattskg / est) %>%
+  
+  group_by(rider) %>%
+  mutate(rel_seg_watts = vs_model / median(vs_model, na.rm = T)) %>%
+  ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+
+who_finishes_near <- all_stage_data %>%
+  
+  filter(class %in% c('1.UWT', '1.HC', '1.1', 'WC', 'CC',
+                      '2.UWT', '2.HC', '2.1', '1.Pro', '2.Pro')) %>%
+  
+  filter(bunch_sprint == 0 | rnk <= 20) %>%
+  filter(!rnk == 200)
+
+#
+
+tdf2019 <- who_finishes_near %>%
+  
+  select(rider1 = rider, stage, race, year, rnk1 = rnk, bunch_sprint,
+         team1 = team, secs1 = gain_1st) %>%
+  
+  inner_join(
+    
+    who_finishes_near %>%
+      select(rider2 = rider, stage, race, year, rnk2 = rnk,
+             team2 = team, secs2 = gain_1st), by = c("stage", "race", "year")
+    
+  ) %>%
+  
+  # eliminate same team as it may match riders pacing each other in mtns or clumped in bunch
+  filter(team1 != team2) %>%
+  filter(rider1 != rider2) %>%
+  
+  group_by(rider1, rider2) %>%
+  mutate(together = n()) %>%
+  ungroup() %>%
+  
+  # filter riders within 5 places in bunch sprint
+  # OR riders within a minute in non-bunch sprint
+  filter((bunch_sprint == 1 & abs(rnk2 - rnk1) <= 5) |
+           (bunch_sprint == 0 & abs(secs1 - secs2) <= 60)) %>%
+
+  group_by(rider1, rider2) %>%
+  summarize(together = mean(together, na.rm = T),
+            matched = n()) %>%
+  ungroup() %>%
+  
+  mutate(matched_perc = matched / together) %>%
+  
+  group_by(rider1) %>%
+  filter(together >= 8 & (max(together, na.rm = T) / together) <= 2.5) %>%
+  ungroup() %>%
+  
+  group_by(rider1) %>%
+  mutate(pct_rk = percent_rank(matched_perc)) %>%
+  ungroup()
+
+#
+#
+#
+
+# top 5 finishes 
+
+top_finishes <- all_stage_data %>%
+  
+  filter(class %in% c('1.UWT', '1.HC', '1.1', 'WC', 'CC',
+                      '2.UWT', '2.HC', '2.1', '1.Pro', '2.Pro')) %>%
+  
+  group_by(rider) %>% 
+  mutate(races = n(),
+         pct_rk = rank(-rnk, ties.method = 'first') / races) %>%
+  filter(pct_rk > 0.899 | rank(rnk, ties.method = "first") <= 3) %>% 
+  summarize(races = mean(races, na.rm = T),
+            avg_top = mean(rnk, na.rm = T),
+            avg_log = mean(log(rnk+1), na.rm = T),
+            n=n()) %>% 
+  ungroup() %>%
+  
+  mutate(avg_log = exp(avg_log)-1)
+
+#
+#
+#
+
+curves <- dbGetQuery(con, "SELECT SA.PCS, CP.seconds, CP.watts, SA.activity_id
+FROM strava_activities SA 
+JOIN strava_activity_power_curve CP
+ON SA.activity_id = CP.activity_id
+WHERE CP.seconds IN (10, 30, 60, 120, 300, 600, 1200, 2400, 3600)")
+
+#
+
+best <- curves %>%
+  
+  filter(!PCS %in% c("Madouas Valentin", "Gougeard Alexis", "Jauregui Quentin")) %>%
+  
+  group_by(PCS) %>% 
+  filter(n_distinct(activity_id) >= 5) %>% 
+  ungroup() %>% 
+  
+  group_by(PCS, seconds) %>%
+  summarize(best = quantile(watts, probs = 0.8, na.rm = T),
+            races = n()) %>%
+  
+  ungroup() %>%   
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>% 
+  
+  mutate(wattskg = best / weight) %>%
+  
+  group_by(seconds) %>%
+  mutate(rel = wattskg / mean(wattskg, na.rm = T)) %>%
+  ungroup()
+
+#
+
+ggplot(best %>% 
+         filter(PCS %in% c("Theuns Edward", "Naesen Oliver", "Declercq Tim", "Haig Jack")), 
+       
+       aes(x = seconds, y = wattskg, color = PCS))+
+  
+  geom_line(size = 1)+
+  scale_x_log10(breaks = c(10,30,60,120,300,600,1200,1800,3600))+
+  
+  theme(panel.grid.minor = element_blank())
+
+#
+
+strava_matches_power <- tdf2019 %>%
+  
+  arrange(-pct_rk) %>% 
+  
+  group_by(rider1) %>% 
+  filter(rank(-pct_rk, ties.method= 'min') <= 50) %>% 
+  ungroup() %>% 
+  
+  filter(pct_rk > 0.8) %>%
+  
+  inner_join(
+    
+    top_finishes %>%
+      filter(n >= 3) %>%
+      select(rider, avg_top1 = avg_top), by = c("rider1" = "rider")
+    
+  ) %>%
+  
+  inner_join(
+    
+    top_finishes %>%
+      filter(n >= 3) %>%
+      select(rider, avg_top2 = avg_top), by = c("rider2" = "rider")
+    
+  ) %>%
+  
+  # find abs diff between logs of avg ranks
+  # 1 SD is 0.9 abs log diff
+  mutate(DiffScore = abs(log(avg_top2)-log(avg_top1))) %>%
+  
+  filter(DiffScore <= 1) %>%
+  
+  inner_join(best, by = c("rider2" = "PCS")) %>%
+  
+  group_by(rider1, seconds) %>%
+  summarize(wattskg = mean(wattskg, na.rm = T),
+            rel = mean(rel, na.rm = T),
+            avg_rank = mean(avg_top1, na.rm = T),
+            matches = n()) %>%
+  ungroup()
+
+#
+#
+#
+#
+#
+
+leadouts <- curves %>%
+  
+  inner_join(stage_level_power %>%
+               select(stage, race, year, rider, pred_climb_difficulty, bunch_sprint,
+                      activity_id), by = c("PCS" = "rider", "activity_id")) %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>% 
+  
+  mutate(wattskg = watts / weight) %>%
+  
+  filter(PCS %in% c("Sinkeldam Ramon", "Kluge Roger",
+                    "Ackermann Pascal", "Dupont Timothy",
+                    "Haig Jack", "Kuss Sepp",
+                    "Declercq Tim", "De Gendt Thomas"))
+
+#
+
+leadouts %>% 
+  
+  filter(seconds == 30 & !is.na(bunch_sprint)) %>% 
+  
+  ggplot(aes(x = as.factor(bunch_sprint), y = wattskg))+
+  geom_boxplot()+
+  facet_wrap(~PCS, nrow = 3)+
+  coord_flip()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+strava_telemetry <- dbGetQuery(con, "SELECT * FROM strava_telemetry") %>%
+  
+  inner_join(
+    
+    stage_level_power %>%
+      select(activity_id, stage, race, year, rider, 
+             length, pred_climb_difficulty, rnk, 
+             weighted_avg_power, distance, weight, date), by = c("activity_id")
+    
+  ) %>%
+  
+  filter(stage == 7 & year == 2020 & race == "tour de france")
+
