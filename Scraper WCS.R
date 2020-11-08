@@ -14,7 +14,7 @@ con <- dbConnect(MySQL(),
 
 #
 
-for(x in 1:8) {
+for(x in 8:8) {
   
   y = 2012 + x
   
@@ -47,7 +47,7 @@ for(x in 1:8) {
 #
 #
 
-all_races <- dbReadTable(con, "wcs_races")
+all_races <- dbGetQuery(con, "SELECT * FROM wcs_races WHERE year = 2020")
 
 #
 
@@ -101,11 +101,11 @@ all_stages <- dbGetQuery(con,
                            ) %>%
   mutate(RaceType = ifelse(str_sub(class,1,1)=="1", "One day race", "Stage race")) %>%
   
-  filter(RaceType == "One day race" & year >= 2020)
+  filter(RaceType == "Stage race" & year >= 2020)
 
 #
 
-download_html <- FALSE
+download_html <- TRUE
 
 dir_html <- fs::dir_ls("WCS-HTML/") %>%
   as.list()
@@ -197,7 +197,54 @@ for(x in 1:length(all_stages$stage_url)) {
       mutate(stage_url = all_stages$stage_url[[x]],
              year = all_stages$year[[x]],
              race = all_stages$race[[x]]) %>%
-      filter(!is.na(Points))
+      filter(!is.na(Points)) %>%
+      
+      mutate(Rider = iconv(Rider, to = "ASCII//TRANSLIT")) %>%
+      
+      mutate(Rider = str_replace(Rider, ",", "")) %>%
+      
+      mutate(Rider = case_when(Rider == "Roche Nicholas" ~ "Roche Nicolas",
+                               Rider == "Garderen Tejay van" ~ "van Garderen Tejay",
+                               Rider == "De La Cruz David" ~ "de la Cruz David",
+                               Rider == "Van Der Sande Tosh" ~ "Van der Sande Tosh",
+                               Rider == "Hoorn Taco van der" ~ "van der Hoorn Taco",
+                               Rider == "De Vos Adam" ~ "de Vos Adam",
+                               Rider == "Janse van Rensburg J.." ~ "Janse van Rensburg Jacques",
+                               Rider == "Grivko Andrei" ~ "Grivko Andrey",
+                               Rider == "Prades Edu" ~ "Prades Eduard",
+                               Rider == "De La Parte Victor" ~ "de la Parte Victor",
+                               Rider == "Prades Benjami" ~ "Prades Benjamin",
+                               Rider == "Poppel Boy van" ~ "van Poppel Boy",
+                               Rider == "Poppel Danny van" ~ "van Poppel Danny",
+                               Rider == "Dam Laurens ten" ~ "ten Dam Laurens",
+                               Rider == "Hagen Edvald Boasson" ~ "Boasson Hagen Edvald",
+                               Rider == "Aert Wout van" ~ "van Aert Wout",
+                               Rider == "Poel Mathieu van der" ~ "van der Poel Mathieu",
+                               Rider == "Baarle Dylan van" ~ "van Baarle Dylan",
+                               Rider == "Kort Koen de" ~ "de Kort Koen",
+                               Rider == "Riabushenko Aleksandr" ~ "Riabushenko Alexandr",
+                               Rider == "Thomson Jay" ~ "Thomson Jay Robert",
+                               Rider == "Bak Lars" ~ "Bak Lars Ytting",
+                               Rider == "Jansen Amund" ~ "Jansen Amund Grondahl",
+                               Rider == "Empel Etienne van" ~ "van Empel Etienne",
+                               Rider == "Hansen Lasse" ~ "Hansen Lasse Norman",
+                               Rider == "Gebreigzabheir Amanuel" ~ "Ghebreigzabhier Amanuel",
+                               Rider == "Juul-Jensen Christop.." ~ "Juul-Jensen Christopher",
+                               Rider == "Schmidt Mads" ~ "Wurtz Schmidt Mads",
+                               Rider == "Tvetcov Serghei" ~ "?vetcov Serghei",
+                               Rider == "Pidcock Thomas	" ~ "Pidcock Thomas",
+                               Rider == "Grosu Eduard" ~ "Grosu Eduard-Michael",
+                               Rider == "Eiking Odd" ~ "Eiking Odd Christian",
+                               Rider == "Dyball Ben" ~ "Dyball Benjamin",
+                               Rider == "Hodeg Alvaro" ~ "Hodeg Alvaro Jose",
+                               
+                               Rider == "Eisenhart TJ" ~ "Eisenhart Taylor",
+                               Rider == "Emden Jos van" ~ "van Emden Jos",
+                               Rider == "Janse van Rensburg R.." ~ "Janse van Rensburg Reinardt",
+                               Rider == "Grmaye Biniam" ~ "Ghirmay Hailu Biniam",
+                               
+                               TRUE ~ as.character(Rider)))
+    
     
     dbWriteTable(con, "wcs_kom_sprints", sprints, row.names = FALSE, append = TRUE)
     
@@ -232,7 +279,53 @@ for(x in 1:length(all_stages$stage_url)) {
     mutate(stage_url = all_stages$stage_url[[x]],
            year = all_stages$year[[x]],
            race = all_stages$race[[x]]) %>%
-    filter(!is.na(Points))
+    filter(!is.na(Points)) %>%
+    
+    mutate(Rider = iconv(Rider, to = "ASCII//TRANSLIT")) %>%
+    
+    mutate(Rider = str_replace(Rider, ",", "")) %>%
+    
+    mutate(Rider = case_when(Rider == "Roche Nicholas" ~ "Roche Nicolas",
+                             Rider == "Garderen Tejay van" ~ "van Garderen Tejay",
+                             Rider == "De La Cruz David" ~ "de la Cruz David",
+                             Rider == "Van Der Sande Tosh" ~ "Van der Sande Tosh",
+                             Rider == "Hoorn Taco van der" ~ "van der Hoorn Taco",
+                             Rider == "De Vos Adam" ~ "de Vos Adam",
+                             Rider == "Janse van Rensburg J.." ~ "Janse van Rensburg Jacques",
+                             Rider == "Grivko Andrei" ~ "Grivko Andrey",
+                             Rider == "Prades Edu" ~ "Prades Eduard",
+                             Rider == "De La Parte Victor" ~ "de la Parte Victor",
+                             Rider == "Prades Benjami" ~ "Prades Benjamin",
+                             Rider == "Poppel Boy van" ~ "van Poppel Boy",
+                             Rider == "Poppel Danny van" ~ "van Poppel Danny",
+                             Rider == "Dam Laurens ten" ~ "ten Dam Laurens",
+                             Rider == "Hagen Edvald Boasson" ~ "Boasson Hagen Edvald",
+                             Rider == "Aert Wout van" ~ "van Aert Wout",
+                             Rider == "Poel Mathieu van der" ~ "van der Poel Mathieu",
+                             Rider == "Baarle Dylan van" ~ "van Baarle Dylan",
+                             Rider == "Kort Koen de" ~ "de Kort Koen",
+                             Rider == "Riabushenko Aleksandr" ~ "Riabushenko Alexandr",
+                             Rider == "Thomson Jay" ~ "Thomson Jay Robert",
+                             Rider == "Bak Lars" ~ "Bak Lars Ytting",
+                             Rider == "Jansen Amund" ~ "Jansen Amund Grondahl",
+                             Rider == "Empel Etienne van" ~ "van Empel Etienne",
+                             Rider == "Hansen Lasse" ~ "Hansen Lasse Norman",
+                             Rider == "Gebreigzabheir Amanuel" ~ "Ghebreigzabhier Amanuel",
+                             Rider == "Juul-Jensen Christop.." ~ "Juul-Jensen Christopher",
+                             Rider == "Schmidt Mads" ~ "Wurtz Schmidt Mads",
+                             Rider == "Tvetcov Serghei" ~ "?vetcov Serghei",
+                             Rider == "Pidcock Thomas	" ~ "Pidcock Thomas",
+                             Rider == "Grosu Eduard" ~ "Grosu Eduard-Michael",
+                             Rider == "Eiking Odd" ~ "Eiking Odd Christian",
+                             Rider == "Dyball Ben" ~ "Dyball Benjamin",
+                             Rider == "Hodeg Alvaro" ~ "Hodeg Alvaro Jose",
+                             
+                             Rider == "Eisenhart TJ" ~ "Eisenhart Taylor",
+                             Rider == "Emden Jos van" ~ "van Emden Jos",
+                             Rider == "Janse van Rensburg R.." ~ "Janse van Rensburg Reinardt",
+                             Rider == "Grmaye Biniam" ~ "Ghirmay Hailu Biniam",
+                             
+                             TRUE ~ as.character(Rider)))
   
   dbWriteTable(con, "wcs_kom_sprints", climbs, row.names = FALSE, append = TRUE)
   
@@ -247,3 +340,9 @@ for(x in 1:length(all_stages$stage_url)) {
   }
  
 }
+
+#
+#
+#
+#
+#
