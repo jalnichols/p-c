@@ -34,8 +34,8 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
                       "Tour of Antalya", "Tour of China I", "Tour of China II", "Tour of Indonesia",
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
-  filter(year > 2012) %>%
-  filter(date <= '2020-08-01') %>%
+  filter(year > 2019) %>%
+  filter(date <= '2020-12-01') %>%
   
   filter(!class == 'NC')
 
@@ -44,6 +44,8 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
 fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, year, date") %>%
   
   inner_join(dbReadTable(con, "fr_races")) %>%
+  
+  filter(year > 2019) %>%
   
   select(date, race, year, class, tour, stages) %>%
   
@@ -61,7 +63,7 @@ fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, yea
                     m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
   mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
   select(race, year, date, class, tour) %>%
-  filter(date <= '2020-08-01') %>%
+  filter(date <= '2020-12-01') %>%
   
   mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
   
@@ -162,7 +164,7 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%
   inner_join(
     
     dbGetQuery(con, "SELECT DISTINCT url, race, race_url, year
-               FROM fr_stage_urls WHERE year IN ('2019', '2020')") %>%
+               FROM fr_stage_urls WHERE year IN ('2020')") %>%
       group_by(race, year, race_url) %>%
       mutate(stage = rank(year, ties.method = "first")) %>%
       ungroup(), by = c("url")) %>%
@@ -189,14 +191,143 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%
 #
 #
 
-tictoc::tic()
-
-x2019 <- all_routes %>%
-  filter(year %in% c(2019, 2020)) %>%
+tdf14_2020 <- all_routes %>%
+  filter(year == 2020 & race == "Ronde Van Vlaanderen" & stage == 1) %>%
   inner_join(pcs_fr_matches, by = c("race" = "fr_race", "year")) %>%
   inner_join(pcs, by = c("pcs_race" = "race", "year")) %>%
   
-  filter(class %in% c("1.UWT", "1.HC", "1.1", "WC", "CC", "2.UWT", "2.HC", "2.1", "2.Pro", "1.Pro")) %>%
+  filter(class %in% c("1.UWT", "1.HC", "WC", "CC", "2.UWT", "2.HC", "2.Pro", "1.Pro")) %>%
+  
+  select(-highest_point, -points) %>%
+  
+  mutate(left_km = length - distances) %>%
+  
+  mutate(every_km2 = floor(left_km/0.1)/10) %>%
+
+  group_by(every_km2, length, year, pcs_race, stage) %>%
+  summarize(
+    
+    left_km = min(left_km, na.rm = T),
+    elevations = mean(elevations, na.rm = T)
+    
+  ) %>%
+  ungroup() %>%
+  
+  mutate(every_km = floor(every_km2/0.25)/4) %>%
+  mutate(everytenth = floor(every_km2/0.1)/10) %>%
+  
+  mutate(every_km = ifelse(left_km < 5, everytenth, every_km),
+         gradient = (elevations - lead(elevations)) / ((lead(left_km)-left_km)*1000)) %>%
+  
+  group_by(every_km, length, year, pcs_race, stage) %>%
+  summarize(min = min(elevations, na.rm = T),
+            max = max(elevations, na.rm = T),
+            gradient = mean(gradient, na.rm = T),
+            elevations = mean(elevations, na.rm = T),
+  ) %>%
+  ungroup() %>%
+  
+  mutate(race = tolower(pcs_race)) %>%
+  
+  select(-pcs_race) %>%
+  
+  arrange(-every_km) %>%
+  
+  mutate(change_gradient = ifelse(gradient > 0.035 | gradient < -0.035,
+                                  ifelse(gradient > 0.035 & lag(gradient < 0.035), "uphill",
+                                          ifelse(gradient < -0.035 & lag(gradient > -0.035), "downhill", NA)), "flat")) %>%
+  
+  fill(change_gradient, .direction = "down") %>%
+  
+  mutate(change_gradient = ifelse(change_gradient != lag(change_gradient) & change_gradient != lead(change_gradient),
+                                  ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
+  
+  mutate(change_gradient = ifelse(change_gradient != lag(change_gradient) & change_gradient != lead(change_gradient),
+                                  ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
+  
+  mutate(change_gradient = ifelse(change_gradient != lag(change_gradient) & change_gradient != lead(change_gradient),
+                                  ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
+  
+  mutate(change_gradient = ifelse(change_gradient != lag(change_gradient) & change_gradient != lead(change_gradient),
+                                  ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
+
+  rownames_to_column() %>%
+  
+  mutate(grouping = ifelse(rowname == 1, 1, ifelse(change_gradient != lag(change_gradient), 1, NA)),
+         rk = rank(grouping, ties.method = "first"),
+         grouping = ifelse(is.na(grouping), NA, rk)) %>%
+  
+  fill(grouping, .direction = "down")
+
+#
+
+different_groupings <- tdf14_2020 %>%
+  
+  filter(change_gradient == "uphill") %>%
+  
+  group_by(grouping) %>%
+  summarize(start_km = max(every_km, na.rm = T),
+            end_km = min(every_km, na.rm = T),
+            start_elev = min(elevations, na.rm = T),
+            end_elev = max(elevations, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(length = start_km - end_km,
+         gain = end_elev - start_elev,
+         gradient = gain / (length * 1000)) %>%
+  
+  filter(length > 0) %>%
+  filter(gradient > 0.035) %>%
+  
+  mutate(kom_weight = 1.02*exp(-0.02*end_km),
+         kom_weight = ifelse(kom_weight > 1, 1,
+                             ifelse(kom_weight < 0.3, 0.3, kom_weight)))
+
+#
+
+different_groupings <- cbind(different_groupings,
+                             
+                             pred = mgcv::predict.gam(read_rds('model-climb-difficulty.rds'),
+                                                      different_groupings %>%
+                                                        mutate(vam_poly = ((gradient^2)*length)) %>%
+                                                        mutate(alt = end_elev - 1000))) %>%
+  
+  mutate(kom_points = pred * kom_weight)
+                                                        
+                                                      
+#
+
+ggplot(tdf14_2020, 
+       aes(x = every_km, y = elevations, color = change_gradient))+
+  geom_point()+
+  scale_x_reverse()+
+  scale_color_manual(values = c("black", 'gray', 'red'))
+                                  
+#
+
+library(bcp)
+
+dat <- tdf14_2020$elevations
+
+bcp_x <- bcp(dat, return.mcmc = TRUE)
+
+cbind(tdf14_2020, prob = bcp_x$posterior.prob) -> xyz
+
+#
+#
+#
+#
+#
+
+
+tictoc::tic()
+
+x2019 <- all_routes %>%
+  filter(year %in% c(2019)) %>%
+  inner_join(pcs_fr_matches, by = c("race" = "fr_race", "year")) %>%
+  inner_join(pcs, by = c("pcs_race" = "race", "year")) %>%
+  
+  filter(class %in% c("1.UWT", "1.HC", "WC", "CC", "2.UWT", "2.HC", "2.Pro", "1.Pro")) %>%
   
   select(-highest_point, -points) %>%
   
@@ -205,9 +336,11 @@ x2019 <- all_routes %>%
   mutate(every_km = floor(left_km/0.5)/2) %>%
   mutate(everytenth = floor(left_km/0.1)/10) %>%
   
+  select(-class, -race_url, -url, -stages) %>%
+  
   mutate(every_km = ifelse(left_km < 1, everytenth, every_km)) %>%
   
-  group_by(every_km, length, year, race_url, race, url, stage) %>%
+  group_by(every_km, length, year, pcs_race, stage) %>%
   summarize(gradient = mean(grades, na.rm = T),
             min = min(elevations, na.rm = T),
             max = max(elevations, na.rm = T),
@@ -215,7 +348,11 @@ x2019 <- all_routes %>%
             #end = min(left_km, na.rm = T),
             #points = n()
             ) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(race = tolower(pcs_race)) %>%
+  
+  select(-pcs_race)
 
 tictoc::toc()
 
@@ -227,10 +364,15 @@ percentiles_x2019 <- x2019 %>%
   mutate(pct = round(percent_rank(every_km)/0.01)) %>%
   ungroup() %>%
   
-  group_by(stage, race, year, pct, length, race_url, url) %>%
+  group_by(stage, race, year, pct, length) %>%
   summarize(gradient = mean(gradient, na.rm = T),
             elevation = mean((min+max)/2, na.rm = T),
             km = mean(every_km, na.rm = T)) %>%
   ungroup()
 
 #
+#
+#
+#
+#
+
