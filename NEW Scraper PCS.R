@@ -101,7 +101,7 @@ store_from_schedule <- vector("list", length(pull_from_schedule))
 pull_years = 1
 
 current_year = year(today())
-start_year = 2019 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -228,7 +228,7 @@ natl_champs <- c("race/nc-spain",
                  "race/nc-france",
                  "race/nc-germany",
                  "race/nc-great-britain",
-                 "race/nc-switzerland",
+                 "race/nc-switserland",
                  "race/nc-czech-republic",
                  "race/nc-denmark",
                  "race/nc-ireland",
@@ -277,19 +277,19 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  select(-spec_url) %>%
+  select(-spec_url) #%>%
   
-  rbind(
+  #rbind(
     
-    tibble(Date = as.Date('2020-10-03'),
-           Race = "Giro d'Italia",
-           Winner = "Kelderman Wilco",
-           Class = "2.UWT",
-           url = "/race/giro-d-italia/2020",
-           year = 2020,
-           type = 'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter')
+    #tibble(Date = as.Date('2020-10-20'),
+    #       Race = "La Vuelta ciclista a Espana",
+    #       Winner = "Roglic Primoz",
+    #       Class = "2.UWT",
+    #       url = "race/vuelta-a-espana/2020",
+    #       year = 2020,
+    #       type = 'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter')
     
-  )
+  #)
 
 #
 # Write DB Table
@@ -829,7 +829,7 @@ pull_in_game <- c("2020")
 
 for(g in 1:length(pull_in_game)) {
   
-  page <- paste0('https://www.procyclingstats.com/game.php?p=info&s=activated-games&season=',
+  page <- paste0('https://www.procyclingstats.com/game.php?s=activated-games&season=',
                  pull_in_game[[g]],
                  '&filter=Filter') %>%
     read_html()
@@ -859,7 +859,7 @@ all_games <- bind_rows(game_race_list) %>%
   
   inner_join(
     
-    all_stages %>%
+    dbReadTable(con, "pcs_all_stages") %>%
       select(url, value, year, s) %>%
       mutate(match_url = paste0(url, "/game")), by = c("url" = "match_url")
     
@@ -931,25 +931,6 @@ games_most_picked <- bind_rows(most_picked_list) %>%
 
 dbWriteTable(con, "pcs_game_picks", games_most_picked, append = TRUE, row.names = FALSE)
 
-# make sure to clean up the formatting on these if necessary
-
-#gc_winners <- bind_rows(gc_list) %>%
-#  mutate(gc_winner = value)
-
-#gc_winners$gc_winner <- iconv(gc_winners$gc_winner, from="UTF-8", to = "ASCII//TRANSLIT")
-
-#dbWriteTable(con, "pcs_gc_winners", gc_winners, overwrite = TRUE, row.names = FALSE)
-
-#all_events$Race <- iconv(all_events$Race, from="UTF-8", to = "ASCII//TRANSLIT")
-#all_events$Winner <- iconv(all_events$Winner, from="UTF-8", to = "ASCII//TRANSLIT")
-
-#dbWriteTable(con, "pcs_all_races", all_events, overwrite = TRUE, row.names = FALSE)
-
-#all_stages$Race <- iconv(all_stages$Race, from="UTF-8", to = "ASCII//TRANSLIT")
-#all_stages$Winner <- iconv(all_stages$Winner, from="UTF-8", to = "ASCII//TRANSLIT")
-
-#dbWriteTable(con, "pcs_all_stages", all_stages, overwrite = TRUE, row.names = FALSE)
-
 #
 #
 # Clean up Stage data and merge with other information
@@ -974,6 +955,9 @@ stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team,
 #
 
 stage_data <- stage_data_raw %>%
+  
+  mutate(url = ifelse(url == "/race/vuelta-a-espana/2020", "race/vuelta-a-espana/2020", url)) %>%
+  
   rename(class = Class) %>%
   unique() %>%
   
@@ -1102,9 +1086,7 @@ gc_performance <- winners %>%
          winner = Winner,
          class = Class,
          url, year) %>%
-  
-  mutate(winner = ifelse(race == "giro d'italia" & year == 2020, "Nibali Vincenzo", winner)) %>%
-  
+
   inner_join(
     
     stage_data %>%
@@ -1155,10 +1137,13 @@ stage_data <- stage_data %>%
 # Need to clean-up and re-write climbs information before joining
 
 f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
-  mutate(year = as.numeric(year))
+  mutate(year = as.numeric(year)) %>%
+  mutate(time_climbed = NA) %>%
+  unique()
 
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
-  mutate(year = as.numeric(year))
+  mutate(year = as.numeric(year)) %>%
+  unique()
 
 supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
   fill(stage, race, year) %>%
@@ -1369,11 +1354,13 @@ stage_data <- stage_data %>%
 
 # Write the cleaned-up data to database
 
+#dbSendQuery(con, "DELETE FROM pcs_stage_data")
+
 dbWriteTable(con, "pcs_stage_data", 
              
              stage_data, 
              
-             overwrite = TRUE, append = FALSE, row.names = FALSE)
+             append = TRUE, row.names = FALSE)
 
 #
 #
@@ -1385,6 +1372,9 @@ dbWriteTable(con, "pcs_stage_data",
 #
 #
 #
+
+# Pull in startlists ------------------------------------------------------
+
 
 library(tidyverse)
 library(lubridate)
@@ -1501,8 +1491,99 @@ for(r in 1:length(all_races$url)) {
 #
 #
 #
+#
+#
+#
+#
+#
+#
 
-startlists <- dbGetQuery(con, "SELECT rider, bib, race, year, url FROM pcs_all_startlists")
+# Pull in KMs breakaway ---------------------------------------------------
+
+
+library(tidyverse)
+library(lubridate)
+library(rvest)
+library(RMySQL)
+
+con <- dbConnect(MySQL(),
+                 host='localhost',
+                 dbname='cycling',
+                 user='jalnichols',
+                 password='braves')
+
+#
+
+all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
+                        FROM pcs_stage_data
+                        WHERE year > 2019 AND time_trial = 0") %>%
+  
+  arrange(-year) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT")) %>%
+  
+  mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT race, year, stage FROM pcs_km_breakaway") %>%
+              mutate(stage = as.numeric(stage)), by = c("race", "year", "stage"))
+
+#
+
+for(r in 1:length(all_races$url)) {
+  
+  if(all_races$one_day_race[[r]] == 0) {
+    
+    page <- paste0("https://www.procyclingstats.com/", 
+                   all_races$url[[r]], 
+                   "/stage-", 
+                   str_replace(all_races$stage_name[[r]], "Stage ", ""), 
+                   "/today/kms-in-the-break-today")
+    
+  } else {
+    
+    page <- paste0("https://www.procyclingstats.com/", 
+                   all_races$url[[r]], 
+                   "/today/kms-in-the-break-today")
+    
+  }
+  
+  page <- page %>%
+    read_html()
+  
+  # bring in the list of tables
+  
+  d <- page %>%
+    html_nodes('table') %>%
+    html_table()
+  
+  if(length(d) > 0) {
+    
+    breaks <- d %>%
+      .[[1]]
+    
+    breaks <- breaks %>%
+      
+      janitor::clean_names() %>%
+      
+      select(-number) %>%
+      
+      mutate(race = all_races$race[[r]],
+             year = all_races$year[[r]],
+             stage = all_races$stage[[r]],
+             url = all_races$url[[r]])
+    
+    breaks$race <- iconv(breaks$race, from="UTF-8", to = "ASCII//TRANSLIT")
+    
+    breaks$rider <- iconv(breaks$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+    
+    #
+    
+    dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
+    
+    print(r)
+    
+  }
+  
+}
 
 #
 #
@@ -1525,7 +1606,7 @@ html_stage_dir <- fs::dir_ls("PCS-HTML/")
 #html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
-dl_html <- TRUE
+dl_html <- FALSE
 
 # start scraping process using old data
 
@@ -1535,7 +1616,7 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
     
-    filter(Date > as.Date('2020-07-25'))
+    filter(Date > as.Date('2020-10-15'))
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 
