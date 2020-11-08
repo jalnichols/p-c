@@ -304,7 +304,7 @@ tictoc::tic()
 
 for(y in 1:length(stages_list)) {
   
-  if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url) {
+  if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url[[y]]) {
     
     print("didn't pull it")
     
@@ -756,7 +756,7 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date <= '2020-10-10') %>%
+  filter(date <= '2020-10-31') %>%
   
   filter(!class == 'NC')
 
@@ -782,7 +782,7 @@ fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, yea
                     m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
   mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
   select(race, year, date, class, tour) %>%
-  filter(date <= '2020-10-10') %>%
+  filter(date <= '2020-10-31') %>%
   
   mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
   
@@ -944,6 +944,7 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data WHERE up
   group_by(stage, year, race) %>%
   mutate(points = rank(dist, ties.method = "first"),
          length = max(dist, na.rm = T),
+         avg_alt = mean(alt, na.rm = T),
          highest_point = max(alt, na.rm = T)) %>%
   ungroup() %>%
   
