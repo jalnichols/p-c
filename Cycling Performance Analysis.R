@@ -1405,7 +1405,17 @@ stage_time_stats <- stage_data_perf %>%
 
 #
 
-stage_time_stats %>% filter(class %in% c("2.1", "2.HC", "2.Pro", "2.UWT") & (grand_tour == 1)) %>% ggplot(aes(x = rel_exp_pcd, y = gaining_on_GC))+geom_point()+geom_smooth(size=1)+labs(x = "difficulty of climbing relative to race average", y="Percent of peloton gaining time on GC Winner", title = "More riders beat GC Winner on intermediate stages")+scale_y_continuous(labels = scales::percent)+scale_x_continuous(labels = scales::percent)
+stage_time_stats %>%
+  filter(class %in% c("2.1", "2.HC", "2.Pro", "2.UWT") & (grand_tour == 1)) %>% 
+  ggplot(aes(x = rel_exp_pcd, y = gaining_on_GC))+
+  geom_point()+
+  geom_smooth(size=1)+
+  labs(x = "difficulty of climbing relative to race average", 
+       y="Percent of peloton gaining time on GC Winner", 
+       title = "More riders beat GC Winner on intermediate stages")+
+  
+  scale_y_continuous(labels = scales::percent)+
+  scale_x_continuous(labels = scales::percent)
 
 #
 #
@@ -1474,6 +1484,99 @@ pcd_by_rider <- stage_data_perf %>%
   ungroup()
 
 #
+#
+#
+
+final_group <- stage_data_perf %>%
+  
+  filter(year >= 2019 & !is.na(pred_climb_difficulty)) %>% 
+  
+  mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
+  
+  group_by(rider) %>%
+  filter(n() >= 40) %>%
+  ungroup() %>%
+  
+  group_by(rider) %>%
+  do(broom::tidy(glm(final_group ~ pred_climb_difficulty, data = ., family = "binomial"))) %>%
+  ungroup()
+
+#
+
+fg_mod <- lme4::glmer(final_group ~ sof + (1 + pred_climb_difficulty | rider) + one_day_race + pred_climb_difficulty, 
+                      
+                      family = "binomial",
+                      
+                      data = stage_data_perf %>%
+                        
+                        filter(year >= 2019 & !is.na(pred_climb_difficulty)) %>% 
+                        
+                        mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
+                        
+                        group_by(rider) %>%
+                        filter(n() >= 40) %>%
+                        ungroup())
+ 
+#
+
+summary(fg_mod)
+
+random_effects <- lme4::ranef(fg_mod)[[1]] %>%
+  rownames_to_column()
+
+predictions <- cbind(
+  
+  expand_grid(rider = stage_data_perf %>%
+                
+                filter(year >= 2019 & !is.na(pred_climb_difficulty)) %>% 
+                
+                mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
+                
+                group_by(rider) %>%
+                filter(n() >= 40) %>%
+                ungroup() %>%
+                select(rider) %>%
+                unique() %>%
+                .$rider,
+              one_day_race = c(TRUE, FALSE),
+              pred_climb_difficulty = seq(1,15,2),
+              sof = 0.5),
+  
+  coef = predict(fg_mod, expand_grid(rider = stage_data_perf %>%
+                                       
+                                       filter(year >= 2019 & !is.na(pred_climb_difficulty)) %>% 
+                                       
+                                       mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
+                                       
+                                       group_by(rider) %>%
+                                       filter(n() >= 40) %>%
+                                       ungroup() %>%
+                                       select(rider) %>%
+                                       unique() %>%
+                                       .$rider,
+                                     one_day_race = c(TRUE, FALSE),
+                                     pred_climb_difficulty = seq(1,15,2),
+                                     sof = 0.5))) %>%
+  
+  mutate(predicted = exp(coef)/(1+exp(coef)))
+
+#
+
+ggplot(predictions %>% 
+         mutate(one_day_race = ifelse(one_day_race == TRUE, "One day race", "Stage race")) %>% 
+         filter(rider %in% c("Demare Arnaud", "Sagan Peter", "Van Avermaet Greg", "van der Poel Mathieu", 
+                             "Alaphilippe Julian", "van Aert Wout", "Bennett Sam", 
+                             "Yates Adam", "Benoot Tiesj", "Trentin Matteo")), 
+       aes(x = pred_climb_difficulty, y = predicted, color = rider))+
+  
+  geom_line(size=1.5)+
+  facet_wrap(~one_day_race)+
+  scale_y_continuous(labels = scales::percent)+
+  labs(x = "climbing difficulty of race", 
+       y = "probability of finishing in final group",
+       title = "Final group probabilities (model)")
+        
+#
 # weighted pcd based on stage rank
 #
 
@@ -1488,6 +1591,8 @@ weighted_pcd <- stage_data_perf %>%
   mutate(tm_sof = mean(tm_sof, na.rm = T),
          tm_pcd = mean(tm_pcd, na.rm = T)) %>%
   ungroup() %>%
+  
+  mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
   
   mutate(points_finish = (1 / (rnk + 1)) * (limit / 5),
          points_finish = ifelse(rnk <= limit * 5, points_finish, 0),
@@ -1505,6 +1610,7 @@ weighted_pcd <- stage_data_perf %>%
             pointsNOBS = sum(pointsNOBS, na.rm = T),
             team_pcd = sum(tm_pcd * weight, na.rm = T) / sum(weight, na.rm = T),
             points = mean(points_finish, na.rm = T),
+            in_final_group = mean(final_group, na.rm = T),
             one_day_races = sum(one_day_race == 1, na.rm = T),
             stage_races = sum(one_day_race == 0 & stage == 1, na.rm = T),
             leader = mean(leader, na.rm = T),
@@ -1535,7 +1641,7 @@ rider_clustering <- weighted_pcd %>%
   filter((races / max(races, na.rm = T)) > 0.3) %>%
   ungroup() %>% 
   
-  select(rider, rel_sof, weighted_pcd, BS_tilt, points, leader, races, master_team, year) %>%
+  select(rider, rel_sof, weighted_pcd, BS_tilt, points, leader, in_final_group, races, master_team, year) %>%
   
   mutate(points = log10(points+0.01))
 
@@ -1629,7 +1735,7 @@ cluster_assignment <- bind_rows(cluster_list) %>%
 #
 
 ggplot(weighted_pcd %>% 
-         filter(year == 2020 & master_team == 'Movistar' & races >= 10) %>%
+         filter(year == 2020 & master_team == 'Jumbo Visma' & races >= 10) %>%
          
          inner_join(cluster_assignment %>%
                       select(rider, type, year, master_team), by = c("rider", 'year', "master_team")),
@@ -1648,7 +1754,7 @@ ggplot(weighted_pcd %>%
   
   labs(x = "Leader: % of races as #1 on team", 
        y = "Parcours fit: climbing difficulty of better performances", 
-       title = "Bora Hansgrohe 2019 team plot", 
+       title = "Movistar 2020 team plot", 
        subtitle = "how often is rider the team leader / which parcours fit a rider")+
   expand_limits(y = c(0,15))+
   
