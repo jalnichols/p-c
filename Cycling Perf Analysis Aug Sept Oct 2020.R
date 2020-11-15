@@ -481,6 +481,9 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   mutate(temperature = mean(avg_temperature, na.rm = T)) %>%
   ungroup() %>%
   
+  mutate(final_group = ifelse(rnk == 200, 0,
+                              ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0)))) %>%
+  
   select(-avg_temperature, -n,
          -win_seconds, -total_seconds,
          -parcours_value, -stage_type,
@@ -500,7 +503,11 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   mutate(rel = weighted_avg_power / mean(weighted_avg_power, na.rm = T)) %>% 
   ungroup() %>%
   
-  mutate(rel_temp = abs(((temperature - 32) * 0.5556) - 13))
+  mutate(rel_temp = abs(((temperature - 32) * 0.5556) - 11)) %>%
+  
+  group_by(stage, race, year, rider, date) %>%
+  filter(rank(-rel, ties.method = "min") == 1) %>%
+  ungroup()
 
 #
 # breakaways
@@ -545,17 +552,29 @@ stage_level_power %>%
 # impact of rnk, DNF, and specific race on rel power
 #
 
-po_mod <- lm(rel ~ log(rnk + 1) * pred_climb_difficulty + time_trial + length + one_day_race + rel_temp, 
+extrap_alt <- lm(avg_alt ~ pred_climb_difficulty, data = stage_level_power)
+
+po_mod <- lm(rel ~ log(rnk + 1) * pred_climb_difficulty + time_trial + length + one_day_race + I(rel_temp^2) + I(avg_alt^1.1), 
              
-             data = stage_level_power %>%
-               mutate(avg_alt = ifelse(avg_alt <= 0, 1, avg_alt)))
+             data = cbind(stage_level_power,
+                          pred_avg_alt = predict(extrap_alt, stage_level_power)) %>%
+               mutate(avg_alt = ifelse(is.na(avg_alt), pred_avg_alt,
+                                       ifelse(avg_alt < 0, 0, avg_alt))))
 
 #
 
 summary(po_mod)
 
-preds <- cbind(pred = predict(po_mod, stage_level_power),
-               stage_level_power)
+preds <- cbind(pred = predict(po_mod, 
+                              cbind(stage_level_power,
+                                    pred_avg_alt = predict(extrap_alt, stage_level_power)) %>%
+                                mutate(avg_alt = ifelse(is.na(avg_alt), pred_avg_alt,
+                                                        ifelse(avg_alt < 0, 0, avg_alt)))),
+               cbind(stage_level_power,
+                     
+                     pred_avg_alt = predict(extrap_alt, stage_level_power)) %>%
+                 mutate(avg_alt = ifelse(is.na(avg_alt), pred_avg_alt,
+                                         ifelse(avg_alt < 0, 0, avg_alt))))
 
 #
 # Impact of temperature on power output
@@ -563,11 +582,11 @@ preds <- cbind(pred = predict(po_mod, stage_level_power),
 
 ggplot(preds, aes(x = (temperature - 32) * 0.5556, y = (rel / pred)-1))+
   geom_hline(yintercept = 0)+
-  geom_smooth(se=F, size=2)+
+  geom_smooth(se=F, size=2, formula = y ~ x + I(x^2))+
   scale_y_continuous(labels = scales::percent)+
   labs(x = "Temperature in Celsius",
        y = "Relative power output vs Predicted",
-       title = "Ideal temperature for power output is 13 C")+
+       title = "Ideal temperature for power output is 11 C")+
   
   theme(axis.text = element_text(size = 18),
         axis.title = element_text(size = 15))
@@ -576,20 +595,32 @@ ggplot(preds, aes(x = (temperature - 32) * 0.5556, y = (rel / pred)-1))+
 # Impact of average altitude
 #
 
-#
-# Impact of temperature on power output
-#
-
 ggplot(preds, aes(x = (avg_alt), y = (rel / pred)-1))+
   geom_hline(yintercept = 0)+
+  geom_point(size=1)+
   geom_smooth(se=F, size=2, method = "lm", formula = y ~ x)+
   scale_y_continuous(labels = scales::percent)+
   labs(x = "Average altitude in Meters",
        y = "Relative power output vs Predicted",
-       title = "Ideal temperature for power output is 13 C")+
+       title = "")+
   
   theme(axis.text = element_text(size = 18),
         axis.title = element_text(size = 15))
+
+#
+
+cbind(stage_level_power,
+      
+      pred_avg_alt = predict(extrap_alt, stage_level_power)) %>%
+  mutate(avg_alt = ifelse(is.na(avg_alt), pred_avg_alt,
+                          ifelse(avg_alt < 0, 0, avg_alt))) %>%
+  
+  select(-pred_avg_alt) %>%
+  
+  group_by(ALT = floor(avg_alt / 250)*250) %>%
+  summarize(act = mean(rel, na.rm = T),
+            n = n()) %>%
+  ungroup()
 
 #
 
@@ -602,14 +633,6 @@ stage_level_preds <- preds %>%
   ungroup() %>%
   
   mutate(diff = act - exp)
-
-#
-
-r_mod <- lme4::lmer(rel ~ (1 | race) + pred_climb_difficulty + time_trial, data = stage_level_power)
-
-summary(r_mod)
-
-race_impacts <- lme4::ranef(r_mod)[[1]] %>% rownames_to_column()
 
 #
 #
@@ -642,7 +665,7 @@ clusters_power <- stage_level_power %>%
   
   inner_join(
     
-    dbReadTable(con, "clusters_riders"), by = c("master_team", "pcs" = "rider")
+    dbReadTable(con, "clusters_riders"), by = c("master_team", "pcs" = "rider", "year")
     
   )  %>%
   mutate(stage_type = ifelse(bunch_sprint == 1, "Bunch Sprint",
@@ -668,7 +691,7 @@ ggplot(clusters_power %>%
   scale_y_continuous(labels = scales::percent)+
   labs(x = "Cluster type",
        y = "Relative weighted avg power",
-       title = "Bunch sprints produce higher power outputs",
+       title = "Bunch sprints produce lower power outputs",
        color = "Bunch Sprint?")+
   
   scale_color_manual(values = c("#404040", "orange"))+
@@ -931,13 +954,86 @@ segment_data_races <- stage_level_power %>%
   mutate(rel_power = Power / mean(Power, na.rm = T)) %>% 
   ungroup() %>%
   
-  select(-win_seconds, -total_seconds, -gain_1st, -gain_3rd, -gain_5th, -stage_type, -parcours_value,
-         -gain_10th, -gain_20th, -gain_40th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
-         -limit, -success, -points_finish, -leader_rating, -cobbles) %>%
+  select(-gain_1st, -gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
+         -limit, -success, -points_finish, -cobbles, -M, -S, -VerticalGain, -VAM, -HR, -Tour,
+         -gc_winner, -time_trial, -stage_name) %>%
   
   mutate(rowname = as.numeric(rowname)) %>% 
   
-  mutate(time = Distance / Speed * 3600)
+  mutate(time = Distance / Speed * 3600) %>%
+  
+  inner_join(preds %>%
+               filter(!is.na(weight)) %>%
+               filter(time_trial == 0) %>%
+               
+               group_by(race, stage, year) %>%
+               filter(n() >= 5) %>%
+               mutate(predicted = mean(rel / pred, na.rm = T)) %>%
+               ungroup() %>%
+               
+               group_by(pcs) %>%
+               summarize(watts_kg33 = quantile(wattskg / predicted, probs = 0.1, na.rm = T)) %>%
+               ungroup() %>%
+               
+               mutate(peloton_avg = mean(watts_kg33, na.rm = T),
+                      rel_peloton = watts_kg33 / peloton_avg), by = c("pcs")) %>%
+  
+  mutate(watts_adj = (Power/weight) / rel_peloton)
+
+#
+#
+#
+
+manually_marked_climbs <- segment_data_races %>%
+  
+  inner_join(read_csv("strava_climbs_segments_manual.csv") %>%
+               filter(Valid == 1) %>%
+               mutate(AtKM = ifelse(AtKM > length, length, AtKM)) %>%
+               select(-VerticalGain, -length, -date, -Valid, -Distance,
+                      -Gradient), by = c("stage", 'race', "year", "Segment", "Type"))
+
+#
+
+manually_marked_climbs %>%
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>% 
+  
+  group_by(stage, race, year, Segment) %>%
+  mutate(watts_adj = watts_adj / mean(watts_adj, na.rm = T)) %>%
+  ungroup() %>% 
+  
+  group_by(final_group, f = ifelse(((AtKM-1) / length)<0.33, 0.2, floor(((AtKM-1) / length) / 0.1)/10)) %>% 
+  summarize(M = mean(watts_adj, na.rm = T), 
+            n = n()) %>%
+  ungroup() -> progress_thru_stage
+
+# model with percent thru stage, final group presence, finish position
+
+summary(manually_marked_climbs %>%
+          
+          group_by(stage, race, year, pcs) %>%
+          filter(n()>1) %>% 
+          ungroup() %>% 
+          mutate(perc_thru = (AtKM / length)) %>%
+          group_by(stage, race, year, Segment) %>%
+          mutate(watts_adj = watts_adj / mean(watts_adj, na.rm = T)) %>%
+          ungroup() %>% 
+          
+          lm(watts_adj ~ log(rnk+1) * perc_thru + perc_break*perc_thru, data = .))
+
+#
+
+ggplot(progress_thru_stage %>%
+         mutate(final_group = ifelse(final_group == 1, "Yes", "No")), aes(x = f+0.1, y = M * 4.85, color = as.factor(final_group)))+
+  geom_point(size=4)+
+  geom_line(size=1.5)+
+  scale_color_manual(values = c("black", "red"), name = "In final group?")+
+  labs(x = "Percentage thru stage", 
+       y = "Watts per KG average", 
+       title = "Riders finishing in final group\nproduce more power in last 3rd of race")+
+  scale_x_continuous(labels = scales::percent)
 
 #
 
@@ -1267,37 +1363,113 @@ top_finishes <- all_stage_data %>%
 #
 #
 
+tictoc::tic()
+
 curves <- dbGetQuery(con, "SELECT SA.PCS, CP.seconds, CP.watts, SA.activity_id
 FROM strava_activities SA 
 JOIN strava_activity_power_curve CP
 ON SA.activity_id = CP.activity_id
 WHERE CP.seconds IN (10, 30, 60, 120, 300, 600, 1200, 2400, 3600)")
 
+tictoc::toc()
+
 #
 
 best <- curves %>%
   
-  filter(!PCS %in% c("Madouas Valentin", "Gougeard Alexis", "Jauregui Quentin")) %>%
+  #filter(!PCS %in% c("Madouas Valentin", "Gougeard Alexis", "Jauregui Quentin")) %>%
   
   group_by(PCS) %>% 
-  filter(n_distinct(activity_id) >= 5) %>% 
+  filter(n_distinct(activity_id) >= 10) %>% 
   ungroup() %>% 
   
+  inner_join(preds %>%
+               filter(!is.na(weight)) %>%
+               filter(time_trial == 0) %>%
+               
+               group_by(race, stage, year) %>%
+               filter(n() >= 5) %>%
+               mutate(predicted = mean(rel / pred, na.rm = T)) %>%
+               ungroup() %>%
+               
+               group_by(pcs) %>%
+               summarize(watts_kg33 = quantile(wattskg / predicted, probs = 0.1, na.rm = T)) %>%
+               ungroup() %>%
+               
+               mutate(peloton_avg = mean(watts_kg33, na.rm = T),
+                      rel_peloton = watts_kg33 / peloton_avg), by = c("PCS" = "pcs")) %>%
+  
+  mutate(watts_adj = watts / rel_peloton) %>%
+  
   group_by(PCS, seconds) %>%
-  mutate(best80 = quantile(watts, probs = 0.8, na.rm = T),
-         best90 = quantile(watts, probs = 0.9, na.rm = T),
-         median = median(watts, na.rm = T),
-         mean = mean(watts, na.rm = T),
+  mutate(best80 = quantile(watts_adj, probs = 0.8, na.rm = T),
+         best90 = quantile(watts_adj, probs = 0.9, na.rm = T),
+         median = median(watts_adj, na.rm = T),
+         mean = mean(watts_adj, na.rm = T),
          races = n()) %>%
-  
   ungroup() %>%
+
+  inner_join(stage_level_power %>%
+               filter(time_trial == 0) %>%
+               select(-M, -S, -rider,
+                      -temperature, -km_break,
+                      -bib, -limit, -gc_winner,
+                      -time_trial, -missing_profile_data,
+                      -stage_name), by = c("PCS" = "pcs", "activity_id")) %>%
+
+  mutate(vs_80 = watts_adj / best80,
+         vs_90 = watts_adj / best90,
+         vs_med = watts_adj / median,
+         vs_mean = watts_adj / mean) %>%
   
-  mutate(vs_80 = watts / best80,
-         vs_90 = watts / best90,
-         vs_med = watts / median,
-         vs_mean = watts / mean) %>%
   
-  inner_join(stage_level_power, by = c("PCS" = "pcs", "activity_id"))
+  inner_join(
+    
+    dbReadTable(con, "clusters_riders") %>%
+      select(rider, year, master_team, type) %>%
+      unique(), by = c("master_team", "PCS" = "rider", "year"))
+
+#
+#
+#
+
+po_curves_riders <- best %>% 
+  group_by(PCS, seconds) %>% 
+  summarize(best80 = quantile(watts_adj / weight, probs = 0.8, na.rm = T),
+            best90 = quantile(watts_adj / weight, probs = 0.9, na.rm = T),
+            median = median(watts_adj / weight, na.rm = T),
+            mean = mean(watts_adj / weight, na.rm = T),
+            rel_peloton = mean(rel_peloton, na.rm = T),
+            races = n()) %>%
+  ungroup()
+
+#
+#
+#
+
+po_curves_clusters <- best %>% 
+  group_by(type, seconds) %>% 
+  summarize(best80 = quantile(watts_adj / weight, probs = 0.8, na.rm = T),
+            best90 = quantile(watts_adj / weight, probs = 0.9, na.rm = T),
+            median = median(watts_adj / weight, na.rm = T),
+            mean = mean(watts_adj / weight, na.rm = T),
+            races = n()) %>%
+  ungroup()
+
+po_curves_clusters %>% 
+  group_by(seconds) %>% 
+  mutate(peloton = sum(median * races, na.rm = T) / sum(races, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  ggplot(aes(x = seconds, y = (median / peloton)-1, color = type))+
+  
+  geom_hline(yintercept = 0)+
+  geom_smooth(size=2, se = F)+
+  scale_x_log10()+
+  scale_y_continuous(labels = scales::percent)+
+  labs(x = "seconds of effort", 
+       y = 'watts per KG vs peloton', 
+       title = "Power outputs vs rider type clusters")
 
 #
 #
@@ -1311,6 +1483,7 @@ stage_level_power_curve <- best %>%
             vs_median = mean(vs_med, na.rm = T),
             vs_mean = mean(vs_mean, na.rm = T),
             rel_wt_avg_pow = mean(rel, na.rm = T),
+            watts_adj = mean(watts_adj, na.rm = T),
             n = n()) %>%
   ungroup()
 
@@ -1325,14 +1498,14 @@ stage_level_power_curve %>%
   filter(n > 9) %>% 
   
   group_by(seconds) %>% 
-  summarize(cor(x = vs_mean, y = rel_wt_avg_pow))
+  summarize(cor(x = watts_adj, y = rel_wt_avg_pow))
 
 #
 
 po_curve_mod <- lm(vs_mean ~ log(rnk + 1) * pred_climb_difficulty + time_trial + length + one_day_race + bunch_sprint, 
              
              data = best %>%
-               filter(seconds == 1200))
+               filter(seconds == 600))
 
 #
 
@@ -1470,3 +1643,31 @@ strava_telemetry <- dbGetQuery(con, "SELECT * FROM strava_telemetry") %>%
 #
 #
 #
+
+all_segment_data <- stage_level_power %>%
+  select(stage, race, year, date, class, one_day_race, grand_tour, time_trial, length, activity_id) %>%
+  inner_join(
+    
+    dbGetQuery(con, "SELECT * FROM strava_segment_data"), by = c("activity_id")
+    
+  ) %>%
+  
+  group_by(Segment, stage, race, year, ) %>%
+  filter(n_distinct(activity_id) >= 15) %>%
+  ungroup() %>%
+  
+  select(stage, race, year, date, class, one_day_race, grand_tour, time_trial, length,
+         Type, Gradient, VerticalGain, Distance, Segment) %>%
+  unique()
+
+#
+
+just_climbs <- all_segment_data %>%
+  
+  filter(Gradient > 0.035 & Distance >= 0.5) %>%
+  
+  filter(year == 2020) %>%
+  
+  group_by(stage, race, year) %>%
+  filter(Distance > (max(Distance, na.rm = T) * 0.2)) %>%
+  ungroup()
