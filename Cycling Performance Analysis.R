@@ -968,6 +968,12 @@ dbWriteTable(con, "stage_data_perf",
 #
 #
 #
+
+stage_data_perf <- dbReadTable(con, "stage_data_perf")
+
+#
+#
+#
 #
 #
 # Intensity (speed vs expected) -------------------------------------------
