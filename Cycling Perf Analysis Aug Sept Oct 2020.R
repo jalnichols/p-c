@@ -669,59 +669,42 @@ clusters_power <- stage_level_power %>%
     
   )  %>%
   mutate(stage_type = ifelse(bunch_sprint == 1, "Bunch Sprint",
-                             ifelse(pred_climb_difficulty <= 8, "Hilly", "Mountains"))) %>%
+                             ifelse(pred_climb_difficulty <= 7.5, "Hilly", "Mountainous"))) %>%
   
   group_by(type, bunch_sprint, stage_type) %>%
-  summarize(rel = mean(rel, na.rm=T),
+  summarize(relwavgpower = mean(rel, na.rm=T),
+            se = sd(rel, na.rm = T)/sqrt(n()),
             n = n()) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(type = str_replace(type, " ", "\n"))
 
 #
 #
 #
 
-ggplot(clusters_power %>%
-         mutate(bunch_sprint = ifelse(bunch_sprint == 0, "No Bunch Sprint",
-                                      ifelse(bunch_sprint == 1, 'Bunch Sprint', NA))), 
+clusters_power$type <- factor(clusters_power$type, levels = c("Climber", "Mountain\nhelper", "Puncheur", "Domestique", "Sprinter", "Sprint\nTrain"))
+
+ggplot(clusters_power, 
        
-       aes(x = str_replace(type, " ", "\n"), y = rel, color = bunch_sprint))+
+       aes(x = type, y = relwavgpower, ymin = relwavgpower-(1.96*se), ymax = relwavgpower+(1.96*se), color = stage_type))+
   
   geom_hline(yintercept = 1)+
-  geom_point(size = 8)+
+  geom_errorbar(size=1)+
+  geom_point(size = 6)+
   scale_y_continuous(labels = scales::percent)+
   labs(x = "Cluster type",
        y = "Relative weighted avg power",
        title = "Bunch sprints produce lower power outputs",
-       color = "Bunch Sprint?")+
+       color = "Stage type")+
   
-  scale_color_manual(values = c("#404040", "orange"))+
+  scale_color_manual(values = c("#404040", "orange", "dark red"))+
   theme(axis.text = element_text(size = 15),
         plot.title = element_text(size=18))
 
 #
 
-ggsave("clusters-rel-bunch-sprint.png", height = 6, width = 9)
-
-#
-
-ggplot(clusters_power,
-       aes(x = str_replace(type, " ", "\n"), y = rel, color = stage_type))+
-  
-  geom_hline(yintercept = 1)+
-  geom_point(size = 8)+
-  scale_y_continuous(labels = scales::percent)+
-  labs(x = "Cluster type",
-       y = "Relative weighted avg power",
-       title = "Relative power gap largest for climbers",
-       color = "Type of stage")+
-  
-  scale_color_manual(values = c("#404040", "gray", "orange"))+
-  theme(axis.text = element_text(size = 15),
-        plot.title = element_text(size=18))
-
-#
-
-ggsave("clusters-rel-bunch-sprint.png", height = 6, width = 9)
+ggsave("clusters-by-stage-types.png", height = 6, width = 9)
 
 #
 # predictive modelling of power
@@ -989,22 +972,32 @@ manually_marked_climbs <- segment_data_races %>%
   inner_join(read_csv("strava_climbs_segments_manual.csv") %>%
                filter(Valid == 1) %>%
                mutate(AtKM = ifelse(AtKM > length, length, AtKM)) %>%
-               select(-VerticalGain, -length, -date, -Valid, -Distance,
-                      -Gradient), by = c("stage", 'race', "year", "Segment", "Type"))
-
-#
-
-manually_marked_climbs %>%
+               select(-length), by = c("stage", 'race', "year", "Segment", "Type")) %>%
   
   group_by(stage, race, year, pcs) %>%
   filter(n()>1) %>% 
-  ungroup() %>% 
+  ungroup() %>%
   
   group_by(stage, race, year, Segment) %>%
   mutate(watts_adj = watts_adj / mean(watts_adj, na.rm = T)) %>%
-  ungroup() %>% 
+  ungroup() %>%
   
-  group_by(final_group, f = ifelse(((AtKM-1) / length)<0.33, 0.2, floor(((AtKM-1) / length) / 0.1)/10)) %>% 
+  mutate(perc_thru = (AtKM / length)-0.01) %>%
+
+  inner_join(
+    
+    dbReadTable(con, "clusters_riders") %>%
+      select(rider, year, master_team, type) %>%
+      unique(), by = c("master_team", "pcs" = "rider", "year"))
+  
+#
+
+manually_marked_climbs %>%
+
+  group_by(rnk = ifelse(rnk <= 20, "top20",
+                        ifelse(rnk <= 50, "top50",
+                               ifelse(rnk <= 100, "top100", "remaining"))), 
+           f = ifelse(perc_thru <= 0.2, 0.2, floor(perc_thru / 0.1) / 10)) %>% 
   summarize(M = mean(watts_adj, na.rm = T), 
             n = n()) %>%
   ungroup() -> progress_thru_stage
@@ -1013,27 +1006,135 @@ manually_marked_climbs %>%
 
 summary(manually_marked_climbs %>%
           
-          group_by(stage, race, year, pcs) %>%
-          filter(n()>1) %>% 
-          ungroup() %>% 
-          mutate(perc_thru = (AtKM / length)) %>%
-          group_by(stage, race, year, Segment) %>%
-          mutate(watts_adj = watts_adj / mean(watts_adj, na.rm = T)) %>%
-          ungroup() %>% 
-          
           lm(watts_adj ~ log(rnk+1) * perc_thru + perc_break*perc_thru, data = .))
 
 #
 
-ggplot(progress_thru_stage %>%
-         mutate(final_group = ifelse(final_group == 1, "Yes", "No")), aes(x = f+0.1, y = M * 4.85, color = as.factor(final_group)))+
-  geom_point(size=4)+
-  geom_line(size=1.5)+
-  scale_color_manual(values = c("black", "red"), name = "In final group?")+
+progress_thru_stage$rnk <- factor(progress_thru_stage$rnk, levels = c("top20", "top50", "top100", "remaining"))
+
+avg_power <- segment_data_races %>%
+  
+  inner_join(read_csv("strava_climbs_segments_manual.csv") %>%
+               filter(Valid == 1) %>%
+               mutate(AtKM = ifelse(AtKM > length, length, AtKM)) %>%
+               select(-length), by = c("stage", 'race', "year", "Segment", "Type")) %>%
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
+  summarize(M = mean(watts_adj, na.rm = T)) %>%
+  .[[1]]
+
+ggplot(progress_thru_stage, aes(x = f+0.1, y = M * avg_power, color = as.factor(rnk)))+
+  geom_hline(yintercept = avg_power, size = 1, linetype = "dashed")+
+  geom_smooth(se=F, size = 2)+
+  scale_color_manual(values = c("dark red", 'red', "orange", "blue"),
+                     name = "Finish position")+
   labs(x = "Percentage thru stage", 
        y = "Watts per KG average", 
-       title = "Riders finishing in final group\nproduce more power in last 3rd of race")+
-  scale_x_continuous(labels = scales::percent)
+       title = "Top finishers produce more power in last 3rd of race")+
+  scale_x_continuous(labels = scales::percent)+
+  facet_wrap(~summit_finish, ncol = 2)
+
+#
+
+manually_marked_climbs %>% 
+  group_by(stage, race, year, Segment, perc_thru, Gradient, Distance) %>% 
+  summarize(x85th_percentile = quantile(watts_adj, probs = 0.85, na.rm = T), 
+            x50th_percentile = median(watts_adj, na.rm = T), 
+            x15th_percentile = quantile(watts_adj, probs = 0.15, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  gather(stat, value, x85th_percentile:x15th_percentile) -> bands_of_perf
+
+# this model evaluates watts per kg based on climb characteristics and percentage thru stage vs finish position
+
+mod_power_chars <- lm(Watts_kg_adj ~ Gradient * Distance + perc_thru * log(rnk + 1), 
+                      
+                      data = manually_marked_climbs %>%
+                        mutate(Watts_kg_adj = (Power/weight) / rel_peloton))
+
+summary(mod_power_chars)
+
+#
+
+bands_of_perf %>% 
+  mutate(stat = str_sub(stat, 2, nchar(stat))) %>%
+  ggplot(aes(x = perc_thru, y = value-1, color = stat))+
+  geom_point(size=1, alpha = 0.25)+
+  geom_smooth(se=F, size=2)+
+  scale_x_continuous(labels = scales::percent)+
+  scale_y_continuous(labels = scales::percent, breaks = seq(-0.3,0.3,0.1))+
+  labs(x = "Percentage thru race", 
+       y = "Power output versus peloton", 
+       title = 'Power outputs differ most in last 3rd of race')+
+  
+  scale_color_manual(values = c("blue", "orange", "red"), name = "Power output\npercentile")
+
+#
+#
+#
+
+manually_marked_climbs %>% 
+
+  group_by(stage, race, year, Segment, perc_thru, Gradient, Distance, type) %>% 
+  summarize(Average_Power = mean(watts_adj, na.rm = T)) %>% 
+  ungroup() -> bands_of_clust
+
+bands_of_clust %>% 
+  ggplot(aes(x = perc_thru, y = avg_power * (Average_Power), color = type))+
+  geom_point(size=1, alpha = 0.25)+
+  geom_smooth(se=F, size=2)+
+  scale_x_continuous(labels = scales::percent)+
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.01))+
+  coord_cartesian(ylim = c(3.5,6.5))+
+  labs(x = "Percentage thru race", 
+       y = "Average power output", 
+       title = 'Power outputs differ based on rider type',
+       color = "Rider type")+
+  
+  
+  scale_color_manual(values = c("#F02108", "gray40", "#F0A608",
+                                "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")
+
+#
+
+manually_marked_climbs %>% 
+  
+  mutate(fin_pos = ifelse(rnk <= 10, "top_10",
+                          ifelse(rnk <= 25, "top_25",
+                                 ifelse(rnk <= 50, "top_50",
+                                        ifelse(rnk <= 100, "top_100", "remaining"))))) %>%
+  
+  group_by(stage, race, year, Segment, perc_thru, Gradient, Distance, fin_pos) %>% 
+  summarize(Average_Power = mean(watts_adj, na.rm = T)) %>% 
+  ungroup() -> bands_of_rnk
+
+bands_of_rnk$fin_pos <- factor(bands_of_rnk$fin_pos, levels = c("top_10", "top_25", "top_50", "top_100", "remaining"))
+
+bands_of_rnk %>% 
+  ggplot(aes(x = perc_thru, y = avg_power * (Average_Power), color = fin_pos))+
+  geom_point(size=1, alpha = 0.25)+
+  geom_smooth(se=F, size=2)+
+  scale_x_continuous(labels = scales::percent)+
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.01))+
+  coord_cartesian(ylim = c(3.5,7))+
+  labs(x = "Percentage thru race", 
+       y = "Average power output", 
+       title = 'Power outputs differ most in last 3rd of race')+
+  
+  scale_color_manual(values = c("dark red", "red", "orange", "blue", "black"), name = "Finish position")
+
+#
+
+gam_mod <- mgcv::gam(AP ~ s(perc_thru, k = 10),
+      
+      data = bands_of_rnk %>%
+        filter(fin_pos == "top_10") %>%
+        mutate(AP = (Average_Power * avg_power) - 4.2))
+
+gam_preds <- cbind(pred = predict(gam_mod, tibble(perc_thru = seq(0,1,0.01))),
+                   tibble(perc_thru = seq(0,1,0.01)))
 
 #
 
@@ -1422,7 +1523,6 @@ best <- curves %>%
          vs_med = watts_adj / median,
          vs_mean = watts_adj / mean) %>%
   
-  
   inner_join(
     
     dbReadTable(con, "clusters_riders") %>%
@@ -1439,9 +1539,27 @@ po_curves_riders <- best %>%
             best90 = quantile(watts_adj / weight, probs = 0.9, na.rm = T),
             median = median(watts_adj / weight, na.rm = T),
             mean = mean(watts_adj / weight, na.rm = T),
+            median_raw = median(watts/weight, na.rm = T),
             rel_peloton = mean(rel_peloton, na.rm = T),
             races = n()) %>%
   ungroup()
+
+#
+
+po_curves_riders %>%
+  filter(PCS %in% c("Declercq Tim", "De Gendt Thomas", "Kamna Lennard", "Coquard Bryan")) %>%
+  
+  ggplot(aes(x = seconds, y = best80, color = PCS))+
+  
+  geom_line(size=2)+
+  
+  scale_x_log10(breaks = c(10,30,60,120,300,600,1200,2400))+
+  
+  labs(x = "Time duration (secs)",
+       y = "80th percentile of races",
+       title = "Top efforts by time duration")+
+  
+  scale_color_manual(values = c("gold", "#404040", "blue", "orange"), name = "Rider")
 
 #
 #
@@ -1451,25 +1569,34 @@ po_curves_clusters <- best %>%
   group_by(type, seconds) %>% 
   summarize(best80 = quantile(watts_adj / weight, probs = 0.8, na.rm = T),
             best90 = quantile(watts_adj / weight, probs = 0.9, na.rm = T),
+            best80_raw = quantile(watts / weight, probs = 0.8, na.rm = T),
             median = median(watts_adj / weight, na.rm = T),
+            median_raw = median(watts/weight, na.rm = T),
             mean = mean(watts_adj / weight, na.rm = T),
             races = n()) %>%
   ungroup()
 
 po_curves_clusters %>% 
   group_by(seconds) %>% 
-  mutate(peloton = sum(median * races, na.rm = T) / sum(races, na.rm = T)) %>% 
+  mutate(peloton = sum(best80_raw * races, na.rm = T) / sum(races, na.rm = T)) %>% 
   ungroup() %>% 
   
-  ggplot(aes(x = seconds, y = (median / peloton)-1, color = type))+
+  filter(seconds < 3600) %>%
+  
+  ggplot(aes(x = seconds, y = (best80_raw / peloton)-1, color = type))+
   
   geom_hline(yintercept = 0)+
   geom_smooth(size=2, se = F)+
-  scale_x_log10()+
+  scale_x_log10(breaks = c(10,30,60, 120, 300, 600, 1200, 2400, 3600))+
   scale_y_continuous(labels = scales::percent)+
   labs(x = "seconds of effort", 
-       y = 'watts per KG vs peloton', 
-       title = "Power outputs vs rider type clusters")
+       y = 'watts per KG vs average rider', 
+       title = "Power outputs vs rider type clusters",
+       subtitle = "80th percentile efforts")+
+  theme(panel.grid.minor.x = element_blank())+
+  
+  scale_color_manual(values = c("#F02108", "gray40", "#F0A608",
+                                "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")
 
 #
 #
@@ -1652,8 +1779,8 @@ all_segment_data <- stage_level_power %>%
     
   ) %>%
   
-  group_by(Segment, stage, race, year, ) %>%
-  filter(n_distinct(activity_id) >= 15) %>%
+  group_by(Segment, stage, race, year) %>%
+  filter(n_distinct(activity_id) >= 10) %>%
   ungroup() %>%
   
   select(stage, race, year, date, class, one_day_race, grand_tour, time_trial, length,
@@ -1666,8 +1793,12 @@ just_climbs <- all_segment_data %>%
   
   filter(Gradient > 0.035 & Distance >= 0.5) %>%
   
-  filter(year == 2020) %>%
+  anti_join(read_csv("strava_climbs_segments_manual.csv") %>%
+              select(stage, race, year) %>%
+              unique(), by = c("stage", "race", "year")) %>%
   
   group_by(stage, race, year) %>%
-  filter(Distance > (max(Distance, na.rm = T) * 0.2)) %>%
-  ungroup()
+  filter(Distance > (max(Distance, na.rm = T) * 0.2) | Distance > 3) %>%
+  ungroup() %>%
+  
+  select(stage, race, year, length, Type, Gradient, Distance, Segment)
