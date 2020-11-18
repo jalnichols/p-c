@@ -42,9 +42,11 @@ stage,race,year,cobbles
 1,dwars door het hageland - aarschot,2017,1
 1,dwars door het hageland - aarschot,2018,1
 1,dwars door het hageland,2019,1
+1,dwars door het hageland,2020,1
 1,elfstedenronde,2018,1
 1,elfstedenronde,2019,1
 1,gooikse pijl,2019,1
+1,gooikse pijl,2020,1
 1,ronde van drenthe,2017,1
 1,ronde van drenthe,2018,1
 1,ronde van drenthe,2019,1
@@ -54,6 +56,7 @@ stage,race,year,cobbles
 1,paris - tours elite,2016,1
 1,paris - tours elite,2018,1
 1,paris - tours elite,2019,1
+1,paris - tours elite,2020,1
 1,paris-tours elite,2017,1
 1,ronde van vlaanderen - tour des flandres,2018,1
 1,ronde van vlaanderen - tour des flandres,2019,1
@@ -61,6 +64,7 @@ stage,race,year,cobbles
 1,ronde van vlaanderen / tour des flandres,2016,1
 1,ronde van vlaanderen / tour des flandres,2017,1
 1,ronde van vlaanderen / tour des flandres,2013,1
+1,ronde van vlaanderen - tour des flandres,2020,1
 2,baloise belgium tour,2019,1
 5,4 jours de dunkerque / grand prix des hauts de france,2018,1
 5,4 jours de dunkerque / grand prix des hauts de france,2019,1
@@ -71,3 +75,4 @@ stage,race,year,cobbles
 1,gravel and tar classic,2020,1
 1,gylne gutuer,2019,1
 1,gylne gutuer,2018,1
+5,binckbank tour,2020,1
