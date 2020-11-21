@@ -1703,8 +1703,15 @@ all_clusters <- bind_rows(cluster_list) %>%
   
   filter(n == max(n)) %>%
   mutate(pick = "pick") %>%
-  filter(1 == rank(pick, ties.method = "random")) %>%
-  .[[1]]
+  filter(1 == rank(pick, ties.method = "random"))
+
+#
+
+model_selected <- model_list[[all_clusters$iter[[1]]]]
+
+all_clusters <- all_clusters$iter[[1]]
+
+#write_rds(model_selected, 'Stored models/rider-clusters-kmeans-model.rds')
 
 #
 
@@ -1734,7 +1741,9 @@ cluster_assignment <- bind_rows(cluster_list) %>%
                                             ifelse(domestique > 0, "Domestique",
                                                    ifelse(mtn_domestique > 0, "Mountain helper", NA))))))) %>%
   select(-sprinter, -climber, -puncher, -mtn_domestique, -domestique, -sprint_train,
-         -iter, -CL)
+         -iter)
+
+#dbWriteTable(con, "kmeans_rider_clusters", cluster_assignment %>% select(type, CL) %>% unique(), row.names = F, overwrite = TRUE)
 
 #
 # Team Plot
