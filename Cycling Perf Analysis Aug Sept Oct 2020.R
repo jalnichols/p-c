@@ -987,8 +987,9 @@ manually_marked_climbs <- segment_data_races %>%
   inner_join(
     
     dbReadTable(con, "clusters_riders") %>%
-      select(rider, year, master_team, type) %>%
-      unique(), by = c("master_team", "pcs" = "rider", "year"))
+      select(rider, type, Date) %>%
+      mutate(Date = as.Date(Date)) %>%
+      unique(), by = c("pcs" = "rider", "date" = "Date"))
   
 #
 
@@ -1099,6 +1100,19 @@ bands_of_clust %>%
 
 #
 
+avg_power <- segment_data_races %>%
+  
+  inner_join(read_csv("strava_climbs_segments_manual.csv") %>%
+               filter(Valid == 1) %>%
+               mutate(AtKM = ifelse(AtKM > length, length, AtKM)) %>%
+               select(-length), by = c("stage", 'race', "year", "Segment", "Type")) %>%
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
+  summarize(M = mean(watts_adj, na.rm = T)) %>%
+  .[[1]]
+
 manually_marked_climbs %>% 
   
   mutate(fin_pos = ifelse(rnk <= 10, "top_10",
@@ -1133,8 +1147,29 @@ gam_mod <- mgcv::gam(AP ~ s(perc_thru, k = 10),
         filter(fin_pos == "top_10") %>%
         mutate(AP = (Average_Power * avg_power) - 4.2))
 
+write_rds(gam_mod, "Stored models/power-required-throughout-race-gam.rds")
+
 gam_preds <- cbind(pred = predict(gam_mod, tibble(perc_thru = seq(0,1,0.01))),
                    tibble(perc_thru = seq(0,1,0.01)))
+
+gam_preds %>%
+  
+  mutate(best = max(pred, na.rm = T),
+         rel_to_best = pred / best) %>%
+  
+  ggplot(aes(x = perc_thru, y = rel_to_best))+
+  geom_point(size=2)+
+  geom_line()+
+  
+  scale_x_continuous(labels = scales::percent)+
+  scale_y_continuous(labels = scales::percent)+
+  
+  labs(x = "Percentage through race",
+       y = "Power required relative to final climb",
+       title = "Power required on climbs throughout race",
+       subtitle = "Relative to that required on final climb")+
+  
+  theme(axis.text = element_text(size = 15))
 
 #
 
