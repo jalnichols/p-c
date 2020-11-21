@@ -10,6 +10,9 @@ con <- dbConnect(MySQL(),
 
 #
 
+# Bring in and clean data -------------------------------------------------
+
+
 race_data <- dbReadTable(con, "pcs_all_races") %>%
   mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
          Circuit = str_sub(type, 53, nchar(type))) %>%
@@ -886,6 +889,11 @@ write_rds(limits_actual, "sof-limits-mod.rds")
 #
 # actual limits
 
+
+# Stage Data Perf ---------------------------------------------------------
+
+
+
 stage_data_perf <- stage_data %>%
   
   # the limit is predicted from the limits_actual model above
@@ -1360,6 +1368,10 @@ write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
 
 dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, overwrite = T)
 
+
+
+# Stage Time Stats --------------------------------------------------------
+
 #
 #
 # STAGE TIME STATS
@@ -1582,6 +1594,11 @@ ggplot(predictions %>%
        y = "probability of finishing in final group",
        title = "Final group probabilities (model)")
         
+
+# Clustering Weighted PCD -------------------------------------------------
+
+
+
 #
 # weighted pcd based on stage rank
 #
@@ -1806,6 +1823,9 @@ ggplot(weighted_pcd %>%
                                 "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")
 
 
+# Season Long Opportunity / Team Stats ------------------------------------
+
+
 #
 #
 
@@ -1932,13 +1952,6 @@ when_leader <- stage_data_perf %>%
 #
 
 team_best <- stage_data_perf %>%
-  
-  select(-data) %>%
-  select(-new_st, -missing_profile_data, -position_highest, -last_climb, -act_climb_difficulty, 
-         -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length, 
-         -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
-         -gain_back_5, -back_5_seconds, -limit, -success_time, -solo, -rel_success, -url, 
-         -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance) %>%
   
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%

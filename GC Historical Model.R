@@ -124,13 +124,13 @@ if(dl_html == TRUE) {
 #
 #
 
-for(g in 3:length(GC_all$url)) {
+for(g in 1:length(GC_all$url)) {
   
   f_name <- paste0("PCS-HTML/", "GC-", str_replace_all(GC_all$url[[g]], "/", ""))
   
   if(dl_html == TRUE) {
     
-    download.file(paste0("https://www.procyclingstats.com/", GC_all$url[[g]] , "/results"), f_name, quiet = TRUE)
+    download.file(paste0("https://www.procyclingstats.com/", GC_all$url[[g]] , "/result/result"), f_name, quiet = TRUE)
     
   }
   
@@ -264,11 +264,18 @@ pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
 # leading up to date
 #
 
-store_list <- vector("list", 40)
+store_list <- vector("list", 150)
 
-y = seq(1983, 2020, 1)
-
-y = as.Date(paste0(y,"-07-10"))
+y <- pcs_gc_results %>%
+  
+  filter(r %in% c("vuelta-a-espana", "tour-de-france", "giro-d-italia")) %>%
+  
+  select(date) %>%
+  unique() %>%
+  
+  filter(date > '1983-01-01') %>%
+  mutate(date = date - 24) %>%
+  .[[1]]
 
 for(x in 1:length(y)) {
   
@@ -294,6 +301,21 @@ for(x in 1:length(y)) {
     mutate(D = D)
   
 }
+
+#
+
+grand_tour_gc_ratings <- bind_rows(store_list) %>%
+  
+  mutate(year = lubridate::year(D)) %>%
+  
+  rename(Best_GC_Points = best,
+         Total_GC_Points = tot,
+         Races = n,
+         date = D)
+
+dbWriteTable(con, "gc_grandtour_preranks", grand_tour_gc_ratings, row.names = F, append = TRUE)
+
+#
 
 gc_ratings_going_into_TDF <- bind_rows(store_list) %>%
   mutate(edition = year(D)) %>%
