@@ -1502,3 +1502,87 @@ adjusted_preds_All <- bind_rows(adjust_win_probs_All) %>%
 #
 
 #dbWriteTable(con, "predictions_basic_climbing", adjusted_preds_C, row.names = F, append = T)
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# Assign riders to kmeans model clusters
+
+kmeans_model <- read_rds('Stored models/rider-clusters-kmeans-model.rds')
+
+centers <- kmeans_model$centers %>%
+  as_tibble() %>%
+  rownames_to_column() %>%
+  rename(CL = rowname) %>%
+  gather(stat, center, -CL)
+
+#
+
+prc <- dbReadTable(con, "performance_rider_clustering")
+
+dist <- prc %>%
+  select(-in_final_group, -rel_sof) %>%
+  
+  # filter out riders without enough races (max will normally be around 75 so 15+ races needed)
+  group_by(Date) %>%
+  filter(races > (max(races)/5)) %>%
+  ungroup() %>%
+  
+  gather(stat, value, -rider, -Date, -races) %>%
+  
+  # scale each stat
+  group_by(stat) %>%
+  mutate(value = (value - mean(value, na.rm = T)) / sd(value, na.rm = T)) %>%
+  ungroup() %>%
+  
+  # join with centers
+  inner_join(centers, by = c("stat")) %>%
+  
+  # take sum squared euclidean distance
+  group_by(rider, Date, races, CL) %>%
+  summarize(SED = sum((value - center)^2, na.rm = T)) %>%
+  ungroup() %>%
+  
+  # filter out smallest distance
+  group_by(rider, Date, races) %>%
+  filter(SED == min(SED, na.rm = T)) %>%
+  ungroup() %>%
+  
+  select(-SED) %>%
+  
+  # match with correct cluster labels
+  inner_join(dbReadTable(con, "kmeans_rider_clusters") %>%
+               mutate(CL = as.character(CL)), by = c("CL"))
+
+#
+#
+#
+#
+#
+
+#dbWriteTable(con, "clusters_riders", dist, append = TRUE, row.names = F)
+
+#
+#
+#
+#
+#
+
+tdf_2020 <- stage_data_perf %>%
+  filter(race == "tour de france" & stage == 1 & year == 2020) %>%
+  
+  inner_join(dist, by = c("rider", "date" = "Date"))
