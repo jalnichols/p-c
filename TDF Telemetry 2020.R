@@ -85,6 +85,166 @@ all_stages %>%
   
   inner_join(riders, by = c("Bib")) %>%
   
+  filter(kmToFinish > 0) %>% 
+  
+  mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
+  
+  group_by(TimeStamp) %>%
+  mutate(primoz = mean(primoz, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  mutate(to_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 
+                            ifelse(kmToFinish < primoz, 1, 0)),
+         near_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 0)) %>% 
+  
+  filter(kmToFinish > 0) %>% 
+  
+  mutate(valid = ifelse(to_roglic == 1, kmToFinish, NA)) %>%
+  
+  group_by(Bib, firstname, lastnameshort, GC, StageId) %>% 
+  summarize(to_roglic = mean(to_roglic, na.rm = T),
+            near_roglic = mean(near_roglic, na.rm = T),
+            furthest = min(valid, na.rm = T),
+            stages = n_distinct(StageId),
+            stamps = n()) %>%
+  ungroup() %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT bib, rider FROM pcs_all_startlists WHERE race = 'tour de france' AND year = 2020"), by = c("Bib" = "bib")
+    
+  ) %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, type, Date FROM clusters_riders WHERE Date BETWEEN '2020-08-27' AND '2020-09-20'") %>%
+      
+      inner_join(
+        
+        tibble(StageId = c('0400', '0600', '0700', '0800', '0900', '1200', '1300', '1400', '1500', '1600', '1700', '1800', '1900'),
+               Date = c('2020-09-01', '2020-09-03', '2020-09-04', '2020-09-05', '2020-09-06',
+                        '2020-09-10', '2020-09-11', '2020-09-12', '2020-09-13', '2020-09-15',
+                        '2020-09-16', '2020-09-17', '2020-09-18')), by = c("Date")), 
+    by = c("StageId", "rider")) -> survival_w_roglic
+
+#
+
+tdf_koms <- dbGetQuery(con, "SELECT * FROM climbs_from_telemetry WHERE Race = 'Tour de France' AND year = 2020") %>%
+  
+  mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00")))
+
+#
+
+All_list <- vector("list", 13)
+
+Ss <- c("0900", "0800", "0600", "0400", "1300", '1400', '1500', '1600', '1700', '1800', '1200', '1900')
+
+K = all_stages %>%
+  
+  group_by(Bib, StageId) %>%
+  summarize(MX = max(kmToFinish)) %>%
+  ungroup() %>%
+  
+  group_by(StageId) %>%
+  summarize(MX = quantile(MX, probs = 0.9)) %>%
+  ungroup() %>%
+  
+  filter(StageId %in% Ss)
+
+riders_in_race <- tibble(StageId = Ss,
+                         RidersTotal = c(168, 172, 172, 172, 160, 158, 157, 156, 152, 150, 161, 147))
+
+for(S in 1:12) { 
+  
+  k = K %>%
+    filter(StageId == Ss[[S]]) %>%
+    select(MX) %>%
+    .[[1]] %>%
+    floor()
+  
+  list13 <- vector("list", k)
+  
+  for(x in 1:k) { 
+    
+    list13[[x]] <- expand_grid(
+      
+      ClusterType = survival_w_roglic$type %>% unique(),
+      kmToFinish = x
+      
+    ) %>%
+      
+      mutate(perc = 0,
+             StageId = Ss[[S]],
+             n = NA) %>%
+      
+      rbind(
+        
+        survival_w_roglic %>%
+          filter(StageId==Ss[[S]] & (to_roglic - near_roglic)<0.5) %>%
+          group_by(ClusterType = type) %>%
+          mutate(n=n()) %>% 
+          ungroup() %>%
+          
+          filter(furthest < x) %>% 
+          
+          group_by(ClusterType) %>%
+          summarize(perc = n() / mean(n, na.rm = T),
+                    n=mean(n)) %>%
+          ungroup() %>%
+          mutate(kmToFinish = x,
+                 StageId = Ss[[S]])) %>%
+      
+      group_by(ClusterType, kmToFinish) %>%
+      filter(perc == max(perc, na.rm = T)) %>%
+      ungroup()
+
+  }
+  
+  df <- bind_rows(list13)
+  
+  ggplot()+
+    
+    geom_rect(data = tdf_koms %>%
+                 filter(StageId == Ss[[S]]) %>%
+                   filter(start_km < k),
+               aes(xmin = start_km, xmax = end_km, ymin = 0, ymax = 1),
+               
+               fill = "yellow", color = "transparent", alpha = 0.5)+
+    
+    geom_line(data = df, aes(x = kmToFinish, y = perc, color = ClusterType), size=1)+
+    
+    scale_x_reverse(breaks = seq(0,ceiling(k/10)*10, ceiling(k/10)))+
+    scale_y_continuous(labels = scales::percent)+
+    labs(y = "Survival with Roglic", 
+         subtitle = "climbs highlighted in yellow",
+         title = paste0("Survival by Rider Type: Stage ", str_sub(Ss[[S]],1,2)))+
+    scale_color_manual(values = c("#F02108", "gray40", "#F0A608",
+                                  "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")+
+    theme(
+      
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(size=15)
+      
+    )
+  
+  ggsave(paste0("survival-prob-tdf-xxx-", Ss[[S]], ".png"), height = 7, width = 10)
+  
+  All_list[[S]] <- bind_rows(list13)
+  
+}
+
+All <- bind_rows(All_list)
+
+#
+#
+#
+#
+
+
+all_stages %>%
+  
+  inner_join(riders, by = c("Bib")) %>%
+  
   filter(StageId %in% c("0900", "0800", "0600", "0400", "0200", "1300", '1500', '1600', '1700', '1800')) %>%
   
   mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
