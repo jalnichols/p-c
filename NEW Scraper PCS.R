@@ -2200,3 +2200,218 @@ for(r in 1:length(race_data$URL)) {
 }
 
 tictoc::toc()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+all_stages <- dbReadTable(con, "pcs_all_stages") %>%
+  
+  filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
+  
+  filter(Date > as.Date('2017-01-01')) %>%
+  
+  group_by(Race, url, year) %>%
+  filter(s == max(s, na.rm = T)) %>%
+  filter(max(s)>3 & max(s)<8) %>%
+  ungroup() %>%
+  
+  filter(Class %in% c("2.UWT", "2.HC", "2.1"))
+
+#
+
+tictoc::tic()
+
+for(r in 1:length(all_stages$value)) {
+  
+  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+  
+  # match existence of f_name in stage directory
+  if((f_name %in% html_stage_dir) & (str_sub(all_stages$Class[[r]],1,1)=="2")) {
+    
+    race_url <- all_stages$url[[r]]
+    
+    s = all_stages$s[[r]]
+    
+    url <- all_stages$value[[r]]
+    
+    # scrape the HTML for the page for multiple use
+    
+    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    
+    page <- read_file(f_name) %>%
+      read_html()
+    
+    # bring in the list of tables
+    
+    d <- page %>%
+      html_nodes('table') %>%
+      html_table()
+    
+    tabs <- page %>%
+      html_nodes('ul.restabs') %>%
+      html_nodes('a') %>%
+      html_text()
+    
+    if(length(d) == 0) {
+      
+      
+    } else {
+
+      KOM = tabs %>%
+        enframe(name = NULL) %>%
+        rownames_to_column() %>%
+        filter(value == "KOM") %>%
+        .[1,1] %>%
+        .[[1]] %>%
+        as.numeric()
+      
+      PTS = tabs %>%
+        enframe(name = NULL) %>%
+        rownames_to_column() %>%
+        filter(value == "Points") %>%
+        .[1,1] %>%
+        .[[1]] %>%
+        as.numeric()
+      
+      TM = tabs %>%
+        enframe(name = NULL) %>%
+        rownames_to_column() %>%
+        filter(value == "Teams") %>%
+        .[1,1] %>%
+        .[[1]] %>%
+        as.numeric()
+      
+      YTH = tabs %>%
+        enframe(name = NULL) %>%
+        rownames_to_column() %>%
+        filter(value == "Youth") %>%
+        .[1,1] %>%
+        .[[1]] %>%
+        as.numeric()
+      
+      GC = tabs %>%
+        enframe(name = NULL) %>%
+        rownames_to_column() %>%
+        filter(value == "GC") %>%
+        .[1,1] %>%
+        .[[1]] %>%
+        as.numeric()
+      
+      # teams
+      
+      # team <- bind_rows(d[[TM]]) %>%
+      #   
+      #   rename(rnk = Rnk,
+      #          team = Team) %>%
+      #   mutate(Type = "Team") %>%
+      #   
+      #   mutate(stage = s,
+      #          race = all_stages$Race[[r]],
+      #          year = all_stages$year[[r]],
+      #          date = all_stages$Date[[r]]) %>%
+      #   
+      #   mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+      #          rider = as.numeric(NA),
+      #          points = as.numeric(NA)) %>%
+      #   
+      #   select(rider, rnk, team, Type, stage, race, year, date, points)
+      # 
+      # dbWriteTable(con, "pcs_jerseys_final", team, row.names = F, append = TRUE)
+      # 
+      # GC
+      
+      gc <- bind_rows(d[[GC]]) %>%
+
+        rename(rnk = Rnk,
+               rider = Rider,
+               team = Team) %>%
+        mutate(Type = "GC") %>%
+        
+        mutate(stage = s,
+               race = all_stages$Race[[r]],
+               year = all_stages$year[[r]],
+               date = all_stages$Date[[r]]) %>%
+        
+        mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+               rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+        
+        mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)),
+               points = as.numeric(NA)) %>%
+        
+        select(rider, rnk, team, Type, stage, race, year, date, points)
+      
+      dbWriteTable(con, "pcs_jerseys_final", gc, row.names = F, append = TRUE)
+      # 
+      # # mountains
+      # 
+      # mountains <- bind_rows(d[[KOM]]) %>%
+      #   
+      #   mutate(PntCount = sum(!is.na(Pnt)),
+      #          TodayCount = sum(!is.na(Today))) %>%
+      #   
+      #   mutate(points = ifelse(PntCount >= TodayCount, Pnt, Today)) %>%
+      #   
+      #   rename(rnk = Rnk,
+      #          rider = Rider,
+      #          team = Team) %>%
+      #   mutate(Type = "Mountains") %>%
+      #   
+      #   mutate(stage = s,
+      #          race = all_stages$Race[[r]],
+      #          year = all_stages$year[[r]],
+      #          date = all_stages$Date[[r]]) %>%
+      #   
+      #   mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+      #          rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+      #   
+      #   mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))) %>%
+      #   
+      #   select(rider, rnk, team, Type, stage, race, year, date, points)
+      # 
+      # dbWriteTable(con, "pcs_jerseys_final", mountains, row.names = F, append = TRUE)
+      # 
+      # # points
+      # 
+      # points <- bind_rows(d[[PTS]]) %>%
+      #   
+      #   mutate(PntCount = sum(!is.na(Pnt)),
+      #          TodayCount = sum(!is.na(Today))) %>%
+      #   
+      #   mutate(points = ifelse(PntCount >= TodayCount, Pnt, Today)) %>%
+      #   
+      #   rename(rnk = Rnk,
+      #          rider = Rider,
+      #          team = Team) %>%
+      #   mutate(Type = "Points") %>%
+      #   
+      #   mutate(stage = s,
+      #          race = all_stages$Race[[r]],
+      #          year = all_stages$year[[r]],
+      #          date = all_stages$Date[[r]]) %>%
+      #   
+      #   mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
+      #          rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+      #   
+      #   mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))) %>%
+      #   
+      #   select(rider, rnk, team, Type, stage, race, year, date, points)
+      # 
+      # dbWriteTable(con, "pcs_jerseys_final", points, row.names = F, append = TRUE)
+      
+    }
+    
+  }
+  
+  print(paste0(all_stages$Race[[r]], all_stages$year[[r]]))
+  
+}
+
+tictoc::toc()
