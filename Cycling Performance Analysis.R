@@ -1825,6 +1825,62 @@ ggplot(weighted_pcd %>%
 
 # Season Long Opportunity / Team Stats ------------------------------------
 
+#
+#
+#
+
+# Stage results, GC results, jersey results correlations
+
+stage_data_perf %>%
+  filter(year >= 2017) %>% 
+  group_by(team, year) %>%
+  mutate(sof = mean(sof, na.rm = T)) %>%
+  ungroup() %>% 
+  
+  select(sof, tm_pos, team, race, stage, year, class, rnk) %>%
+  unique() %>% 
+  
+  group_by(tm_pos, race, stage, year, class) %>% 
+  mutate(rnk_tm_pos = rank(rnk, ties.method = "first")) %>% 
+  ungroup() %>% 
+  
+  select(-rnk) %>% 
+  
+  spread(tm_pos, rnk_tm_pos) %>%
+  filter(team != "") %>% 
+  select(sof, team, race, stage, year, class, `1`:`8`) %>%
+  left_join(dbGetQuery(con, "SELECT * FROM pcs_jerseys_final") %>%
+              group_by(team, Type, race, year) %>%
+              filter(rnk == min(rnk, na.rm = T) | Type == "GC") %>% 
+              ungroup() %>% 
+              
+              select(team, rnk, race, Type, year) %>% 
+              unique() %>%
+              
+              group_by(team, race, year, Type) %>%
+              mutate(tm_pos = rank(rnk, ties.method = "first")) %>% 
+              ungroup() %>% 
+              
+              group_by(race, Type, year, tm_pos) %>% 
+              mutate(rnk_tm_pos = rank(rnk, ties.method = 'min')) %>% 
+              ungroup() %>% 
+              
+              select(-rnk) %>% 
+              
+              mutate(Type = ifelse(Type == "GC", paste0("GC-", tm_pos), Type)) %>% 
+              
+              select(-tm_pos) %>% 
+              
+              spread(Type, rnk_tm_pos) %>% 
+              
+              mutate(race = tolower(race)), by = c("race", "team", "year")) %>%
+  
+  filter(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "1.UWT", "2.UWT",
+                      "1.1", "2.1")) -> stage_ranks
+
+#
+
+cor(stage_ranks[, 7:26], use = "pairwise.complete.obs") -> all_corrs_ranks
 
 #
 #
