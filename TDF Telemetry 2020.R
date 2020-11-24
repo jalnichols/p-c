@@ -12,7 +12,7 @@ con <- dbConnect(MySQL(),
 
 # now kick off everything
 
-telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2020'
+#telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2020'
 
 STAGE <- 19
 
@@ -25,7 +25,7 @@ while(step < 700) {
     unnest(cols = c(Riders)) %>%
     select(-LatLon)
   
-  DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
+  #DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
 
   if(min(json_df$kmToFinish) < 3) {
 
@@ -93,7 +93,7 @@ all_stages %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
   ungroup() %>%
   
-  mutate(to_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 
+  mutate(to_roglic = ifelse(abs(kmToFinish - primoz) < 0.1, 1, 
                             ifelse(kmToFinish < primoz, 1, 0)),
          near_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 0)) %>% 
   
@@ -117,6 +117,23 @@ all_stages %>%
   
   inner_join(
     
+    dbGetQuery(con, "SELECT rider, stage, gain_gc
+               FROM stage_data_perf
+               WHERE race = 'tour de france' AND year = 2020") %>%
+      mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00"))) %>%
+      
+      mutate(primoz = ifelse(rider == "Roglic Primoz", gain_gc, NA)) %>%
+      
+      group_by(stage) %>%
+      mutate(primoz = mean(primoz, na.rm = T)) %>%
+      ungroup() %>%
+      
+      mutate(gain_gc = gain_gc - primoz), by = c("rider", "StageId")
+    
+  ) %>%
+  
+  inner_join(
+    
     dbGetQuery(con, "SELECT rider, type, Date FROM clusters_riders WHERE Date BETWEEN '2020-08-27' AND '2020-09-20'") %>%
       
       inner_join(
@@ -125,14 +142,62 @@ all_stages %>%
                Date = c('2020-09-01', '2020-09-03', '2020-09-04', '2020-09-05', '2020-09-06',
                         '2020-09-10', '2020-09-11', '2020-09-12', '2020-09-13', '2020-09-15',
                         '2020-09-16', '2020-09-17', '2020-09-18')), by = c("Date")), 
-    by = c("StageId", "rider")) -> survival_w_roglic
+    by = c("StageId", "rider")) %>%
+  
+  select(-primoz) -> survival_w_roglic
 
+#
+#
 #
 
 tdf_koms <- dbGetQuery(con, "SELECT * FROM climbs_from_telemetry WHERE Race = 'Tour de France' AND year = 2020") %>%
   
-  mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00")))
+  mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00"))) %>%
+  
+  arrange(-perc_thru) %>%
+  
+  group_by(StageId) %>%
+  mutate(climbing_KMs = cumsum(length)) %>%
+  ungroup()
 
+# look at 1) climbing KMs not total KMs
+# look at 2) only those dropped on final climb
+
+library(lme4)
+
+time_lost_model <- lmer(gain_gc ~ (0 + climbing_KMs | StageId) + climbing_KMs + 0, 
+   data = survival_w_roglic %>%
+     filter(!is.na(gain_gc)) %>%
+     filter(!is.na(furthest)) %>%
+     filter(!furthest == "Inf") %>%
+     filter((to_roglic - near_roglic)<0.5) %>%
+     filter(StageId %in% c("0400", "0600", '0800', "0900", '1300', '1500', '1600', '1700', '1800')) %>%
+     
+     inner_join(tdf_koms %>%
+                  select(StageId, start_km, end_km, climbing_KMs, length), by = ("StageId")) %>% 
+     
+     mutate(furthest = round(furthest,1)) %>% 
+     
+     mutate(climbing_KMs = ifelse(furthest > start_km, climbing_KMs, 
+                                  ifelse(furthest < end_km, 0, climbing_KMs - (start_km - furthest)))) %>%
+     
+     group_by(rider, StageId) %>%
+     filter(climbing_KMs == max(climbing_KMs, na.rm = T)) %>% 
+     mutate(n=n()) %>%
+     ungroup() %>% 
+     select(-end_km, -start_km, -length) %>% 
+     unique() %>%
+     
+     mutate(last_10_km = ifelse(climbing_KMs <= 10, 1, 0))
+     
+     )
+
+summary(time_lost_model)
+
+ranef(time_lost_model)[[1]] %>% rownames_to_column()
+
+#
+#
 #
 
 All_list <- vector("list", 13)
