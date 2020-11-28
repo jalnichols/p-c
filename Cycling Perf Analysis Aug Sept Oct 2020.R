@@ -15,7 +15,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year IN (2014,2019,2020)") %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -425,9 +425,11 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   ungroup() %>% 
   
   inner_join(all_stage_data %>%
-               filter(year %in% c("2019", "2020")) %>%
+               filter(year %in% c("2014", "2019", "2020")) %>%
                mutate(date = ifelse(race == "tour de romandie" & year == 2019,
                                     as.Date(date + 1), as.Date(date)),
+                      date = ifelse(race == "giro d'italia" & year == 2014,
+                                    ifelse(stage < 4, date, ifelse(stage < 10, date + 1, ifelse(stage < 16, date + 2, date + 3))), date),
                       date = ifelse(race == "giro d'italia" & year == 2019,
                                     ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date),
                       date = ifelse(race == "giro d'italia" & year == 2020,
@@ -1837,3 +1839,132 @@ just_climbs <- all_segment_data %>%
   ungroup() %>%
   
   select(stage, race, year, length, Type, Gradient, Distance, Segment)
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+# Strava vertical gain ----------------------------------------------------
+
+
+stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
+                  FROM strava_activity_data 
+                  WHERE Stat IN ('Elevation', 'Distance')") %>% 
+  
+  # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+  
+  # clean up the dates
+  mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
+  separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
+  mutate(date = paste0(str_trim(date),", ", Y)) %>% 
+  select(-weekday, -drop, -Y) %>% 
+  
+  # clean up the stat values
+  mutate(VALUE = str_replace(VALUE, "mi", ""), 
+         VALUE = str_replace(VALUE, "ft", ""),
+         VALUE = str_replace(VALUE, ",", ""),
+         VALUE = as.numeric(VALUE)) %>% 
+  
+  mutate(date = lubridate::mdy(date)) %>% 
+  unique() %>% 
+  spread(Stat, VALUE) %>% 
+  filter(!is.na(`Elevation`)) %>% 
+  janitor::clean_names() %>% 
+  
+  group_by(date) %>% 
+  mutate(n=n()) %>% 
+  ungroup() %>% 
+  
+  inner_join(all_stage_data %>%
+               filter(year %in% c("2014", "2019", "2020")) %>%
+               mutate(date = ifelse(race == "tour de romandie" & year == 2019,
+                                    as.Date(date + 1), as.Date(date)),
+                      date = ifelse(race == "giro d'italia" & year == 2019,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "giro d'italia" & year == 2014,
+                                    ifelse(stage < 4, date, ifelse(stage < 10, date + 1, ifelse(stage < 16, date + 2, date + 3))), date),
+                      date = ifelse(race == "giro d'italia" & year == 2020,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "tour de france" & year == 2019,
+                                    ifelse(stage < 11, date, ifelse(stage < 16, date + 1, date + 2)), date),
+                      date = ifelse(race == "la vuelta ciclista a espana" & year == 2019,
+                                    ifelse(stage < 10, date, ifelse(stage < 17, date + 1, date + 2)), date),
+                      date = ifelse(race == "la vuelta ciclista a espana" & year == 2020,
+                                    ifelse(stage < 7, date, ifelse(stage < 13, date + 1, date + 2)), date),
+                      date = ifelse(race == "volta a portugal em bicicleta edicao especial" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "volta a portugal santander" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "skoda-tour de luxembourg" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "sibiu cycling tour" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "sibiu cycling tour" & year == 2020,
+                                    date + 1, date),
+                      date = ifelse(race == "tour de hongrie" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "boucles de la mayenne" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "zlm tour" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "int. osterreich-rundfahrt-tour of austria" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "the larry h.miller tour of utah" & year == 2019,
+                                    date + 1, date),
+                      date = ifelse(race == "vuelta a san juan internacional" & year == 2019,
+                                    ifelse(stage < 5, date, date + 1), date),
+                      date = ifelse(race == "vuelta a san juan internacional" & year == 2020,
+                                    ifelse(stage < 5, date, date + 1), date),
+                      date = ifelse(race == "tour de france" & year == 2020,
+                                    ifelse(stage < 10, date, ifelse(stage < 16, date + 1, date + 2)), date)) %>%
+               mutate(date = as.Date(date, origin = '1970-01-01')) %>%
+               unique(), by = c("date", "pcs" = "rider")) %>% 
+  
+  # if two results exist for same day matching distance, it's probably a recon and TT which
+  # means drop the lower watts
+  
+  # also, many riders include distance outside the TT as part of their strava activity
+  # so maybe accept any riders +/- 10 km? or maybe we just can't get accurate TT data
+  mutate(elevation = elevation * 0.3048) %>%
+  mutate(distance = distance * 1.609) %>% 
+  filter((distance / length) > 0.8) %>%
+  filter((distance / length) < 1.2) %>%
+  mutate(tvg = elevation / distance) %>% select(-n,
+                                                -win_seconds, -total_seconds,
+                                                -parcours_value, -stage_type,
+                                                -gain_40th, -gain_20th, -gain_10th,
+                                                -leader_rating)
+
+#
+#
+#
+
+stage_level_power %>% 
+  filter(rnk != 200 & time_trial == 0) %>% 
+  
+  group_by(stage, race, year, class, date, pred_climb_difficulty) %>% 
+  summarize(tvg = median(tvg, na.rm = T),
+            riders= n(), 
+            distance = median(distance, na.rm = T), 
+            elevation = median(elevation)) %>% 
+  ungroup() %>% 
+  unique() -> TVG
