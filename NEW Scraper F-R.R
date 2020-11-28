@@ -227,20 +227,48 @@ for(x in 1:length(all_races$url)) {
   d <- all_races$url[[x]] %>%
     
     read_html() %>%
-    html_nodes('table') %>%
+    html_nodes('table') 
+  
+  if(length(d) == 0) {
+    
+    
+  } else {
+  
+  urls <- d %>%
     html_nodes('a') %>%
     html_attr(name = "href") %>% 
     enframe(name = NULL) %>%
     mutate(value = str_replace(value, "sid=", "=")) %>%
     separate(value, c("url", "trash"), sep = "=") %>% 
     mutate(url = paste0('https://www.la-flamme-rouge.eu', str_sub(url, 1, nchar(url) - 1))) %>%
-    mutate(url = str_replace(url, "viewtrack", "loadtrack")) %>%
+    mutate(url = str_replace(url, "viewtrack", "loadtrack"))
+  
+  sd <- d %>%
+    html_table(fill = TRUE) %>%
+    .[[1]] %>%
+    filter(!is.na(X1)) %>%
+    filter(!X1 == "") %>%
+    
+    rename(stage_name = X1,
+           stage_type = X2,
+           date = X3,
+           cities = X4,
+           length = X5,
+           accuracy = X8) %>%
+    
+    select(stage_name, stage_type, date, cities, length) %>%
+    filter(!stage_name == "Num")
+  
+  
+  dx <- cbind(urls, sd) %>%
     mutate(race = all_races$race[[x]],
            race_url = all_races$url[[x]], 
            year = all_races$year[[x]])
   
-  stages_list[[x]] <- d %>%
+  stages_list[[x]] <- dx %>%
     select(-trash)
+  
+  }
   
   print(x)
   
@@ -248,46 +276,52 @@ for(x in 1:length(all_races$url)) {
 
 # filter out races w/o data available yet (empty stages)
 
-stages_list <- stages_list %>%
-  discard(function(x) nrow(x) == 0)
+#stages_list <- stages_list %>%
+#  discard(function(x) nrow(x) == 0)
 
 # this writes a list of each stage URL
 
-dbWriteTable(con, "fr_stage_urls", bind_rows(stages_list), append = TRUE, row.names = FALSE)
+dbWriteTable(con, "fr_stage_info", bind_rows(stages_list) %>% rename(stage_url = url), append = TRUE, row.names = FALSE)
 
-stages_list_all <- c(read_rds("stages-list-f-r.rds"), stages_list)
+#stages_list_all <- c(read_rds("stages-list-f-r.rds"), stages_list) %>% unique()
 
-write_rds(stages_list_all, "stages-list-f-r.rds")
+#write_rds(stages_list_all, "stages-list-f-r.rds")
 
 # and for the data frame
 
-all_stages <- all_races %>%
+#all_stages <- all_races %>%
   
-  inner_join(
+#  inner_join(
     
-    bind_rows(stages_list) %>%
-      select(race_url) %>%
-      unique(), by = c("url" = "race_url"))
+#    bind_rows(stages_list) %>%
+#      select(race_url) %>%
+#      unique(), by = c("url" = "race_url"))
 
 #
 
-dbWriteTable(con,
-             "fr_stages",
-             all_stages,
-             row.names = FALSE,
-             append = TRUE
-)
+#dbWriteTable(con,
+#             "fr_stages",
+#             all_stages,
+#             row.names = FALSE,
+#             append = TRUE
+#)
 
 
 # bring in 
 
-all_stages <- dbReadTable(con, "fr_stages") %>%
-  unique() %>%
+#all_stages <- dbReadTable(con, "fr_stages") %>%
+#  unique() %>%
   
-  inner_join(all_races %>%
-               select(url), by = c("url" = "url"))
+#  inner_join(all_races %>%
+#               select(url), by = c("url" = "url"))
 
-stages_list <- read_rds( "stages-list-f-r.rds")
+#stages_list <- read_rds( "stages-list-f-r.rds")
+
+#
+#
+#
+
+all_stages <- dbReadTable(con, "fr_stage_info")
 
 #
 #
@@ -302,19 +336,13 @@ tictoc::tic()
 
 #
 
-for(y in 1:length(stages_list)) {
+for(y in 1:length(all_stages$race_url)) {
   
-  if(!stages_list[[y]]$race_url[[1]] %in% all_stages$url[[y]]) {
-    
-    print("didn't pull it")
-    
-  } else {
-
   
   # run through each race in the stages_list (denoted by y)
   # each stage in that race will be denoted by z below
   
-  for(z in 1:length(stages_list[[y]]$url)) {
+  for(z in 1:length(all_stages$stage_url[[y]])) {
     
     # this pulls out the json data
     
@@ -327,7 +355,7 @@ for(y in 1:length(stages_list)) {
       q = q + 1
       
       try(
-        json <- rjson::fromJSON(readLines(stages_list[[y]]$url[[z]]))
+        json <- rjson::fromJSON(readLines(all_stages$stage_url[[y]]))
       )
       
     }
@@ -450,29 +478,25 @@ for(y in 1:length(stages_list)) {
     #combine all climbs for that stage
     
     df <- bind_rows(climbs_list) %>%
-      mutate(url = stages_list[[y]]$url[[z]],
-             race_url = stages_list[[y]]$race_url[[z]],
-             race = stages_list[[y]]$race[[z]],
-             year = stages_list[[y]]$year[[z]],
+      mutate(url = all_stages$stage_url[[y]],
+             race_url = all_stages$race_url[[y]],
+             race = all_stages$race[[y]],
+             year = all_stages$year[[y]],
              
              # this data is wrong when all_stages != stages_list in terms of length
-             #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
-             year = 0,
-             stage = z,
+             stage = all_stages$stage_number[[y]],
              updated = lubridate::now())
     
     # same process for cobbles
     
     cobs <- bind_rows(cobbles_list) %>%
-      mutate(url = stages_list[[y]]$url[[z]],
-             race_url = stages_list[[y]]$race_url[[z]],
-             race = stages_list[[y]]$race[[z]],
-             year = stages_list[[y]]$year[[z]],
+      mutate(url = all_stages$stage_url[[y]],
+             race_url = all_stages$race_url[[y]],
+             race = all_stages$race[[y]],
+             year = all_stages$year[[y]],
              
              # this data is wrong when all_stages != stages_list in terms of length
-             #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
-             year = 0,
-             stage = z,
+             stage = all_stages$stage_number[[y]],
              updated = lubridate::now())
     
     # clean up generic sprints
@@ -511,13 +535,13 @@ for(y in 1:length(stages_list)) {
         
         mutate(category = as.numeric(NA)) %>%
         
-        mutate(url = stages_list[[y]]$url[[z]],
-               race_url = stages_list[[y]]$race_url[[z]],
-               race = stages_list[[y]]$race[[z]],
-               #year = stages_list[[y]]$year[[z]],
-               #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
-               year = 0,
-               stage = z,
+        mutate(url = all_stages$stage_url[[y]],
+               race_url = all_stages$race_url[[y]],
+               race = all_stages$race[[y]],
+               year = all_stages$year[[y]],
+               
+               # this data is wrong when all_stages != stages_list in terms of length
+               stage = all_stages$stage_number[[y]],
                updated = lubridate::now())
       
     } else {
@@ -561,13 +585,7 @@ for(y in 1:length(stages_list)) {
     # write to DB table
     
     route_data_to_write <- bind_rows(route_list) %>%
-      mutate(url = stages_list[[y]]$url[[z]],
-             #race_url = stages_list[[y]]$race_url[[z]],
-             #race = stages_list[[y]]$race[[z]],
-             #year = stages_list[[y]]$year[[z]],
-             #year = str_sub(all_stages$date[[y]], nchar(all_stages$date[[y]]) - 3, nchar(all_stages$date[[y]])),
-             #year = 0,
-             #stage = z
+      mutate(url = all_stages$stage_url[[y]],
              ) %>%
       
       mutate(dist = as.numeric(dist),
@@ -587,15 +605,11 @@ for(y in 1:length(stages_list)) {
     
   }
   
-  #climbs_stages_list[[y]] <- bind_rows(data_list)
-  
   print(y)
-  print(stages_list[[y]]$race)
-  print(stages_list[[y]]$year)
+  print(all_stages$race[[y]])
+  print(all_stages$stage_name[[y]])
   
   Sys.sleep(runif(1, 1, 5))
-  
-  }
   
 }
 
@@ -756,15 +770,15 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date <= '2020-10-31') %>%
+  filter(date <= '2020-11-15') %>%
   
   filter(!class == 'NC')
 
 #
 
-fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, year, date") %>%
+fr <- dbGetQuery(con, "SELECT DISTINCT race, year, race_url as url FROM fr_stage_info") %>%
   
-  inner_join(dbReadTable(con, "fr_races")) %>%
+  inner_join(dbReadTable(con, "fr_races"), by = c("race", "url", "year")) %>%
   
   select(date, race, year, class, tour, stages) %>%
   
@@ -775,17 +789,18 @@ fr <- dbGetQuery(con, "SELECT race, year, date FROM fr_stages GROUP BY race, yea
          date = str_replace_all(date, "Friday", ""),
          date = str_replace_all(date, "Saturday", ""),
          date = str_replace_all(date, "Sunday", ""),
-         date = str_trim(date)) %>%
-  separate(date, c("day", "month", "year2"), sep = " ") %>%
-  inner_join(tibble(month = c("January","February","March","April","May","June",
-                              "July","August","September","October","November","December"),
-                    m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
-  mutate(date = as.Date(paste0(year2,"-",m,"-",day))) %>%
+         date = str_trim(date),
+         nchar_date = nchar(date)) %>%
+  
+  mutate(date = ifelse(nchar_date < 20, date, str_sub(date, 1, floor(nchar(date)/2))),
+         date = str_replace(date, " 1", ""),
+         date = str_replace(date, paste0(year, " 2"), paste0(year))) %>%
+  
+  mutate(date = lubridate::dmy(date)) %>%
+
   select(race, year, date, class, tour) %>%
-  filter(date <= '2020-10-31') %>%
-  
-  mutate(date = ifelse(year == 2016 & race == "Santos Tour Down Under", as.Date('2016-01-19'), date)) %>%
-  
+  filter(date <= '2020-11-15') %>%
+
   filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)")) %>%
   
   mutate(class = ifelse(class == "CM", "WC", class))
@@ -896,11 +911,11 @@ all_climbs <- clean_climbs %>%
   
   filter(!is.na(race)) %>%
   
-  # correct for prologues
-  mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
-                        ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
-                               ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
-                                      ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, stage))))) %>%
+  inner_join(
+    
+    dbGetQuery(con, "SELECT DISTINCT stage_url, stage_name
+               FROM fr_stage_info") %>%
+      mutate(stage_name = ifelse(stage_name == "P", "0", stage_name)), by = c("url" = "stage_url")) %>%
   
   unique() %>%
   
@@ -923,25 +938,27 @@ all_climbs <- clean_climbs %>%
 # clean routes
 #
 
-all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data WHERE updated > '2020-07-15'") %>%    
+all_routes <- dbGetQuery(con, "SELECT DISTINCT alt, dist, url FROM fr_route_data WHERE updated > '2020-07-15'") %>%    
   mutate(distances = as.numeric(dist),
          alt = as.numeric(alt)) %>%
   
+  mutate(dist = floor(dist / 0.05) * 0.05) %>%
+  
   group_by(url, dist) %>%
-  summarize(alt = mean(alt, na.rm = T)) %>%
+  summarize(alt = median(alt, na.rm = T)) %>%
   ungroup() %>%
   
   inner_join(
     
-    dbGetQuery(con, "SELECT DISTINCT url, race, race_url, year
-               FROM fr_stage_urls") %>%
-      group_by(race, year, race_url) %>%
-      mutate(stage = rank(year, ties.method = "first")) %>%
-      ungroup(), by = c("url")) %>%
+    dbGetQuery(con, "SELECT DISTINCT stage_url, stage_name, stage_type, date, race, year
+               FROM fr_stage_info") %>%
+      mutate(stage_name = ifelse(stage_name == "P", "0", stage_name)), by = c("url" = "stage_url")) %>%
   
-  arrange(year, race, stage, dist) %>%
+  arrange(year, race, stage_name, url, dist) %>%
   
-  group_by(stage, year, race) %>%
+  rename(stage_url = url) %>%
+  
+  group_by(year, race, stage_url, stage_name) %>%
   mutate(points = rank(dist, ties.method = "first"),
          length = max(dist, na.rm = T),
          avg_alt = mean(alt, na.rm = T),
@@ -967,14 +984,7 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data WHERE up
   ) %>%
   
   rename(slug = race,
-         race = pcs) %>%
-  
-  # correct for prologues
-  mutate(stage = ifelse(race == "Tour de Romandie" & year %in% c(2019, 2018, 2017, 2016, 2014, 2013), stage - 1,
-                        ifelse(race == "Criterium du Dauphine" & year %in% c(2016, 2018), stage - 1,
-                               ifelse(race == "Tour de l'Ain" & year %in% c(2013, 2014, 2015, 2017), stage - 1,
-                                      ifelse(race == "Paris - Nice" & year %in% c(2013, 2015, 2016), stage - 1, 
-                                             ifelse(race == "Tour of Utah" & year == 2018, stage - 1, stage))))))
+         race = pcs)
 
 # 
 # #
@@ -1033,13 +1043,13 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data WHERE up
 
 final_1km <- all_routes %>%
   
-  group_by(stage, year, race) %>%
+  group_by(stage_name, year, race) %>%
   mutate(stage_end = max(length, na.rm = T)) %>%
   ungroup() %>%
   
   filter((stage_end - distances) < 1.1) %>%
   
-  group_by(race, year, stage) %>%
+  group_by(stage_name, year, race) %>%
   summarize(final_1km_elev = mean(elevations, na.rm = T),
             max_gradient = max(grades, na.rm = T),
             med_gradient = median(grades, na.rm = T),
@@ -1050,19 +1060,19 @@ final_1km <- all_routes %>%
   
   mutate(final_1km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
   
-  select(stage, year, race, final_1km_elev, final_1km_gradient)
+  select(stage_name, year, race, final_1km_elev, final_1km_gradient)
 
 #
 
 final_5km <- all_routes %>%
   
-  group_by(stage, year, race) %>%
+  group_by(stage_name, year, race) %>%
   mutate(stage_end = max(length, na.rm = T)) %>%
   ungroup() %>%
   
   filter((stage_end - distances) < 5.1) %>%
   
-  group_by(race, year, stage) %>%
+  group_by(stage_name, year, race) %>%
   summarize(final_5km_elev = mean(elevations, na.rm = T),
             max_gradient = max(grades, na.rm = T),
             med_gradient = median(grades, na.rm = T),
@@ -1073,15 +1083,15 @@ final_5km <- all_routes %>%
   
   mutate(final_5km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
   
-  select(stage, year, race, final_5km_elev, final_5km_gradient)
+  select(stage_name, year, race, final_5km_elev, final_5km_gradient)
 
 #
 
 percentage_climbing_in_final_climb <- all_routes %>%
   
-  arrange(stage, year, race, points) %>%
+  arrange(stage_name, year, race, points) %>%
   
-  group_by(stage, year, race) %>%
+  group_by(stage_name, year, race) %>%
   mutate(stage_end = max(length, na.rm = T)) %>%
   ungroup() %>%
   
@@ -1093,7 +1103,7 @@ percentage_climbing_in_final_climb <- all_routes %>%
   mutate(vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * final_20km, 0),
          total_vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * grades, 0)) %>%
   
-  group_by(stage, year, race) %>%
+  group_by(stage_name, year, race) %>%
   summarize(final_20km_vert_gain = sum(vert_gain, na.rm = T),
             total_vert_gain = sum(total_vert_gain, na.rm = T)) %>%
   ungroup() %>%
@@ -1104,14 +1114,14 @@ percentage_climbing_in_final_climb <- all_routes %>%
 
 lumpiness <- all_routes %>%
   
-  arrange(stage, year, race, points) %>%
+  arrange(stage_name, year, race, points) %>%
   
   mutate(distance_chunks = distances - lag(distances),
          distance_chunks = ifelse(distances == 0, NA, distance_chunks)) %>%
   
   mutate(total_elev_change = ifelse(abs(grades) > 0.02, abs(elevations - lag(elevations)), 0)) %>%
   
-  group_by(stage, year, race) %>%
+  group_by(stage_name, year, race) %>%
   summarize(total_elev_change = sum(total_elev_change, na.rm = T),
             stage_end = max(length, na.rm = T),
             time_at_1500m = mean(elevations > 1499.99, na.rm = T)) %>%
@@ -1125,33 +1135,45 @@ stage_characteristics <- all_routes %>%
   
   filter(!(is.na(points))) %>%
   filter(points == 1) %>%
-  select(-points, -distances, -elevations, -grades,
-         -race_url, -url) %>%
+  select(-points, -distances, -elevations, -grades, -stage_url) %>%
   
   inner_join(
     
     lumpiness %>%
-      select(-stage_end), by = c("stage", "race", "year")
+      select(-stage_end), by = c("stage_name", "race", "year")
     
   ) %>%
   inner_join(
     
-    percentage_climbing_in_final_climb, by = c("stage", "race", "year")
+    percentage_climbing_in_final_climb, by = c("stage_name", "race", "year")
     
   ) %>%
   inner_join(
     
-    final_1km, by = c("stage", "race", "year")
+    final_1km, by = c("stage_name", "race", "year")
     
   ) %>%
   inner_join(
     
-    final_5km, by = c("stage", "race", "year")
+    final_5km, by = c("stage_name", "race", "year")
     
   ) %>%
   
   filter(!is.na(race)) %>%
-  filter(total_elev_change < 20000)
+  
+  rename(stage = stage_name) %>%
+  
+  filter(total_vert_gain >= 0) %>%
+  
+  mutate(date = str_replace_all(date, "Monday", ""),
+         date = str_replace_all(date, "Tuesday", ""),
+         date = str_replace_all(date, "Wednesday", ""),
+         date = str_replace_all(date, "Thursday", ""),
+         date = str_replace_all(date, "Friday", ""),
+         date = str_replace_all(date, "Saturday", ""),
+         date = str_replace_all(date, "Sunday", ""),
+         date = str_trim(date),
+         date = lubridate::dmy(date))
 
 #
 # write the altitude feature data to database
