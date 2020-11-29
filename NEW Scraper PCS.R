@@ -988,11 +988,13 @@ stage_data <- stage_data_raw %>%
   
   mutate(stage = ifelse(is.na(stage) & stage_number == "prologue", '0',
                         ifelse(is.na(stage), '1', stage))) %>%
+
+  mutate(stage = ifelse(stage == "https://www.procyclingstats.com/", 1, stage)) %>%
   
   filter(!race %in% c("World Championships MJ - ITT", "World Championships MJ - Road Race",
                       "World Championships WJ - ITT", "World Championships WJ - Road Race",
                       "World Championships WE - ITT", "World Championships WE - Road Race",
-                      "World Championships - ITT")) %>%
+                      'Manavgat Side Junior', 'Grand Prix Manavgat - Side WE')) %>%
   
   mutate(distance = str_replace(distance, "\\(", ""),
          distance = str_replace(distance, "\\)", ""),
@@ -1148,11 +1150,17 @@ stage_data <- stage_data %>%
 f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
   mutate(year = as.numeric(year)) %>%
   mutate(time_climbed = NA) %>%
-  unique()
+  unique() %>%
+  
+  mutate(stage = ifelse(str_detect(stage, "-1"), str_replace(stage, "-1", "a"),
+                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage)))
 
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year)) %>%
-  unique()
+  unique() %>%
+  
+  mutate(stage = ifelse(str_detect(stage, "-1"), str_replace(stage, "-1", "a"),
+                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage)))
 
 supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
   fill(stage, race, year) %>%
@@ -1160,6 +1168,8 @@ supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
   filter(!(race == "volta ciclista a catalunya" & year == 2015)) %>%
   filter(!(race == "tour de romandie" & year == 2018)) %>%
   filter(!(race == "paris - nice" & year == 2016)) %>%
+  
+  mutate(stage = as.character(stage)) %>%
   
   anti_join(
     
@@ -1180,7 +1190,8 @@ stage_data <- stage_data %>%
   left_join(
     
     f_r_data %>%
-      select(-length, -slug) %>%
+      select(-length, -slug, -date) %>%
+      rename(fr_stage_type = stage_type) %>%
       mutate(race = tolower(race)), by = c("race", "stage", "year")
     
   ) %>%
