@@ -419,6 +419,79 @@ climbing <- all_stages %>%
   mutate(implied_seconds = max_meters / m_s)
 
 #
+#
+#
+
+descending <- all_stages %>%
+  
+  mutate(within_01 = ifelse(kmToFinish < 0.1, TimeStamp, NA)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(TimeStamp <= within_01) %>%
+  ungroup() %>%
+  
+  filter(kmToFinish > 0) %>%
+  
+  filter((StageId == "0800" & kmToFinish < 36.5 & kmToFinish > 20.5) |
+           (StageId == "0800" & kmToFinish > 3.5 & kmToFinish < 11) |
+           (StageId == "0800" & kmToFinish > 71.5 & kmToFinish < 82) |
+           (StageId == "0900" & kmToFinish > 55 & kmToFinish < 76) |
+           (StageId == "0900" & kmToFinish > 6.5 & kmToFinish < 18.5) |
+           (StageId == "1200" & kmToFinish > 18 & kmToFinish < 26) |
+           (StageId == "1300" & kmToFinish > 5.5 & kmToFinish < 11.5) |
+           (StageId == "1500" & kmToFinish > 32 & kmToFinish < 43) |
+           (StageId == "1600" & kmToFinish > 57 & kmToFinish < 69.5) |
+           (StageId == "1600" & kmToFinish > 12.5 & kmToFinish < 21) |
+           (StageId == "1700" & kmToFinish > 35 & kmToFinish < 63.5) |
+           (StageId == '1800' & kmToFinish > 41.5 & kmToFinish < 57.5) |
+           (StageId == '1800' & kmToFinish > 15.5 & kmToFinish < 30) |
+           (StageId == '1800' & kmToFinish > 0 & kmToFinish < 10)) %>%
+  
+  mutate(Segment = ifelse(StageId == '1800',
+                          ifelse(kmToFinish > 41.5, "A",
+                                 ifelse(kmToFinish > 15.5, "B", "C")),
+                          ifelse(StageId == '1600',
+                                 ifelse(kmToFinish > 21, "A", "B"),
+                                 ifelse(StageId == '0900',
+                                        ifelse(kmToFinish > 18.5, "A", "B"),
+                                        ifelse(StageId == "0800",
+                                               ifelse(kmToFinish > 36.5, "A",
+                                                      ifelse(kmToFinish > 20.5, "B", "C")), "A"))))) %>%
+  
+  group_by(Bib, StageId, Segment) %>%
+  summarize(min = min(TimeStamp, na.rm=T),
+            max = max(TimeStamp, na.rm = T),
+            mindist = min(kmToFinish,na.rm=T),
+            maxdist = max(kmToFinish, na.rm = T),
+            n=n()) %>%
+  ungroup() %>%
+  
+  mutate(seconds = max-min,
+         meters = (maxdist - mindist)*1000,
+         m_s = meters / seconds,
+         kph = (meters / 1000) / (seconds / 60 / 60)) %>%
+  
+  group_by(StageId, Segment) %>%
+  mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
+  ungroup() %>%
+  
+  group_by(StageId, Segment) %>%
+  #filter((meters / max(meters, na.rm = T) > 0.90)) %>%
+  mutate(rk = rank(-kph, ties.method = "first")) %>%
+  mutate(x20th = ifelse(rk == 10, kph, NA)) %>%
+  mutate(x20th = mean(x20th, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(RelTo20th = kph / x20th) %>%
+  
+  group_by(StageId, Segment) %>%
+  mutate(max_meters = max(meters, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(implied_seconds = max_meters / m_s)
+
+#
 
 ggplot(
   
