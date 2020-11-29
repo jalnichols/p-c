@@ -499,6 +499,8 @@ for(r in 1:length(all_stages$value)) {
      (race_url == "race/vuelta-a-espana/2015" & s == 1) |
      (race_url == "race/dookola-mazowsza/2020" & s == 1) |
      (race_url == "race/60th-tour-de-picardie/2016" & s == 1) |
+     (race_url == "race/baltic-chain-tour/2015" & s == 2) |
+     (race_url == 'race/tour-of-mersin/2017' & s == 4) |
      (str_detect(race_url, "hammer-") == TRUE)) {
     
     stage <- tibble::tibble(rnk = as.character(NA),
@@ -665,6 +667,19 @@ for(r in 1:length(all_stages$value)) {
           
         }
         
+        # bring in actual date
+        
+        DATE <- page %>%
+          html_nodes('div.res-right') %>%
+          html_text() %>%
+          str_replace('Race informationDate: ', '') %>%
+          str_replace('Avg.', "-") %>%
+          enframe(name = NULL) %>%
+          separate(value, into = c("date", "junk"), sep = "-") %>%
+          select(date) %>%
+          mutate(date = lubridate::dmy(str_trim(date))) %>%
+          .[[1]]
+        
         # now actually process the stage including getting times correct
         
         stage <- d[[choose]] %>%
@@ -748,9 +763,10 @@ for(r in 1:length(all_stages$value)) {
                  parcours_value = profile_value) %>%
           
           mutate(stage = s,
+                 stage_number = str_replace(str_replace(all_stages$value[[r]], all_stages$url[[r]], ""), "https://www.procyclingstats.com//", ""),
                  race = all_stages$Race[[r]],
                  year = all_stages$year[[r]],
-                 date = all_stages$Date[[r]],
+                 date = DATE,
                  url = all_stages$url[[r]],
                  Class = all_stages$Class[[r]]) %>%
           
@@ -813,7 +829,7 @@ for(f in 1:length(races_list)) {
 
 test_dl <- bind_rows(df_list)
 
-dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), append = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), overwrite = TRUE, row.names = FALSE)
 
 #
 #
@@ -956,24 +972,22 @@ stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team,
 
 stage_data <- stage_data_raw %>%
   
-  mutate(url = ifelse(url == "/race/vuelta-a-espana/2020", "race/vuelta-a-espana/2020", url)) %>%
-  
   rename(class = Class) %>%
   unique() %>%
   
-  mutate(stage = ifelse(stage_name == "Prologue", 0, stage)) %>%
+  mutate(stage_number = ifelse(stage_name == "One day race", '1',
+                               ifelse(stage_name == "Prologue", '0', str_replace(stage_number, "stage-", "")))) %>%
   
-  mutate(stage = ifelse(stage == 0,
-                        ifelse(year == 2015 & race == "Tour de Suisse", 1,
-                               ifelse(year == 2015 & race == "Tirreno-Adriatico", 1, 
-                                      ifelse(year == 2017 & race == "Olympia's Tour	", 1, stage))), stage)) %>%
+  mutate(stage = ifelse(stage_name == "Prologue", '0', 
+                        ifelse(stage_name == "One day race", '1', stage_number))) %>%
   
-  group_by(race, year, url, class) %>%
-  mutate(prologue_exists = min(stage, na.rm = T)) %>%
-  ungroup() %>%
+  mutate(stage = ifelse(stage == '0',
+                        ifelse(year == 2015 & race == "Tour de Suisse", '1',
+                               ifelse(year == 2015 & race == "Tirreno-Adriatico", '1', 
+                                      ifelse(year == 2017 & race == "Olympia's Tour	", '1', stage))), stage)) %>%
   
-  mutate(stage_number = ifelse(prologue_exists == 0,
-                               ifelse(stage == 0, 0, stage - 1), stage)) %>%
+  mutate(stage = ifelse(is.na(stage) & stage_number == "prologue", '0',
+                        ifelse(is.na(stage), '1', stage))) %>%
   
   filter(!race %in% c("World Championships MJ - ITT", "World Championships MJ - Road Race",
                       "World Championships WJ - ITT", "World Championships WJ - Road Race",
@@ -1045,7 +1059,7 @@ stage_data <- stage_data_raw %>%
   
   filter(!str_detect(stage_name, "TTT")) %>%
   
-  select(-t10_time, -x10, -x20, -x40, -top_var, -x3, -x5, -date) %>%
+  select(-t10_time, -x10, -x20, -x40, -top_var, -x3, -x5) %>%
   
   mutate(time_trial = ifelse(stage_name %in% c("Time trial", "Prologue") | str_detect(stage_name, "ITT"), TRUE, FALSE)) %>%
 
@@ -1062,9 +1076,7 @@ stage_data <- stage_data_raw %>%
   mutate(tm_pos = rank(rnk, ties.method = "first")) %>%
   ungroup() %>%
   
-  # correct stage for prologue races
-  mutate(stage = stage_number) %>%
-  select(-stage_number)
+  select(-stage_number, -stage_name)
 
 #
 
@@ -1082,7 +1094,6 @@ winners$Date <- as.Date(winners$Date)
 gc_performance <- winners %>%
   
   select(race = Race,
-         date = Date,
          winner = Winner,
          class = Class,
          url, year) %>%
@@ -1095,7 +1106,7 @@ gc_performance <- winners %>%
     
   ) %>%
   
-  select(gc_winner = winner, race, year, stage, gc_seconds = total_seconds, class, date, url) %>%
+  select(gc_winner = winner, race, year, stage, gc_seconds = total_seconds, class, url) %>%
   unique()
 
 #
@@ -1109,8 +1120,6 @@ stage_data <- stage_data %>%
     gc_performance, by = c("year", "race", "stage", "class", "url")
     
   ) %>%
-  
-  mutate(date = date + (stage - 1)) %>%
   
   select(-mean_time, -med_time, -qual_time, -rel_qual,
          -climb_difficulty, -variance_valid, -distance,
@@ -1181,6 +1190,8 @@ stage_data <- stage_data %>%
   left_join(
     
     f_r_climbs %>%
+      
+      mutate(stage = as.character(stage)) %>%
       
       mutate(race = tolower(race)) %>%
       
@@ -1329,7 +1340,7 @@ stage_data <- stage_data %>%
          grand_tour = as.numeric(grand_tour),
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
-  select(-prologue_exists) %>%
+
   filter(!(str_detect(url, "81st-sch"))) %>%
   
   # world championships rr 2016 joins twice onto profile data
@@ -1348,8 +1359,7 @@ stage_data <- stage_data %>%
   filter(!(race == 'manavgat side junior')) %>%
   
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
-  mutate(stage = ifelse(race == "dubai tour" & year == 2014 & stage > 4,
-                        stage - 4, stage)) %>%
+
   unique()
 
 # Write the cleaned-up data to database
