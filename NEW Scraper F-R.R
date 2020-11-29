@@ -336,7 +336,7 @@ tictoc::tic()
 
 #
 
-for(y in 1:length(all_stages$race_url)) {
+for(y in 3227:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
@@ -613,6 +613,8 @@ for(y in 1:length(all_stages$race_url)) {
   
 }
 
+tictoc::toc()
+
 #
 #
 #
@@ -623,7 +625,7 @@ for(y in 1:length(all_stages$race_url)) {
 # transformations below sourced from https://www.w3schools.com/tags/ref_urlencode.asp
 
 clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
-  filter(updated >= '2020-07-01') %>%
+  filter(updated >= '2020-11-25') %>%
   mutate(year = str_sub(race_url, 48, 51)) %>%
   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
@@ -748,6 +750,8 @@ clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
 pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages 
                   FROM pcs_stage_raw GROUP BY race, year, date, class") %>%
   
+  mutate(class = ifelse(race == "Lillehammer GP", "1.2", class))
+  
   filter(!is.na(class)) %>%
   
   mutate(date = as.Date(date),
@@ -801,7 +805,7 @@ fr <- dbGetQuery(con, "SELECT DISTINCT race, year, race_url as url FROM fr_stage
   select(race, year, date, class, tour) %>%
   filter(date <= '2020-11-15') %>%
 
-  filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)")) %>%
+  #filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)")) %>%
   
   mutate(class = ifelse(class == "CM", "WC", class))
 
@@ -938,7 +942,7 @@ all_climbs <- clean_climbs %>%
 # clean routes
 #
 
-all_routes <- dbGetQuery(con, "SELECT DISTINCT alt, dist, url FROM fr_route_data WHERE updated > '2020-07-15'") %>%    
+all_routes <- dbGetQuery(con, "SELECT DISTINCT alt, dist, url FROM fr_route_data WHERE updated > '2020-11-25'") %>%    
   mutate(distances = as.numeric(dist),
          alt = as.numeric(alt)) %>%
   
@@ -1198,14 +1202,14 @@ climb_result_list <- vector("list", length(climb_data_list$climb_name))
 for(c in 1:length(climb_data_list$climb_name)) {
   
   climb_result_list[[c]] <- all_routes %>%
-    filter(url == climb_data_list$url[[c]] &
+    filter(stage_url == climb_data_list$url[[c]] &
              distances >= climb_data_list$start_distance[[c]] &
              distances <= climb_data_list$end_distance[[c]]) %>%
     
     mutate(CLIMB = climb_data_list$climb_name[[c]],
            time_climbed = climb_data_list$time_climbed[[c]]) %>%
     
-    group_by(url, stage, year, race, CLIMB, time_climbed) %>%
+    group_by(url = stage_url, stage = stage_name, year, race, CLIMB, time_climbed) %>%
     summarize(low = min(elevations, na.rm = T),
               segments = n()) %>%
     ungroup() %>%
@@ -1236,6 +1240,10 @@ climb_results <- bind_rows(climb_result_list) %>%
 #
 
 all_climbs_int <- all_climbs %>%
+  
+  select(-stage) %>%
+  
+  rename(stage = stage_name) %>%
   
   inner_join(climb_results %>%
                select(url, stage, race, year, climb_name, time_climbed,
