@@ -298,7 +298,37 @@ for(S in 1:12) {
   
 }
 
-All <- bind_rows(All_list)
+#
+
+Most_Selective_Climbs <- tdf_koms %>%
+  mutate(kmToFinish = start_km) %>%
+  mutate(kmToFinish = ceiling(kmToFinish)) %>%
+  select(StageId, kmToFinish, length, gradient, start_km, end_km, grouping) %>%
+  
+  mutate(end_km = ifelse(end_km == 0, 1, end_km)) %>%
+  
+  inner_join(bind_rows(All_list) %>%
+               rename(perc_START = perc), by = c("kmToFinish", "StageId")) %>%
+  
+  mutate(kmToFinish = end_km) %>%
+  mutate(kmToFinish = ceiling(kmToFinish)) %>%
+  
+  inner_join(bind_rows(All_list) %>%
+               select(-n) %>%
+               rename(perc_END = perc), by = c("kmToFinish", "StageId", "ClusterType")) %>%
+  
+  mutate(perc_change = perc_START / perc_END) %>%
+  
+  group_by(StageId, ClusterType) %>%
+  mutate(n = max(n, na.rm = T)) %>%
+  ungroup() %>%
+  
+  group_by(grouping, StageId, start_km, end_km, length) %>%
+  mutate(all_change = (sum(n * perc_START, na.rm = T) / sum(n, na.rm = T)) / (sum(n * perc_END, na.rm = T) / sum(n, na.rm = T))) %>%
+  ungroup()
+  
+summary(Most_Selective_Climbs %>% filter(ClusterType == "Climber") %>% lm(all_change ~ gradient * length + end_km, data = .))
+  
 
 #
 #
