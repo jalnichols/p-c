@@ -35,10 +35,13 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   unique() %>%
+  
   mutate(rider = ifelse(rider == "Gaudu  David ", "Gaudu David", rider),
          team = ifelse(str_detect(team, "Cofidis"), "Cofidis", team)) %>%
   
   mutate(team = iconv(team, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+  
+  unique() %>%
   
   left_join(
     
@@ -57,7 +60,8 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
   left_join(
     
-    read_csv("cleaned-stage-type-pcs.csv"), by = c("stage", "race", "year")
+    read_csv("cleaned-stage-type-pcs.csv") %>%
+      mutate(stage = as.character(stage)), by = c("stage", "race", "year")
     
   ) %>%
   
@@ -91,7 +95,8 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
               "p2","p2","p2","p2","p2","p2","p2","p3","p2","p2","p2","p2","p2","p2","p2",
               "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3","p2")
       
-    ), by = c("year", "stage", "race")
+    ) %>%
+      mutate(stage = as.character(stage)), by = c("year", "stage", "race")
     
   ) %>%
   
@@ -103,12 +108,14 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
          uphill_finish = ifelse(missing_profile_data == 1 & is.na(final_1km_gradient) & stage_type == 'icon profile p0',
                                 NA, uphill_finish)) %>%
   
-  left_join(read_csv("uphill-finish.csv") %>% select(stage, race, year, uphill_finish), by = c("stage", "race", "year")) %>%
+  left_join(read_csv("uphill-finish.csv") %>% select(stage, race, year, uphill_finish) %>%
+              mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
   
   mutate(uphill_finish = ifelse(is.na(uphill_finish.x), uphill_finish.y, uphill_finish.x)) %>%
   select(-uphill_finish.x, -uphill_finish.y) %>%
   
-  left_join(read_csv("cobbles.csv") %>% select(stage, race, year, cobbles), by = c("stage", "race", "year")) %>%
+  left_join(read_csv("cobbles.csv") %>% select(stage, race, year, cobbles) %>%
+              mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
   
   mutate(cobbles = ifelse(is.na(cobbles), 0, 1)) %>%
   
@@ -146,7 +153,8 @@ missing_stage_types <- stage_data %>%
   # remove the ones I manually adjust thru spreadsheet
   anti_join(
     
-    read_csv("pred-climb-difficulty-replacements.csv"), by = c("stage", "race", "year"))
+    read_csv("pred-climb-difficulty-replacements.csv") %>%
+      mutate(stage = as.character(stage)), by = c("stage", "race", "year"))
 
 # Strength of Peloton -----------------------------------------------------
 
@@ -404,7 +412,7 @@ pv_data <- cbind(
 
 no_climbs_mod <- stage_data %>% 
   
-  filter(rnk == 1 & time_trial == FALSE) %>% 
+  filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
   
   mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
          pv = as.numeric(parcours_value)) %>% 
@@ -413,21 +421,25 @@ no_climbs_mod <- stage_data %>%
          -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
          -top_variance, -variance, -speed) %>%
   
+  filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
+  
   filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
   filter(!stage_type == "icon profile p0") %>%
-  mutate(tvg = total_vert_gain / length) %>%
-  lm(act_climb_difficulty ~ stage_type + uphill_finish + (tvg) +
-       final_20km_vert_gain + time_at_1500m, data = .)
+  mutate(tvg = total_vert_gain / length,
+         tvg20 = final_20km_vert_gain / 20) %>%
+  lm(act_climb_difficulty ~ (tvg) + tvg20 + time_at_1500m + fr_stage_type, data = .)
 
 # R^2 = 0.79
 
 no_climbs_data <- cbind(
   stage_data %>%
-    filter(rnk == 1 & time_trial == FALSE) %>% 
+    filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
     
     select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
            -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
            -top_variance, -variance, -speed) %>%
+    
+    filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
     
     filter(missing_profile_data == 0 & !stage_type == "icon profile p0"),
   
@@ -435,14 +447,17 @@ no_climbs_data <- cbind(
     
     no_climbs_mod, 
     stage_data %>%
-      filter(rnk == 1 & time_trial == FALSE) %>% 
+      filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
       
       select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
              -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
              -top_variance, -variance, -speed) %>%
       
+      filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
+      
       filter(missing_profile_data == 0 & !stage_type == "icon profile p0") %>%
-      mutate(tvg = total_vert_gain / length)
+      mutate(tvg = total_vert_gain / length,
+             tvg20 = final_20km_vert_gain / 20)
     
   )) %>%
   mutate(pred_no_climbs = ifelse(pred_no_climbs < 1, 1, pred_no_climbs))
@@ -464,7 +479,12 @@ icon_mod <- stage_data %>%
   
   filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
   filter(!stage_type == "icon profile p0") %>%
-  lm(act_climb_difficulty ~ stage_type, data = .)
+  
+  mutate(class_level = ifelse(class %in% c("WC", "1.UWT", "2.UWT", "WT", "Olympics"), 4,
+                              ifelse(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "CC"), 3,
+                                     ifelse(class %in% c("2.1", "1.1", "NC"), 2, 1)))) %>%
+  
+  lm(act_climb_difficulty ~ stage_type * class_level, data = .)
 
 # model here is R^2 only 0.62, p1 = 1, p2 = 2, p3 = 3, p4 = 8, p5 = 16
 
@@ -481,7 +501,8 @@ icon_data <- cbind(
            -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
            -top_variance, -variance, -speed) %>%
     
-    filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1),
+    filter(est == 1 & stage_type != "icon profile p0"),
+    #filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1),
   
   pred_icon = predict(
     
@@ -496,7 +517,12 @@ icon_data <- cbind(
              -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
              -top_variance, -variance, -speed) %>%
       
-      filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1)
+      filter(est == 1 & stage_type != "icon profile p0") %>%
+      #filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1) %>%
+      
+      mutate(class_level = ifelse(class %in% c("WC", "1.UWT", "2.UWT", "WT", "Olympics"), 4,
+                                  ifelse(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "CC"), 3,
+                                         ifelse(class %in% c("2.1", "1.1", "NC"), 2, 1))))
     
   ))
 
@@ -520,11 +546,16 @@ icon_data <- cbind(
 three_methods <- rbind(
   
   no_climbs_data %>%
-    select(race, stage, year, pred = pred_no_climbs) %>%
-    mutate(type = "nc"),
+    select(race, stage, year, class, pred = pred_no_climbs) %>%
+    mutate(type = "nc") %>%
+    anti_join(pv_data %>% select(stage, race, year, class)) %>%
+    select(-class),
   icon_data %>%
-    select(race, stage, year, pred = pred_icon) %>%
-    mutate(type = "ic"),
+    select(race, stage, year, class, pred = pred_icon) %>%
+    mutate(type = "ic") %>%
+    anti_join(pv_data %>% select(stage, race, year, class)) %>%
+    anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
+    select(-class),
   pv_data %>%
     select(race, stage, year, pred = pred_pv) %>%
     mutate(type = "pv")
@@ -1882,6 +1913,108 @@ stage_data_perf %>%
 
 cor(stage_ranks[, 7:26], use = "pairwise.complete.obs") -> all_corrs_ranks
 
+#
+#
+
+# logged ranks
+
+stage_data_perf %>%
+  filter(year>= 2019) %>%
+  
+  filter(pred_climb_difficulty >= 7.5) %>% 
+  
+  group_by(rider) %>% 
+  summarize(M = mean(log(rnk+1), na.rm = T),
+            S = sd(log(rnk+1), na.rm = T), 
+            n = n(), 
+            sop = round(mean(sof, na.rm = T),2),
+            pcd = round(mean(pred_climb_difficulty, na.rm = T),1)) %>%
+  ungroup() %>% 
+  
+  mutate(x85 = round(exp(M - S)-1,0), 
+         avg = round(exp(M)-1,0), 
+         x15 = round(exp(M + S)-1,0)) %>% 
+  
+  filter(n>=10) -> climbing_races
+
+#
+#
+#
+
+GC_rankings <- stage_data_perf %>%
+  filter(year >= 2017) %>% 
+  
+  mutate(total_seconds = ifelse(total_seconds < win_seconds, win_seconds + total_seconds, total_seconds)) %>%
+  
+  mutate(gain_1st = total_seconds - win_seconds) %>%
+  
+  group_by(rider, race, year, class, team) %>%
+  summarize(stages = n(),
+            sop = mean(sof, na.rm = T),
+            best = min(rnk, na.rm = T),
+            gain_stage_winner = mean(gain_1st, na.rm = T),
+            mean_log = mean(log(rnk + 1), na.rm = T)) %>%
+  ungroup() %>%
+  
+  inner_join(dbGetQuery(con, "SELECT * FROM pcs_jerseys_final WHERE Type = 'GC'") %>%
+
+              select(rider, team, rnk, race, year) %>% 
+              unique() %>%
+              
+              group_by(team, race, year) %>%
+              mutate(tm_pos_GC = rank(rnk, ties.method = "first")) %>% 
+              ungroup() %>% 
+
+              mutate(race = tolower(race),
+                     team = iconv(team, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+               select(-team), by = c("race", "year", "rider"))
+
+#
+#
+#
+
+performance_by_cluster <- stage_data_perf %>%
+  
+  filter(year >= 2017) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  filter(time_trial == 0) %>%
+  
+  left_join(
+    
+    dbReadTable(con, "clusters_riders") %>%
+      select(-CL, -races) %>%
+      rename(cluster_type = type), by = c("rider", "date" = "Date")
+    
+  ) %>%
+  
+  mutate(cluster_type = ifelse(is.na(cluster_type), "Unknown", cluster_type)) %>%
+  
+  filter(class %in% c("1.UWT", "2.UWT", "2.Pro", "1.Pro", "2.HC", "1.HC"))
+
+#
+
+performance_by_cluster %>%
+  
+  filter(rnk == 1) %>%
+  
+  group_by(cluster_type, pcd = ifelse(bunch_sprint == 1, 4, 
+                                      ifelse(pred_climb_difficulty < 5, 5, 
+                                             ifelse(pred_climb_difficulty >= 12, 12, floor(pred_climb_difficulty))))) %>%
+  count() %>%
+  ungroup() %>% 
+  group_by(pcd) %>%
+  mutate(perc = n / sum(n)) %>%
+  ungroup() %>%
+  
+  ggplot(aes(x = pcd, y = perc, fill = cluster_type))+
+  geom_col()+
+  
+  scale_fill_manual(values = c("dark red", "gold", "red", "orange", "blue", "navy", "gray"))+
+  
+  scale_y_continuous(labels = scales::percent)+
+  scale_x_continuous(breaks = seq(4,12,1))
+
+#
 #
 #
 
