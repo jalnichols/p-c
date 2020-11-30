@@ -1153,14 +1153,20 @@ f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
   unique() %>%
   
   mutate(stage = ifelse(str_detect(stage, "-1"), str_replace(stage, "-1", "a"),
-                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage)))
+                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage))) %>%
+  # NEED TO CLEAN UP fr DATA
+  filter(!(race %in% c("Eschborn-Frankfurt") & year %in% c(2018, 2019))) %>%
+  filter(!(race == 'Liege - Bastogne - Liege' & year == 2018))
 
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year)) %>%
   unique() %>%
   
   mutate(stage = ifelse(str_detect(stage, "-1"), str_replace(stage, "-1", "a"),
-                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage)))
+                        ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage))) %>%
+  # NEED TO CLEAN UP fr DATA
+  filter(!(race %in% c("Eschborn-Frankfurt") & year %in% c(2018, 2019))) %>%
+  filter(!(race == 'Liege - Bastogne - Liege' & year == 2018))
 
 supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
   fill(stage, race, year) %>%
@@ -1324,25 +1330,6 @@ stage_data <- stage_data %>%
                                        ifelse(is.na(total_vert_gain), TRUE, FALSE))) %>%
   
   unique()
-
-#
-# MISSING TOURS
-#
-
-pcs_missing_from_fr <- stage_data_raw %>%
-  
-  select(stage, race, year, class = Class, url) %>%
-  mutate(race = tolower(race)) %>%
-  unique() %>%
-  
-  anti_join(
-    
-    stage_data %>%
-      select(stage, race, year, class, url) %>%
-      mutate(race = tolower(race)) %>%
-      unique()
-    
-  )
 
 # final cleanup before writing
 
