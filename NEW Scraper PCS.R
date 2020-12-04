@@ -24,6 +24,10 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.1&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2&filter=Filter',
+  
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.HC&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.HC&filter=Filter',
@@ -98,10 +102,10 @@ pull_from_schedule <- c(
 
 store_from_schedule <- vector("list", length(pull_from_schedule))
 
-pull_years = 1
+pull_years = 4
 
 current_year = year(today())
-start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2016 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -277,19 +281,7 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  select(-spec_url) #%>%
-  
-  #rbind(
-    
-    #tibble(Date = as.Date('2020-10-20'),
-    #       Race = "La Vuelta ciclista a Espana",
-    #       Winner = "Roglic Primoz",
-    #       Class = "2.UWT",
-    #       url = "race/vuelta-a-espana/2020",
-    #       year = 2020,
-    #       type = 'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter')
-    
-  #)
+  select(-spec_url) 
 
 #
 # Write DB Table
@@ -501,7 +493,7 @@ for(r in 1:length(all_stages$value)) {
      (race_url == "race/60th-tour-de-picardie/2016" & s == 1) |
      (race_url == "race/baltic-chain-tour/2015" & s == 2) |
      (race_url == 'race/tour-of-mersin/2017' & s == 4) |
-     (str_detect(race_url, "hammer-") == TRUE)) {
+     (str_detect(race_url, "race/hammer-") == TRUE)) {
     
     stage <- tibble::tibble(rnk = as.character(NA),
                             rider = "Cancelled / TTT",
@@ -827,9 +819,11 @@ for(f in 1:length(races_list)) {
 #
 #
 
-test_dl <- bind_rows(df_list)
+test_dl <- bind_rows(df_list) %>% unique()
 
-dbWriteTable(con, "pcs_stage_raw", bind_rows(df_list), overwrite = TRUE, row.names = FALSE)
+#dbSendQuery(con, "DELETE FROM pcs_stage_raw")
+
+#dbWriteTable(con, "pcs_stage_raw", test_dl, append = TRUE, row.names = FALSE)
 
 #
 #
