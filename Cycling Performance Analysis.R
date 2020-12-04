@@ -12,7 +12,6 @@ con <- dbConnect(MySQL(),
 
 # Bring in and clean data -------------------------------------------------
 
-
 race_data <- dbReadTable(con, "pcs_all_races") %>%
   mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
          Circuit = str_sub(type, 53, nchar(type))) %>%
@@ -22,8 +21,8 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
   inner_join(
     
     tibble(Tour = c("Missing", "Americas Tour", "Europe Tour", "World Championships", "World Tour", "Asia Tour",
-                    "Oceania Tour", "Africa Tour", "Olympic Games"),
-           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3")), by = c("Circuit")
+                    "Oceania Tour", "Africa Tour", "Olympic Games", "National Cup"),
+           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3", "21")), by = c("Circuit")
     
   ) %>%
   
@@ -155,6 +154,81 @@ missing_stage_types <- stage_data %>%
     
     read_csv("pred-climb-difficulty-replacements.csv") %>%
       mutate(stage = as.character(stage)), by = c("stage", "race", "year"))
+
+#
+#
+#
+
+
+# Bring in Strava Data ----------------------------------------------------
+
+stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
+                  FROM strava_activity_data 
+                  WHERE Stat IN ('Elevation', 'Distance')") %>% 
+  
+  # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+  
+  # clean up the dates
+  mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
+  separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
+  mutate(date = paste0(str_trim(date),", ", Y)) %>% 
+  select(-weekday, -drop, -Y) %>% 
+  
+  # clean up the stat values
+  mutate(VALUE = str_replace(VALUE, "mi", ""), 
+         VALUE = str_replace(VALUE, "ft", ""),
+         VALUE = str_replace(VALUE, ",", ""),
+         VALUE = as.numeric(VALUE)) %>% 
+  
+  mutate(date = lubridate::mdy(date)) %>% 
+  unique() %>% 
+  spread(Stat, VALUE) %>% 
+  filter(!is.na(`Elevation`)) %>% 
+  janitor::clean_names() %>% 
+  
+  group_by(date) %>% 
+  mutate(n=n()) %>% 
+  ungroup() %>% 
+  
+  inner_join(stage_data %>%
+               
+               select(rider, date, year, race, class, stage, length, total_vert_gain, act_climb_difficulty,
+                      stage_type, fr_stage_type, parcours_value, time_trial, grand_tour, one_day_race,
+                      rnk) %>%
+               
+               filter(year %in% c("2014", "2015", "2016", "2017", "2019", "2020")) %>%
+               unique() %>%
+               
+               mutate(date = as.Date(date)), by = c("date", "pcs" = "rider")) %>% 
+  
+  # also, many riders include distance outside the TT as part of their strava activity
+  # so maybe accept any riders +/- 10 km? or maybe we just can't get accurate TT data
+  mutate(elevation = elevation * 0.3048) %>%
+  mutate(distance = distance * 1.609) %>% 
+  filter((distance / length) > 0.8) %>%
+  filter((distance / length) < 1.2) %>%
+  mutate(tvg = elevation / distance)
+
+#
+
+stage_level_strava %>% 
+  group_by(stage, race, year, class) %>%
+  summarize(tvg = median(total_vert_gain), 
+            elev = median(elevation)) %>%
+  ungroup() %>% 
+  
+  ggplot(aes(x = tvg, y = elev))+
+  geom_point()+
+  geom_smooth(color = "red", se = F, method = "lm", formula = y ~ x)+
+  labs(x = "FR total vertical gain", 
+       y = 'Strava Elevation')
+
 
 # Strength of Peloton -----------------------------------------------------
 
@@ -351,6 +425,82 @@ individual_races_team_sop <- strength_of_peloton %>%
 # Extrapolate Climbing Data -----------------------------------------------
 
 #
+# USING STRAVA DATA
+#
+
+strava_elev_mod <- stage_level_strava %>% 
+  
+  filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+  
+  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+         pv = as.numeric(parcours_value)) %>% 
+  
+  filter(rnk != 200) %>%
+  
+  group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
+  filter(n()>2) %>%
+  summarize(strava_elevation = median(elevation,na.rm = T), 
+            strava_distance = median(distance, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(rel_length = length - median(length, na.rm = T)) %>%
+  
+  mutate(tvg = strava_elevation / strava_distance) %>%
+  
+  # adjust tvg to realistic limits (Mt Fuji stage is an issue)
+  filter(tvg > 0) %>%
+  mutate(tvg = ifelse(tvg > 40, 40, tvg)) %>%
+  
+  filter(act_climb_difficulty > 0) %>%
+  mutate(tvg = strava_elevation / strava_distance) %>%
+  lm(act_climb_difficulty ~ tvg + 0 + stage_type, data = .)
+
+#
+
+strava_elev_data <- cbind(
+  stage_level_strava %>% 
+    
+    filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
+    filter(n()>0) %>%
+    summarize(strava_elevation = median(elevation,na.rm = T), 
+              strava_distance = median(distance, na.rm = T)) %>%
+    ungroup() %>%
+    
+    mutate(tvg = strava_elevation / strava_distance) %>%
+    
+    filter(tvg > 0) %>%
+    mutate(tvg = ifelse(tvg > 40, 40, tvg)),
+  
+  pred_strv = predict(
+    
+    strava_elev_mod, 
+    stage_level_strava %>% 
+      
+      filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+      
+      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+             pv = as.numeric(parcours_value)) %>% 
+      group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
+      filter(n()>0) %>%
+      summarize(strava_elevation = median(elevation,na.rm = T), 
+                strava_distance = median(distance, na.rm = T)) %>%
+      ungroup() %>%
+
+      mutate(tvg = strava_elevation / strava_distance) %>%
+      
+      filter(tvg > 0) %>%
+      mutate(tvg = ifelse(tvg > 40, 40, tvg))
+    
+  )) %>%
+  
+  filter(is.na(act_climb_difficulty)) %>%
+  filter(is.na(total_vert_gain))
+
+#
 # this model predicts actual climb difficulty based on the parcours value in the PCS data
 # this is good for stages that PCS rates in terms of parcours value, but which F-R doesn't have the climb
 # data broken out into categorized climbs
@@ -403,7 +553,9 @@ pv_data <- cbind(
       
       filter(est == 0)
     
-  ))
+  )) %>%
+  
+  mutate(pred_pv = ifelse(pred_pv < 0, 0, pred_pv))
 
 # act_climb_difficulty = 1 + (0.063 * parcours_value) -- R^2 = 0.81
 
@@ -533,6 +685,9 @@ icon_data <- cbind(
 # coef(icon_mod)
 # write_rds(icon_mod, "Stored models/pcd-icon-mod.rds")
 
+# coef(strava_elev_mod)
+# write_rds(strava_elev_mod, "Stored models/strava-elev-mod.rds")
+
 # coef(no_climbs_mod)
 # write_rds(no_climbs_mod, "Stored models/pcd-no_climbs-mod.rds")
 
@@ -545,17 +700,26 @@ icon_data <- cbind(
 
 three_methods <- rbind(
   
+  strava_elev_data %>%
+    select(race, stage, year, class, pred = pred_strv) %>%
+    mutate(type = "sv") %>%
+    anti_join(pv_data %>% select(stage, race, year, class)) %>%
+    anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
+    select(-class),
+  
   no_climbs_data %>%
     select(race, stage, year, class, pred = pred_no_climbs) %>%
     mutate(type = "nc") %>%
     anti_join(pv_data %>% select(stage, race, year, class)) %>%
     select(-class),
+  
   icon_data %>%
     select(race, stage, year, class, pred = pred_icon) %>%
     mutate(type = "ic") %>%
     anti_join(pv_data %>% select(stage, race, year, class)) %>%
     anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
     select(-class),
+  
   pv_data %>%
     select(race, stage, year, pred = pred_pv) %>%
     mutate(type = "pv")
@@ -569,13 +733,15 @@ three_methods <- rbind(
   
   anti_join(
     
-    read_csv("pred-climb-difficulty-replacements.csv"), by = c("stage", "race", "year")
+    read_csv("pred-climb-difficulty-replacements.csv") %>%
+      mutate(stage = as.character(stage)), by = c("stage", "race", "year")
     
   ) %>%
   
   rbind(
     
-    read_csv("pred-climb-difficulty-replacements.csv")
+    read_csv("pred-climb-difficulty-replacements.csv") %>%
+      mutate(stage = as.character(stage))
     
   )
 
@@ -997,9 +1163,10 @@ dbWriteTable(con, "stage_data_perf",
                select(-data) %>%
                select(-new_st, -position_highest, -last_climb, -act_climb_difficulty,
                       -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length,
-                      -final_1km_gradient, -total_vert_gain, -final_20km_vert_gain, -perc_elev_change,
+                      -final_1km_gradient, -final_20km_vert_gain, -perc_elev_change,
                       -gain_back_5, -back_5_seconds, -success_time, -solo, -rel_success, -url,
-                      -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance, -NEW) %>% unique(),
+                      -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance, -NEW,
+                      -fr_stage_type, -stage_name) %>% unique(),
              
              row.names = F,
              append = T)
@@ -1410,7 +1577,7 @@ dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, o
 #
 
 perc_climbing <- stage_data_perf %>% 
-  filter(one_day_race == 0 & year > 2016 & rnk == 1 & time_trial == 0) %>% 
+  filter(one_day_race == 0 & year >= 2017 & rnk == 1 & time_trial == 0) %>% 
   filter(!is.na(pred_climb_difficulty)) %>% 
   mutate(pred_climb_difficulty = ifelse(pred_climb_difficulty <= 0.5, 0.5, pred_climb_difficulty)) %>% 
   
@@ -1927,6 +2094,10 @@ stage_data_perf %>%
   summarize(M = mean(log(rnk+1), na.rm = T),
             S = sd(log(rnk+1), na.rm = T), 
             n = n(), 
+            Podiums = mean(rnk <= 3, na.rm = T), 
+            Leader = mean(tm_pos == 1, na.rm = T),
+            Secs = mean(log(gain_1st+1), na.rm = T),
+            SD_Secs = sd(log(gain_1st+1), na.rm = T),
             sop = round(mean(sof, na.rm = T),2),
             pcd = round(mean(pred_climb_difficulty, na.rm = T),1)) %>%
   ungroup() %>% 
@@ -1993,26 +2164,42 @@ performance_by_cluster <- stage_data_perf %>%
 
 #
 
-performance_by_cluster %>%
+expand_grid(
+  
+  cluster_type = performance_by_cluster$cluster_type %>% unique(),
+  pcd = seq(4,11,1)
+  
+) %>% left_join(
+  
+  performance_by_cluster %>%
   
   filter(rnk == 1) %>%
   
   group_by(cluster_type, pcd = ifelse(bunch_sprint == 1, 4, 
                                       ifelse(pred_climb_difficulty < 5, 5, 
-                                             ifelse(pred_climb_difficulty >= 12, 12, floor(pred_climb_difficulty))))) %>%
+                                             ifelse(pred_climb_difficulty >= 11, 11, floor(pred_climb_difficulty))))) %>%
   count() %>%
   ungroup() %>% 
   group_by(pcd) %>%
   mutate(perc = n / sum(n)) %>%
-  ungroup() %>%
+  ungroup()) %>%
   
-  ggplot(aes(x = pcd, y = perc, fill = cluster_type))+
-  geom_col()+
+  mutate(perc = ifelse(is.na(perc), 0, perc)) %>%
   
-  scale_fill_manual(values = c("dark red", "gold", "red", "orange", "blue", "navy", "gray"))+
+  ggplot(aes(x = pcd, y = perc, color = cluster_type))+
+  geom_point(size=4)+
+  geom_line(size=1)+
+  
+  #ggplot(aes(x = pcd, y = perc, fill = cluster_type))+
+  #geom_col()+
+  
+  #scale_fill_manual(values = c("dark red", "gold", "red", "orange", "blue", "navy", "gray"))+
+  scale_color_manual(values = c("dark red", "gold", "red", "orange", "blue", "navy", "gray"))+
   
   scale_y_continuous(labels = scales::percent)+
-  scale_x_continuous(breaks = seq(4,12,1))
+  scale_x_continuous(breaks = seq(4,11,1))+
+  labs(x = "Climb difficulty scale",
+       y = "Percentage of wins by that cluster")
 
 #
 #
