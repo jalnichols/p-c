@@ -54,7 +54,13 @@ All_dates <- dbReadTable(con, "stage_data_perf") %>%
   filter(year > 2016 & year <= 2020) %>%
   select(date) %>%
   unique() %>%
-  filter(!is.na(date))
+  filter(!is.na(date)) %>%
+  
+  mutate(date = as.Date(date)) %>%
+  
+  rbind(tibble(date = as.Date(lubridate::today()))) %>%
+  
+  mutate(date = as.Date(date, origin = '1970-01-01'))
 
 #write_csv(All_dates, "C:/Users/Jake/Documents/all-stage-type-preds-dates-AWS.csv")
 
@@ -109,7 +115,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
 # because one iteration of lme4 takes 45 seconds and can be run on AWS
 # while Stan takes 7500 seconds and is trickier to run on AWS
 
-for(b in 1:length(All_dates$date)) {
+for(b in 843:length(All_dates$date)) {
 
   # go back 4 months further in 2020 post-lockdown
   
