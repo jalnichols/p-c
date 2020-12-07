@@ -11,20 +11,20 @@ con <- dbConnect(MySQL(),
 
 #
 
-teams_2021 <- 'https://www.procyclingstats.com/teams.php?s=worldtour&year=2021' %>% read_html() %>% html_nodes('div.w50') %>% html_nodes('a') %>% html_attr(name = "href") %>% enframe(name = NULL) %>% rename(team_url = value)
+teams_2017 <- 'https://www.procyclingstats.com/teams.php?s=worldtour&year=2017' %>% read_html() %>% html_nodes('div.w50') %>% html_nodes('a') %>% html_attr(name = "href") %>% enframe(name = NULL) %>% rename(team_url = value)
 
-tm_list <- vector("list", length(teams_2021$team_url))
+tm_list <- vector("list", length(teams_2017$team_url))
 
-for(t in 1:length(teams_2021$team_url)) {
+for(t in 1:length(teams_2017$team_url)) {
   
   
-  page <- paste0("https://www.procyclingstats.com/", teams_2021$team_url[[t]]) %>%
+  page <- paste0("https://www.procyclingstats.com/", teams_2017$team_url[[t]]) %>%
     read_html()
   
   tm <- page %>%
     html_nodes('h1') %>%
     html_text() %>% 
-    str_replace('»2021', '')
+    str_replace('»2017', '')
   
   df <- page %>%
     html_nodes('ul.riderlist') %>%
@@ -35,7 +35,7 @@ for(t in 1:length(teams_2021$team_url)) {
   
   riders_team <- cbind(r1,r2) %>%
     as_tibble() %>%
-    mutate(team_url = teams_2021$team_url[[t]],
+    mutate(team_url = teams_2017$team_url[[t]],
            team = tm)
   
   tm_list[[t]] <- riders_team
@@ -44,7 +44,7 @@ for(t in 1:length(teams_2021$team_url)) {
 
 #
 
-riders_2021 <- bind_rows(tm_list) %>%
+riders_2017 <- bind_rows(tm_list) %>%
   
   mutate(rider = iconv(r2, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
   separate(team, c("team", "level"), sep = '  \\(') %>%
@@ -54,7 +54,8 @@ riders_2021 <- bind_rows(tm_list) %>%
   select(team, level, rider, rider_url = r1) %>%
   
   mutate(rider = str_to_title(tolower(rider)),
-         rider = ifelse(rider == "O'connor Ben", "O'Connor Ben", rider))
+         rider = ifelse(rider == "O'connor Ben", "O'Connor Ben", rider),
+         rider = ifelse(rider == "D'urbano Marco", "D'Urbano Marco", rider))
 
 #
 
@@ -68,7 +69,7 @@ centers <- kmeans_model$centers %>%
 
 #
 
-prc <- dbGetQuery(con, "SELECT * FROM performance_rider_clustering WHERE Date = '2020-11-08'")
+prc <- dbGetQuery(con, "SELECT * FROM performance_rider_clustering WHERE Date = '2017-01-17'")
 
 dist <- prc %>%
   select(-in_final_group, -rel_sof) %>%
@@ -110,7 +111,7 @@ dist <- prc %>%
 #
 #
 
-team_clusters_2021 <- riders_2021 %>%
+team_clusters_2017 <- riders_2017 %>%
   
   mutate(match_rider = tolower(rider)) %>%
   
@@ -130,20 +131,17 @@ team_clusters_2021 <- riders_2021 %>%
 #
 #
 
-ggplot(team_clusters_2021 %>% 
-         filter(str_trim(team) == 'Team Total Direct Energie') %>%
+ggplot(team_clusters_2017 %>% 
+         filter(str_trim(team) == 'BORA - hansgrohe') %>%
          mutate(type = ifelse(is.na(type), "Domestique", type)),
        
        aes(x = leader, y = weighted_pcd, label = rider, fill = type, size = exp(points)-0.13))+
   
   # scale sizes correctly
   geom_blank(data = team_clusters_2021 %>%
-               filter(rider %in% c('Van Aert Wout', 'Carretero Hector')))+
-  
-  #geom_point(data = team_clusters_2021 %>% 
-  #             mutate(type = ifelse(is.na(type), "Domestique", type)),
-  #           aes(x = leader, y = weighted_pcd, color = type), size = 1)+
-  
+               filter(points == min(points, na.rm = T) | points == max(points, na.rm = T)),
+             aes(x = leader, y = weighted_pcd, label = rider, fill = type, size = exp(points)-0.13))+
+
   geom_point(shape = 21, stroke = 0.75, color = "black")+
   
   ggrepel::geom_label_repel(size=3, color = "black", fill = "white")+
@@ -155,16 +153,16 @@ ggplot(team_clusters_2021 %>%
   
   labs(x = "Leader: % of races as #1 on team", 
        y = "Parcours fit: climbing difficulty of better performances", 
-       title = "Jumbo Visma 2021 team plot", 
+       title = "Bora 2017 team plot", 
        size = "Success points",
        subtitle = "how often is rider the team leader / which parcours fit a rider")+
   expand_limits(y = c(0,16), x = c(0,0.6))+
   
   scale_fill_manual(values = c("#F02108", "gray40", "#F0A608",
-                                "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")+
+                               "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")+
   
   scale_color_manual(values = c("#F02108", "gray40", "#F0A608",
-                               "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")+
+                                "#37B36C", "#16BEF2", "#162CF2"), name = "Rider Type")+
   
   scale_size_continuous(range = c(1,15))+
   guides(size = FALSE)
@@ -176,7 +174,7 @@ ggplot(team_clusters_2021 %>%
 #
 
 success_model <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bunchsprint_impact
-                                  FROM lme4_rider_success WHERE DATE = '2020-12-04'") %>%
+                                  FROM lme4_rider_success WHERE DATE = '2017-01-17'") %>%
   
   mutate(random_intercept = random_intercept - 5.2) %>%
   
@@ -185,7 +183,7 @@ success_model <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bu
          hills = (random_intercept + (5 * pcd_impact)),
          climbs = (random_intercept + (10 * pcd_impact)),
          high_mtns = (random_intercept + (18 * pcd_impact))
-         ) %>%
+  ) %>%
   
   mutate(flat_BS = exp(flat_BS) / (1+exp(flat_BS)),
          flats = exp(flats) / (1+exp(flats)),
@@ -199,7 +197,7 @@ success_model <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bu
 #
 #
 
-teams_success_2021 <- riders_2021 %>%
+teams_success_2017 <- riders_2017 %>%
   
   mutate(match_rider = tolower(rider)) %>%
   
@@ -215,7 +213,7 @@ teams_success_2021 <- riders_2021 %>%
 #
 
 leader_model <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bunchsprint_impact
-                                  FROM lme4_rider_teamleader WHERE DATE = '2020-12-04'") %>%
+                                  FROM lme4_rider_teamleader WHERE DATE = '2017-01-17'") %>%
   
   mutate(random_intercept = random_intercept - 2) %>%
   
@@ -238,7 +236,7 @@ leader_model <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bun
 #
 #
 
-teams_leader_2021 <- riders_2021 %>%
+teams_leader_2017 <- riders_2017 %>%
   
   mutate(match_rider = tolower(rider)) %>%
   
@@ -251,78 +249,63 @@ teams_leader_2021 <- riders_2021 %>%
 #
 #
 #
-#
-#
-#
-#
-#
+
+all_race_leader_model <- dbGetQuery(con, "SELECT rider, race, stage, year, class, date, team, bunch_sprint, pred_climb_difficulty,
+                       rnk, tm_pos
+                       FROM stage_data_perf
+                       WHERE YEAR(Date) = '2017' AND Class NOT IN ('WC', 'CC', 'NC') AND time_trial = 0") %>%
+  
+  left_join(dbGetQuery(con, "SELECT rider, date, random_intercept, pcd_impact, bunchsprint_impact
+                                  FROM lme4_rider_teamleader WHERE YEAR(DATE) = '2017'"), by = c("rider", "date")) %>%
+  
+  mutate(random_intercept = random_intercept - 2) %>%
+  
+  mutate(coef = random_intercept + (pcd_impact * pred_climb_difficulty) + (bunchsprint_impact * bunch_sprint),
+         leader_prob = exp(coef)/(1+exp(coef)),
+         leader_prob = ifelse(is.na(leader_prob), median(leader_prob, na.rm = T), leader_prob)) %>%
+  
+  group_by(date) %>%
+  filter(mean(is.na(coef)) < 0.33) %>%
+  ungroup() %>%
+  
+  group_by(stage, race, year, team, date, class) %>%
+  mutate(adj_leader_prob = leader_prob / sum(leader_prob, na.rm = T)) %>%
+  ungroup()
+
+# calculate variance in team leader predictions vs actuals
+# calculate variance by pred_climb_difficulty buckets
+
+tm_ldr_mod <- glm(tm_ldr ~ leader_prob, 
+                  data = all_race_leader_model %>% mutate(tm_ldr = ifelse(tm_pos==1,1,0)),
+                  family = "binomial")
+
 #
 
-success_model_all <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, bunchsprint_impact, Date
-                                  FROM lme4_rider_success") %>%
+team_errors <- all_race_leader_model %>%
   
-  mutate(random_intercept = random_intercept - 5) %>%
-  
-  mutate(flat_BS = (random_intercept + bunchsprint_impact + (2 * pcd_impact)),
-         flats = (random_intercept + (2 * pcd_impact)),
-         hills = (random_intercept + (5 * pcd_impact)),
-         climbs = (random_intercept + (10 * pcd_impact)),
-         high_mtns = (random_intercept + (18 * pcd_impact))
-  ) %>%
-  
-  mutate(flat_BS = exp(flat_BS) / (1+exp(flat_BS)),
-         flats = exp(flats) / (1+exp(flats)),
-         hills = exp(hills) / (1+exp(hills)),
-         climbs = exp(climbs) / (1+exp(climbs)),
-         high_mtns = exp(high_mtns) / (1+exp(high_mtns))) %>%
-  
-  select(rider, Date, flat_BS:high_mtns) %>%
-  
-  gather(parcours, success, flat_BS:high_mtns) %>%
-  
-  group_by(Date, parcours) %>%
-  mutate(rank = rank(-success, ties.method = "min")) %>%
+  group_by(team, race, stage, year, class, date) %>%
+  summarize(error = mean((leader_prob - (tm_pos == 1))^2), riders = n(), max_prob = max(leader_prob, na.rm = T)) %>%
   ungroup()
 
 #
 #
 #
-
-teams_success_all_2021 <- riders_2021 %>%
-  
-  mutate(match_rider = tolower(rider)) %>%
-  
-  left_join(success_model_all %>%
-              mutate(rider = tolower(rider)), by = c("match_rider" = "rider")) %>%
-  
-  select(-match_rider)
-
 #
-
-ggplot(teams_success_all_2021 %>%
-         filter(rider %in% c("Froome Chris", "Thomas Geraint", "Roglic Primoz",
-                             "Pogacar Tadej", "Pinot Thibaut", "Bernal Egan")),
-       aes(x = as.Date(Date), y = climbs, color = rider))+
-  
-  geom_line(size=1)+
-  
-  scale_y_continuous(labels = scales::percent)+
-  
-  labs(x = "",
-       y = "Bunch Sprint Success Model",
-       title = "Bunch Sprint Expected Performance")
-
+#
+#
+#
 #
 #
 #
 
-rider_averages <- dbGetQuery(con, "SELECT * FROM performance_rider_clustering WHERE Date = '2020-12-04'") %>%
+
+rider_averages <- dbGetQuery(con, "SELECT * FROM performance_rider_clustering WHERE Date = '2017-01-17'") %>%
   
   gather(stat, value, rel_sof:in_final_group)
 
 #
 
-rider_stat_averages_2021 <- riders_2021 %>%
+rider_stat_averages_2017 <- riders_2017 %>%
   
   mutate(match_rider = tolower(rider)) %>%
   
