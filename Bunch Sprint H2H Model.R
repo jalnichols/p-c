@@ -726,3 +726,123 @@ dbWriteTable(con,
              team_bs_results,
              row.names = F, 
              append = TRUE)
+
+#
+#
+#
+#
+#
+
+sprint_h2h %>% 
+  inner_join(dbGetQuery(con, "SELECT date as pred_date, rider, intercept as int1
+                        FROM lme4_rider_bunchsprinth2h"), by = c("date" = "pred_date", "rider1" = "rider")) %>% 
+  
+  inner_join(dbGetQuery(con, "SELECT date as pred_date, rider, intercept as int2
+                        FROM lme4_rider_bunchsprinth2h"), by = c("date" = "pred_date", "rider2" = "rider")) %>% 
+  
+  inner_join(
+    dbGetQuery(con, "SELECT master_team, date, intercept AS tmint1 FROM lme4_team_bunchsprinth2h"), 
+    by = c("date", "team1" = "master_team")) %>% 
+  
+  inner_join(
+    dbGetQuery(con, "SELECT master_team, date, intercept AS tmint2 FROM lme4_team_bunchsprinth2h"),
+    by = c("date", "team2" = "master_team")) -> daily_BS_testing
+
+#
+
+daily_BS_testing %>%
+  mutate(prob = ((int1 + tmint1) - (int2 + tmint2)), 
+         prob = exp(prob)/(1+exp(prob)), regr_prob = ((3*prob)+0.5)/4) %>% 
+  
+  group_by(f = floor(prob/0.05)*0.05) %>% 
+  summarize(act = mean(adv1), 
+            pred = mean(prob), 
+            regr_pred = mean(regr_prob), 
+            n = n()) %>% 
+  ungroup() %>% 
+  
+  ggplot(aes(x = pred, y = act))+
+  geom_point()+
+  geom_abline(slope=1, intercept = 0)+
+  scale_x_continuous(labels = scales::percent)+
+  scale_y_continuous(breaks = seq(0,1,0.1), labels = scales::percent)+
+  labs(x = "predicted", y = 'actual', title = "Unregressed predictor has large errors")
+
+#
+
+daily_BS_testing %>%
+  mutate(prob = ((int1 + tmint1) - (int2 + tmint2)), 
+         prob = exp(prob)/(1+exp(prob)), regr_prob = ((3*prob)+0.5)/4) %>% 
+  
+  group_by(f = floor(prob/0.05)*0.05) %>% 
+  summarize(act = mean(adv1), 
+            pred = mean(prob), 
+            regr_pred = mean(regr_prob), 
+            n = n()) %>% 
+  ungroup() %>% 
+  
+  ggplot(aes(x = regr_pred, y = act))+
+  geom_point()+
+  geom_abline(slope=1, intercept = 0)+
+  scale_x_continuous(breaks = seq(0,1,0.1), labels = scales::percent)+
+  scale_y_continuous(breaks = seq(0,1,0.1), labels = scales::percent)+
+  labs(x = "predicted", y = 'actual', title = "Regressing 25% to mean fits well")
+
+#
+#
+#
+#
+#
+
+BS_data <- All_data %>%
+  
+  filter(bunch_sprint == 1 & year >= 2016) %>%
+  
+  left_join(dbGetQuery(con, "SELECT date, rider, intercept
+                        FROM lme4_rider_bunchsprinth2h") %>%
+              mutate(date = as.Date(date)), by = c("date", "rider")) %>%
+  
+  group_by(stage, race, year, class, date) %>%
+  mutate(bs_rank = rank(-intercept, ties.method = 'min')) %>%
+  ungroup()
+  
+
+# the Nth best sprinter wins what percentage of BS races?
+
+# the best sprinter wins 26% of races followed by 2nd best 13%, 3rd best 10%
+# 77% of BS are won by top 10 sprinters including all races which meet BS criteria
+
+BS_data %>% 
+  group_by(bs_rank) %>%
+  summarize(win_rate = mean(rnk==1, na.rm = T), 
+            podium = mean(rnk<=3, na.rm = T),
+            n = n()) %>% 
+  arrange(bs_rank)
+
+.# BS win prob model based on intercept behind best sprinter / 5th best sprinter / 10th best sprinter
+
+BS_data %>%
+  
+  filter(rnk <= 30 & gain_1st <= 5) %>%
+  
+  group_by(stage, race, year, class, date) %>%
+  mutate(bs_rank = rank(-intercept, ties.method = 'min')) %>%
+  filter(sum(!is.na(intercept)) >= 10) %>%
+  ungroup() %>%
+  
+  mutate(best_intercept = ifelse(bs_rank == 1, intercept, NA),
+         win_intercept = ifelse(rnk == 1, is.na(intercept), NA)) %>%
+  
+  group_by(race, year, stage, class, date) %>%
+  mutate(best_intercept = mean(best_intercept, na.rm = T),
+         win_intercept = mean(win_intercept, na.rm = T)) %>%
+  filter(win_intercept == 0) %>%
+  ungroup() %>%
+  
+  mutate(rel_to_best = best_intercept - intercept) %>%
+  
+  mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+
+  glm(win ~ rel_to_best + log(bs_rank), data = ., family = "binomial") %>%
+  
+  summary()
