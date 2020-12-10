@@ -1060,3 +1060,139 @@ leaders_speed <- jumbo_on_climbs %>%
             vs_gradient = median(raw_speed_last_5 / pred_speed_grade, na.rm = T),
             measurements = n()) %>%
   ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+
+climbing <- all_stages %>%
+  
+  mutate(within_01 = ifelse(kmToFinish < 0.1, TimeStamp, NA)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(TimeStamp <= within_01) %>%
+  ungroup() %>%
+  
+  filter(Gradient > 0 & kmToFinish > 0) %>%
+  
+  mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
+  
+  group_by(TimeStamp) %>%
+  mutate(primoz = mean(primoz, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  mutate(to_roglic = ifelse(abs(kmToFinish - primoz) < 0.1, 1, 
+                            ifelse(kmToFinish < primoz, 1, 0)),
+         near_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 0)) %>%
+  
+  # Orcieres Merlette St4
+  # Lusette St6
+  # Peyresource St8
+  # Marie Blanque St9
+  # Puy Mary and Neronne St13
+  filter((StageId == "0400" & kmToFinish < 10.5 & kmToFinish > 0) |
+           (StageId == "0200" & kmToFinish > 9 & kmToFinish < 14.5) |
+           (StageId == "0600" & kmToFinish > 13.5 & kmToFinish < 25) |
+           (StageId == "0800" & kmToFinish > 10 & kmToFinish < 19.5) |
+           (StageId == "0900" & kmToFinish > 18.5 & kmToFinish < 26) |
+           (StageId == "1300" & kmToFinish > 0 & kmToFinish < 16) |
+           (StageId == '1500' & kmToFinish > 0 & kmToFinish < 17.7) |
+           (StageId == '1600' & kmToFinish > 0 & kmToFinish < 33) |
+           (StageId == '1700' & kmToFinish > 0 & kmToFinish < 22) |
+           (StageId == '1800' & kmToFinish > 31.5 & kmToFinish < 37.5)) %>%
+  
+  mutate(near_roglic = ifelse(is.na(near_roglic), 0, near_roglic)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(finished = max(TimeStamp, na.rm = T),
+         final_KM = min(kmToFinish, na.rm = T)) %>%
+  ungroup() %>%
+  
+  group_by(Bib, near_roglic, StageId) %>%
+  summarize(min = min(TimeStamp, na.rm=T),
+            max = max(TimeStamp, na.rm = T),
+            mindist = min(kmToFinish,na.rm=T),
+            maxdist = max(kmToFinish, na.rm = T),
+            finished = mean(finished, na.rm = T),
+            final_KM = mean(final_KM, na.rm = T),
+            n=n()) %>%
+  ungroup() %>%
+  
+  mutate(seconds = max-min,
+         meters = (maxdist - mindist)*1000,
+         m_s = meters / seconds,
+         kph = (meters / 1000) / (seconds / 60 / 60))
+
+#
+#
+#
+#
+#
+
+v_list <- vector("list", 150)
+
+k_list <- seq(1,35,0.25)
+
+for(k in 1:length(k_list)) { 
+  
+  all_stages %>%
+    
+    filter(Bib == 11 & StageId == '1600') %>%
+    
+    mutate(within_01 = ifelse(kmToFinish < 0.1, TimeStamp, NA)) %>%
+    
+    group_by(StageId, Bib) %>%
+    mutate(within_01 = min(within_01, na.rm = T)) %>%
+    filter(TimeStamp <= within_01) %>%
+    ungroup() %>%
+    
+    filter(Gradient > 0 & kmToFinish > 0) %>%
+    
+    mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
+    
+    group_by(TimeStamp) %>%
+    mutate(primoz = mean(primoz, na.rm = T)) %>% 
+    ungroup() %>%
+    
+    mutate(to_roglic = ifelse(abs(kmToFinish - primoz) < 0.1, 1, 
+                              ifelse(kmToFinish < primoz, 1, 0)),
+           near_roglic = ifelse(abs(kmToFinish - primoz) < 0.2, 1, 0)) %>%
+
+    filter((StageId == "0400" & kmToFinish < 10.5 & kmToFinish > 0) |
+             (StageId == "0200" & kmToFinish > 9 & kmToFinish < 14.5) |
+             (StageId == "0600" & kmToFinish > 13.5 & kmToFinish < 25) |
+             (StageId == "0800" & kmToFinish > 10 & kmToFinish < 19.5) |
+             (StageId == "0900" & kmToFinish > 18.5 & kmToFinish < 26) |
+             (StageId == "1300" & kmToFinish > 0 & kmToFinish < 6) |
+             (StageId == '1500' & kmToFinish > 0 & kmToFinish < 17.7) |
+             (StageId == '1600' & kmToFinish > 0 & kmToFinish < 36) |
+             (StageId == '1700' & kmToFinish > 0 & kmToFinish < 22) |
+             (StageId == '1800' & kmToFinish > 31.5 & kmToFinish < 37.5)) %>%
+    
+    mutate(near_roglic = ifelse(is.na(near_roglic), 0, near_roglic)) %>% 
+    
+    filter(StageId=='1600') %>% 
+    
+    filter(kmToFinish < k_list[[k]]) %>%  
+    summarize(min = min(TimeStamp, na.rm=T),
+              max = max(TimeStamp, na.rm = T),
+              mindist = min(kmToFinish,na.rm=T),
+              maxdist = max(kmToFinish, na.rm = T)) %>% 
+    mutate(seconds = max-min,
+           meters = (maxdist - mindist)*1000,
+           m_s = meters / seconds,
+           kph = (meters / 1000) / (seconds / 60 / 60)) %>% 
+    
+    mutate(KM_Mark = k_list[[k]]) -> v_list[[k]]
+  
+}
+
+rog <- bind_rows(v_list) %>% select(KM_Mark, kph)
+
+cl <- climbing %>% filter(StageId == '1600') %>% filter(near_roglic == 0 | mindist > 1) %>% group_by(Bib) %>% filter(n()==2) %>% ungroup()
