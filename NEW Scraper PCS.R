@@ -102,10 +102,10 @@ pull_from_schedule <- c(
 
 store_from_schedule <- vector("list", length(pull_from_schedule))
 
-pull_years = 4
+pull_years = 3
 
 current_year = year(today())
-start_year = 2016 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2009 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -236,7 +236,6 @@ natl_champs <- c("race/nc-spain",
                  "race/nc-czech-republic",
                  "race/nc-denmark",
                  "race/nc-ireland",
-                 "race/nc-slovenia",
                  "race/nc-slovakia",
                  "race/nc-norway",
                  "race/nc-colombia",
@@ -441,7 +440,9 @@ dl_html <- TRUE
 
 if(dl_html == FALSE) {
   
-  all_stages <- dbReadTable(con, "pcs_all_stages")
+  all_stages <- dbReadTable(con, "pcs_all_stages") %>%
+    
+    filter(year <= 2012)
   
 }
 
@@ -493,6 +494,13 @@ for(r in 1:length(all_stages$value)) {
      (race_url == "race/60th-tour-de-picardie/2016" & s == 1) |
      (race_url == "race/baltic-chain-tour/2015" & s == 2) |
      (race_url == 'race/tour-of-mersin/2017' & s == 4) |
+     (race_url == 'race/romanian-cycling-tour/2012' & s == 2) |
+     (race_url == "race/baltic-chain-tour/2011") |
+     (race_url == 'race/volta-a-catalunya/2012' & s == 3) |
+     (race_url == 'race/bayern-rundfarht/2012' & s == 2) |
+     (race_url == 'race/nc-czech-republic/2011') |
+     (race_url == 'race/nc-south-africa/2011') |
+     (race_url == 'race/central-european-tour-budapest-gp/2011') |
      (str_detect(race_url, "race/hammer-") == TRUE)) {
     
     stage <- tibble::tibble(rnk = as.character(NA),
