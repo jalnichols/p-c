@@ -15,7 +15,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year IN (2014,2015, 2019,2020)") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2013") %>%
   
   mutate(date = as.Date(date)) %>%
   

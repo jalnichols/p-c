@@ -1137,13 +1137,13 @@ climbing <- all_stages %>%
 
 v_list <- vector("list", 150)
 
-k_list <- seq(1,35,0.25)
+k_list <- seq(32,38,0.25)
 
 for(k in 1:length(k_list)) { 
   
   all_stages %>%
     
-    filter(Bib == 11 & StageId == '1600') %>%
+    filter(Bib == 11 & StageId == '1800') %>%
     
     mutate(within_01 = ifelse(kmToFinish < 0.1, TimeStamp, NA)) %>%
     
@@ -1177,7 +1177,7 @@ for(k in 1:length(k_list)) {
     
     mutate(near_roglic = ifelse(is.na(near_roglic), 0, near_roglic)) %>% 
     
-    filter(StageId=='1600') %>% 
+    filter(StageId=='1800') %>% 
     
     filter(kmToFinish < k_list[[k]]) %>%  
     summarize(min = min(TimeStamp, na.rm=T),
@@ -1195,4 +1195,4 @@ for(k in 1:length(k_list)) {
 
 rog <- bind_rows(v_list) %>% select(KM_Mark, kph)
 
-cl <- climbing %>% filter(StageId == '1600') %>% filter(near_roglic == 0 | mindist > 1) %>% group_by(Bib) %>% filter(n()==2) %>% ungroup()
+cl <- climbing %>% filter(StageId == '1800') %>% filter(near_roglic == 0 | mindist > 1) %>% group_by(Bib) %>% filter(n()==2) %>% ungroup()

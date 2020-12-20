@@ -193,10 +193,10 @@ all_routes <- dbGetQuery(con, "SELECT alt, dist, url FROM fr_route_data") %>%
 
 koms_list_tdf <- vector("list", 21)
 
-for(S in 1:21) {
+for(S in 1:7) {
 
 tdf14_2020 <- all_routes %>%
-  filter(year == 2019 & race == "Giro d'Italia" & stage == S) %>%
+  filter(year == 2019 & race == "Tirreno-Adriatico" & stage == S) %>%
   inner_join(pcs_fr_matches, by = c("race" = "fr_race", "year")) %>%
   inner_join(pcs, by = c("pcs_race" = "race", "year")) %>%
   
