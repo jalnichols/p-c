@@ -238,6 +238,102 @@ stage_level_strava %>%
 #
 # how can we do strength of peloton by stage type (very crudely)
 
+relative_strength_of_tours <- stage_data %>%
+  
+  filter(year >= 2014) %>%
+  
+  inner_join(stage_data %>%
+               
+               filter(year >= 2014) %>%
+               
+               filter(!is.na(rider)) %>%
+               
+               mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>%
+               
+               mutate(log_rank = log(rnk)) %>%
+               
+               group_by(year, rider) %>%
+               mutate(log_rank = ifelse(log_rank <= quantile(log_rank, probs = 0.33, na.rm = T), log_rank, NA)) %>%
+               summarize(races = n(),
+                         best_rank = mean(log_rank, na.rm = T)) %>%
+               ungroup() %>%
+               
+               group_by(year) %>%
+               filter(races > (max(races, na.rm = T))/4) %>%
+               filter(rank(best_rank, ties.method = "min") <= 250) %>%
+               ungroup(), by = c("rider", "year"))
+
+#
+
+library(lme4)
+
+non_euro_wt <- c('gree - tour of guangxi', 'uae tour', 'gree-tour of guangxi',
+                 'presidential cycling tour of turkey', 'amgen tour of california',
+                 'abu dhabi tour', 'santos tour down under', 'tour of beijing',
+                 'tour down under', 'cadel evans great ocean road race', 'grand prix cycliste de montreal',
+                 'grand prix cycliste de quebec')
+
+relative_strength_of_tours %>%
+  
+  filter(!class %in% c("JR")) %>%
+  
+  filter(!is.na(rider)) %>%
+  
+  mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>%
+  
+  mutate(log_rank = log(rnk)) %>%
+  
+  mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
+                       ifelse(Tour == "World Tour" & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
+  
+  mutate(class = ifelse(class == "WT", "1.UWT", class),
+         class = ifelse(class %in% c("WC", "Olympics"), "1.UWT", class),
+         class = ifelse(class == "NC", "XXNatCh", 
+                        ifelse(class == "JR", "XXJR",
+                               ifelse(class == "CC", "1.1", class)))) %>%
+  
+  mutate(class = str_sub(class, 3, nchar(class)),
+         class = ifelse(class == "2U23", "2U", class)) -> dat
+
+choose_rows <- sample(1:nrow(dat), size = nrow(dat)*1)
+
+trn <- dat[choose_rows, ]
+
+lmer(log_rank ~ (1 | rider) + (1 | class) + Tour + grand_tour, data = trn) -> mixed_effects_tour
+
+summary(mixed_effects_tour)
+
+random_effects <- ranef(mixed_effects_tour)  
+
+tours <- random_effects$class %>% rownames_to_column()
+riders <- random_effects$rider %>% rownames_to_column()
+
+testing <- cbind(pred = predict(mixed_effects_tour, dat[-choose_rows, ], allow.new.levels = TRUE),
+                 
+                 dat[-choose_rows, ])
+
+#
+
+predicted_places <- cbind(
+  
+  pred = predict(mixed_effects_tour,
+                 
+                 expand_grid(Tour = c("Europe", "Other"),
+                             grand_tour = c(1, 0),
+                             class = dat$class %>% unique(),
+                             rider = riders %>% janitor::clean_names() %>% filter(intercept > -0.01 & intercept < 0.01) %>% .[1,1])),
+  
+  expand_grid(Tour = c("Europe", "Other"),
+              grand_tour = c(1, 0),
+              class = dat$class %>% unique(),
+              rider = riders %>% janitor::clean_names() %>% filter(intercept > -0.01 & intercept < 0.01) %>% .[1,1])) %>%
+  
+  mutate(pred = pred - mixed_effects_tour@beta[[1]] + log(5)) %>%
+  
+  mutate(ranks = exp(pred)) %>%
+  
+  select(-rider, -pred)
+
 #
 #
 #
@@ -246,150 +342,126 @@ stage_level_strava %>%
 
 strength_of_peloton <- stage_data %>%
   
-  # most non-European UWT races are not UWT quality
-  # demote down a level or two
-  mutate(class = ifelse(race %in% c("gree-tour of guangxi", "presidential cycling tour of turkey",
-                                    "tour of beijing", "gree - tour of guangxi"), "2.1",
-                        ifelse(race %in% c("amgen tour of california", "tour de pologne",
-                                           "cadel evans great road race", "santos tour down under"), "2.HC", class)),
-         class = ifelse(race %in% c("tour of qinghai lake", "le tour de langkawi",
-                                    "tour of hainan", "usa pro challenge", 
-                                    "the larry h. miller tour of utah",
-                                    "colorado classic"), "2.1", class)) %>%
+  mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
+                       ifelse(Tour == "World Tour" & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
+  
+  mutate(class = ifelse(class == "JR", "2U", class),
+         class = ifelse(class == "WT", "1.UWT", class),
+         class = ifelse(class %in% c("WC", "Olympics"), "1.UWT", class),
+         class = ifelse(class == "NC", "XXNatCh", 
+                        ifelse(class == "JR", "XXJR",
+                               ifelse(class == "CC", "1.1", class)))) %>%
+  
+  mutate(class = str_sub(class, 3, nchar(class)),
+         class = ifelse(class == "2U23", "2U", class),
+         class = ifelse(class == "" | is.na(class), "2", class)) %>%
   
   mutate(rnk = ifelse(is.na(rnk),200,rnk)) %>%
   
-  # determine whether bunch sprint #1 same time as #25
+  inner_join(predicted_places, by = c("Tour", "class", "grand_tour")) %>%
+  
+  # determine whether bunch sprint #1 same time as #20
   group_by(stage, race, year, url) %>%
-  mutate(x25th = ifelse(rnk == 25, total_seconds <= win_seconds+5, NA),
-         x25th = mean(x25th, na.rm = T)) %>%
+  mutate(x20th = ifelse(rnk == 20, total_seconds <= (win_seconds+5), NA),
+         x20th = mean(x20th, na.rm = T)) %>%
   ungroup() %>%
   
-  rename(bunch_sprint = x25th) %>%
+  rename(bunch_sprint = x20th) %>%
   
-  # set threshold for qualifying by class
-  mutate(qual = str_sub(class, 3, nchar(class)),
-         qual = ifelse(qual == "UWT", 9,
-                       ifelse(qual == "HC", 7.5,
-                              ifelse(qual == "Pro", 7.5,
-                                     ifelse(qual == "1", 5, 3)))),
-         qual = ifelse(grand_tour == 1, 12, qual),
-         qual = ifelse(str_detect(race, "world champ"), 12, qual),
-         
-         # if it's a bunch sprint, qualifying is a third what it normally is
-         # because sprinters would dominate this otherwise
-         qual = ifelse(is.na(bunch_sprint), qual / 1.5,
-                       ifelse(bunch_sprint == 1, qual / 3, qual))) %>%
-  
-  select(stage, race, year, rider, rnk, qual, class, tour = Tour, master_team, url) %>%
+  rename(qual = ranks) %>%
+
+  select(stage, race, year, rider, rnk, qual, class, tour = Tour, master_team, url,
+         bunch_sprint, date, time_trial) %>%
   
   unique() %>%
   
-  # gives pts based on finish ONLY for those w/i threshold
-  mutate(pts = 1 / (rnk + 3),
-         pts = ifelse(rnk < (qual+1), pts, 0)) %>%
+  # points are assigned by taking 1 / log(rnk), subtracting out 50th place, and adjusting so that 1 point is max you can get
+  # this means any finish worse than 50th loses points
+  mutate(pts = ((1 / log(rnk+1)) - 0.2543) / 1.1884) %>%      # for 50th
   
   # adjusts for tour strength
   mutate(pts = ifelse(tour %in% c("Oceania Tour", "Asia Tour"), pts * 0.5,
                       ifelse(tour %in% c("National Championships"), pts * 0.35,
                              ifelse(tour %in% c("Africa Tour"), pts * 0.2, pts)))) %>%
   
-  #mutate(year2 = ifelse(lubridate::year(lubridate::today()) == year, year-1, year)) %>%
-  mutate(year2 = year) %>%
-  
-  # average points per rider regressing to zero with 10 races
-  group_by(rider, year2) %>%
-  mutate(t5 = sum(pts*4, na.rm = T)/(n()+10),
-         n=n()+10) %>%
-  ungroup() 
+  mutate(date = as.Date(date),
+         bunch_sprint = ifelse(is.na(bunch_sprint), 0, bunch_sprint))
 
 #
 
-by_tour <- strength_of_peloton %>%
+dates_to_generate_sop <- stage_data %>%
   
-  filter(!tour %in% c("Missing")) %>%
-  
-  group_by(rider, class) %>%
-  summarize(pts = mean(pts, na.rm = T),
-            n = n()) %>%
+  group_by(race, year, class) %>%
+  summarize(date = min(date, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(pts = ifelse(pts == 0, 0.001, pts)) %>%
+  filter(!is.na(date)) %>%
   
-  inner_join(
-    
-    strength_of_peloton %>%
-      
-      filter(!tour %in% c("Missing")) %>%
-      
-      group_by(rider, class) %>%
-      summarize(pts = mean(pts, na.rm = T),
-                n = n()) %>%
-      ungroup() %>%
-      mutate(pts = ifelse(pts == 0, 0.001, pts)), by = c("rider")
-    
-  ) %>%
+  select(date) %>%
+  unique() %>%
   
-  filter(class.x != class.y) %>%
-  
-  mutate(ratio = pts.x / pts.y,
-         hm = (2) / ((1 / n.x) + (1 / n.y))) %>%
-  
-  group_by(class.x, class.y) %>%
-  summarize(straight_avg = mean(ratio, na.rm = T),
-            harmonic_mean = sum(hm * ratio, na.rm = T) / sum(hm, na.rm = T),
-            n = sum(hm, na.rm = T)) %>%
-  ungroup() %>% 
-  
-  mutate(blended = (straight_avg + harmonic_mean)/2) %>% 
-  
-  filter(!class.x %in% c("Olympic Games")) %>%
-  filter(!class.y %in% c("Olympic Games")) %>% 
-  
-  group_by(class.y) %>% 
-  mutate(rk = rank(blended, ties.method = 'min')) %>%
-  ungroup()
+  mutate(date = as.Date(date)) %>%
+  filter(date >= '2013-01-01')
 
-# above analysis suggests WorldTour/World Champs level 1 | Europe HC/PRO/.1 + top Americas | Asia/Oceania | Natl Champs | Africa
-# before downgrading the pts for the last four tours in the strength_of_peloton code
+dates_list <- vector("list", length(dates_to_generate_sop$date))
 
 #
 
-best_riders_sop <- strength_of_peloton %>%
-  select(rider, year2, t5) %>% 
-  unique() %>%
+for(d in 1:length(dates_list)) {
   
-  group_by(year2) %>% 
-  mutate(rk = rank(-t5, ties.method = "min")) %>% 
-  ungroup()
+  best_riders_sop <- strength_of_peloton %>%
+    
+    filter(date < dates_to_generate_sop$date[[d]] &
+             date >= (dates_to_generate_sop$date[[d]] - 731)) %>%
+    
+    group_by(rider, bunch_sprint, time_trial) %>%
+    summarize(POINTS = sum(pts*4, na.rm = T)/(n()+20),
+           RACES=n()+20) %>%
+    ungroup() %>%
+    
+    group_by(bunch_sprint, time_trial) %>% 
+    mutate(rk = rank(-POINTS, ties.method = "min")) %>% 
+    ungroup() %>%
+    
+    mutate(DATE = dates_to_generate_sop$date[[d]])
+  
+  dates_list[[d]] <- best_riders_sop
+
+}
+
+#
+
+best_riders_sop <- bind_rows(dates_list)
 
 #
 
 best_possible_sop <- best_riders_sop %>%
   filter(rk < 151) %>% 
-  group_by(year2) %>%
-  summarize(top150 = sum(t5)) %>%
+  group_by(date = DATE, bunch_sprint, time_trial) %>%
+  summarize(top150 = sum(POINTS, na.rm = T)) %>%
   ungroup()
 
 #
 
 individual_races_sop <- strength_of_peloton %>%
-  inner_join(best_possible_sop, by = c("year2")) %>%
   
-  # remove current race from calc
-  mutate(t5 = ((t5*n) - (pts*2))/(n-1)) %>%
+  inner_join(best_riders_sop %>%
+               select(rider, DATE, bunch_sprint, time_trial, POINTS), by = c("rider", "date" = "DATE", "bunch_sprint", "time_trial")) %>%
+  
+  inner_join(best_possible_sop, by = c("date", "bunch_sprint", "time_trial")) %>%
   
   # sum up total points rating for all of race
-  group_by(race, stage, year, url) %>%
-  summarize(total = sum(t5, na.rm = T),
+  group_by(race, stage, year, url, class, bunch_sprint, time_trial) %>%
+  summarize(total = sum(POINTS, na.rm = T),
             top150 = mean(top150, na.rm = T)) %>%
   ungroup() %>%
   
   mutate(elite_riders_worth = total / top150) %>%
-  
-  group_by(year) %>%
+  group_by(bunch_sprint, time_trial) %>%
   mutate(sop = elite_riders_worth / max(elite_riders_worth, na.rm = T)) %>%
   ungroup() %>%
+  
+  mutate(sop = ifelse(sop <= 0, 0, sop)) %>%
   
   select(race, stage, year, sop, url)
 
