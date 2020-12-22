@@ -512,17 +512,20 @@ individual_races_sop <- strength_of_peloton %>%
   
   mutate(sop = ifelse(sop <= 0, 0, sop),
          sop25 = ifelse(sop25 <= 0, 0, sop25)) %>%
+
+  mutate(sop = ifelse(grand_tour == 1, sop25, sop)) %>%
   
-  # because GTs have such varied fields, use the top 25 SOF ranking
-  #mutate(sop = ifelse(grand_tour == 1, sop25, sop)) %>%
-  
-  select(race, stage, year, sop = sop25, url)
+  select(race, stage, year, sop, url)
 
 #
 
 stage_data <- stage_data %>%
   
   filter(year>=2013)
+
+rm(best_riders_sop)
+rm(strength_of_peloton)
+gc()
 
 #
 #
@@ -1150,7 +1153,7 @@ ggplot(glm_data, aes(x = sof, y = fit, color = as.factor(thresh)))+
 # and finding where that indicates 8 places
 
 limits <- glm_data %>% 
-  filter(sof > 0.789 & sof < 0.851 & thresh == 8) %>%
+  filter(sof > 0.7 & sof < 0.8 & thresh == 8) %>%
   summarize(min(fit),
             max(fit),
             median(fit))
@@ -1174,7 +1177,7 @@ filter(glm_data, fit > 0.0875 & fit < 0.0925) %>%
 
 glm_data %>% filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>% 
   ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')+
-  geom_vline(xintercept = 0.82)
+  geom_vline(xintercept = 0.75)
 
 #
 #
@@ -1197,7 +1200,6 @@ write_rds(limits_actual, "sof-limits-mod.rds")
 
 
 # Stage Data Perf ---------------------------------------------------------
-
 
 
 stage_data_perf <- stage_data %>%
@@ -1275,7 +1277,7 @@ dbWriteTable(con, "stage_data_perf",
                       -final_1km_gradient, -final_20km_vert_gain, -perc_elev_change,
                       -gain_back_5, -back_5_seconds, -success_time, -solo, -rel_success, -url,
                       -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance, -NEW,
-                      -fr_stage_type, -stage_name) %>% unique(),
+                      -fr_stage_type, -stage_name) %>% unique() %>% rename(sof_limit = limit),
              
              row.names = F,
              append = T)
@@ -1958,6 +1960,8 @@ weighted_pcd <- stage_data_perf %>%
 
 rider_clustering <- weighted_pcd %>%
   
+  filter(!is.na(rider)) %>%
+  
   filter(master_team %in% c("Sky", "Quick Step", "BORA", 'BMC Racing', "Bahrain McLaren", "EF Education First", 
                             "Sunweb", "Cofidis", "FDJ", "AG2R", "Jumbo Visma", "Movistar", "Astana", "UAE Team",
                             "Trek", "Katusha", "Lotto Soudal", "NTT", "Arkea Samsic", "Wanty Gobert", "Vital Concept",
@@ -2074,7 +2078,7 @@ cluster_assignment <- bind_rows(cluster_list) %>%
 #
 
 ggplot(weighted_pcd %>% 
-         filter(year == 2020 & master_team == 'Jumbo Visma' & races >= 10) %>%
+         filter(year == 2020 & master_team == 'UAE Team' & races >= 10) %>%
          
          inner_join(cluster_assignment %>%
                       select(rider, type, year, master_team), by = c("rider", 'year', "master_team")),
