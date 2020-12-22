@@ -33,6 +33,9 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 #
 
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
+  
+  filter(!url %in% c('race/world-championship-itt/2017', 'race/world-championship-itt/2015', 'race/world-championship-itt/2014', 'race/world-championship-itt/2013', 'race/world-championship-itt/2018')) %>%
+  
   unique() %>%
   
   mutate(rider = ifelse(rider == "Gaudu  David ", "Gaudu David", rider),
@@ -342,6 +345,8 @@ predicted_places <- cbind(
 
 strength_of_peloton <- stage_data %>%
   
+  filter(!is.na(rider)) %>%
+  
   mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
                        ifelse(Tour == "World Tour" & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
   
@@ -371,7 +376,7 @@ strength_of_peloton <- stage_data %>%
   rename(qual = ranks) %>%
 
   select(stage, race, year, rider, rnk, qual, class, tour = Tour, master_team, url,
-         bunch_sprint, date, time_trial) %>%
+         bunch_sprint, date, time_trial, one_day_race, grand_tour) %>%
   
   unique() %>%
   
@@ -385,7 +390,9 @@ strength_of_peloton <- stage_data %>%
                              ifelse(tour %in% c("Africa Tour"), pts * 0.2, pts)))) %>%
   
   mutate(date = as.Date(date),
-         bunch_sprint = ifelse(is.na(bunch_sprint), 0, bunch_sprint))
+         one_day_race = ifelse(time_trial == 1, 0, one_day_race),
+         bunch_sprint = ifelse(is.na(bunch_sprint), 0, bunch_sprint),
+         bunch_sprint = ifelse(time_trial == 1 & bunch_sprint == 1, 0, bunch_sprint))
 
 #
 
@@ -401,43 +408,69 @@ dates_to_generate_sop <- stage_data %>%
   unique() %>%
   
   mutate(date = as.Date(date)) %>%
-  filter(date >= '2013-01-01')
-
-dates_list <- vector("list", length(dates_to_generate_sop$date))
+  filter(date >= '2013-01-01') %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT DATE as date FROM performance_rider_strengthpeloton"), by = c("date"))
 
 #
 
-for(d in 1:length(dates_list)) {
+for(d in 1:length(dates_to_generate_sop$date)) {
   
-  best_riders_sop <- strength_of_peloton %>%
+  best_riders_sop <- rbind(
     
-    filter(date < dates_to_generate_sop$date[[d]] &
-             date >= (dates_to_generate_sop$date[[d]] - 731)) %>%
+    strength_of_peloton %>%
+      
+      filter(one_day_race == 1) %>%
+      
+      filter(date < dates_to_generate_sop$date[[d]] &
+               date >= (dates_to_generate_sop$date[[d]] - 731)) %>%
+      
+      mutate(race_type = 'ODR') %>%
+      
+      group_by(rider, race_type) %>%
+      summarize(POINTS = sum(pts*4, na.rm = T)/(n()+20)) %>%
+      ungroup() %>%
+      
+      group_by(race_type) %>% 
+      mutate(rk = rank(-POINTS, ties.method = "min")) %>% 
+      ungroup() %>%
+      
+      mutate(DATE = dates_to_generate_sop$date[[d]]),
     
-    group_by(rider, bunch_sprint, time_trial) %>%
-    summarize(POINTS = sum(pts*4, na.rm = T)/(n()+20),
-           RACES=n()+20) %>%
-    ungroup() %>%
-    
-    group_by(bunch_sprint, time_trial) %>% 
-    mutate(rk = rank(-POINTS, ties.method = "min")) %>% 
-    ungroup() %>%
-    
-    mutate(DATE = dates_to_generate_sop$date[[d]])
+    strength_of_peloton %>%
+      
+      filter(one_day_race == 0) %>%
+      
+      filter(date < dates_to_generate_sop$date[[d]] &
+               date >= (dates_to_generate_sop$date[[d]] - 731)) %>%
+
+      mutate(race_type = ifelse(bunch_sprint == 1, "BS",
+                                ifelse(time_trial == 1, "TT", "STG"))) %>%
+      
+      group_by(rider, race_type) %>%
+      summarize(POINTS = sum(pts*4, na.rm = T)/(n()+20)) %>%
+      ungroup() %>%
+      
+      group_by(race_type) %>% 
+      mutate(rk = rank(-POINTS, ties.method = "min")) %>% 
+      ungroup() %>%
+      
+      mutate(DATE = dates_to_generate_sop$date[[d]]))
   
-  dates_list[[d]] <- best_riders_sop
+  dbWriteTable(con, "performance_rider_strengthpeloton", best_riders_sop, append = TRUE, row.names = FALSE)
+  
+  print(d)
 
 }
 
 #
 
-best_riders_sop <- bind_rows(dates_list)
-
-#
+best_riders_sop <- dbReadTable(con, "performance_rider_strengthpeloton") %>%
+  mutate(DATE = as.Date(DATE))
 
 best_possible_sop <- best_riders_sop %>%
   filter(rk < 151) %>% 
-  group_by(date = DATE, bunch_sprint, time_trial) %>%
+  group_by(DATE, race_type) %>%
   summarize(top150 = sum(POINTS, na.rm = T)) %>%
   ungroup()
 
@@ -445,47 +478,51 @@ best_possible_sop <- best_riders_sop %>%
 
 individual_races_sop <- strength_of_peloton %>%
   
-  inner_join(best_riders_sop %>%
-               select(rider, DATE, bunch_sprint, time_trial, POINTS), by = c("rider", "date" = "DATE", "bunch_sprint", "time_trial")) %>%
+  mutate(race_type = ifelse(time_trial == 1, "TT",
+                            ifelse(one_day_race == 1, "ODR",
+                                   ifelse(bunch_sprint == 1, "BS", "STG")))) %>%
   
-  inner_join(best_possible_sop, by = c("date", "bunch_sprint", "time_trial")) %>%
+  group_by(race, class, year) %>%
+  mutate(DATE = min(date, na.rm = T)) %>%
+  ungroup() %>%
+  
+  inner_join(best_riders_sop %>%
+               select(rider, DATE, race_type, POINTS), by = c("rider", "DATE", "race_type")) %>%
+  
+  inner_join(best_possible_sop, by = c("DATE", "race_type")) %>%
+  
+  select(-DATE) %>%
+  
+  mutate(Top25 = ifelse(rnk <= 25, POINTS, NA))%>%
   
   # sum up total points rating for all of race
-  group_by(race, stage, year, url, class, bunch_sprint, time_trial) %>%
+  group_by(race, stage, year, url, class, race_type, grand_tour) %>%
   summarize(total = sum(POINTS, na.rm = T),
+            top25 = sum(Top25, na.rm = T),
             top150 = mean(top150, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(elite_riders_worth = total / top150) %>%
-  group_by(bunch_sprint, time_trial) %>%
-  mutate(sop = elite_riders_worth / max(elite_riders_worth, na.rm = T)) %>%
+  mutate(elite_riders_worth = total / top150,
+         of_top_25 = top25 / top150) %>%
+  
+  group_by(race_type) %>%
+  mutate(sop = elite_riders_worth / max(elite_riders_worth, na.rm = T),
+         sop25 = of_top_25 / max(of_top_25, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(sop = ifelse(sop <= 0, 0, sop)) %>%
+  mutate(sop = ifelse(sop <= 0, 0, sop),
+         sop25 = ifelse(sop25 <= 0, 0, sop25)) %>%
   
-  select(race, stage, year, sop, url)
+  # because GTs have such varied fields, use the top 25 SOF ranking
+  #mutate(sop = ifelse(grand_tour == 1, sop25, sop)) %>%
+  
+  select(race, stage, year, sop = sop25, url)
 
 #
 
-individual_races_team_sop <- strength_of_peloton %>%
-  inner_join(best_possible_sop, by = c("year2")) %>%
+stage_data <- stage_data %>%
   
-  # remove current race from calc
-  mutate(t5 = ((t5*n) - (pts*2))/(n-1)) %>%
-  
-  # sum up total points rating for all of race
-  group_by(race, stage, year, master_team, url) %>%
-  mutate(total = sum(t5, na.rm = T),
-         top150 = mean(top150, na.rm = T)) %>%
-  filter(rank(-t5, ties.method = "first") == 1) %>%
-  ungroup() %>%
-  
-  group_by(race, stage, year, url) %>%
-  mutate(best = max(total, na.rm = T),
-         rk = rank(-total, ties.method = "min")) %>%
-  ungroup() %>%
-  
-  mutate(rel_to_best = total / best)
+  filter(year>=2013)
 
 #
 #
