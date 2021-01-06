@@ -565,7 +565,9 @@ ggplot(preds, aes(x = (avg_alt), y = (rel / pred)-1))+
        title = "")+
   
   theme(axis.text = element_text(size = 18),
-        axis.title = element_text(size = 15))
+        axis.title = element_text(size = 15))+
+  
+  coord_cartesian(ylim = c(-0.05,0.05))
 
 #
 
@@ -898,7 +900,7 @@ segment_data_races <- stage_level_power %>%
   ungroup() %>%
   
   select(-gain_1st, -gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
-         -limit, -success, -points_finish, -cobbles, -M, -S, -VerticalGain, -VAM, -HR, -Tour,
+         -sof_limit, -success, -points_finish, -cobbles, -M, -S, -VerticalGain, -VAM, -HR, -Tour,
          -gc_winner, -time_trial, -stage_name) %>%
   
   mutate(rowname = as.numeric(rowname)) %>% 
@@ -950,7 +952,67 @@ manually_marked_climbs <- segment_data_races %>%
       select(rider, type, Date) %>%
       mutate(Date = as.Date(Date)) %>%
       unique(), by = c("pcs" = "rider", "date" = "Date"))
+
+#
+# FULL MODEL FOR FINAL CLIMB WATTS PER KG
+#
+
+# grand tours increase power output by 0.1
+# one day races increas by 0.1
+# stage 20 will have 0.1 less power than stage 10 and 0.15 less than stage 5
+# races with lots of prior climbing (16 pcd) will have 0.4 less watts per KG
+# Sprinter, Domestique, and Sprint train types have 0.25 less than Climbers
+# Puncheurs/Mtn helpers have 0.12 less than Climbers
+# Gradient is the main determinant of climb difficulty with climbs of 9% requiring 0.3 more watts/kG than 5% climbs
+# Distance matters on the periphery with climbs of 17 KM raced at 0.15 watts/KG less than climbs of 7 KM
+# 10 degrees warmer in celsius is worth around 0.1 fewer watts/KG
+# length of race matters with 225 KM races resulting in 0.15-0.20 watts/KG less than 150 KM races
+
+# which all adds up to riders producing fewer watts on hot days with lots of climbing later in stage races
+# ideal conditions for producing watts are one day races or early in grand tours after easy rides with comfortable temperatures
+
+# finish position is highly correlated with watts produced with riders finishing 10th producing 1.6 more watts/KG than those finishing 120th
+# the best rider in a race on a team will produce about 0.25 watts/KG more than the worst - controlling for finish position - and about 1.55 watts/KG
+# less overall
+
+summary(
   
+  lm(
+    
+    wkg ~ 
+        log(tm_pos+1) + 
+        log(rnk+1) + 
+        type + 
+        stage +
+        length +
+        temperature + 
+        grand_tour +
+        one_day_race + 
+        prior_pcd + 
+        as.factor(year) + 
+        Gradient * Distance, 
+    
+    data = cbind(
+      
+      manually_marked_climbs %>%
+        filter(perc_thru > 0.95) %>%
+        mutate(wkg = (Power/weight)) %>% 
+        select(-Valid, -Type, -Time) %>% 
+        filter(wkg > 2.5) %>% 
+        unique(), 
+      
+      clpcd = predict(read_rds('model-climb-difficulty.rds'), 
+                      manually_marked_climbs %>% 
+                        filter(perc_thru > 0.95) %>% 
+                        mutate(wkg = (Power/weight)) %>%
+                        select(-Valid, -Type, -Time) %>%
+                        filter(wkg > 2.5) %>%
+                        unique() %>% 
+                        mutate(alt = 0, 
+                               vam_poly = (Distance * (Gradient^2))))) %>%
+      mutate(prior_pcd = pred_climb_difficulty - clpcd)))
+
+
 #
 
 manually_marked_climbs %>%
@@ -1775,7 +1837,7 @@ all_segment_data <- stage_level_power %>%
   ) %>%
   
   group_by(Segment, stage, race, year) %>%
-  filter(n_distinct(activity_id) >= 10) %>%
+  filter(n_distinct(activity_id) >= 6) %>%
   ungroup() %>%
   
   select(stage, race, year, date, class, one_day_race, grand_tour, time_trial, length,
@@ -1791,6 +1853,22 @@ just_climbs <- all_segment_data %>%
   anti_join(read_csv("strava_climbs_segments_manual.csv") %>%
               select(stage, race, year) %>%
               unique(), by = c("stage", "race", "year")) %>%
+  
+  group_by(stage, race, year) %>%
+  filter(Distance > (max(Distance, na.rm = T) * 0.2) | Distance > 3) %>%
+  ungroup() %>%
+  
+  select(stage, race, year, length, Type, Gradient, Distance, Segment)
+
+#
+
+just_descents <- all_segment_data %>%
+  
+  filter(Gradient <= -0.035 & Distance >= 2) %>%
+  
+  #anti_join(read_csv("strava_climbs_segments_manual.csv") %>%
+  #            select(stage, race, year) %>%
+  #            unique(), by = c("stage", "race", "year")) %>%
   
   group_by(stage, race, year) %>%
   filter(Distance > (max(Distance, na.rm = T) * 0.2) | Distance > 3) %>%
@@ -1926,3 +2004,94 @@ stage_level_power %>%
             elevation = median(elevation)) %>% 
   ungroup() %>% 
   unique() -> TVG
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+# Time Trial Segments -----------------------------------------------------
+
+itt_segments <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
+                  FROM strava_activity_data 
+                  WHERE Stat IN ('Weighted Avg Power', 'Distance', 'AvgTemperature')") %>% 
+  
+  # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+  
+  # clean up the dates
+  mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
+  separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
+  mutate(date = paste0(str_trim(date),", ", Y)) %>% 
+  select(-weekday, -drop, -Y) %>% 
+  
+  # clean up the stat values
+  mutate(VALUE = str_replace(VALUE, "mi", ""), 
+         VALUE = str_replace(VALUE, "W", ""),
+         VALUE = ifelse(Stat == "AvgTemperature",
+                        str_sub(VALUE, 1, nchar(VALUE)-8), VALUE),
+         VALUE = as.numeric(VALUE)) %>% 
+  
+  mutate(date = lubridate::mdy(date)) %>% 
+  unique() %>% 
+  spread(Stat, VALUE) %>% 
+  filter(!is.na(`Weighted Avg Power`)) %>% 
+  janitor::clean_names() %>% 
+  
+  inner_join(all_stage_data %>%
+               filter(time_trial == 1) %>%
+               mutate(date = as.Date(date)), by = c("date", "pcs" = "rider")) %>% 
+  
+  mutate(distance = distance * 1.609) %>% 
+  
+  select(-win_seconds, -total_seconds,
+         -parcours_value, -stage_type,
+         -gain_40th, -gain_20th, -gain_10th,
+         -leader_rating) %>%
+  
+  # clear out anomalous data
+  mutate(wattskg = weighted_avg_power / weight) %>% 
+  
+  mutate(M = mean(wattskg, na.rm = T), 
+         S = sd(wattskg, na.rm = T)) %>% 
+  
+  filter(abs((wattskg - M) / S) < 3 | is.na(weight)) %>%
+  rename(rider = pcs) %>%
+  group_by(stage, race, year, rider, date) %>%
+  filter(rank(-weighted_avg_power, ties.method = "min") == 1) %>%
+  ungroup() %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT * FROM strava_segment_data"), by = c("activity_id")
+    
+  ) %>%
+  filter(time_trial == 1) %>%
+  group_by(rider) %>% 
+  mutate(rel_power = Power / mean(Power, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  select(-gain_1st, -gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
+         -sof_limit, -success, -points_finish, -cobbles, -M, -S, -VerticalGain, -VAM, -HR, -Tour,
+         -gc_winner, -time_trial, -stage_name, -Time, -Type, -rowname, -perc_break, -km_break, -bunch_sprint) %>%
+  
+  mutate(time = Distance / Speed * 3600) %>%
+  
+  unique() %>% 
+  mutate(SegmentWattsKG = Power / weight)
+
+#
+#
+
+
