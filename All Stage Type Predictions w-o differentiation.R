@@ -249,6 +249,8 @@ for(b in 843:length(All_dates$date)) {
 
        final_group = mean(final_group, na.rm = T),
 
+       stdev_rnks = sd(log(rnk + 1), na.rm = T),
+       
        sof_leader = mean(sof_per_opp, na.rm = T),
        sof_overall = mean(sof, na.rm = T),
 
