@@ -1,38 +1,120 @@
 stage,race,year,length,Type,Segment,Valid,AtKM
-20,la vuelta ciclista a espana,2019,190.4,Visible,SubidadePlataformadeGredos,1,190
-20,la vuelta ciclista a espana,2019,190.4,Hidden,PuertodelaPeñanegra,1,154
-20,la vuelta ciclista a espana,2019,190.4,Visible,PTO.SERRANILLOSOFICIALSUR(DESDEP.K.32HASTACARTELPTO.),1,45
-20,la vuelta ciclista a espana,2019,190.4,Visible,PºPedrobernardohastafinbatería,1,33
+3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,SalitaM.Quarin,1,204
+3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,"S.FlorianoperScedina,ripido",1,179
+3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,Calvario,1,172.5
+3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,PonteCordevole-Sappada,1,23.5
+2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Hidden,casermag.s.Forestale-Misurina(cartello),1,203
+2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,SelladiRazzo,1,146.5
+2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,CronoscalataPassoPura(daAmpezzo),1,124.5
+2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,PassoRestdalpontealcartello,1,95
+6,amgen tour of california,2019,127.5,Visible,MtBaldyVillagetoSkiLift,1,127.5
+6,amgen tour of california,2019,127.5,Hidden,GMR-TTtoShed,1,99.5
+6,amgen tour of california,2019,127.5,Hidden,210EuclidtoBarrettStoddard,1,27.5
+5,amgen tour of california,2019,218.5,Visible,SecondCasitasPass,1,183.5
+5,amgen tour of california,2019,218.5,Visible,FirstCasitasPass,1,179
+5,amgen tour of california,2019,218.5,Visible,"154,GolfCousetoSummit",1,128.5
+5,amgen tour of california,2019,218.5,Hidden,Foxen(Alisos)toZacaMesa,1,80.5
+3,amgen tour of california,2019,207,Visible,MtHamiltonBackside,1,140.5
+3,amgen tour of california,2019,207,Visible,MinesRoad-5MileClimb,1,77.5
+3,amgen tour of california,2019,207,Visible,PattersonPass(East),1,54
+2,amgen tour of california,2019,194.5,Visible,final3kmtoLutherPass,1,165.5
+2,amgen tour of california,2019,194.5,Visible,CarsonPassMTBclimb(onroad)fromcampgroundroadtooverlook,1,147
+2,amgen tour of california,2019,194.5,Visible,"07/09/10Pioneer,CA",1,135.5
+2,amgen tour of california,2019,194.5,Visible,CedarRavineClimb,1,59.5
+3,arctic race of norway,2019,176.5,Visible,Storheia,1,176.5
+3,arctic race of norway,2019,176.5,Hidden,Ferista-FeristaStorvannet,1,91
+3,arctic race of norway,2019,176.5,Hidden,BlåheiveienClimb,1,17.5
+1,bretagne classic - ouest-france,2020,247.75,Hidden,Lezot(versionparrueGeorgesBrassens),1,237
+1,bretagne classic - ouest-france,2020,247.75,Hidden,BonRepos(fromhairpintotop),1,168
+1,bretagne classic - ouest-france,2020,247.75,Visible,KerdoretAscent,1,141.5
+1,bretagne classic - ouest-france,2020,247.75,Visible,MûrDeBretagne(2011TourdeFranceStage4),1,49
+1,clasica ciclista san sebastian,2019,227.3,Visible,CampingIgara-CampingIgeldo,1,217
+1,clasica ciclista san sebastian,2019,227.3,Hidden,Murgil+Mendizorrotz,1,188
+1,clasica ciclista san sebastian,2019,227.3,Visible,COLDUERLAITZ(Irun),1,153
+1,clasica ciclista san sebastian,2019,227.3,Visible,Jaizkibelpanorámico,1,132
+1,clasica ciclista san sebastian,2019,227.3,Visible,GurutzedesdeMateo,1,112
+1,clasica ciclista san sebastian,2019,227.3,Visible,ALKIZAIGOERA(Anoeta),1,76
+1,clasica ciclista san sebastian,2019,227.3,Visible,Errezil-Iturburu,1,57
+6,colombia 2.1,2019,173.8,Visible,PalmasOficial(desdeelCountry),1,173.8
+8,criterium du dauphine,2019,113.5,Visible,MontéeClusesbifurqMarignier,1,6
+8,criterium du dauphine,2019,113.5,Hidden,Troistorrents-Champéry,1,113.5
+8,criterium du dauphine,2019,113.5,Hidden,MontédesRives,1,101.5
+8,criterium du dauphine,2019,113.5,Hidden,ColduCorbierparGys,1,49
+8,criterium du dauphine,2019,113.5,Visible,Taninges1stRaBLesGets,1,21.5
+7,criterium du dauphine,2019,133.5,Visible,MontéedePIPAY(CritériumDauphiné2019),1,133
+7,criterium du dauphine,2019,133.5,Visible,MontéecolduMarcieu,1,99.5
+7,criterium du dauphine,2019,133.5,Hidden,ColduGranierdepuissortieJacob,1,71.5
+7,criterium du dauphine,2019,133.5,Hidden,Coldel'EpinedepuisNovalaise,1,42
+6,criterium du dauphine,2019,229,Visible,ColdeBeaune,1,222
+6,criterium du dauphine,2019,229,Visible,montéesaintgeorgesdhurtiere,1,165
+6,criterium du dauphine,2019,229,Hidden,FinalColduFrène,1,131.5
+6,criterium du dauphine,2019,229,Visible,D82Climb,1,82
+5,criterium du dauphine,2020,142.5,Visible,Demi-Quartier>airport,1,155
+5,criterium du dauphine,2020,142.5,Hidden,MontéedeCordondepuisGrenette,1,139
+5,criterium du dauphine,2020,142.5,Visible,ColdesAravisdepuisLeGrandBornand,1,85
+5,criterium du dauphine,2020,142.5,Visible,L'EtapeduTour2018-KOMColdelaColombière,1,60.5
+5,criterium du dauphine,2020,142.5,Visible,ColdeRommeparScionzier,1,46
+4,criterium du dauphine,2020,148.5,Visible,MegevetoAltiport,1,148.5
+4,criterium du dauphine,2020,148.5,Hidden,MontéedeBisanne-D123,1,116
+4,criterium du dauphine,2020,148.5,Hidden,ColdelaCroixFryfromManigod,1,41
+4,criterium du dauphine,2020,148.5,Hidden,ColdePlanBois,1,27.5
+3,criterium du dauphine,2020,157,Hidden,Saint-Martin-de-Belleville(myCols.app),1,157
+3,criterium du dauphine,2020,157,Hidden,Madeneinetdf2020,1,105.5
+2,criterium du dauphine,2020,135,Hidden,ColdePorte,1,135
+2,criterium du dauphine,2020,135,Hidden,ColdeMontaud,1,98
+2,criterium du dauphine,2020,135,Visible,RouteDeRoybonClimb,1,49.5
+2,criterium du dauphine,2019,180,Visible,BossedeStVictorsurArlanc,1,162
+2,criterium du dauphine,2019,180,Visible,ColdelaVernede,1,137.5
+2,criterium du dauphine,2019,180,Visible,CôtedeCheylade,1,46.5
+2,criterium du dauphine,2019,180,Visible,CôtedeMoussages,1,10.5
+5,criterium du dauphine,2018,130,Hidden,ColdesMouillesdepuisLaGorge,1,19
+6,criterium du dauphine,2018,110,Hidden,SignaldeBisanne,1,28
+8,criterium du dauphine,2017,115,Hidden,ColdesSaisiessideBeaufort,1,30
+7,criterium du dauphine,2018,136,Hidden,BOURGSYMAURICE/CORMETDEROSELEND(S.B),1,42
+7,criterium du dauphine,2017,167.5,Hidden,ColduCucheronNord,1,44.5
+6,criterium du dauphine,2017,145.5,Hidden,CorlierClimb,1,46.5
+8,criterium du dauphine,2017,115,Hidden,LesAravis,1,56
+7,criterium du dauphine,2017,167.5,Hidden,ColdePorteNo74GreatestTDFClimbs,1,57.5
+6,criterium du dauphine,2018,110,Hidden,TruColduPrefromBeauforttotrough,1,59
+6,criterium du dauphine,2018,110,Hidden,CormetDeRoselandtopsection,1,72
+8,criterium du dauphine,2017,115,Hidden,LaColombièreofficielle,1,80.5
+7,criterium du dauphine,2018,136,Hidden,ColdeSaisies,1,88
+4,criterium du dauphine,2018,181,Hidden,RouteDeToutesAuresClimb,1,102
+6,criterium du dauphine,2017,145.5,Hidden,lacetsdeJongieux,1,108.5
+6,criterium du dauphine,2018,110,Hidden,CLMLarosiere,1,110
+8,criterium du dauphine,2017,115,Hidden,Thuet-HameauSolaison,1,115
+6,criterium du dauphine,2017,145.5,Hidden,MontduChatsud,1,130
+5,criterium du dauphine,2018,130,Visible,Valmorel,1,130
+7,criterium du dauphine,2018,136,Visible,BettexClimb,1,136
+4,criterium du dauphine,2018,181,Visible,ColduMontNoirparStPierredeCherennes,1,143
+7,criterium du dauphine,2017,167.5,Hidden,Lesprés-Sarenne,1,153.5
+7,criterium du dauphine,2017,167.5,Hidden,Alped'Huez(Final)-1850m,1,167.5
+4,criterium du dauphine,2018,181,Visible,CLMStadedesNeiges,1,181
+4,etoile de besseges,2020,138.7,Visible,MontBouquetparBrouzet-les-Ales,1,138.7
+4,etoile de besseges,2020,138.7,Visible,D130Climb,1,110.5
+4,etoile de besseges,2020,138.7,Hidden,ColdeTrélis,1,95
+4,etoile de besseges,2020,138.7,Visible,CheminD'ArbousseClimb,1,83.5
+1,faun environnement - classic de l'ardeche rhone crussol,2019,197.5,Visible,coteauxducarnas,1,179
+1,faun environnement - classic de l'ardeche rhone crussol,2019,197.5,Visible,Chronomontéesaintromaindelerps,1,124.5
+1,giro dell'appennino,2020,191.5,Visible,FraconaltodaVoltaggio,1,143
+1,giro dell'appennino,2020,191.5,Visible,"[EB]PassodellaBocchetta,daCampomorone",1,127.5
+1,giro dell'appennino,2020,191.5,Visible,Vobbia(pontebivioAlpe)-Crocefieschi,1,88
+1,giro dell'appennino,2020,191.5,Visible,castagnolaaGPM,1,56.5
+3,giro di sicilia,2019,188,Visible,ChiaramonteClimb-AnticaStazione,1,188
+3,giro di sicilia,2019,188,Visible,CronoscalatamontiIblei,1,167.5
 20,giro d'italia,2019,194,Visible,ColMelon,1,194
 20,giro d'italia,2019,194,Visible,CrociD'Aunepercorsointerobycarmine,1,184
 20,giro d'italia,2019,194,Visible,Rolle,1,133.5
 20,giro d'italia,2019,194,Visible,Predazzo-Bellamonte,1,118.5
 20,giro d'italia,2019,194,Visible,MANGHENP.M.,1,78
 20,giro d'italia,2019,194,Visible,C.maCAMPOdaArsiè,1,26.5
-19,tour de france,2020,166.5,Hidden,CôtedeChâteau-Chalon(long),1,82
 19,giro d'italia,2019,151,Hidden,FieradiPrimiero-SanMartinodiCastrozza(450all'arrivo),1,151
 19,giro d'italia,2019,151,Visible,PassoSanBoldo(Incrocio-Semaforo),1,66.5
 19,giro d'italia,2019,151,Hidden,"S.M.Vittoria,dapresaXsud",1,22
-18,tour de france,2020,175,Hidden,ColdesFleuries(Thorens-Complète),1,165
-18,tour de france,2020,175,Hidden,Cascadecoldesaravis,1,117.5
-18,tour de france,2020,175,Visible,Cormet-de-RoselandNo68GreatestTDFClimbs,1,45.5
-18,la vuelta ciclista a espana,2019,178.2,Visible,PuertodeCotos(desdekm30),1,151
-18,la vuelta ciclista a espana,2019,178.2,Hidden,LBOOTSAscensoalColdelaMorcueradesdeelpuenteantesdeMirafloresdelaSierra,1,120
-18,la vuelta ciclista a espana,2019,178.2,Hidden,MORCUERARASCAFRIA(SUBIDACOMPLETA),1,77.5
-18,la vuelta ciclista a espana,2019,178.2,Hidden,Navacerrada-Vuelta2019,1,40
-18,la vuelta ciclista a espana,2019,178.2,Visible,SubidaMatalpinoCompleta,1,24.5
 18,giro d'italia,2020,207,Visible,TORRIDIFRAELE,1,205
 18,giro d'italia,2020,207,Visible,PassoStelvio,1,170
 18,giro d'italia,2020,207,Visible,PassoCastrindaiFrari,1,66
 18,giro d'italia,2020,207,Hidden,SvincoloValdiGenova-PassoC.C.M.,1,14
-17,tour de france,2020,170,Hidden,ColdelaLoze-LaFlammeRougeverified,1,170
-17,tour de france,2020,170,Hidden,Madelenine(BarrierinMay)ViaD76,1,107.5
-17,la vuelta ciclista a espana,2020,178.2,Hidden,LaCovatilla(ESP),1,177
-17,la vuelta ciclista a espana,2020,178.2,Hidden,K.O.M.LaGarganta<U+0001F451>BabyJpLois<U+0001F3C6>,1,151.5
-17,la vuelta ciclista a espana,2020,178.2,Hidden,CalleLaFuenteClimb,1,134
-17,la vuelta ciclista a espana,2020,178.2,Visible,Santibañez-AltodeCristobal,1,103
-17,la vuelta ciclista a espana,2020,178.2,Visible,AltodeSanMigueldeValero,1,88.5
-17,la vuelta ciclista a espana,2020,178.2,Visible,PortillodelasBatuecas,1,49
 17,giro d'italia,2020,203,Visible,MadonnadiCampiglio,1,201
 17,giro d'italia,2020,203,Visible,Comano-PassoDurone,1,166
 17,giro d'italia,2020,203,Hidden,MonteBondonedaAldeno(Fullclimb),1,118.5
@@ -40,34 +122,11 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 17,giro d'italia,2020,203,Hidden,Arsiero->TonezzadelCimone,1,49.5
 17,giro d'italia,2019,181,Visible,Camping-HuberAlm,1,181
 17,giro d'italia,2019,181,Visible,ClimbtoTerento,1,136
-16,tour de france,2020,164,Visible,montéedeSt-Nizier-du-Moucherotte,1,143
-16,tour de france,2020,164,Hidden,Revel,1,95.5
-16,tour de france,2020,164,Visible,EntréeColdePorte(D57D)depuisStPierre(LaDiat),1,66.5
-16,tour de france,2020,164,Visible,C�te2000auboutduparking,1,164
-16,la vuelta ciclista a espana,2020,162,Visible,PuertoCasaresdesdeRiomalo,1,127
-16,la vuelta ciclista a espana,2020,162,Visible,AltoElPortillo(desdeCepeda),1,91
-16,la vuelta ciclista a espana,2019,144.4,Hidden,LaCubillahastaelultimo1'5km,1,144.4
-16,la vuelta ciclista a espana,2019,144.4,Visible,cobertoriatex,1,100.5
-16,la vuelta ciclista a espana,2019,144.4,Visible,SanLorenzo,1,60
 16,giro d'italia,2019,194,Visible,Mortirolo,1,164
 16,giro d'italia,2019,194,Visible,ApricaClimbfromEdolo(panoramica),1,126
 16,giro d'italia,2019,194,Hidden,CedegolotoCevo,1,89
 16,giro d'italia,2019,194,Hidden,CroceSalvendaDezzo,1,44.5
 16,giro d'italia,2019,194,Visible,PassodellaPresolana™,1,28
-15,tour de france,2020,174.5,Visible,GrandColombier,1,174.5
-15,tour de france,2020,174.5,Hidden,ColdelaBiche-LaFlammeRougeverified,1,129
-15,tour de france,2020,174.5,Visible,MontéedelaSelledeFromentel,1,110.5
-15,tour de france,2019,185,Visible,Pratd'Albis-TourdeFrance,1,185
-15,tour de france,2019,185,Visible,Portdel'Hers(East),1,120
-15,tour de france,2019,185,Visible,Fougax-Montsegur,1,59.5
-15,la vuelta ciclista a espana,2020,230.8,Hidden,Renault-AltodeFumaces,1,152
-15,la vuelta ciclista a espana,2020,230.8,Visible,Furriolo,1,92.5
-15,la vuelta ciclista a espana,2020,230.8,Visible,SalidaLeiradoaCarracedo,1,72.5
-15,la vuelta ciclista a espana,2020,230.8,Visible,EmbalsedeFrieira-SanAmaro,1,54.5
-15,la vuelta ciclista a espana,2019,154.4,Visible,SantuariodelAceboporCastrodeLimés,1,154.4
-15,la vuelta ciclista a espana,2019,154.4,Visible,Pozodelasmujeresmuertas-AltoValvaler(poribias),1,113
-15,la vuelta ciclista a espana,2019,154.4,Visible,Conniocompleto,1,72
-15,la vuelta ciclista a espana,2019,154.4,Visible,Veigalapiedraclimb,1,28
 15,giro d'italia,2020,185,Hidden,SalitaPiancavallo(piazza),1,185
 15,giro d'italia,2020,185,Hidden,Poffabro-PalaBalzanaClimb,1,143.5
 15,giro d'italia,2020,185,Hidden,PassoRest(versantecarnico),1,105
@@ -77,46 +136,16 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 15,giro d'italia,2019,232,Visible,ColmadiSormanodiGrimpeur.it-Percorsoufficiale,1,188.5
 15,giro d'italia,2019,232,Visible,MADONNADELGHISALLOdaBellagio,1,172.5
 15,giro d'italia,2019,232,Visible,Serrapiccola(dastradonePiverone),1,11.5
-14,tour de france,2020,194,Hidden,LeBrugeroncimetière-PasdeLaCroix,1,68
-14,tour de france,2019,111,Visible,Tourmalet,1,111
-14,tour de france,2019,111,Hidden,ColduSoulordepuisFerrières,1,54
-14,la vuelta ciclista a espana,2020,204.7,Hidden,AltodeAbelaira(completo),1,181
-14,la vuelta ciclista a espana,2020,204.7,Visible,FERREIRA/GUITARA,1,142.5
-14,la vuelta ciclista a espana,2020,204.7,Visible,533-belesarpuenteasalidaescairon,1,112.5
-14,la vuelta ciclista a espana,2020,204.7,Visible,RODEIRO---COLLDOFARO,1,84
-14,la vuelta ciclista a espana,2020,204.7,Visible,HospitalporGuntin,1,18.5
 14,giro d'italia,2019,131,Visible,Courmayeurdastradavecchia,1,126
 14,giro d'italia,2019,131,Hidden,ColleSanCarlotillrestaurant,1,105.5
 14,giro d'italia,2019,131,Hidden,Trucd’Arbe,1,75.5
 14,giro d'italia,2019,131,Hidden,Aosta-Verrognecompletagirod'Italia102,1,51
 14,giro d'italia,2019,131,Hidden,SalitaChambave-Verrayes,1,14
-13,tour de france,2020,191.5,Visible,PasdePeyrol(PuyMary),1,191.5
-13,tour de france,2020,191.5,Visible,ColdeNéronne,1,180.5
-13,tour de france,2020,191.5,Visible,ColduGuéry-Orcival/Sommet,1,63
-13,tour de france,2020,191.5,Visible,ColdeCeyssatcompletbyOutdoorview.fr,1,35.5
-13,la vuelta ciclista a espana,2019,166.4,Hidden,LosMachucos.MonumentoVacaPasiega,1,166
-13,la vuelta ciclista a espana,2019,166.4,Visible,AltoCruzdeUsano,1,146.5
-13,la vuelta ciclista a espana,2019,166.4,Hidden,FuentelasVarasporRiaño,1,136.5
-13,la vuelta ciclista a espana,2019,166.4,Visible,PuertodeAlisas(Arreondo),1,105.5
-13,la vuelta ciclista a espana,2019,166.4,Hidden,ColladodelAsón(este9,1,85
-13,la vuelta ciclista a espana,2019,166.4,Visible,UbalporSoscaño,1,55
-13,la vuelta ciclista a espana,2019,166.4,Visible,LaEscritaporTrucios,1,38.5
 13,giro d'italia,2020,192,Hidden,CalaoneChallenge#2,1,176
 13,giro d'italia,2020,192,Visible,RoccolodaVallorto,1,162.5
 13,giro d'italia,2019,196,Visible,Locana-LagoSerrù,1,195
 13,giro d'italia,2019,196,Visible,PriaccoPiandelLupo,1,130
 13,giro d'italia,2019,196,Visible,"[Salita]Almese-ColdelLys[ParteComune](AlmeseBivio-Iniziopiazza)[13,05kmx921m]",1,53
-12,tour de france,2020,218,Visible,AscensionSucauMay(complet),1,192
-12,tour de france,2020,218,Visible,ColdeLestards-montéeseule,1,177.5
-12,tour de france,2020,218,Visible,LaCôted'Eybouleuf,1,121
-12,la vuelta ciclista a espana,2020,109.4,Visible,AltodeL'Angliru,1,109
-12,la vuelta ciclista a espana,2020,109.4,Visible,CordalhastaporlaPolahastacruceCuchu,1,88
-12,la vuelta ciclista a espana,2020,109.4,Visible,LaMozquetareal<U+0001F630><U+0001F6B4><U+0001F3FC><U+0001F4A8><U+0001F449><U+26F0>,1,60
-12,la vuelta ciclista a espana,2020,109.4,Hidden,Ast7iMieres-StoEmiliano,1,41.5
-12,la vuelta ciclista a espana,2019,171.4,Visible,Uretamendi-Arraiz,1,161
-12,la vuelta ciclista a espana,2019,171.4,Visible,Lezama-Vivero,1,144
-12,la vuelta ciclista a espana,2019,171.4,Hidden,UrruztimendiporFika,1,134
-12,la vuelta ciclista a espana,2019,171.4,Visible,"azazetalast1,5",1,42
 12,giro d'italia,2020,204,Hidden,Gorolo,1,174.5
 12,giro d'italia,2020,204,Hidden,VIIISiepiCote**-FlandresLove,1,155.5
 12,giro d'italia,2020,204,Visible,NovafeltriaMadonnaPugliano,1,141
@@ -126,6 +155,200 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 12,giro d'italia,2020,204,Visible,SalitaForlimpopoli-Bertinoro,1,31
 12,giro d'italia,2019,158,Hidden,Everesting8848MontosodaBibiana,1,126
 12,giro d'italia,2019,158,Visible,CollettadiRossana(Busca),1,20
+11,giro d'italia,2020,182,Hidden,MisanoMonte,1,138.5
+11,giro d'italia,2020,182,Hidden,ABEsalitaPanoramicadaPesaro,1,110.5
+10,giro d'italia,2020,177,Visible,TaglioTortoretoAlto,1,158.5
+10,giro d'italia,2020,177,Visible,ColonellaNorth,1,138
+10,giro d'italia,2020,177,Visible,TortoretoaltodacasadiPatrick,1,119.5
+10,giro d'italia,2020,177,Visible,TorrevecchiaTotalclimbdaSanguineto,1,38.5
+9,giro d'italia,2020,208,Visible,RoccarasoViaValloneS.Rocco-Aremogna,1,203.5
+9,giro d'italia,2020,208,Visible,BoscodiS.Antonio,1,181
+9,giro d'italia,2020,208,Visible,sant'eufemia-passosanleonardo,1,155
+9,giro d'italia,2020,208,Visible,PassoLancianoviaPretoroCentro,1,100.5
+8,giro d'italia,2020,200,Visible,MaddonadelleGrazie-MonteSantAngeloGirod'italia2017,1,106.5
+8,giro d'italia,2019,239,Visible,salitaBaiaImperialeGabicceMontecompleta,1,215.5
+8,giro d'italia,2019,239,Visible,"BorgoSantaMaria-Monteluro""HC""",1,204
+8,giro d'italia,2019,239,Visible,Trebbiocandelara,1,182.5
+8,giro d'italia,2019,239,Visible,BeatoSantedaCartoceto,1,168.5
+8,giro d'italia,2019,239,Hidden,"StradaMarotta,1Climb",1,141.5
+7,giro d'italia,2019,185,Hidden,SvoltediPopoli,1,137
+7,giro d'italia,2019,185,Hidden,SalitaChieti9°tappaGiro2017,1,85.5
+7,giro d'italia,2019,185,Hidden,SP16Ripa,1,77
+7,giro d'italia,2019,185,Hidden,SalitaperMiglianico,1,69.5
+6,giro d'italia,2020,188,Hidden,SalitadellaGalleria(BiciClubFerrandina),1,161.5
+6,giro d'italia,2020,188,Visible,K.O.M.Morano-Campotenese<U+0001F451>BabyJpLois<U+0001F3C6><U+0001F6B4><U+200D><U+2642><U+FE0F><U+0001F91E>,1,13.5
+6,giro d'italia,2019,238,Visible,salitadiRignano,1,216.5
+5,giro d'italia,2020,225,Visible,MonteScuroTopSection,1,214
+5,giro d'italia,2020,225,Visible,chiagiugio_Rogliano_dal_Savuto,1,166.5
+5,giro d'italia,2020,225,Visible,MonteTrearie-LaFlammeRougeverified,1,112.5
+5,giro d'italia,2019,140,Visible,SoloTornantidiSezze,1,87.5
+5,giro d'italia,2019,140,Visible,RoccadiPapa,1,25.5
+5,giro d'italia,2019,140,Visible,RoccaPrioradaMontecompatri,1,8
+4,giro d'italia,2020,140,Hidden,SellaMandrazziOfficialClimb,1,75.5
+3,giro d'italia,2020,150,Hidden,LinguaglossaT-JunctiontoMountEtnaNordLavaFields,1,150
+3,giro d'italia,2020,150,Hidden,MiloBosco-Fornazzo,1,115
+3,giro d'italia,2020,150,Visible,paternonicolosi.rotonda,1,92
+3,giro d'italia,2019,220,Visible,Apparita,1,181.5
+3,giro d'italia,2019,220,Visible,Montebellodasp541,1,97
+3,giro d'italia,2019,220,Visible,AllclimbnoKOMGiro19,1,36
+2,giro d'italia,2020,149,Visible,Agrigento-LaFlammeRougeverified,1,149
+2,giro d'italia,2020,149,Visible,StelladiGibellina-SantaNinfa,1,37.5
+2,giro d'italia,2019,205,Visible,CASTRACOMPLETO,1,157.5
+2,giro d'italia,2019,205,Visible,MontespertolidaBaccaiano,1,130.5
+14,giro d'italia,2018,186,Hidden,AMCIMontediRagogna,1,42.5
+15,giro d'italia,2018,176,Hidden,LocalitàPassoMauriaClimb,1,48.5
+19,giro d'italia,2018,184,Hidden,(SP197)DaViùalLys,1,49
+16,giro d'italia,2017,222,Hidden,P.ssoMortirolodaMonno,1,84
+4,giro d'italia,2017,181,Visible,SalitaSanfratello(rifornimento),1,89
+14,giro d'italia,2018,186,Visible,GPMAvaglio,1,105
+9,giro d'italia,2018,225,Visible,SalitaRoccaraso,1,109
+19,giro d'italia,2018,184,Hidden,"[Salita]Susa-ColledelleFinestre(BivioSS24Meana-Colle)[18,29kmx1694m]",1,110.5
+15,giro d'italia,2018,176,Hidden,TRECROCI,1,111
+14,giro d'italia,2017,131,Hidden,Biella-Oropa,1,131
+19,giro d'italia,2018,184,Hidden,SestrierefromPragelato,1,138
+18,giro d'italia,2018,196,Visible,Barolo-Novello,1,140.5
+14,giro d'italia,2018,186,Hidden,PassoDuron,1,141.5
+16,giro d'italia,2017,222,Hidden,StelvioviaBormio,1,143.5
+20,giro d'italia,2018,214,Visible,ColZuccoredaVerres,1,147
+15,giro d'italia,2018,176,Visible,"PassoS.AntonioSoloSalitaPura,FinoaCartello!",1,147.5
+9,giro d'italia,2017,152,Hidden,"ROCCAMORICE,,,FONTANA",1,152
+15,giro d'italia,2018,176,Visible,CostalissoioClimb,1,161
+6,giro d'italia,2018,164,Hidden,AllEtnaClimb,1,164
+14,giro d'italia,2018,186,Hidden,Cercivento-RavasclettovariantePecol,1,165.5
+4,giro d'italia,2017,181,Hidden,Nicolosi-EtnaGiro2017,1,181
+19,giro d'italia,2018,184,Hidden,Jafferau,1,184
+14,giro d'italia,2018,186,Hidden,AMCIZoncolandaOvaro,1,186
+20,giro d'italia,2018,214,Hidden,SaintPanthaleonuntilGPMGiro2018,1,187
+9,giro d'italia,2018,225,Hidden,SalitadellevigneCalascio,1,192.5
+18,giro d'italia,2018,196,Hidden,Gosi-PratoNevoso,1,196
+16,giro d'italia,2017,222,Hidden,PassoUmbrail,1,202.5
+8,giro d'italia,2018,209,Hidden,MonteverginedarotondaMercogliano,1,209
+20,giro d'italia,2018,214,Visible,Breuil-Cervinia(Maen-TunnelSinglin),1,214
+9,giro d'italia,2018,225,Hidden,CampoImperatore,1,225
+1,gran piemonte,2019,183,Hidden,Biella-Oropa,1,183
+1,gran piemonte,2019,183,Hidden,Pianezze-Nelva,1,161.5
+1,gran premio miguel indurain,2019,192.9,Visible,AltodelMuru,1,189.5
+1,gran premio miguel indurain,2019,192.9,Visible,Lezaun(lascasetas),1,148
+1,gran premio miguel indurain,2019,192.9,Visible,CruceGarisoain-CruceGuirguillano,1,129
+1,grand prix cycliste la marseillaise,2020,145.3,Visible,RouteDesCrêtes(LaVigie),1,118.5
+1,grand prix cycliste la marseillaise,2020,145.3,Hidden,D559Climb,1,108
+1,grand prix cycliste la marseillaise,2020,145.3,Visible,Monteedel'Espigoulier(parAuriol),1,68
+1,grand prix cycliste la marseillaise,2020,145.3,Hidden,ColdePasdelaCouelleparTrets,1,44
+1,grand prix de wallonie,2019,205.9,Hidden,CITADELLEDENAMUR,1,205
+1,grand prix de wallonie,2019,205.9,Hidden,Tienneauxpierresclimb,1,190.5
+1,grand prix de wallonie,2019,205.9,Visible,Lustinclimbtilljunction,1,180.5
+1,grand prix de wallonie,2019,205.9,Visible,Côted'Ermeton,1,163
+1,grand prix de wallonie,2019,205.9,Visible,CôtedeWerbomont,1,53.5
+1,grand prix de wallonie,2019,205.9,Visible,MonumentWallonie,1,31
+1,grand prix de wallonie,2019,205.9,Visible,Trassenter,1,14
+1,il lombardia,2020,231,Hidden,Civiglio#VCBC#,1,214
+1,il lombardia,2020,231,Visible,ColmadiSormano,1,180
+1,il lombardia,2020,231,Visible,MADONNADELGHISALLOdaBellagio,1,166.5
+1,il lombardia,2020,231,Visible,ColleBrianza,1,115
+1,il lombardia,2020,231,Visible,Casazza-ColleGallo,1,55
+1,il lombardia,2019,243,Hidden,Civiglio#VCBC#,1,226.5
+1,il lombardia,2019,243,Visible,ColmadiSormano,1,192.5
+1,il lombardia,2019,243,Visible,MADONNADELGHISALLOdaBellagio,1,179
+1,il lombardia,2019,243,Visible,ColleBrianza,1,115
+1,il lombardia,2019,243,Visible,Casazza-ColleGallo,1,55
+1,il lombardia,2018,241,Hidden,"ColleGALLOdaCasazzaKm.7,5",1,54.5
+1,il lombardia,2018,241,Hidden,ColleBrianzadarotondaOlgiate,1,115
+1,il lombardia,2018,241,Hidden,GHISALLINO,1,175.5
+1,il lombardia,2018,241,Hidden,SormanoClimb*****-FlandresLove,1,193.5
+1,il lombardia,2018,241,Hidden,Civigliocompleto,1,227
+6,int. osterreich-rundfahrt-tour of austria,2019,116.7,Visible,KitzbühelerHorn(kurz),1,116.7
+6,int. osterreich-rundfahrt-tour of austria,2019,116.7,Hidden,SchwendterStrasse,1,78
+4,int. osterreich-rundfahrt-tour of austria,2019,103.5,Hidden,SteepclimbFuscherTörl,1,103.5
+4,int. osterreich-rundfahrt-tour of austria,2019,103.5,Visible,HochkönigabHaidbergKreuzung,1,42
+3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,"NECHNITZ,Schrems",1,161.5
+3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,TeichalmNord,1,145
+3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,EibeggvonMürztal,1,128.5
+3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,SemmeringCrit,1,75
+3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,Spratzau/Lichtenegg-Kaltenberg,1,17
+2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,DreistettenvonB21,1,153
+2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,KlammhöheNordclimb,1,108
+2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,AbzweigungStössing-Stollberg,1,103.5
+2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,AttenreithClimb,1,20
+5,int. osterreich-rundfahrt-tour of austria,2018,92.9,Hidden,Fusch-FuscherTörl,1,92.9
+3,int. osterreich-rundfahrt-tour of austria,2018,133.6,Hidden,KitzbühelerHorn,1,133.6
+6,itzulia basque country,2019,118.2,Hidden,Angiozar-Asentzio,1,103.5
+6,itzulia basque country,2019,118.2,Hidden,***KARAKATE***,1,79.5
+6,itzulia basque country,2019,118.2,Hidden,Azurki,1,55
+6,itzulia basque country,2019,118.2,Hidden,ElkorrietaP.M.,1,44
+6,itzulia basque country,2019,118.2,Hidden,KalbarioP.M.,1,37
+6,itzulia basque country,2019,118.2,Visible,SANMIGUEL,1,9
+5,itzulia basque country,2019,149.8,Hidden,AltodeArrate(myCols.app),1,148
+5,itzulia basque country,2019,149.8,Hidden,TrabakuaUP,1,131
+5,itzulia basque country,2019,149.8,Hidden,Ixua(Matxaria),1,111
+5,itzulia basque country,2019,149.8,Visible,bedarona,1,58
+5,itzulia basque country,2019,149.8,Visible,morga,1,17
+4,itzulia basque country,2019,163.6,Visible,ZaratamoporBasauri,1,161
+4,itzulia basque country,2019,163.6,Visible,**BIKOTX-GANEPORARTEA**,1,126.5
+4,itzulia basque country,2019,163.6,Visible,CampaHafade,1,56
+3,itzulia basque country,2019,191.4,Visible,PuertoOpakua(Sur),1,134
+3,itzulia basque country,2019,191.4,Visible,Arenaza(porElorza),1,114
+3,itzulia basque country,2019,191.4,Visible,P.A.deGoñiporArteta,1,26
+3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,ColdeBeyrede,1,163.5
+3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,ColdePeyresourde,1,119
+3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,"PortdeBalès,montéecomplète",1,93.5
+3,la route d'occitanie - la depeche du midi,2019,173,Visible,HospicedeFrancefromLuchon,1,173
+3,la route d'occitanie - la depeche du midi,2019,173,Visible,PortdeBalèsNo13GreatestTDFClimbs,1,143
+3,la route d'occitanie - la depeche du midi,2019,173,Hidden,Gougue-Capvern,1,81.5
+3,la route d'occitanie - la depeche du midi,2019,173,Visible,Hourquetted'Ancizan-OfficialTDFClimb,1,29.5
+3,la route d'occitanie - la depeche du midi,2019,173,Visible,MontéeversLançonD25,1,8.5
+1,la route d'occitanie - la depeche du midi,2020,189.5,Visible,SortieSGTresVents,1,92.5
+1,la route d'occitanie - la depeche du midi,2020,189.5,Visible,"CroixdeMounis,parBrusque",1,70.5
+1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,CLMAubignac,1,160
+1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,LeBuffarel,1,115.5
+1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,ColduVent,1,18
+20,la vuelta ciclista a espana,2019,190.4,Visible,SubidadePlataformadeGredos,1,190
+20,la vuelta ciclista a espana,2019,190.4,Hidden,PuertodelaPeñanegra,1,154
+20,la vuelta ciclista a espana,2019,190.4,Visible,PTO.SERRANILLOSOFICIALSUR(DESDEP.K.32HASTACARTELPTO.),1,45
+20,la vuelta ciclista a espana,2019,190.4,Visible,PºPedrobernardohastafinbatería,1,33
+18,la vuelta ciclista a espana,2019,178.2,Visible,PuertodeCotos(desdekm30),1,151
+18,la vuelta ciclista a espana,2019,178.2,Hidden,LBOOTSAscensoalColdelaMorcueradesdeelpuenteantesdeMirafloresdelaSierra,1,120
+18,la vuelta ciclista a espana,2019,178.2,Hidden,MORCUERARASCAFRIA(SUBIDACOMPLETA),1,77.5
+18,la vuelta ciclista a espana,2019,178.2,Hidden,Navacerrada-Vuelta2019,1,40
+18,la vuelta ciclista a espana,2019,178.2,Visible,SubidaMatalpinoCompleta,1,24.5
+17,la vuelta ciclista a espana,2020,178.2,Hidden,LaCovatilla(ESP),1,177
+17,la vuelta ciclista a espana,2020,178.2,Hidden,K.O.M.LaGarganta<U+0001F451>BabyJpLois<U+0001F3C6>,1,151.5
+17,la vuelta ciclista a espana,2020,178.2,Hidden,CalleLaFuenteClimb,1,134
+17,la vuelta ciclista a espana,2020,178.2,Visible,Santibañez-AltodeCristobal,1,103
+17,la vuelta ciclista a espana,2020,178.2,Visible,AltodeSanMigueldeValero,1,88.5
+17,la vuelta ciclista a espana,2020,178.2,Visible,PortillodelasBatuecas,1,49
+16,la vuelta ciclista a espana,2020,162,Visible,PuertoCasaresdesdeRiomalo,1,127
+16,la vuelta ciclista a espana,2020,162,Visible,AltoElPortillo(desdeCepeda),1,91
+16,la vuelta ciclista a espana,2019,144.4,Hidden,LaCubillahastaelultimo1'5km,1,144.4
+16,la vuelta ciclista a espana,2019,144.4,Visible,cobertoriatex,1,100.5
+16,la vuelta ciclista a espana,2019,144.4,Visible,SanLorenzo,1,60
+15,la vuelta ciclista a espana,2020,230.8,Hidden,Renault-AltodeFumaces,1,152
+15,la vuelta ciclista a espana,2020,230.8,Visible,Furriolo,1,92.5
+15,la vuelta ciclista a espana,2020,230.8,Visible,SalidaLeiradoaCarracedo,1,72.5
+15,la vuelta ciclista a espana,2020,230.8,Visible,EmbalsedeFrieira-SanAmaro,1,54.5
+15,la vuelta ciclista a espana,2019,154.4,Visible,SantuariodelAceboporCastrodeLimés,1,154.4
+15,la vuelta ciclista a espana,2019,154.4,Visible,Pozodelasmujeresmuertas-AltoValvaler(poribias),1,113
+15,la vuelta ciclista a espana,2019,154.4,Visible,Conniocompleto,1,72
+15,la vuelta ciclista a espana,2019,154.4,Visible,Veigalapiedraclimb,1,28
+14,la vuelta ciclista a espana,2020,204.7,Hidden,AltodeAbelaira(completo),1,181
+14,la vuelta ciclista a espana,2020,204.7,Visible,FERREIRA/GUITARA,1,142.5
+14,la vuelta ciclista a espana,2020,204.7,Visible,533-belesarpuenteasalidaescairon,1,112.5
+14,la vuelta ciclista a espana,2020,204.7,Visible,RODEIRO---COLLDOFARO,1,84
+14,la vuelta ciclista a espana,2020,204.7,Visible,HospitalporGuntin,1,18.5
+13,la vuelta ciclista a espana,2019,166.4,Hidden,LosMachucos.MonumentoVacaPasiega,1,166
+13,la vuelta ciclista a espana,2019,166.4,Visible,AltoCruzdeUsano,1,146.5
+13,la vuelta ciclista a espana,2019,166.4,Hidden,FuentelasVarasporRiaño,1,136.5
+13,la vuelta ciclista a espana,2019,166.4,Visible,PuertodeAlisas(Arreondo),1,105.5
+13,la vuelta ciclista a espana,2019,166.4,Hidden,ColladodelAsón(este9,1,85
+13,la vuelta ciclista a espana,2019,166.4,Visible,UbalporSoscaño,1,55
+13,la vuelta ciclista a espana,2019,166.4,Visible,LaEscritaporTrucios,1,38.5
+12,la vuelta ciclista a espana,2020,109.4,Visible,AltodeL'Angliru,1,109
+12,la vuelta ciclista a espana,2020,109.4,Visible,CordalhastaporlaPolahastacruceCuchu,1,88
+12,la vuelta ciclista a espana,2020,109.4,Visible,LaMozquetareal<U+0001F630><U+0001F6B4><U+0001F3FC><U+0001F4A8><U+0001F449><U+26F0>,1,60
+12,la vuelta ciclista a espana,2020,109.4,Hidden,Ast7iMieres-StoEmiliano,1,41.5
+12,la vuelta ciclista a espana,2019,171.4,Visible,Uretamendi-Arraiz,1,161
+12,la vuelta ciclista a espana,2019,171.4,Visible,Lezama-Vivero,1,144
+12,la vuelta ciclista a espana,2019,171.4,Hidden,UrruztimendiporFika,1,134
+12,la vuelta ciclista a espana,2019,171.4,Visible,"azazetalast1,5",1,42
 11,la vuelta ciclista a espana,2020,170,Visible,LaFarrapona,1,170
 11,la vuelta ciclista a espana,2020,170,Visible,SANLORENZOportevergaCIMASTE,1,134.5
 11,la vuelta ciclista a espana,2020,170,Visible,CobertoriaZonaDura,1,94
@@ -135,112 +358,20 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 11,la vuelta ciclista a espana,2019,180,Visible,VentasdeIzpegiOfficial,1,123
 11,la vuelta ciclista a espana,2019,180,Visible,Cold'Osquich,1,76.5
 11,la vuelta ciclista a espana,2019,180,Visible,CôtedeLanne(versantBarcus),1,28
-11,giro d'italia,2020,182,Hidden,MisanoMonte,1,138.5
-11,giro d'italia,2020,182,Hidden,ABEsalitaPanoramicadaPesaro,1,110.5
 10,la vuelta ciclista a espana,2020,185,Visible,RepechodeSuances,1,185
 10,la vuelta ciclista a espana,2020,185,Visible,Oreña-AltodeSantillana.,1,163
 10,la vuelta ciclista a espana,2020,185,Visible,UltimaparteSubidaSanCipriano,1,125.5
-10,giro d'italia,2020,177,Visible,TaglioTortoretoAlto,1,158.5
-10,giro d'italia,2020,177,Visible,ColonellaNorth,1,138
-10,giro d'italia,2020,177,Visible,TortoretoaltodacasadiPatrick,1,119.5
-10,giro d'italia,2020,177,Visible,TorrevecchiaTotalclimbdaSanguineto,1,38.5
-9,tour de suisse,2019,101.5,Visible,FurkapassClimb,1,75
-9,tour de suisse,2019,101.5,Visible,SaintGotthard-Tremola,1,49
-9,tour de suisse,2019,101.5,Visible,Nufenen-PassWest,1,13
-9,tour de france,2020,153,Hidden,"Last7.7Km,MarieBlanque,TdF",1,135.5
-9,tour de france,2020,153,Hidden,ICHERE(Lourdios)/www.pirenaica.com,1,115.5
-9,tour de france,2020,153,Visible,ColIssarbe,1,69
 9,la vuelta ciclista a espana,2019,94.4,Visible,CortalsdesdePardines,1,94.4
 9,la vuelta ciclista a espana,2019,94.4,Hidden,Engolasters(desdeLaComella),1,85
 9,la vuelta ciclista a espana,2019,94.4,Visible,ColldelaGallinaHCCAT(Fontaneda),1,57
 9,la vuelta ciclista a espana,2019,94.4,Visible,Encamp-Colld'Ordino,1,16.5
-9,giro d'italia,2020,208,Visible,RoccarasoViaValloneS.Rocco-Aremogna,1,203.5
-9,giro d'italia,2020,208,Visible,BoscodiS.Antonio,1,181
-9,giro d'italia,2020,208,Visible,sant'eufemia-passosanleonardo,1,155
-9,giro d'italia,2020,208,Visible,PassoLancianoviaPretoroCentro,1,100.5
-8,tour de france,2020,141,Visible,PeyresourdedepuisBalés,1,130
-8,tour de france,2020,141,Hidden,Pontrivièreauportdebales,1,104.5
-8,tour de france,2020,141,Visible,ColdeMentérealclimb,1,59
-8,tour de france,2019,200,Visible,MontéeSteFoy-Aveize,1,148.5
-8,tour de france,2019,200,Visible,CôtedesAvergues,1,133
-8,tour de france,2019,200,Visible,035CôtedelaCroixdeSigny#100cols,1,97
-8,tour de france,2019,200,Visible,CrxdeThel,1,71.5
-8,tour de france,2019,200,Visible,ColdelaCroixMontmain,1,51
-8,paris - nice,2019,110,Hidden,1erpartezelolo,1,105
-8,paris - nice,2019,110,Visible,ColdEzefirsthalf,1,101.5
-8,paris - nice,2019,110,Visible,MonteedePeille,1,67.5
-8,paris - nice,2019,110,Visible,ColdeCalaïsson,1,51.5
-8,paris - nice,2019,110,Visible,ColdeChateauneuf,1,36.5
-8,paris - nice,2019,110,Visible,LaRoquettesurVar,1,20.5
 8,la vuelta ciclista a espana,2020,164,Visible,SubidaaMoncalvillo(AltodelSerradero),1,164
 8,la vuelta ciclista a espana,2020,164,Visible,LaRasaporMuro,1,113.5
 8,la vuelta ciclista a espana,2019,166.9,Visible,Montserrat,1,139
-8,giro d'italia,2020,200,Visible,MaddonadelleGrazie-MonteSantAngeloGirod'italia2017,1,106.5
-8,giro d'italia,2019,239,Visible,salitaBaiaImperialeGabicceMontecompleta,1,215.5
-8,giro d'italia,2019,239,Visible,"BorgoSantaMaria-Monteluro""HC""",1,204
-8,giro d'italia,2019,239,Visible,Trebbiocandelara,1,182.5
-8,giro d'italia,2019,239,Visible,BeatoSantedaCartoceto,1,168.5
-8,giro d'italia,2019,239,Hidden,"StradaMarotta,1Climb",1,141.5
-8,criterium du dauphine,2019,113.5,Visible,MontéeClusesbifurqMarignier,1,6
-8,criterium du dauphine,2019,113.5,Hidden,Troistorrents-Champéry,1,113.5
-8,criterium du dauphine,2019,113.5,Hidden,MontédesRives,1,101.5
-8,criterium du dauphine,2019,113.5,Hidden,ColduCorbierparGys,1,49
-8,criterium du dauphine,2019,113.5,Visible,Taninges1stRaBLesGets,1,21.5
-7,volta ciclista a catalunya,2019,143.1,Visible,ColldeOrdal,1,24
-7,tour de suisse,2019,216.6,Visible,SaintGotthard-Tremola,1,216.6
-7,tour de suisse,2019,216.6,Visible,Lucomagno-dopogalleria,1,126
-7,tour de suisse,2019,216.6,Visible,Tamins-Flims,1,68
-7,tour de france,2020,168,Hidden,ColdePeyronnenc(myCols.app),1,73
-7,tour de france,2020,168,Visible,CôtedeLuzençon,1,8.5
-7,paris - nice,2019,181.5,Hidden,07-CôteCoursegoules,1,168.9
-7,paris - nice,2019,181.5,Hidden,GordonfromChateauneuf-1stClimb,1,140.5
-7,paris - nice,2019,181.5,Hidden,Exo10x30x30montéedePrédulac,1,111
-7,paris - nice,2019,181.5,Visible,ColdeTurini,1,181.5
-7,paris - nice,2019,181.5,Hidden,CotedePelasque,1,161.5
-7,paris - nice,2019,181.5,Visible,Tourounet/Coursegoules,1,70.5
-7,paris - nice,2019,181.5,Visible,PreduLac->Gourdon,1,47.5
-7,paris - nice,2019,181.5,Visible,Labaronne-Gattières,1,10.5
 7,la vuelta ciclista a espana,2019,183.2,Visible,Masdelacostasubidacompleta,1,183.2
 7,la vuelta ciclista a espana,2019,183.2,Visible,SaltodelcaballoporArgelita,1,164
 7,la vuelta ciclista a espana,2019,183.2,Visible,"CRONOESCALADA""ESLIDA""(HG\DN)",1,107.5
 7,la vuelta ciclista a espana,2019,183.2,Visible,ColldeMarianet,1,96.5
-7,giro d'italia,2019,185,Hidden,SvoltediPopoli,1,137
-7,giro d'italia,2019,185,Hidden,SalitaChieti9°tappaGiro2017,1,85.5
-7,giro d'italia,2019,185,Hidden,SP16Ripa,1,77
-7,giro d'italia,2019,185,Hidden,SalitaperMiglianico,1,69.5
-7,criterium du dauphine,2019,133.5,Visible,MontéedePIPAY(CritériumDauphiné2019),1,133
-7,criterium du dauphine,2019,133.5,Visible,MontéecolduMarcieu,1,99.5
-7,criterium du dauphine,2019,133.5,Hidden,ColduGranierdepuissortieJacob,1,71.5
-7,criterium du dauphine,2019,133.5,Hidden,Coldel'EpinedepuisNovalaise,1,42
-6,volta ciclista a catalunya,2019,169.1,Visible,MS-12Colld'Alforja,1,117.5
-6,uae tour,2019,180,Visible,JebelJaisfullhill,1,180
-6,tour of oman,2019,135.5,Visible,AlJissahClimb-Full,1,99.5
-6,tour of oman,2019,135.5,Visible,HamriyaHillandthensome,1,83
-6,tour de suisse,2019,120.2,Hidden,Flums-Tannenheim,1,120.2
-6,tour de suisse,2019,120.2,Visible,Unterwasser-Wildhaus(Tortourclimb),1,72.5
-6,tour de suisse,2019,120.2,Visible,RickenvollSchnapps,1,37.5
-6,tour de france,2020,191,Hidden,ColdelaLusette,1,177.5
-6,tour de france,2019,160.5,Hidden,LaPlanchedesBellesFilles(inclSuperPlanche),1,160.5
-6,tour de france,2019,160.5,Visible,ColdeChevreresTour2019,1,141.5
-6,tour de france,2019,160.5,Visible,ColdesCroixparLeThillot,1,123
-6,tour de france,2019,160.5,Visible,Lacd'Alfeld-Ballond'Alsace,1,104.5
-6,tour de france,2019,160.5,Visible,ColduHundsrückFullClimb,1,74
-6,tour de france,2019,160.5,Hidden,Kneuzenkoers2017:LeGrandBallon,1,50
-6,tour colombia 2.1,2020,182.6,Visible,CircunvalardesvíoVíaChoachí-Tienda,1,182.6
-6,tour colombia 2.1,2020,182.6,Visible,Rioteusaca-Patios,1,156
-6,tour colombia 2.1,2020,182.6,Visible,AREPAS,1,144.5
-6,tour colombia 2.1,2020,182.6,Visible,AltodelSisga,1,60.5
-6,the larry h.miller tour of utah,2019,125.9,Hidden,WasatchMtStateParktoKOMguardsman,1,117
-6,the larry h.miller tour of utah,2019,125.9,Visible,WolfCreekKOM,1,58.5
-6,paris - nice,2020,161.5,Visible,Auribeauclimb,1,148.5
-6,paris - nice,2020,161.5,Visible,casaneuve,1,124.5
-6,paris - nice,2020,161.5,Visible,PointuSuddepuisroutedebonnieuxx,1,100
-6,paris - nice,2020,161.5,Visible,ClimbtoGordes,1,68.5
-6,paris - nice,2020,161.5,Visible,ColdeMurs,1,47
-6,paris - nice,2020,161.5,Visible,ChallengedelaCrémade,1,27.5
-6,paris - nice,2019,176.5,Visible,Stphilomèneofficiel,1,159
-6,paris - nice,2019,176.5,Hidden,LesHautesFourchesClimb,1,131
-6,paris - nice,2019,176.5,Visible,ColdeNansLesPins,1,114
 6,la vuelta ciclista a espana,2020,146.4,Visible,AramónFormigal(myCols.app),1,146.4
 6,la vuelta ciclista a espana,2020,146.4,Visible,PuertodeCotefablo(E),1,105.5
 6,la vuelta ciclista a espana,2020,146.4,Visible,AltodePetralba(S)GBP,1,69.5
@@ -248,399 +379,43 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 6,la vuelta ciclista a espana,2019,198.9,Visible,Torred'enBesora-Culla,1,169.5
 6,la vuelta ciclista a espana,2019,198.9,Visible,PUERTODELINARESCOMPLETO,1,35
 6,la vuelta ciclista a espana,2019,198.9,Hidden,PuertodeNogueruelas,1,20.5
-6,itzulia basque country,2019,118.2,Hidden,Angiozar-Asentzio,1,103.5
-6,itzulia basque country,2019,118.2,Hidden,***KARAKATE***,1,79.5
-6,itzulia basque country,2019,118.2,Hidden,Azurki,1,55
-6,itzulia basque country,2019,118.2,Hidden,ElkorrietaP.M.,1,44
-6,itzulia basque country,2019,118.2,Hidden,KalbarioP.M.,1,37
-6,itzulia basque country,2019,118.2,Visible,SANMIGUEL,1,9
-6,int. osterreich-rundfahrt-tour of austria,2019,116.7,Visible,KitzbühelerHorn(kurz),1,116.7
-6,int. osterreich-rundfahrt-tour of austria,2019,116.7,Hidden,SchwendterStrasse,1,78
-6,giro d'italia,2020,188,Hidden,SalitadellaGalleria(BiciClubFerrandina),1,161.5
-6,giro d'italia,2020,188,Visible,K.O.M.Morano-Campotenese<U+0001F451>BabyJpLois<U+0001F3C6><U+0001F6B4><U+200D><U+2642><U+FE0F><U+0001F91E>,1,13.5
-6,giro d'italia,2019,238,Visible,salitadiRignano,1,216.5
-6,criterium du dauphine,2019,229,Visible,ColdeBeaune,1,222
-6,criterium du dauphine,2019,229,Visible,montéesaintgeorgesdhurtiere,1,165
-6,criterium du dauphine,2019,229,Hidden,FinalColduFrène,1,131.5
-6,criterium du dauphine,2019,229,Visible,D82Climb,1,82
-6,colombia 2.1,2019,173.8,Visible,PalmasOficial(desdeelCountry),1,173.8
-6,amgen tour of california,2019,127.5,Visible,MtBaldyVillagetoSkiLift,1,127.5
-6,amgen tour of california,2019,127.5,Hidden,GMR-TTtoShed,1,99.5
-6,amgen tour of california,2019,127.5,Hidden,210EuclidtoBarrettStoddard,1,27.5
-5,vuelta a san juan internacional,2019,169.5,Visible,SanjuanColoradoClimb,1,169.5
-5,vuelta a burgos,2020,158,Hidden,AltodeQuintanar-LagunasdeNeila.,1,158
-5,vuelta a burgos,2020,158,Visible,ColladadeVilviestre,1,134
-5,vuelta a burgos,2020,158,Hidden,PUERTOELCERRRO-HUERTADEREY,1,102.5
-5,vuelta a burgos,2019,146,Visible,LagunasdeNeiladesdeQuintanardelaSierraporserrería,1,146
-5,vuelta a burgos,2019,146,Visible,ColladadeVilviestre,1,121.5
-5,vuelta a burgos,2019,146,Hidden,PUERTOELCERRRO-HUERTADEREY,1,90
-5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Visible,ValledelaVidaPlus,1,134
-5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,AltoCanteraporzafarraya,1,73.5
-5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,NAVAZOKLIMB,1,50.5
-5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,SubidaBermejalesdirecciónAlhama,1,37.5
-5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Visible,VENTAS-AGRÓN,1,25.5
-5,volta ao algarve em bicicleta,2019,173.5,Visible,malhao1ªparte,1,173.5
-5,volta ao algarve em bicicleta,2019,173.5,Visible,Vermelhos,1,153
-5,volta ao algarve em bicicleta,2019,173.5,Visible,SubidaMalhãoporPédoCoelho,1,131.5
-5,volta ao algarve em bicicleta,2019,173.5,Visible,BP-PicotaCLIMB,1,63.5
-5,tour de france,2019,175.5,Visible,Montée5chateauxparStGilles,1,155.5
-5,tour de france,2019,175.5,Visible,Golftroisépis,1,140
-5,tour de france,2019,175.5,Visible,#Kientzheim-RestaurantHK,1,109
-5,tour de france,2019,175.5,Visible,CôtedeGrendelbruchTDF2019,1,44
-5,tirreno-adriatico,2020,202,Hidden,Sarnano-Sassotetto,1,202
-5,tirreno-adriatico,2020,202,Visible,forcadancaranodanorcia,1,4.5
-5,presidential cycling tour of turkey,2019,164.1,Hidden,2019TourofTurkeyHCKartepe,1,164
 5,la vuelta ciclista a espana,2020,184.4,Hidden,AltoTuneldePetralba(E),1,168
 5,la vuelta ciclista a espana,2020,184.4,Visible,Fanlo,1,137.5
 5,la vuelta ciclista a espana,2020,184.4,Visible,ClimbfromPuyarruegotoVio,1,126.5
 5,la vuelta ciclista a espana,2019,170.7,Visible,PicodelBuitre(desdeArcosdelasSalinas),1,170.7
 5,la vuelta ciclista a espana,2019,170.7,Visible,OlbaacruceFuentesdeRubielos.VIZ,1,98.5
 5,la vuelta ciclista a espana,2019,170.7,Visible,PuertoAlcublas,1,31.5
-5,itzulia basque country,2019,149.8,Hidden,AltodeArrate(myCols.app),1,148
-5,itzulia basque country,2019,149.8,Hidden,TrabakuaUP,1,131
-5,itzulia basque country,2019,149.8,Hidden,Ixua(Matxaria),1,111
-5,itzulia basque country,2019,149.8,Visible,bedarona,1,58
-5,itzulia basque country,2019,149.8,Visible,morga,1,17
-5,giro d'italia,2020,225,Visible,MonteScuroTopSection,1,214
-5,giro d'italia,2020,225,Visible,chiagiugio_Rogliano_dal_Savuto,1,166.5
-5,giro d'italia,2020,225,Visible,MonteTrearie-LaFlammeRougeverified,1,112.5
-5,giro d'italia,2019,140,Visible,SoloTornantidiSezze,1,87.5
-5,giro d'italia,2019,140,Visible,RoccadiPapa,1,25.5
-5,giro d'italia,2019,140,Visible,RoccaPrioradaMontecompatri,1,8
-5,criterium du dauphine,2020,142.5,Visible,Demi-Quartier>airport,1,155
-5,criterium du dauphine,2020,142.5,Hidden,MontéedeCordondepuisGrenette,1,139
-5,criterium du dauphine,2020,142.5,Visible,ColdesAravisdepuisLeGrandBornand,1,85
-5,criterium du dauphine,2020,142.5,Visible,L'EtapeduTour2018-KOMColdelaColombière,1,60.5
-5,criterium du dauphine,2020,142.5,Visible,ColdeRommeparScionzier,1,46
-5,amgen tour of california,2019,218.5,Visible,SecondCasitasPass,1,183.5
-5,amgen tour of california,2019,218.5,Visible,FirstCasitasPass,1,179
-5,amgen tour of california,2019,218.5,Visible,"154,GolfCousetoSummit",1,128.5
-5,amgen tour of california,2019,218.5,Hidden,Foxen(Alisos)toZacaMesa,1,80.5
-4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,Purchecompleto,1,107.5
-4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,PuertodeHuetorSantillan,1,57.5
-4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,SubidadeNivar,1,53
-4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,Hazallanas,1,94.5
-4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,CruceGüejar-Camping,1,84.5
-4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,Purchecompleto,1,49.5
-4,volta ciclista a catalunya,2019,150.3,Hidden,Alp-LaMolina,1,150
-4,volta ciclista a catalunya,2019,150.3,Hidden,LAMOLINA(ALP),1,129
-4,volta ciclista a catalunya,2019,150.3,Hidden,COLLDELACREUETA(perMontgrony),1,94.5
-4,volta ciclista a catalunya,2019,150.3,Hidden,ColldeCanesperl'HostaldelSol,1,45
-4,volta a portugal em bicicleta edicao especial,2020,148,Visible,Covilhã-Torre,1,148
-4,volta a portugal em bicicleta edicao especial,2020,148,Hidden,Gouveia-PenhasDouradas,1,72.5
-4,volta a la comunitat valenciana,2019,188,Hidden,DelpontdeferroalMasdePere,1,133
-4,volta a la comunitat valenciana,2019,188,Hidden,PortdelaSerratella-Oficial-(PerlaTorred'EnDomènec),1,66.5
-4,volta a la comunitat valenciana,2019,188,Hidden,ErmitadeSantaLucía,1,188
-4,volta a la comunitat valenciana,2019,188,Visible,LaSerratellaJB,1,138.5
-4,volta a la comunitat valenciana,2019,188,Visible,LaBanderetaperRosildos(AT),1,102.5
-4,volta a la comunitat valenciana,2019,188,Visible,PuertodeCulla(RCA),1,68
-4,tour of the alps,2019,134,Visible,Tuenetto-PassoPredaia,1,115
-4,tour of the alps,2019,134,Hidden,Forcella,1,73
-4,tour of the alps,2019,134,Visible,Crescino-Campodenno,1,38.5
-4,tour of slovenia,2019,153.9,Visible,PredmejaOfficial,1,130
-4,tour of slovenia,2019,153.9,Visible,stanjel,1,94.5
-4,tour of slovenia,2019,153.9,Visible,ZRencnaKras,1,69.5
-4,tour of slovenia,2019,153.9,Visible,PLAVEMOSTŽELEZNICA-VRHULJEODCEPKORADA,1,27.5
-4,tour de yorkshire,2019,175,Hidden,CockshotlaneClimb,1,169.5
-4,tour de yorkshire,2019,175,Hidden,TinshillLaneHillSprint,1,162
-4,tour de yorkshire,2019,175,Visible,EastChevinRoadOtley,1,154
-4,tour de yorkshire,2019,175,Visible,Greenhow,1,127.5
-4,tour de yorkshire,2019,175,Visible,ParkRashHC,1,66.5
-4,tour de yorkshire,2019,175,Hidden,BardenRdClimb,1,39
-4,tour de yorkshire,2019,175,Hidden,GooseEyetoXRoads,1,21.5
-4,tour de romandie,2019,107.6,Visible,Vionnaz-Torgon(TDR2019),1,105.5
-4,tour de romandie,2019,107.6,Visible,AscensionPrévonloup,1,27
-4,tour de la provence,2020,170.5,Visible,MontéedeLaCride,1,154.5
-4,tour de la provence,2020,170.5,Visible,Ceresteofficial,1,96.5
-4,tour de la provence,2020,170.5,Hidden,RustrelontheroutetoViens,1,74
-4,tour de la provence,2020,170.5,Visible,ColdesTroisTermes-South,1,31
-4,tour de france,2020,160.5,Hidden,LesGarnauds-Merlette,1,160.5
-4,tour de france,2020,160.5,Visible,ColduFestrepanneau,1,67.5
-4,tirreno-adriatico,2020,194,Hidden,Ospedalettorealclimb,1,183.5
-4,tirreno-adriatico,2020,194,Visible,CastellucciodegliEroi-ForcadiGualdo,1,144.5
-4,tirreno-adriatico,2019,221,Visible,corciatoiapermonteguiduccioGV,1,183.5
-4,tirreno-adriatico,2019,221,Visible,Pianacartoceto-IniziodiscesaBargni,1,161.5
-4,tirreno-adriatico,2019,221,Visible,villadelmontebyG.V.,1,127.5
-4,tirreno-adriatico,2019,221,Visible,santippolitoclimbtirreno19,1,122
-4,tirreno-adriatico,2019,221,Visible,Acqualagna/SanGregorio,1,93
-4,tirreno-adriatico,2019,221,Visible,Noceraumbraclimb,1,20
-4,santos tour down under,2019,129.2,Visible,SantosTourDownUnderChallenge:CorkscrewRoad,1,123
-4,santos tour down under,2019,129.2,Hidden,lightsdogs,1,6
-4,paris - nice,2019,212,Hidden,ChemindesvignesChavanay,1,201
-4,paris - nice,2019,212,Hidden,LaCaille,1,168
-4,paris - nice,2019,212,Visible,CôtedeTrèves-382m,1,152
-4,paris - nice,2019,212,Visible,ChevalRigon,1,17.5
-4,itzulia basque country,2019,163.6,Visible,ZaratamoporBasauri,1,161
-4,itzulia basque country,2019,163.6,Visible,**BIKOTX-GANEPORARTEA**,1,126.5
-4,itzulia basque country,2019,163.6,Visible,CampaHafade,1,56
-4,int. osterreich-rundfahrt-tour of austria,2019,103.5,Hidden,SteepclimbFuscherTörl,1,103.5
-4,int. osterreich-rundfahrt-tour of austria,2019,103.5,Visible,HochkönigabHaidbergKreuzung,1,42
-4,giro d'italia,2020,140,Hidden,SellaMandrazziOfficialClimb,1,75.5
-4,etoile de besseges,2020,138.7,Visible,MontBouquetparBrouzet-les-Ales,1,138.7
-4,etoile de besseges,2020,138.7,Visible,D130Climb,1,110.5
-4,etoile de besseges,2020,138.7,Hidden,ColdeTrélis,1,95
-4,etoile de besseges,2020,138.7,Visible,CheminD'ArbousseClimb,1,83.5
-4,criterium du dauphine,2020,148.5,Visible,MegevetoAltiport,1,148.5
-4,criterium du dauphine,2020,148.5,Hidden,MontéedeBisanne-D123,1,116
-4,criterium du dauphine,2020,148.5,Hidden,ColdelaCroixFryfromManigod,1,41
-4,criterium du dauphine,2020,148.5,Hidden,ColdePlanBois,1,27.5
-3,vuelta a castilla y leon,2019,151.8,Hidden,SUBIDAAONAMIODESDEINICIODELALE-159/7,1,97.5
-3,vuelta a castilla y leon,2019,151.8,Hidden,RutaMaragata-SubidaaFoncebadón,1,72.5
-3,vuelta a burgos,2020,150,Visible,PicónBlancodesdeSupermercadoSumahastasegundazonasinasfaltar,1,150
-3,vuelta a burgos,2020,150,Visible,Retuertaporvariante,1,121.5
-3,vuelta a burgos,2020,150,Visible,BeiconAILANES,1,64
-3,vuelta a burgos,2020,150,Hidden,ESCALADAPESQUERA,1,39
-3,vuelta a burgos,2020,150,Hidden,QuintanillaEscalada-AltodelaMota,1,19.5
-3,vuelta a burgos,2019,150,Hidden,PicónBlancodesdefinpuebloametavuelta,1,150
-3,vuelta a burgos,2019,150,Visible,Retuertaporvariante,1,122.5
-3,vuelta a burgos,2019,150,Visible,BeiconAILANES,1,63.5
-3,vuelta a burgos,2019,150,Hidden,AilanesClimb,1,43.5
-3,vuelta a burgos,2019,150,Hidden,ElEscalerón,1,38.5
-3,vuelta a burgos,2019,150,Hidden,LaMota(PM),1,19.5
-3,volta ciclista a catalunya,2019,179,Visible,Vallter2000,1,179
-3,volta ciclista a catalunya,2019,179,Visible,Beget-Rocabruna,1,145
-3,volta ciclista a catalunya,2019,179,Visible,Oix-ColldePera,1,127.5
-3,volta ciclista a catalunya,2019,179,Hidden,AltdelaGanga,1,17.5
-3,uae tour,2019,179,Hidden,JebelHafeetBottomtoTop,1,178
-3,tour of the alps,2019,106.3,Visible,MONTAGNAGAdaPergine,1,101.5
-3,tour of the alps,2019,106.3,Visible,lagodisantacolomba,1,79.5
-3,tour of the alps,2019,106.3,Visible,bivioValcava-Brusago,1,54.5
-3,tour of the alps,2019,106.3,Visible,Lavis-PalùdiGiovo,1,23.5
-3,tour of slovenia,2019,169.8,Hidden,Idrija-Doleclimb,1,149
-3,tour of slovenia,2019,169.8,Visible,MedvedjeBrdovzpon,1,129
-3,tour of slovenia,2019,169.8,Visible,VranskoClimb,1,27.5
-3,tour des alpes maritimes et du var,2020,136,Visible,MontFaron.,1,136
-3,tour des alpes maritimes et du var,2020,136,Visible,D62Climb,1,122.5
-3,tour des alpes maritimes et du var,2020,136,Visible,lesplainesparStAnned'Evenos,1,117.5
-3,tour des alpes maritimes et du var,2020,136,Visible,Cerfhalfclimb,1,8.5
-3,tour de l'ain,2020,144.5,Visible,GrandColombier,1,144.5
-3,tour de l'ain,2020,144.5,Hidden,ColdeBiche(Bernaz),1,97.5
-3,tour de l'ain,2020,144.5,Visible,MontéedelaSelledeFromentel,1,80
-3,tour de l'ain,2019,118.9,Hidden,GrandColombierTourAin2019,1,118.9
-3,tour de l'ain,2019,118.9,Visible,ColCorlier,1,44.5
-3,tour de la provence,2020,140.2,Visible,SteEstève-ChaletReynard,1,140.2
-3,tour de la provence,2020,140.2,Hidden,GordestoSenanquecutoff,1,99
-3,tour de la provence,2020,140.2,Hidden,MontéedeBonnieuxSudOfficielle,1,71.5
-3,tour de france,2019,215,Visible,nicolasfeuillatte/bernonparlesvignesTDF2019,1,211
-3,tour de france,2019,215,Visible,côtedeMutigny,1,199
-3,tour de france,2019,215,Visible,Bellevue,1,190
-3,tour de france,2019,215,Visible,Cumierestovineyardpathatviewpoint,1,185.5
-3,tour de france,2019,215,Visible,BossedeNanteuil,1,172.5
-3,tour de france,2019,215,Visible,BossedeSermiers,1,166.5
-3,tirreno-adriatico,2019,226,Visible,StradaProvinciale40/SP40toLaFoce,1,122.5
-3,tirreno-adriatico,2019,226,Visible,SalitaSanQuirico-Cassia,1,102
-3,tirreno-adriatico,2019,226,Visible,Torrenieri,1,94
-3,tirreno-adriatico,2019,226,Visible,PassodelRospatoio,1,67.5
-3,tirreno-adriatico,2019,226,Visible,SanDamazioPaoloBi,1,6.5
-3,settimana internazionale coppi e bartali,2020,166.5,Visible,TwentyPeaksMontePugliano,1,116
-3,settimana internazionale coppi e bartali,2020,166.5,Hidden,MacerataFeltria-Carpegnasummit,1,80
-3,settimana internazionale coppi e bartali,2020,166.5,Visible,"MERCATINO-OSTERIACCIA""HC""",1,37
-3,settimana internazionale coppi e bartali,2020,166.5,Hidden,Montegiardinofinoalconfine,1,22.5
 3,la vuelta ciclista a espana,2019,188,Visible,A300wPuertoTIbi,1,151
 3,la vuelta ciclista a espana,2019,188,Visible,Pto.BiarBestiasPardas,1,119.5
-3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,ColdeBeyrede,1,163.5
-3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,ColdePeyresourde,1,119
-3,la route d'occitanie - la depeche du midi,2020,163.5,Hidden,"PortdeBalès,montéecomplète",1,93.5
-3,la route d'occitanie - la depeche du midi,2019,173,Visible,HospicedeFrancefromLuchon,1,173
-3,la route d'occitanie - la depeche du midi,2019,173,Visible,PortdeBalèsNo13GreatestTDFClimbs,1,143
-3,la route d'occitanie - la depeche du midi,2019,173,Hidden,Gougue-Capvern,1,81.5
-3,la route d'occitanie - la depeche du midi,2019,173,Visible,Hourquetted'Ancizan-OfficialTDFClimb,1,29.5
-3,la route d'occitanie - la depeche du midi,2019,173,Visible,MontéeversLançonD25,1,8.5
-3,itzulia basque country,2019,191.4,Visible,PuertoOpakua(Sur),1,134
-3,itzulia basque country,2019,191.4,Visible,Arenaza(porElorza),1,114
-3,itzulia basque country,2019,191.4,Visible,P.A.deGoñiporArteta,1,26
-3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,"NECHNITZ,Schrems",1,161.5
-3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,TeichalmNord,1,145
-3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,EibeggvonMürztal,1,128.5
-3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,SemmeringCrit,1,75
-3,int. osterreich-rundfahrt-tour of austria,2019,176.2,Visible,Spratzau/Lichtenegg-Kaltenberg,1,17
-3,giro d'italia,2020,150,Hidden,LinguaglossaT-JunctiontoMountEtnaNordLavaFields,1,150
-3,giro d'italia,2020,150,Hidden,MiloBosco-Fornazzo,1,115
-3,giro d'italia,2020,150,Visible,paternonicolosi.rotonda,1,92
-3,giro d'italia,2019,220,Visible,Apparita,1,181.5
-3,giro d'italia,2019,220,Visible,Montebellodasp541,1,97
-3,giro d'italia,2019,220,Visible,AllclimbnoKOMGiro19,1,36
-3,giro di sicilia,2019,188,Visible,ChiaramonteClimb-AnticaStazione,1,188
-3,giro di sicilia,2019,188,Visible,CronoscalatamontiIblei,1,167.5
-3,criterium du dauphine,2020,157,Hidden,Saint-Martin-de-Belleville(myCols.app),1,157
-3,criterium du dauphine,2020,157,Hidden,Madeneinetdf2020,1,105.5
-3,arctic race of norway,2019,176.5,Visible,Storheia,1,176.5
-3,arctic race of norway,2019,176.5,Hidden,Ferista-FeristaStorvannet,1,91
-3,arctic race of norway,2019,176.5,Hidden,BlåheiveienClimb,1,17.5
-3,amgen tour of california,2019,207,Visible,MtHamiltonBackside,1,140.5
-3,amgen tour of california,2019,207,Visible,MinesRoad-5MileClimb,1,77.5
-3,amgen tour of california,2019,207,Visible,PattersonPass(East),1,54
-3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,SalitaM.Quarin,1,204
-3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,"S.FlorianoperScedina,ripido",1,179
-3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,Calvario,1,172.5
-3,adriatica ionica race / sulle rotte della serenissima,2019,204.5,Visible,PonteCordevole-Sappada,1,23.5
-2,vuelta ciclista comunidad de madrid,2019,163,Visible,SubidaalEncinarhastasegundaentrada,1,141.5
-2,vuelta ciclista comunidad de madrid,2019,163,Visible,MPto.RobledondodesdePeguerinos,1,78.5
-2,vuelta ciclista comunidad de madrid,2019,163,Visible,EWQR213SubidaHoyoStaMariadelaAlameda(Cota5),1,68
-2,vuelta ciclista comunidad de madrid,2019,163,Visible,"SUBIDA""LAESCONDIDA""(VALDEMAQUEDA-LASNAVASDELMARQUES)",1,56.5
-2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Visible,CrestadelGallo(SanJoséhastaelcruce),1,166.5
-2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Visible,ColladoBermejo(Sur),1,102
-2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Hidden,subidaTotanaaLaSanta,1,90.5
-2,vuelta ciclista a la region de murcia,2020,179.6,Visible,Gebas,1,142
-2,vuelta ciclista a la region de murcia,2020,179.6,Visible,ColladoBermejo(Sur),1,119
-2,vuelta ciclista a la region de murcia,2020,179.6,Visible,TankstationSiërraEspuna,1,72.5
-2,vuelta aragon,2019,186.2,Visible,SantaCruz-SanJuandelaPeña,1,134
-2,vuelta a andalucia ruta ciclista del sol,2019,216.5,Hidden,A-306Climb,1,216.5
-2,vuelta a andalucia ruta ciclista del sol,2019,216.5,Hidden,AltoPorcunaporA-306,1,193
-2,volta ciclista a catalunya,2019,166.7,Visible,RomanyàCurt(FontPicantaCruïllaSt.Miqueld´Aro),1,142.5
-2,volta ciclista a catalunya,2019,166.7,Visible,SantaPellaiadesdeCassa,1,77.5
-2,volta ciclista a catalunya,2019,166.7,Visible,CanBordoiser-po,1,12
-2,volta ao algarve em bicicleta,2020,183.9,Visible,SerradeMonchique-Upper,1,183.9
-2,volta ao algarve em bicicleta,2020,183.9,Visible,Pombal,1,170.5
-2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidaPonteatécruzamentoAlferce(3/3),1,161.5
-2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidadoSelão,1,93.5
-2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidadasEirinhas,1,49
-2,volta ao algarve em bicicleta,2019,187.4,Visible,ALGS12-Fóia(Monchique),1,187.4
-2,volta ao algarve em bicicleta,2019,187.4,Visible,Pombal,1,151
-2,volta ao algarve em bicicleta,2019,187.4,Visible,"Cansino,road",1,137
-2,volta ao algarve em bicicleta,2019,187.4,Visible,"RibeirodeBaixo,road",1,129.5
-2,volta a portugal em bicicleta edicao especial,2020,167,Visible,SenhoradaGraça(CronometragemOficial),1,167
-2,volta a portugal em bicicleta edicao especial,2020,167,Hidden,PMPBarreiro(porErmelo),1,132.5
-2,volta a portugal em bicicleta edicao especial,2020,167,Hidden,SerradoMarãoateaoaltodeespinho,1,96.5
-2,volta a la comunitat valenciana,2019,166,Visible,SubidaCarrasquetadesdeVentaSanJorge,1,125
-2,volta a la comunitat valenciana,2019,166,Visible,PortdeBenillup(finsfontetapoble),1,96.5
-2,volta a la comunitat valenciana,2019,166,Visible,PuertoCanalis.Onil,1,57.5
-2,volta a la comunitat valenciana,2019,166,Visible,Subidaalmaigmó,1,24
-2,tour of the alps,2019,178.7,Visible,JaufenpassOFFICIAL-fromsigntosign,1,134
-2,tour of the alps,2019,178.7,Visible,Volderwald-Tulfes(3),1,60.5
-2,tour of slovenia,2019,146.3,Visible,Kompole(bus)-Svetina(bus),1,123
-2,tour of slovenia,2019,146.3,Visible,BezinaClimb,1,44.5
-2,tour of slovenia,2019,146.3,Visible,Volcnica-Tinje,1,26.5
-2,tour of oman,2019,156.5,Visible,AlJissahClimb-Full,1,157
-2,tour of oman,2019,156.5,Visible,HamriyaHillandthensome,1,139.5
-2,tour of oman,2019,156.5,Visible,ClimbofBousherAlamrat,1,110.5
-2,tour of oman,2019,156.5,Visible,Segment,1,51
-2,tour des alpes maritimes et du var,2020,175.7,Visible,Moyennecorniche/montéeColEze,4,175.7
-2,tour des alpes maritimes et du var,2020,175.7,Visible,MonteedePeille,1,154.5
-2,tour des alpes maritimes et du var,2020,175.7,Visible,ColduSavel(ColSaint-Roch),1,119.5
-2,tour des alpes maritimes et du var,2020,175.7,Visible,MontéeCoaraze(arrivéesouslevillage),1,104.5
-2,tour des alpes maritimes et du var,2020,175.7,Visible,ColdeChateauneuf,1,90.5
-2,tour des alpes maritimes et du var,2020,175.7,Visible,LaRoquettesurVar,1,74.5
-2,tour de romandie,2019,174.4,Visible,RomainmotiertoColduMollendruz,1,98
-2,tour de l'ain,2020,140.5,Hidden,ColdeMenthièresparConfort,1,118.5
-2,tour de l'ain,2020,140.5,Hidden,CroisementàsortieboisGiron,1,93
-2,tour de l'ain,2020,140.5,Visible,cuvilliatparchampdor,1,54
-2,tour de l'ain,2020,140.5,Hidden,ColdeMontgriffon(depuisl'Abergement),1,29.5
-2,tour de l'ain,2019,123.9,Visible,Mijouxcentre-douanedelaFaucille,1,124
-2,tour de l'ain,2019,123.9,Hidden,ColdeMenthières,1,85.5
-2,tour de l'ain,2019,123.9,Hidden,CotedeGiron,1,60
-2,tour de l'ain,2019,123.9,Visible,D25Climb,1,41
-2,tour de la provence,2020,174.9,Hidden,GPMRoutedesCrêtes,1,174.9
-2,tour de la provence,2020,174.9,Visible,LeBrûlat,1,153
-2,tour de la provence,2020,174.9,Hidden,MontéedeLaCoutronneparAuriol,1,53.5
-2,tour de la provence,2020,174.9,Visible,colespigoulierpargémenos,1,10
-2,tour de france,2020,185,Hidden,coldes4chemins,1,178
-2,tour de france,2020,185,Hidden,Cold'Eze7.8km,1,154
-2,tour de france,2020,185,Visible,ColdeTurini,1,100
-2,tour de france,2020,185,Hidden,EB-France-06-ColStMartin(Ouest),1,63.5
-2,tirreno-adriatico,2020,201,Visible,CannetodaLaGabellaPaoloBi,1,137
-2,tirreno-adriatico,2020,201,Hidden,Pomaia-CastellinadafineponteafinesalitaSCE,1,97.5
-2,tirreno-adriatico,2020,201,Visible,Montemagno,1,5
-2,tirreno-adriatico,2019,195,Visible,SerrazzanoPaoloBi,1,148
-2,tirreno-adriatico,2019,195,Hidden,SalitaCastellina,1,98
-2,tirreno-adriatico,2019,195,Visible,Montemagno,1,4.5
-2,the larry h.miller tour of utah,2019,135.8,Visible,PowderMountainHillclimb,1,135.8
-2,the larry h.miller tour of utah,2019,135.8,Visible,NorthOgdenDivide,1,62
 2,la vuelta ciclista a espana,2020,151.6,Visible,SANMIGELIGOERA(Uharte-Arakil),1,134
 2,la vuelta ciclista a espana,2020,151.6,Visible,urbasa(mirador),1,85.5
 2,la vuelta ciclista a espana,2020,151.6,Hidden,AltoGirgillano,1,29
 2,la vuelta ciclista a espana,2019,199.6,Hidden,CumbredelSolfull,1,175.5
 2,la vuelta ciclista a espana,2019,199.6,Visible,revolcatdesdeBenilloba,1,54
 2,la vuelta ciclista a espana,2019,199.6,Visible,PORTDECONFRIDESPERCONFRIDES#DT09,1,37.5
-2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,DreistettenvonB21,1,153
-2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,KlammhöheNordclimb,1,108
-2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,AbzweigungStössing-Stollberg,1,103.5
-2,int. osterreich-rundfahrt-tour of austria,2019,176.9,Visible,AttenreithClimb,1,20
-2,giro d'italia,2020,149,Visible,Agrigento-LaFlammeRougeverified,1,149
-2,giro d'italia,2020,149,Visible,StelladiGibellina-SantaNinfa,1,37.5
-2,giro d'italia,2019,205,Visible,CASTRACOMPLETO,1,157.5
-2,giro d'italia,2019,205,Visible,MontespertolidaBaccaiano,1,130.5
-2,criterium du dauphine,2020,135,Hidden,ColdePorte,1,135
-2,criterium du dauphine,2020,135,Hidden,ColdeMontaud,1,98
-2,criterium du dauphine,2020,135,Visible,RouteDeRoybonClimb,1,49.5
-2,criterium du dauphine,2019,180,Visible,BossedeStVictorsurArlanc,1,162
-2,criterium du dauphine,2019,180,Visible,ColdelaVernede,1,137.5
-2,criterium du dauphine,2019,180,Visible,CôtedeCheylade,1,46.5
-2,criterium du dauphine,2019,180,Visible,CôtedeMoussages,1,10.5
-2,amgen tour of california,2019,194.5,Visible,final3kmtoLutherPass,1,165.5
-2,amgen tour of california,2019,194.5,Visible,CarsonPassMTBclimb(onroad)fromcampgroundroadtooverlook,1,147
-2,amgen tour of california,2019,194.5,Visible,"07/09/10Pioneer,CA",1,135.5
-2,amgen tour of california,2019,194.5,Visible,CedarRavineClimb,1,59.5
-2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Hidden,casermag.s.Forestale-Misurina(cartello),1,203
-2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,SelladiRazzo,1,146.5
-2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,CronoscalataPassoPura(daAmpezzo),1,124.5
-2,adriatica ionica race / sulle rotte della serenissima,2019,204.6,Visible,PassoRestdalpontealcartello,1,95
-1,vuelta ciclista comunidad de madrid,2019,161,Visible,subidagasolineraChinchón,1,134
-1,vuelta ciclista comunidad de madrid,2019,161,Visible,TorresBlando,1,92.5
-1,vuelta ciclista comunidad de madrid,2019,161,Hidden,SubidadesdeValdilechahaciaPozuelodelRey,1,54
-1,vuelta ciclista comunidad de madrid,2019,161,Hidden,subidaalMolinoAldehuelahastaelP.M.,1,25
-1,vuelta ciclista a la region de murcia,2020,177.6,Visible,+++PuertoQuipar+++,1,140.5
-1,vuelta ciclista a la region de murcia,2020,177.6,Hidden,PuertoFríoPremioSierradelaPila,1,82.5
-1,vuelta ciclista a la region de murcia,2020,177.6,Visible,Fortuna-LaGarapacha,1,75.5
-1,vuelta ciclista a la region de murcia,2020,177.6,Visible,CabezodelaPlata(Sur),1,24
-1,vuelta a castilla y leon,2019,181,Visible,ALTOTERO,1,98.5
-1,vuelta a castilla y leon,2019,181,Visible,VALMALA,1,20.5
-1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Hidden,CarreteraDeAlcaláDeLosGazulesClimb,1,170.5
-1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Visible,CA-6105alapuntadelPrado,1,100
-1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Visible,"TramoLibre""LaArqueña""(hastanaves)",1,78
-1,volta ciclista a catalunya,2019,163.7,Visible,CollformicperelPinós,1,107
-1,volta ciclista a catalunya,2019,163.7,Hidden,StaFedelMontseny(StCeloni),1,48.5
-1,volta ciclista a catalunya,2019,163.7,Visible,del'autopistad'arenysdemaracollsacreu.,1,13.5
-1,"trofeo ses salines, campos, porreres, felanitx",2019,176.9,Hidden,Santsalvadorderotondamanacor,1,176.9
-1,trofeo laigueglia,2019,203.7,Hidden,Olivenlundene,1,169.7
-1,trofeo laigueglia,2019,203.7,Hidden,GP-TesticodaStellanello,1,146.5
-1,trofeo de tramuntana: soller - deia,2019,179.3,Hidden,colldenbleda,1,174
-1,trofeo de tramuntana: soller - deia,2019,179.3,Hidden,PUIGMAJOR(PantádeGorgBlau)/www.pirenaica.com,1,154
-1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ColdeFemenia,1,131.5
-1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,Colld'honor(real),1,65.5
-1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ClimbtoValdemossavillagesign,1,32
-1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ColldeSoller,1,11
-1,trofeo andratx - lloseta,2019,172.2,Hidden,Puigto1kmbeforeend,1,104
-1,trofeo andratx - lloseta,2019,172.2,Visible,ColldenClaret(Desdecruze),1,65.5
-1,trofeo andratx - lloseta,2019,172.2,Visible,ColldesaGramola(real)MEB,1,36
-1,tour of slovenia,2019,171,Hidden,CestanaGradClimb,1,142
-1,tour of slovenia,2019,171,Hidden,GolobinjekPriPlanini10Climb,1,112.5
-1,tour of slovenia,2019,171,Visible,TrebeljevoizBesnice,1,16.5
-1,tour of slovenia,2019,171,Visible,Pecar,1,5.5
-1,tour de romandie,2019,168.4,Visible,LaTourne2Climb,1,143
-1,tour de romandie,2019,168.4,Visible,ColdelaVue-des-Alpes,1,122.5
-1,tour de romandie,2019,168.4,Visible,CôteRosièreACF,1,89.5
-1,tour de romandie,2019,168.4,Visible,CheminDesRâpesClimb,1,36.5
-1,tour de romandie,2019,168.4,Visible,Bonvillars-Fontanezier,1,29
-1,strade bianche,2019,184,Hidden,CollePinzutoOff-RoadCote***-FlandresLove,1,167
-1,strade bianche,2019,184,Visible,StradaProvincialePieveASaltiClimb,1,94
-1,strade bianche,2019,184,Visible,SALITADIMONTALCINO-LATOBUONCONVENTOFINOROTONDA,1,66.5
-1,strade bianche,2019,184,Visible,salitabagnaiagrotti,1,30.5
-1,royal bernard drome classic,2019,207.8,Visible,CôtedeGrane,1,187
-1,royal bernard drome classic,2019,207.8,Visible,Coldelagrandelimite,1,169
-1,royal bernard drome classic,2019,207.8,Visible,MontéedesFaures,1,150
-1,royal bernard drome classic,2019,207.8,Visible,TestChabrillan,1,144
-1,pollenca - andratx,2020,168.9,Hidden,MetaChallenge2020PtoAndratx,1,168.9
-1,pollenca - andratx,2020,168.9,Hidden,SaGramolanord,1,140.5
-1,pollenca - andratx,2020,168.9,Hidden,Colld'enClaret(Valldemossa),1,111
-1,pollenca - andratx,2020,168.9,Hidden,SaPedrissa-6.4km,1,105
-1,pollenca - andratx,2020,168.9,Visible,DENBLEDA(Soller)/www.pirenaica.com,1,92
-1,pollenca - andratx,2020,168.9,Visible,M167-PuigMajor,1,72.5
-1,pollenca - andratx,2020,168.9,Visible,ColdeFemenia,1,50.5
-1,mont ventoux denivele challenge,2020,179,Hidden,ChaletReynard,1,102.5
-1,mont ventoux denivele challenge,2020,179,Visible,ColdeFontaube,1,28.5
-1,milano-torino,2019,179,Visible,SALITASASSI-SUPERGASTSport,1,179
-1,milano-torino,2019,179,Hidden,ComunaleSuperga-incrocio,1,159
-1,milano-sanremo,2020,305,Hidden,PoggioSanremo,1,300.5
-1,milano-sanremo,2020,305,Hidden,Cipressa,1,284.5
-1,milano-sanremo,2020,305,Visible,Campetto-Feisoglio,1,166
-1,milano-sanremo,2019,291,Hidden,[K0:G30]Poggio,1,92
-1,milano-sanremo,2019,291,Hidden,PoggioSanremo,1,50.5
-1,milano-sanremo,2019,291,Visible,PoggiodiSanremo,1,287.5
-1,milano-sanremo,2019,291,Hidden,CIPRESSA,1,271.5
-1,milano-sanremo,2019,291,Visible,CapoBertadaDianoMarina,1,254
-1,milano-sanremo,2019,291,Visible,Capomele(daLaigueglia),1,241
-1,milano-sanremo,2019,291,Visible,PASSODELTURCHINO,1,143
+1,la vuelta ciclista a espana,2020,173,Hidden,AltodeArrate(myCols.app),1,173
+1,la vuelta ciclista a espana,2020,173,Hidden,Elgeta,1,156.5
+1,la vuelta ciclista a espana,2020,173,Hidden,Kampazar,1,120
+17,la vuelta ciclista a espana,2018,157,Hidden,LaArboleda,1,16.5
+9,la vuelta ciclista a espana,2018,200.8,Hidden,PuertodelPico-LaVuelta18,1,52
+4,la vuelta ciclista a espana,2018,161.4,Hidden,.-Cruce-Lasantenas(SubidaalPuertolaCabra),1,67
+9,la vuelta ciclista a espana,2018,200.8,Hidden,ParadordeGredos,1,67
+17,la vuelta ciclista a espana,2018,157,Visible,sanpelaio,1,85
+14,la vuelta ciclista a espana,2018,171,Hidden,COLLADONACIMA,1,92.5
+9,la vuelta ciclista a espana,2018,200.8,Visible,PUERTODEPEÑANEGRA(caraNorte),1,97
+13,la vuelta ciclista a espana,2018,174.8,Hidden,CrucePendones-PuertoTarna,1,105.5
+17,la vuelta ciclista a espana,2018,157,Hidden,BalcóndeBizkaia(porMuxika),1,122
+14,la vuelta ciclista a espana,2018,171,Hidden,Ciaño-AltodelaMozqueta,1,127
+15,la vuelta ciclista a espana,2018,178.2,Hidden,CrucedeCaraviaMiradordelFito,1,136
+17,la vuelta ciclista a espana,2018,157,Hidden,Aulestia-SantaEufemia,1,136
+17,la vuelta ciclista a espana,2018,157,Hidden,GontzegaraiganefromIruzubieta,1,147.5
+14,la vuelta ciclista a espana,2018,171,Hidden,Fallalosllobos(desdeBarredos),1,150.5
+17,la vuelta ciclista a espana,2018,157,Hidden,BalcóndeBizkaia,1,157
+4,la vuelta ciclista a espana,2018,161.4,Hidden,puertoAlfaguaraVuelta2018,1,161.5
+14,la vuelta ciclista a espana,2018,171,Hidden,InicioLesPraeres-CorteCNPVCE,1,171
+13,la vuelta ciclista a espana,2018,174.8,Hidden,SABERO-LACAMPERONAmf,1,174.8
+15,la vuelta ciclista a espana,2018,178.2,Hidden,AtopeLagosDeCovadongaCOMPLETO<U+0001F4A5>BabyJpLois<U+0001F3C6>,1,178.2
+9,la vuelta ciclista a espana,2018,200.8,Hidden,Covatilla(hastalametadelaVuelta2018),1,200.8
 1,liege-bastogne-liege,2020,257,Visible,Roche-aux-Fauconsclimbx,1,244
 1,liege-bastogne-liege,2020,257,Visible,ThierdesForgesClimb,1,234
 1,liege-bastogne-liege,2020,257,Visible,CôtedelaRedoute,1,222
@@ -658,54 +433,663 @@ stage,race,year,length,Type,Segment,Valid,AtKM
 1,liege-bastogne-liege,2019,256,Visible,CôtedeWanneNo38HellingenApp,1,169
 1,liege-bastogne-liege,2019,256,Visible,MontLeSoieClimb,1,161
 1,liege-bastogne-liege,2019,256,Visible,CôtedeLaRoche-en-ArdenneNo34HellingenApp,1,75
-1,la vuelta ciclista a espana,2020,173,Hidden,AltodeArrate(myCols.app),1,173
-1,la vuelta ciclista a espana,2020,173,Hidden,Elgeta,1,156.5
-1,la vuelta ciclista a espana,2020,173,Hidden,Kampazar,1,120
-1,la route d'occitanie - la depeche du midi,2020,189.5,Visible,SortieSGTresVents,1,92.5
-1,la route d'occitanie - la depeche du midi,2020,189.5,Visible,"CroixdeMounis,parBrusque",1,70.5
-1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,CLMAubignac,1,160
-1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,LeBuffarel,1,115.5
-1,la route d'occitanie - la depeche du midi,2019,175.5,Visible,ColduVent,1,18
-1,il lombardia,2020,231,Hidden,Civiglio#VCBC#,1,214
-1,il lombardia,2020,231,Visible,ColmadiSormano,1,180
-1,il lombardia,2020,231,Visible,MADONNADELGHISALLOdaBellagio,1,166.5
-1,il lombardia,2020,231,Visible,ColleBrianza,1,115
-1,il lombardia,2020,231,Visible,Casazza-ColleGallo,1,55
-1,il lombardia,2019,243,Hidden,Civiglio#VCBC#,1,226.5
-1,il lombardia,2019,243,Visible,ColmadiSormano,1,192.5
-1,il lombardia,2019,243,Visible,MADONNADELGHISALLOdaBellagio,1,179
-1,il lombardia,2019,243,Visible,ColleBrianza,1,115
-1,il lombardia,2019,243,Visible,Casazza-ColleGallo,1,55
-1,grand prix de wallonie,2019,205.9,Hidden,CITADELLEDENAMUR,1,205
-1,grand prix de wallonie,2019,205.9,Hidden,Tienneauxpierresclimb,1,190.5
-1,grand prix de wallonie,2019,205.9,Visible,Lustinclimbtilljunction,1,180.5
-1,grand prix de wallonie,2019,205.9,Visible,Côted'Ermeton,1,163
-1,grand prix de wallonie,2019,205.9,Visible,CôtedeWerbomont,1,53.5
-1,grand prix de wallonie,2019,205.9,Visible,MonumentWallonie,1,31
-1,grand prix de wallonie,2019,205.9,Visible,Trassenter,1,14
-1,grand prix cycliste la marseillaise,2020,145.3,Visible,RouteDesCrêtes(LaVigie),1,118.5
-1,grand prix cycliste la marseillaise,2020,145.3,Hidden,D559Climb,1,108
-1,grand prix cycliste la marseillaise,2020,145.3,Visible,Monteedel'Espigoulier(parAuriol),1,68
-1,grand prix cycliste la marseillaise,2020,145.3,Hidden,ColdePasdelaCouelleparTrets,1,44
-1,gran premio miguel indurain,2019,192.9,Visible,AltodelMuru,1,189.5
-1,gran premio miguel indurain,2019,192.9,Visible,Lezaun(lascasetas),1,148
-1,gran premio miguel indurain,2019,192.9,Visible,CruceGarisoain-CruceGuirguillano,1,129
-1,gran piemonte,2019,183,Hidden,Biella-Oropa,1,183
-1,gran piemonte,2019,183,Hidden,Pianezze-Nelva,1,161.5
-1,giro dell'appennino,2020,191.5,Visible,FraconaltodaVoltaggio,1,143
-1,giro dell'appennino,2020,191.5,Visible,"[EB]PassodellaBocchetta,daCampomorone",1,127.5
-1,giro dell'appennino,2020,191.5,Visible,Vobbia(pontebivioAlpe)-Crocefieschi,1,88
-1,giro dell'appennino,2020,191.5,Visible,castagnolaaGPM,1,56.5
-1,faun environnement - classic de l'ardeche rhone crussol,2019,197.5,Visible,coteauxducarnas,1,179
-1,faun environnement - classic de l'ardeche rhone crussol,2019,197.5,Visible,Chronomontéesaintromaindelerps,1,124.5
-1,clasica ciclista san sebastian,2019,227.3,Visible,CampingIgara-CampingIgeldo,1,217
-1,clasica ciclista san sebastian,2019,227.3,Hidden,Murgil+Mendizorrotz,1,188
-1,clasica ciclista san sebastian,2019,227.3,Visible,COLDUERLAITZ(Irun),1,153
-1,clasica ciclista san sebastian,2019,227.3,Visible,Jaizkibelpanorámico,1,132
-1,clasica ciclista san sebastian,2019,227.3,Visible,GurutzedesdeMateo,1,112
-1,clasica ciclista san sebastian,2019,227.3,Visible,ALKIZAIGOERA(Anoeta),1,76
-1,clasica ciclista san sebastian,2019,227.3,Visible,Errezil-Iturburu,1,57
-1,bretagne classic - ouest-france,2020,247.75,Hidden,Lezot(versionparrueGeorgesBrassens),1,237
-1,bretagne classic - ouest-france,2020,247.75,Hidden,BonRepos(fromhairpintotop),1,168
-1,bretagne classic - ouest-france,2020,247.75,Visible,KerdoretAscent,1,141.5
-1,bretagne classic - ouest-france,2020,247.75,Visible,MûrDeBretagne(2011TourdeFranceStage4),1,49
+1,milano-sanremo,2020,305,Hidden,PoggioSanremo,1,300.5
+1,milano-sanremo,2020,305,Hidden,Cipressa,1,284.5
+1,milano-sanremo,2020,305,Visible,Campetto-Feisoglio,1,166
+1,milano-sanremo,2019,291,Hidden,[K0:G30]Poggio,1,92
+1,milano-sanremo,2019,291,Hidden,PoggioSanremo,1,50.5
+1,milano-sanremo,2019,291,Visible,PoggiodiSanremo,1,287.5
+1,milano-sanremo,2019,291,Hidden,CIPRESSA,1,271.5
+1,milano-sanremo,2019,291,Visible,CapoBertadaDianoMarina,1,254
+1,milano-sanremo,2019,291,Visible,Capomele(daLaigueglia),1,241
+1,milano-sanremo,2019,291,Visible,PASSODELTURCHINO,1,143
+1,milano-torino,2019,179,Visible,SALITASASSI-SUPERGASTSport,1,179
+1,milano-torino,2019,179,Hidden,ComunaleSuperga-incrocio,1,159
+1,mont ventoux denivele challenge,2020,179,Hidden,ChaletReynard,1,102.5
+1,mont ventoux denivele challenge,2020,179,Visible,ColdeFontaube,1,28.5
+8,paris - nice,2019,110,Hidden,1erpartezelolo,1,105
+8,paris - nice,2019,110,Visible,ColdEzefirsthalf,1,101.5
+8,paris - nice,2019,110,Visible,MonteedePeille,1,67.5
+8,paris - nice,2019,110,Visible,ColdeCalaïsson,1,51.5
+8,paris - nice,2019,110,Visible,ColdeChateauneuf,1,36.5
+8,paris - nice,2019,110,Visible,LaRoquettesurVar,1,20.5
+7,paris - nice,2019,181.5,Hidden,07-CôteCoursegoules,1,168.9
+7,paris - nice,2019,181.5,Hidden,GordonfromChateauneuf-1stClimb,1,140.5
+7,paris - nice,2019,181.5,Hidden,Exo10x30x30montéedePrédulac,1,111
+7,paris - nice,2019,181.5,Visible,ColdeTurini,1,181.5
+7,paris - nice,2019,181.5,Hidden,CotedePelasque,1,161.5
+7,paris - nice,2019,181.5,Visible,Tourounet/Coursegoules,1,70.5
+7,paris - nice,2019,181.5,Visible,PreduLac->Gourdon,1,47.5
+7,paris - nice,2019,181.5,Visible,Labaronne-Gattières,1,10.5
+6,paris - nice,2020,161.5,Visible,Auribeauclimb,1,148.5
+6,paris - nice,2020,161.5,Visible,casaneuve,1,124.5
+6,paris - nice,2020,161.5,Visible,PointuSuddepuisroutedebonnieuxx,1,100
+6,paris - nice,2020,161.5,Visible,ClimbtoGordes,1,68.5
+6,paris - nice,2020,161.5,Visible,ColdeMurs,1,47
+6,paris - nice,2020,161.5,Visible,ChallengedelaCrémade,1,27.5
+6,paris - nice,2019,176.5,Visible,Stphilomèneofficiel,1,159
+6,paris - nice,2019,176.5,Hidden,LesHautesFourchesClimb,1,131
+6,paris - nice,2019,176.5,Visible,ColdeNansLesPins,1,114
+4,paris - nice,2019,212,Hidden,ChemindesvignesChavanay,1,201
+4,paris - nice,2019,212,Hidden,LaCaille,1,168
+4,paris - nice,2019,212,Visible,CôtedeTrèves-382m,1,152
+4,paris - nice,2019,212,Visible,ChevalRigon,1,17.5
+7,paris - nice,2017,177,Hidden,ColdelaCouilloledepuisTinéeofficiel,1,177
+7,paris - nice,2018,175,Hidden,ColdelaColmiane,1,175
+7,paris - nice,2017,177,Visible,St.MartindaBolleneVesubiefinoabivioBoreon,1,140
+7,paris - nice,2018,175,Visible,ColStRaphaëldernièrepartie,1,108
+7,paris - nice,2017,177,Visible,ColdeVencedepartetarriveeFFC,1,29.5
+7,paris - nice,2018,175,Visible,Labaronne-Gattières,1,10
+1,pollenca - andratx,2020,168.9,Hidden,MetaChallenge2020PtoAndratx,1,168.9
+1,pollenca - andratx,2020,168.9,Hidden,SaGramolanord,1,140.5
+1,pollenca - andratx,2020,168.9,Hidden,Colld'enClaret(Valldemossa),1,111
+1,pollenca - andratx,2020,168.9,Hidden,SaPedrissa-6.4km,1,105
+1,pollenca - andratx,2020,168.9,Visible,DENBLEDA(Soller)/www.pirenaica.com,1,92
+1,pollenca - andratx,2020,168.9,Visible,M167-PuigMajor,1,72.5
+1,pollenca - andratx,2020,168.9,Visible,ColdeFemenia,1,50.5
+5,presidential cycling tour of turkey,2019,164.1,Hidden,2019TourofTurkeyHCKartepe,1,164
+1,royal bernard drome classic,2019,207.8,Visible,CôtedeGrane,1,187
+1,royal bernard drome classic,2019,207.8,Visible,Coldelagrandelimite,1,169
+1,royal bernard drome classic,2019,207.8,Visible,MontéedesFaures,1,150
+1,royal bernard drome classic,2019,207.8,Visible,TestChabrillan,1,144
+4,santos tour down under,2019,129.2,Visible,SantosTourDownUnderChallenge:CorkscrewRoad,1,123
+4,santos tour down under,2019,129.2,Hidden,lightsdogs,1,6
+3,settimana internazionale coppi e bartali,2020,166.5,Visible,TwentyPeaksMontePugliano,1,116
+3,settimana internazionale coppi e bartali,2020,166.5,Hidden,MacerataFeltria-Carpegnasummit,1,80
+3,settimana internazionale coppi e bartali,2020,166.5,Visible,"MERCATINO-OSTERIACCIA""HC""",1,37
+3,settimana internazionale coppi e bartali,2020,166.5,Hidden,Montegiardinofinoalconfine,1,22.5
+1,strade bianche,2019,184,Hidden,CollePinzutoOff-RoadCote***-FlandresLove,1,167
+1,strade bianche,2019,184,Visible,StradaProvincialePieveASaltiClimb,1,94
+1,strade bianche,2019,184,Visible,SALITADIMONTALCINO-LATOBUONCONVENTOFINOROTONDA,1,66.5
+1,strade bianche,2019,184,Visible,salitabagnaiagrotti,1,30.5
+6,the larry h.miller tour of utah,2019,125.9,Hidden,WasatchMtStateParktoKOMguardsman,1,117
+6,the larry h.miller tour of utah,2019,125.9,Visible,WolfCreekKOM,1,58.5
+2,the larry h.miller tour of utah,2019,135.8,Visible,PowderMountainHillclimb,1,135.8
+2,the larry h.miller tour of utah,2019,135.8,Visible,NorthOgdenDivide,1,62
+5,tirreno-adriatico,2020,202,Hidden,Sarnano-Sassotetto,1,202
+5,tirreno-adriatico,2020,202,Visible,forcadancaranodanorcia,1,4.5
+4,tirreno-adriatico,2020,194,Hidden,Ospedalettorealclimb,1,183.5
+4,tirreno-adriatico,2020,194,Visible,CastellucciodegliEroi-ForcadiGualdo,1,144.5
+4,tirreno-adriatico,2019,221,Visible,corciatoiapermonteguiduccioGV,1,183.5
+4,tirreno-adriatico,2019,221,Visible,Pianacartoceto-IniziodiscesaBargni,1,161.5
+4,tirreno-adriatico,2019,221,Visible,villadelmontebyG.V.,1,127.5
+4,tirreno-adriatico,2019,221,Visible,santippolitoclimbtirreno19,1,122
+4,tirreno-adriatico,2019,221,Visible,Acqualagna/SanGregorio,1,93
+4,tirreno-adriatico,2019,221,Visible,Noceraumbraclimb,1,20
+3,tirreno-adriatico,2019,226,Visible,StradaProvinciale40/SP40toLaFoce,1,122.5
+3,tirreno-adriatico,2019,226,Visible,SalitaSanQuirico-Cassia,1,102
+3,tirreno-adriatico,2019,226,Visible,Torrenieri,1,94
+3,tirreno-adriatico,2019,226,Visible,PassodelRospatoio,1,67.5
+3,tirreno-adriatico,2019,226,Visible,SanDamazioPaoloBi,1,6.5
+2,tirreno-adriatico,2020,201,Visible,CannetodaLaGabellaPaoloBi,1,137
+2,tirreno-adriatico,2020,201,Hidden,Pomaia-CastellinadafineponteafinesalitaSCE,1,97.5
+2,tirreno-adriatico,2020,201,Visible,Montemagno,1,5
+2,tirreno-adriatico,2019,195,Visible,SerrazzanoPaoloBi,1,148
+2,tirreno-adriatico,2019,195,Hidden,SalitaCastellina,1,98
+2,tirreno-adriatico,2019,195,Visible,Montemagno,1,4.5
+6,tour colombia 2.1,2020,182.6,Visible,CircunvalardesvíoVíaChoachí-Tienda,1,182.6
+6,tour colombia 2.1,2020,182.6,Visible,Rioteusaca-Patios,1,156
+6,tour colombia 2.1,2020,182.6,Visible,AREPAS,1,144.5
+6,tour colombia 2.1,2020,182.6,Visible,AltodelSisga,1,60.5
+19,tour de france,2020,166.5,Hidden,CôtedeChâteau-Chalon(long),1,82
+18,tour de france,2020,175,Hidden,ColdesFleuries(Thorens-Complète),1,165
+18,tour de france,2020,175,Hidden,Cascadecoldesaravis,1,117.5
+18,tour de france,2020,175,Visible,Cormet-de-RoselandNo68GreatestTDFClimbs,1,45.5
+17,tour de france,2020,170,Hidden,ColdelaLoze-LaFlammeRougeverified,1,170
+17,tour de france,2020,170,Hidden,Madelenine(BarrierinMay)ViaD76,1,107.5
+16,tour de france,2020,164,Visible,montéedeSt-Nizier-du-Moucherotte,1,143
+16,tour de france,2020,164,Hidden,Revel,1,95.5
+16,tour de france,2020,164,Visible,EntréeColdePorte(D57D)depuisStPierre(LaDiat),1,66.5
+16,tour de france,2020,164,Visible,C�te2000auboutduparking,1,164
+15,tour de france,2020,174.5,Visible,GrandColombier,1,174.5
+15,tour de france,2020,174.5,Hidden,ColdelaBiche-LaFlammeRougeverified,1,129
+15,tour de france,2020,174.5,Visible,MontéedelaSelledeFromentel,1,110.5
+15,tour de france,2019,185,Visible,Pratd'Albis-TourdeFrance,1,185
+15,tour de france,2019,185,Visible,Portdel'Hers(East),1,120
+15,tour de france,2019,185,Visible,Fougax-Montsegur,1,59.5
+14,tour de france,2020,194,Hidden,LeBrugeroncimetière-PasdeLaCroix,1,68
+14,tour de france,2019,111,Visible,Tourmalet,1,111
+14,tour de france,2019,111,Hidden,ColduSoulordepuisFerrières,1,54
+13,tour de france,2020,191.5,Visible,PasdePeyrol(PuyMary),1,191.5
+13,tour de france,2020,191.5,Visible,ColdeNéronne,1,180.5
+13,tour de france,2020,191.5,Visible,ColduGuéry-Orcival/Sommet,1,63
+13,tour de france,2020,191.5,Visible,ColdeCeyssatcompletbyOutdoorview.fr,1,35.5
+12,tour de france,2020,218,Visible,AscensionSucauMay(complet),1,192
+12,tour de france,2020,218,Visible,ColdeLestards-montéeseule,1,177.5
+12,tour de france,2020,218,Visible,LaCôted'Eybouleuf,1,121
+9,tour de france,2020,153,Hidden,"Last7.7Km,MarieBlanque,TdF",1,135.5
+9,tour de france,2020,153,Hidden,ICHERE(Lourdios)/www.pirenaica.com,1,115.5
+9,tour de france,2020,153,Visible,ColIssarbe,1,69
+8,tour de france,2020,141,Visible,PeyresourdedepuisBalés,1,130
+8,tour de france,2020,141,Hidden,Pontrivièreauportdebales,1,104.5
+8,tour de france,2020,141,Visible,ColdeMentérealclimb,1,59
+8,tour de france,2019,200,Visible,MontéeSteFoy-Aveize,1,148.5
+8,tour de france,2019,200,Visible,CôtedesAvergues,1,133
+8,tour de france,2019,200,Visible,035CôtedelaCroixdeSigny#100cols,1,97
+8,tour de france,2019,200,Visible,CrxdeThel,1,71.5
+8,tour de france,2019,200,Visible,ColdelaCroixMontmain,1,51
+7,tour de france,2020,168,Hidden,ColdePeyronnenc(myCols.app),1,73
+7,tour de france,2020,168,Visible,CôtedeLuzençon,1,8.5
+6,tour de france,2020,191,Hidden,ColdelaLusette,1,177.5
+6,tour de france,2019,160.5,Hidden,LaPlanchedesBellesFilles(inclSuperPlanche),1,160.5
+6,tour de france,2019,160.5,Visible,ColdeChevreresTour2019,1,141.5
+6,tour de france,2019,160.5,Visible,ColdesCroixparLeThillot,1,123
+6,tour de france,2019,160.5,Visible,Lacd'Alfeld-Ballond'Alsace,1,104.5
+6,tour de france,2019,160.5,Visible,ColduHundsrückFullClimb,1,74
+6,tour de france,2019,160.5,Hidden,Kneuzenkoers2017:LeGrandBallon,1,50
+5,tour de france,2019,175.5,Visible,Montée5chateauxparStGilles,1,155.5
+5,tour de france,2019,175.5,Visible,Golftroisépis,1,140
+5,tour de france,2019,175.5,Visible,#Kientzheim-RestaurantHK,1,109
+5,tour de france,2019,175.5,Visible,CôtedeGrendelbruchTDF2019,1,44
+4,tour de france,2020,160.5,Hidden,LesGarnauds-Merlette,1,160.5
+4,tour de france,2020,160.5,Visible,ColduFestrepanneau,1,67.5
+3,tour de france,2019,215,Visible,nicolasfeuillatte/bernonparlesvignesTDF2019,1,211
+3,tour de france,2019,215,Visible,côtedeMutigny,1,199
+3,tour de france,2019,215,Visible,Bellevue,1,190
+3,tour de france,2019,215,Visible,Cumierestovineyardpathatviewpoint,1,185.5
+3,tour de france,2019,215,Visible,BossedeNanteuil,1,172.5
+3,tour de france,2019,215,Visible,BossedeSermiers,1,166.5
+2,tour de france,2020,185,Hidden,coldes4chemins,1,178
+2,tour de france,2020,185,Hidden,Cold'Eze7.8km,1,154
+2,tour de france,2020,185,Visible,ColdeTurini,1,100
+2,tour de france,2020,185,Hidden,EB-France-06-ColStMartin(Ouest),1,63.5
+9,tour de france,2017,181.5,Hidden,coldeberantindernierkm,1,10
+17,tour de france,2018,65,Hidden,Peyresourdefullclimb,1,14.5
+11,tour de france,2018,108.5,Hidden,MontéedeBisanne,1,25.5
+17,tour de france,2017,183,Hidden,Cold'Ornon(LePerrier)JL,1,30
+13,tour de france,2017,101,Hidden,096ColdeLatrape#100cols,1,31
+15,tour de france,2017,189.5,Hidden,MontéedeNaves,1,31
+17,tour de france,2018,65,Hidden,Colvallouronazet,1,36
+10,tour de france,2018,158.5,Hidden,colCroixFry-Manigod,1,42.5
+15,tour de france,2017,189.5,Visible,CôtedeVieurals,1,44.5
+13,tour de france,2017,101,Hidden,097Cold'Agnes#100cols,1,46
+12,tour de france,2018,175.5,Hidden,ColdelaMadaleine,1,52.5
+11,tour de france,2018,108.5,Hidden,ColdePré(fromBeaufort),1,57
+17,tour de france,2018,65,Hidden,ColdePortetfromSaint-Lary16km,1,65
+9,tour de france,2017,181.5,Hidden,coldelabiche,1,67.5
+10,tour de france,2018,158.5,Hidden,ColdesGlieres,1,68
+11,tour de france,2018,108.5,Hidden,6kmcormetderoselend,1,70
+13,tour de france,2017,101,Hidden,MassattoColdePeguere,1,74
+17,tour de france,2017,183,Hidden,AllemondtoColduCroixdeFer,1,77.5
+19,tour de france,2018,200.5,Hidden,Aspin,1,77.5
+10,tour de france,2018,158.5,Hidden,ColdesFleuries,1,89.5
+9,tour de france,2017,181.5,Hidden,D120Cclimb-ColduGrandColombier,1,90.5
+8,tour de france,2017,187.5,Hidden,ColdelaJouxdeSaint-Maurice,1,102
+19,tour de france,2018,200.5,Hidden,Coldutourmalet,1,107.5
+11,tour de france,2018,108.5,Hidden,CLMLarosiere,1,108
+12,tour de france,2017,214.5,Hidden,Coldesares,1,112
+12,tour de france,2018,175.5,Hidden,ColdelaCroixdeFer(OfficialTimtootimetrial/StJeandeMaurienne),1,121
+18,tour de france,2017,179.5,Hidden,ColdeVars(depuisStPaul),1,128.5
+14,tour de france,2018,188,Visible,ColdelaCroixdeBerthel,1,129
+10,tour de france,2018,158.5,Hidden,ColDeRomme-DuPanneau9Kmausommet,1,129.5
+17,tour de france,2017,183,Hidden,[Salita]SaintMicheldeMaurienne-Telegraphe(Ponteautostrada-Cartellodelcolle),1,132
+9,tour de france,2017,181.5,Hidden,lacetsdeJongieux,1,134
+8,tour de france,2017,187.5,Visible,CotedeViryparMolinges,1,139.5
+12,tour de france,2017,214.5,Hidden,ColdeMente,1,140
+14,tour de france,2018,188,Hidden,Coldupontsanseau,1,141.5
+10,tour de france,2018,158.5,Hidden,ColdelaColombiereARCC2016,1,143.5
+9,tour de france,2017,181.5,Hidden,MontduChatsud,1,154.5
+16,tour de france,2018,218,Visible,ColdePortetd'Aspet(StLary),1,154.5
+17,tour de france,2017,183,Hidden,*LeGalibier(départValloire),1,155
+19,tour de france,2018,200.5,Visible,ColduBorderesfromturnoff,1,158.5
+15,tour de france,2017,189.5,Hidden,coldepeyrataillade,1,159.5
+5,tour de france,2017,160.5,Hidden,LaPlanchedesBellesFilles-Full,1,160.5
+16,tour de france,2018,218,Hidden,coldeMenté(EST),1,170.5
+19,tour de france,2018,200.5,Hidden,Arrens-ColduSoulor,1,170.5
+12,tour de france,2018,175.5,Hidden,ACTUALALPD'HUEZ,1,175.5
+18,tour de france,2017,179.5,Hidden,Cold'Izoard,1,179.5
+19,tour de france,2018,200.5,Hidden,Cold'AubisqueEast(FromSoulour),1,180
+8,tour de france,2017,187.5,Hidden,MontéedeLaisiaTDF,1,181
+12,tour de france,2017,214.5,Hidden,LaVueltaPortdeBales-Full,1,185
+14,tour de france,2018,188,Hidden,Mende-MontéeLaurentJalabert,1,187
+16,tour de france,2018,218,Hidden,ColduPortillon,1,207.5
+12,tour de france,2017,214.5,Hidden,ColdePeyresourde,1,210
+4,tour de la provence,2020,170.5,Visible,MontéedeLaCride,1,154.5
+4,tour de la provence,2020,170.5,Visible,Ceresteofficial,1,96.5
+4,tour de la provence,2020,170.5,Hidden,RustrelontheroutetoViens,1,74
+4,tour de la provence,2020,170.5,Visible,ColdesTroisTermes-South,1,31
+3,tour de la provence,2020,140.2,Visible,SteEstève-ChaletReynard,1,140.2
+3,tour de la provence,2020,140.2,Hidden,GordestoSenanquecutoff,1,99
+3,tour de la provence,2020,140.2,Hidden,MontéedeBonnieuxSudOfficielle,1,71.5
+2,tour de la provence,2020,174.9,Hidden,GPMRoutedesCrêtes,1,174.9
+2,tour de la provence,2020,174.9,Visible,LeBrûlat,1,153
+2,tour de la provence,2020,174.9,Hidden,MontéedeLaCoutronneparAuriol,1,53.5
+2,tour de la provence,2020,174.9,Visible,colespigoulierpargémenos,1,10
+3,tour de l'ain,2020,144.5,Visible,GrandColombier,1,144.5
+3,tour de l'ain,2020,144.5,Hidden,ColdeBiche(Bernaz),1,97.5
+3,tour de l'ain,2020,144.5,Visible,MontéedelaSelledeFromentel,1,80
+3,tour de l'ain,2019,118.9,Hidden,GrandColombierTourAin2019,1,118.9
+3,tour de l'ain,2019,118.9,Visible,ColCorlier,1,44.5
+2,tour de l'ain,2020,140.5,Hidden,ColdeMenthièresparConfort,1,118.5
+2,tour de l'ain,2020,140.5,Hidden,CroisementàsortieboisGiron,1,93
+2,tour de l'ain,2020,140.5,Visible,cuvilliatparchampdor,1,54
+2,tour de l'ain,2020,140.5,Hidden,ColdeMontgriffon(depuisl'Abergement),1,29.5
+2,tour de l'ain,2019,123.9,Visible,Mijouxcentre-douanedelaFaucille,1,124
+2,tour de l'ain,2019,123.9,Hidden,ColdeMenthières,1,85.5
+2,tour de l'ain,2019,123.9,Hidden,CotedeGiron,1,60
+2,tour de l'ain,2019,123.9,Visible,D25Climb,1,41
+4,tour de romandie,2019,107.6,Visible,Vionnaz-Torgon(TDR2019),1,105.5
+4,tour de romandie,2019,107.6,Visible,AscensionPrévonloup,1,27
+2,tour de romandie,2019,174.4,Visible,RomainmotiertoColduMollendruz,1,98
+1,tour de romandie,2019,168.4,Visible,LaTourne2Climb,1,143
+1,tour de romandie,2019,168.4,Visible,ColdelaVue-des-Alpes,1,122.5
+1,tour de romandie,2019,168.4,Visible,CôteRosièreACF,1,89.5
+1,tour de romandie,2019,168.4,Visible,CheminDesRâpesClimb,1,36.5
+1,tour de romandie,2019,168.4,Visible,Bonvillars-Fontanezier,1,29
+9,tour de suisse,2019,101.5,Visible,FurkapassClimb,1,75
+9,tour de suisse,2019,101.5,Visible,SaintGotthard-Tremola,1,49
+9,tour de suisse,2019,101.5,Visible,Nufenen-PassWest,1,13
+7,tour de suisse,2019,216.6,Visible,SaintGotthard-Tremola,1,216.6
+7,tour de suisse,2019,216.6,Visible,Lucomagno-dopogalleria,1,126
+7,tour de suisse,2019,216.6,Visible,Tamins-Flims,1,68
+6,tour de suisse,2019,120.2,Hidden,Flums-Tannenheim,1,120.2
+6,tour de suisse,2019,120.2,Visible,Unterwasser-Wildhaus(Tortourclimb),1,72.5
+6,tour de suisse,2019,120.2,Visible,RickenvollSchnapps,1,37.5
+7,tour de suisse,2018,170,Hidden,Chur--Arosa,1,170
+5,tour de suisse,2018,155,Hidden,Leukerbadclimb,1,155
+6,tour de suisse,2018,186,Hidden,Klausenpass(Altdorf-Klausenpass),1,118
+5,tour de suisse,2018,155,Hidden,Crans-Montana_MontéeSteveMorabito1,1,116
+6,tour de suisse,2018,186,Hidden,Oberwald-Furkapass,1,39
+5,tour de suisse,2018,155,Hidden,ColduPillon-full,1,16
+6,tour de suisse,2017,166.7,Hidden,AlbulapassfromBergun,1,158
+4,tour de suisse,2017,143.2,Visible,Ollon-Villars,1,143
+5,tour de suisse,2017,222,Hidden,Simplonpas:Brig-autobahn,1,120
+4,tour de suisse,2017,143.2,Hidden,LechMosses,1,109
+6,tour de suisse,2017,166.7,Hidden,Lostallo-PassoSanBernardino,1,66.5
+4,tour de yorkshire,2019,175,Hidden,CockshotlaneClimb,1,169.5
+4,tour de yorkshire,2019,175,Hidden,TinshillLaneHillSprint,1,162
+4,tour de yorkshire,2019,175,Visible,EastChevinRoadOtley,1,154
+4,tour de yorkshire,2019,175,Visible,Greenhow,1,127.5
+4,tour de yorkshire,2019,175,Visible,ParkRashHC,1,66.5
+4,tour de yorkshire,2019,175,Hidden,BardenRdClimb,1,39
+4,tour de yorkshire,2019,175,Hidden,GooseEyetoXRoads,1,21.5
+3,tour des alpes maritimes et du var,2020,136,Visible,MontFaron.,1,136
+3,tour des alpes maritimes et du var,2020,136,Visible,D62Climb,1,122.5
+3,tour des alpes maritimes et du var,2020,136,Visible,lesplainesparStAnned'Evenos,1,117.5
+3,tour des alpes maritimes et du var,2020,136,Visible,Cerfhalfclimb,1,8.5
+2,tour des alpes maritimes et du var,2020,175.7,Visible,Moyennecorniche/montéeColEze,4,175.7
+2,tour des alpes maritimes et du var,2020,175.7,Visible,MonteedePeille,1,154.5
+2,tour des alpes maritimes et du var,2020,175.7,Visible,ColduSavel(ColSaint-Roch),1,119.5
+2,tour des alpes maritimes et du var,2020,175.7,Visible,MontéeCoaraze(arrivéesouslevillage),1,104.5
+2,tour des alpes maritimes et du var,2020,175.7,Visible,ColdeChateauneuf,1,90.5
+2,tour des alpes maritimes et du var,2020,175.7,Visible,LaRoquettesurVar,1,74.5
+6,tour of oman,2019,135.5,Visible,AlJissahClimb-Full,1,99.5
+6,tour of oman,2019,135.5,Visible,HamriyaHillandthensome,1,83
+2,tour of oman,2019,156.5,Visible,AlJissahClimb-Full,1,157
+2,tour of oman,2019,156.5,Visible,HamriyaHillandthensome,1,139.5
+2,tour of oman,2019,156.5,Visible,ClimbofBousherAlamrat,1,110.5
+2,tour of oman,2019,156.5,Visible,Segment,1,51
+4,tour of slovenia,2019,153.9,Visible,PredmejaOfficial,1,130
+4,tour of slovenia,2019,153.9,Visible,stanjel,1,94.5
+4,tour of slovenia,2019,153.9,Visible,ZRencnaKras,1,69.5
+4,tour of slovenia,2019,153.9,Visible,PLAVEMOSTŽELEZNICA-VRHULJEODCEPKORADA,1,27.5
+3,tour of slovenia,2019,169.8,Hidden,Idrija-Doleclimb,1,149
+3,tour of slovenia,2019,169.8,Visible,MedvedjeBrdovzpon,1,129
+3,tour of slovenia,2019,169.8,Visible,VranskoClimb,1,27.5
+2,tour of slovenia,2019,146.3,Visible,Kompole(bus)-Svetina(bus),1,123
+2,tour of slovenia,2019,146.3,Visible,BezinaClimb,1,44.5
+2,tour of slovenia,2019,146.3,Visible,Volcnica-Tinje,1,26.5
+1,tour of slovenia,2019,171,Hidden,CestanaGradClimb,1,142
+1,tour of slovenia,2019,171,Hidden,GolobinjekPriPlanini10Climb,1,112.5
+1,tour of slovenia,2019,171,Visible,TrebeljevoizBesnice,1,16.5
+1,tour of slovenia,2019,171,Visible,Pecar,1,5.5
+4,tour of the alps,2019,134,Visible,Tuenetto-PassoPredaia,1,115
+4,tour of the alps,2019,134,Hidden,Forcella,1,73
+4,tour of the alps,2019,134,Visible,Crescino-Campodenno,1,38.5
+3,tour of the alps,2019,106.3,Visible,MONTAGNAGAdaPergine,1,101.5
+3,tour of the alps,2019,106.3,Visible,lagodisantacolomba,1,79.5
+3,tour of the alps,2019,106.3,Visible,bivioValcava-Brusago,1,54.5
+3,tour of the alps,2019,106.3,Visible,Lavis-PalùdiGiovo,1,23.5
+2,tour of the alps,2019,178.7,Visible,JaufenpassOFFICIAL-fromsigntosign,1,134
+2,tour of the alps,2019,178.7,Visible,Volderwald-Tulfes(3),1,60.5
+5,tour of the alps,2017,199.6,Hidden,Lasino-Lagolouff.LN,1,144
+3,tour of the alps,2017,137.5,Hidden,Chiusa-SanPietroValdiFunes,1,137.5
+4,tour of the alps,2017,165.3,Hidden,Forcella,1,131
+5,tour of the alps,2017,199.6,Hidden,PassoSanUdalricosüdwest-qd-,1,131
+4,tour of the alps,2017,165.3,Hidden,RumodaCastelaz,1,106
+3,tour of the alps,2017,137.5,Hidden,Lüsen-Zumis,1,94
+5,tour of the alps,2017,199.6,Hidden,PassoDurone,1,76
+4,tour of the alps,2017,165.3,Hidden,50metridopobivioMaxMode-CartelloPassoMendola,1,41
+5,tour of the alps,2017,199.6,Hidden,AndalodaSpormaggiore,1,35
+3,tour of the alps,2017,137.5,Hidden,Stegen-Pfalzen,1,31
+1,trofeo andratx - lloseta,2019,172.2,Hidden,Puigto1kmbeforeend,1,104
+1,trofeo andratx - lloseta,2019,172.2,Visible,ColldenClaret(Desdecruze),1,65.5
+1,trofeo andratx - lloseta,2019,172.2,Visible,ColldesaGramola(real)MEB,1,36
+1,trofeo de tramuntana: soller - deia,2019,179.3,Hidden,colldenbleda,1,174
+1,trofeo de tramuntana: soller - deia,2019,179.3,Hidden,PUIGMAJOR(PantádeGorgBlau)/www.pirenaica.com,1,154
+1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ColdeFemenia,1,131.5
+1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,Colld'honor(real),1,65.5
+1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ClimbtoValdemossavillagesign,1,32
+1,trofeo de tramuntana: soller - deia,2019,179.3,Visible,ColldeSoller,1,11
+1,trofeo laigueglia,2019,203.7,Hidden,Olivenlundene,1,169.7
+1,trofeo laigueglia,2019,203.7,Hidden,GP-TesticodaStellanello,1,146.5
+1,"trofeo ses salines, campos, porreres, felanitx",2019,176.9,Hidden,Santsalvadorderotondamanacor,1,176.9
+6,uae tour,2019,180,Visible,JebelJaisfullhill,1,180
+3,uae tour,2019,179,Hidden,JebelHafeetBottomtoTop,1,178
+4,volta a la comunitat valenciana,2019,188,Hidden,DelpontdeferroalMasdePere,1,133
+4,volta a la comunitat valenciana,2019,188,Hidden,PortdelaSerratella-Oficial-(PerlaTorred'EnDomènec),1,66.5
+4,volta a la comunitat valenciana,2019,188,Hidden,ErmitadeSantaLucía,1,188
+4,volta a la comunitat valenciana,2019,188,Visible,LaSerratellaJB,1,138.5
+4,volta a la comunitat valenciana,2019,188,Visible,LaBanderetaperRosildos(AT),1,102.5
+4,volta a la comunitat valenciana,2019,188,Visible,PuertodeCulla(RCA),1,68
+2,volta a la comunitat valenciana,2019,166,Visible,SubidaCarrasquetadesdeVentaSanJorge,1,125
+2,volta a la comunitat valenciana,2019,166,Visible,PortdeBenillup(finsfontetapoble),1,96.5
+2,volta a la comunitat valenciana,2019,166,Visible,PuertoCanalis.Onil,1,57.5
+2,volta a la comunitat valenciana,2019,166,Visible,Subidaalmaigmó,1,24
+4,volta a la comunitat valenciana,2018,181,Visible,Alacantera,1,181
+4,volta a la comunitat valenciana,2017,180,Hidden,MasdelaCosta,1,180
+4,volta a la comunitat valenciana,2018,181,Visible,Monjes-AltdeBenillup,1,160
+4,volta a la comunitat valenciana,2017,180,Hidden,Vidrepordetrás,1,127
+4,volta a la comunitat valenciana,2018,181,Visible,BAR-ALTOCARRASQUETA,1,107
+4,volta a la comunitat valenciana,2018,181,Hidden,PUERTODETIBIDESDEBARRANCOPORFUERADELPUEBLO,1,90
+4,volta a la comunitat valenciana,2017,180,Hidden,Puertomingalvo(RCA),1,88
+4,volta a la comunitat valenciana,2018,181,Hidden,PuertodelMaigmó(JotaCycling),1,78
+4,volta a la comunitat valenciana,2017,180,Hidden,PorlaArtejuelaaZucaina(hastacoronar),1,48
+4,volta a la comunitat valenciana,2018,181,Hidden,Pto.deLaGarganta(hastaeses),1,48
+4,volta a la comunitat valenciana,2017,180,Hidden,ArenillasdesdeCaudiel,1,22
+4,volta a portugal em bicicleta edicao especial,2020,148,Visible,Covilhã-Torre,1,148
+4,volta a portugal em bicicleta edicao especial,2020,148,Hidden,Gouveia-PenhasDouradas,1,72.5
+2,volta a portugal em bicicleta edicao especial,2020,167,Visible,SenhoradaGraça(CronometragemOficial),1,167
+2,volta a portugal em bicicleta edicao especial,2020,167,Hidden,PMPBarreiro(porErmelo),1,132.5
+2,volta a portugal em bicicleta edicao especial,2020,167,Hidden,SerradoMarãoateaoaltodeespinho,1,96.5
+5,volta ao algarve em bicicleta,2019,173.5,Visible,malhao1ªparte,1,173.5
+5,volta ao algarve em bicicleta,2019,173.5,Visible,Vermelhos,1,153
+5,volta ao algarve em bicicleta,2019,173.5,Visible,SubidaMalhãoporPédoCoelho,1,131.5
+5,volta ao algarve em bicicleta,2019,173.5,Visible,BP-PicotaCLIMB,1,63.5
+2,volta ao algarve em bicicleta,2020,183.9,Visible,SerradeMonchique-Upper,1,183.9
+2,volta ao algarve em bicicleta,2020,183.9,Visible,Pombal,1,170.5
+2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidaPonteatécruzamentoAlferce(3/3),1,161.5
+2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidadoSelão,1,93.5
+2,volta ao algarve em bicicleta,2020,183.9,Visible,SubidadasEirinhas,1,49
+2,volta ao algarve em bicicleta,2019,187.4,Visible,ALGS12-Fóia(Monchique),1,187.4
+2,volta ao algarve em bicicleta,2019,187.4,Visible,Pombal,1,151
+2,volta ao algarve em bicicleta,2019,187.4,Visible,"Cansino,road",1,137
+2,volta ao algarve em bicicleta,2019,187.4,Visible,"RibeirodeBaixo,road",1,129.5
+7,volta ciclista a catalunya,2019,143.1,Visible,ColldeOrdal,1,24
+6,volta ciclista a catalunya,2019,169.1,Visible,MS-12Colld'Alforja,1,117.5
+4,volta ciclista a catalunya,2019,150.3,Hidden,Alp-LaMolina,1,150
+4,volta ciclista a catalunya,2019,150.3,Hidden,LAMOLINA(ALP),1,129
+4,volta ciclista a catalunya,2019,150.3,Hidden,COLLDELACREUETA(perMontgrony),1,94.5
+4,volta ciclista a catalunya,2019,150.3,Hidden,ColldeCanesperl'HostaldelSol,1,45
+3,volta ciclista a catalunya,2019,179,Visible,Vallter2000,1,179
+3,volta ciclista a catalunya,2019,179,Visible,Beget-Rocabruna,1,145
+3,volta ciclista a catalunya,2019,179,Visible,Oix-ColldePera,1,127.5
+3,volta ciclista a catalunya,2019,179,Hidden,AltdelaGanga,1,17.5
+2,volta ciclista a catalunya,2019,166.7,Visible,RomanyàCurt(FontPicantaCruïllaSt.Miqueld´Aro),1,142.5
+2,volta ciclista a catalunya,2019,166.7,Visible,SantaPellaiadesdeCassa,1,77.5
+2,volta ciclista a catalunya,2019,166.7,Visible,CanBordoiser-po,1,12
+1,volta ciclista a catalunya,2019,163.7,Visible,CollformicperelPinós,1,107
+1,volta ciclista a catalunya,2019,163.7,Hidden,StaFedelMontseny(StCeloni),1,48.5
+1,volta ciclista a catalunya,2019,163.7,Visible,del'autopistad'arenysdemaracollsacreu.,1,13.5
+5,volta ciclista a catalunya,2018,212.9,Visible,SenteradaaPerves,1,154
+3,volta ciclista a catalunya,2018,153.2,Hidden,SantPere<>colldeBracons,1,102
+5,volta ciclista a catalunya,2018,212.9,Hidden,PortdelCantò,1,84
+3,volta ciclista a catalunya,2018,153.2,Visible,CaldesdeMontbui-DesviamentCentelles,1,30
+5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Visible,ValledelaVidaPlus,1,134
+5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,AltoCanteraporzafarraya,1,73.5
+5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,NAVAZOKLIMB,1,50.5
+5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Hidden,SubidaBermejalesdirecciónAlhama,1,37.5
+5,vuelta a andalucia ruta ciclista del sol,2019,163.9,Visible,VENTAS-AGRÓN,1,25.5
+4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,Purchecompleto,1,107.5
+4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,PuertodeHuetorSantillan,1,57.5
+4,vuelta a andalucia ruta ciclista del sol,2020,125,Visible,SubidadeNivar,1,53
+4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,Hazallanas,1,94.5
+4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,CruceGüejar-Camping,1,84.5
+4,vuelta a andalucia ruta ciclista del sol,2019,119.9,Visible,Purchecompleto,1,49.5
+2,vuelta a andalucia ruta ciclista del sol,2019,216.5,Hidden,A-306Climb,1,216.5
+2,vuelta a andalucia ruta ciclista del sol,2019,216.5,Hidden,AltoPorcunaporA-306,1,193
+1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Hidden,CarreteraDeAlcaláDeLosGazulesClimb,1,170.5
+1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Visible,CA-6105alapuntadelPrado,1,100
+1,vuelta a andalucia ruta ciclista del sol,2019,170.5,Visible,"TramoLibre""LaArqueña""(hastanaves)",1,78
+1,vuelta a andalucia ruta ciclista del sol,2018,197.6,Hidden,LaMalahá.,1,178
+2,vuelta a andalucia ruta ciclista del sol,2017,177.9,Hidden,SUBIDADESDELASPILASALCRUCEDELAPEÑADELAGUILA,1,177.9
+2,vuelta a andalucia ruta ciclista del sol,2017,177.9,Hidden,SubidaTorresaLaMancha,1,166
+1,vuelta a andalucia ruta ciclista del sol,2018,197.6,Hidden,LucerohastadondeterminadesufrirSusiBSQ,1,157
+1,vuelta a andalucia ruta ciclista del sol,2018,197.6,Visible,PuenteAlhama-CruceAltoCruzdeCalvo,1,145
+2,vuelta a andalucia ruta ciclista del sol,2018,140,Hidden,allanadadelsanto,1,140
+1,vuelta a andalucia ruta ciclista del sol,2017,155.4,Hidden,Monachil-ElPurche_Jlg,1,136
+2,vuelta a andalucia ruta ciclista del sol,2017,177.9,Visible,Puerto7pilillas,1,135
+1,vuelta a andalucia ruta ciclista del sol,2018,197.6,Hidden,PicodeZafarraya,1,117
+2,vuelta a andalucia ruta ciclista del sol,2018,140,Hidden,PuertodeLocubín,1,88
+1,vuelta a andalucia ruta ciclista del sol,2017,155.4,Hidden,ElLucero.,1,83
+1,vuelta a andalucia ruta ciclista del sol,2017,155.4,Hidden,PicodeZafarraya,1,44
+2,vuelta a andalucia ruta ciclista del sol,2018,140,Visible,SubidaPuertoLope,1,40
+2,vuelta a andalucia ruta ciclista del sol,2017,177.9,Visible,PuertodelaFuensanta,1,29
+1,vuelta a andalucia ruta ciclista del sol,2018,197.6,Hidden,FuengirolaMijas,1,9
+5,vuelta a burgos,2020,158,Hidden,AltodeQuintanar-LagunasdeNeila.,1,158
+5,vuelta a burgos,2020,158,Visible,ColladadeVilviestre,1,134
+5,vuelta a burgos,2020,158,Hidden,PUERTOELCERRRO-HUERTADEREY,1,102.5
+5,vuelta a burgos,2019,146,Visible,LagunasdeNeiladesdeQuintanardelaSierraporserrería,1,146
+5,vuelta a burgos,2019,146,Visible,ColladadeVilviestre,1,121.5
+5,vuelta a burgos,2019,146,Hidden,PUERTOELCERRRO-HUERTADEREY,1,90
+3,vuelta a burgos,2020,150,Visible,PicónBlancodesdeSupermercadoSumahastasegundazonasinasfaltar,1,150
+3,vuelta a burgos,2020,150,Visible,Retuertaporvariante,1,121.5
+3,vuelta a burgos,2020,150,Visible,BeiconAILANES,1,64
+3,vuelta a burgos,2020,150,Hidden,ESCALADAPESQUERA,1,39
+3,vuelta a burgos,2020,150,Hidden,QuintanillaEscalada-AltodelaMota,1,19.5
+3,vuelta a burgos,2019,150,Hidden,PicónBlancodesdefinpuebloametavuelta,1,150
+3,vuelta a burgos,2019,150,Visible,Retuertaporvariante,1,122.5
+3,vuelta a burgos,2019,150,Visible,BeiconAILANES,1,63.5
+3,vuelta a burgos,2019,150,Hidden,AilanesClimb,1,43.5
+3,vuelta a burgos,2019,150,Hidden,ElEscalerón,1,38.5
+3,vuelta a burgos,2019,150,Hidden,LaMota(PM),1,19.5
+3,vuelta a burgos,2017,173,Hidden,PicónBlancoCOMPLETO,1,173
+3,vuelta a burgos,2017,173,Visible,Retuertaporvariante,1,146
+5,vuelta a burgos,2018,141,Hidden,LagunasdeNeiladesdeQuintanardelaSierra,1,141
+5,vuelta a burgos,2017,136,Hidden,LagunasdeNeiladesdeQuintanardelaSierra,1,136
+3,vuelta a burgos,2017,173,Hidden,BeiconLASHOYAS,1,122
+5,vuelta a burgos,2018,141,Visible,ColladadeVilviestre,1,118
+5,vuelta a burgos,2017,136,Visible,ColladadeVilviestre,1,115
+3,vuelta a burgos,2017,173,Hidden,AilanesClimb,1,106
+5,vuelta a burgos,2018,141,Hidden,Fuente-SubidaCerro,1,86
+5,vuelta a burgos,2017,136,Hidden,Fuente-SubidaCerro,1,85
+3,vuelta a burgos,2017,173,Hidden,ElEscalerón,1,80
+3,vuelta a burgos,2017,173,Hidden,LaMazorrahastadesvíoaantenas,1,52
+3,vuelta a castilla y leon,2019,151.8,Hidden,SUBIDAAONAMIODESDEINICIODELALE-159/7,1,97.5
+3,vuelta a castilla y leon,2019,151.8,Hidden,RutaMaragata-SubidaaFoncebadón,1,72.5
+1,vuelta a castilla y leon,2019,181,Visible,ALTOTERO,1,98.5
+1,vuelta a castilla y leon,2019,181,Visible,VALMALA,1,20.5
+2,vuelta a castilla y leon,2017,166.4,Hidden,SUBIDAALACAMPERONABENITANDEM,1,166
+2,vuelta a castilla y leon,2017,166.4,Hidden,PuertodePanderruedadesdecruceSotoValdeón,1,73
+2,vuelta a castilla y leon,2017,166.4,Hidden,Pandetrave(delosChoposalMirador),1,54
+5,vuelta a espana,2017,157.7,Hidden,CollduCabanes,1,5.5
+5,vuelta a espana,2017,157.7,Hidden,DESIERTODELASPALMAS.,1,23.5
+3,vuelta a espana,2017,158.5,Visible,MontLouis,1,32.5
+15,vuelta a espana,2017,129,Hidden,HazaLlanas,1,72.5
+5,vuelta a espana,2017,157.7,Hidden,BanderetaporRosildos,1,88
+14,vuelta a espana,2017,175,Hidden,ElMojon(oeste),1,88
+12,vuelta a espana,2017,160.1,Hidden,PuertodelLeónVuelta2017,1,106
+15,vuelta a espana,2017,129,Hidden,AltodeMonachil,1,107.5
+17,vuelta a espana,2017,180.5,Hidden,Lunada(Espinosa),1,108
+18,vuelta a espana,2017,169,Hidden,Carmona(SegmentoOficial),1,109.5
+8,vuelta a espana,2017,199.5,Hidden,"PuertoBiar,desdecruceBanyereshastacartelPuertodeMontaña.",1,114
+5,vuelta a espana,2017,157.7,Hidden,BPGallos5.SubidalaSerratella,1,124.5
+18,vuelta a espana,2017,169,Hidden,EWQRSOPColladodeOzalba(porPuentenansa),1,126
+8,vuelta a espana,2017,199.5,Visible,VentetaelsCuernos(perOnil),1,128
+15,vuelta a espana,2017,129,Hidden,"SierraNevada,Vuelta2017",1,129
+3,vuelta a espana,2017,158.5,Hidden,larabassa,1,131.5
+18,vuelta a espana,2017,169,Hidden,ColladodeHoz,1,140
+12,vuelta a espana,2017,160.1,Visible,PuertoTorcal,1,145
+14,vuelta a espana,2017,175,Hidden,"TramoLibre""MarchaAlcalálaReal2014""",1,154
+3,vuelta a espana,2017,158.5,Hidden,AltdelaComella,1,156
+5,vuelta a espana,2017,157.7,Hidden,Valencia2019Finish-VeloViewer,1,157.5
+11,vuelta a espana,2017,187.5,Hidden,AltodeVelefique,1,157.5
+17,vuelta a espana,2017,180.5,Hidden,Alisas(LaCavada),1,163.5
+18,vuelta a espana,2017,169,Visible,SanToribioParc,1,169
+14,vuelta a espana,2017,175,Hidden,LaPandera>>CC,1,175
+17,vuelta a espana,2017,180.5,Hidden,LosMachucos/MonumentoVacaPasiega,1,180
+11,vuelta a espana,2017,187.5,Hidden,"Bacares,MetaVuelta2017",1,187.5
+8,vuelta a espana,2017,199.5,Hidden,ElXorretdeCatí(RCA),1,198
+5,vuelta a san juan internacional,2019,169.5,Visible,SanjuanColoradoClimb,1,169.5
+4,vuelta al pais vasco,2017,174.1,Hidden,Vivero(porlaCoca-Cola),1,160
+3,vuelta al pais vasco,2017,160.5,Hidden,Igeldo(Orio),1,150
+5,vuelta al pais vasco,2017,139.8,Hidden,UsartzaMatsariatik,1,138
+3,vuelta al pais vasco,2017,160.5,Hidden,Andazarrate,1,125
+5,vuelta al pais vasco,2017,139.8,Hidden,Urkaregi(Bizkaia/Gipuzkoa),1,121
+3,vuelta al pais vasco,2017,160.5,Visible,ALKIZAIGOERA(Anoeta),1,114
+4,vuelta al pais vasco,2017,174.1,Hidden,PuertodeSollubedesdeBermeo,1,110
+5,vuelta al pais vasco,2017,139.8,Hidden,AltoIxua,1,106
+3,vuelta al pais vasco,2017,160.5,Visible,Santaageda,1,95
+5,vuelta al pais vasco,2017,139.8,Hidden,TrabakuaUP,1,92
+3,vuelta al pais vasco,2017,160.5,Visible,Mandubiazubitik,1,76
+3,vuelta al pais vasco,2017,160.5,Visible,Udana,1,50
+5,vuelta al pais vasco,2017,139.8,Hidden,ELGETA(Elorrio),1,45
+2,vuelta aragon,2019,186.2,Visible,SantaCruz-SanJuandelaPeña,1,134
+2,vuelta ciclista a la region de murcia,2020,179.6,Visible,Gebas,1,142
+2,vuelta ciclista a la region de murcia,2020,179.6,Visible,ColladoBermejo(Sur),1,119
+2,vuelta ciclista a la region de murcia,2020,179.6,Visible,TankstationSiërraEspuna,1,72.5
+1,vuelta ciclista a la region de murcia,2020,177.6,Visible,+++PuertoQuipar+++,1,140.5
+1,vuelta ciclista a la region de murcia,2020,177.6,Hidden,PuertoFríoPremioSierradelaPila,1,82.5
+1,vuelta ciclista a la region de murcia,2020,177.6,Visible,Fortuna-LaGarapacha,1,75.5
+1,vuelta ciclista a la region de murcia,2020,177.6,Visible,CabezodelaPlata(Sur),1,24
+2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Visible,CrestadelGallo(SanJoséhastaelcruce),1,166.5
+2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Visible,ColladoBermejo(Sur),1,102
+2,vuelta ciclista a la region de murcia costa calida,2019,180.3,Hidden,subidaTotanaaLaSanta,1,90.5
+2,vuelta ciclista comunidad de madrid,2019,163,Visible,SubidaalEncinarhastasegundaentrada,1,141.5
+2,vuelta ciclista comunidad de madrid,2019,163,Visible,MPto.RobledondodesdePeguerinos,1,78.5
+2,vuelta ciclista comunidad de madrid,2019,163,Visible,EWQR213SubidaHoyoStaMariadelaAlameda(Cota5),1,68
+2,vuelta ciclista comunidad de madrid,2019,163,Visible,"SUBIDA""LAESCONDIDA""(VALDEMAQUEDA-LASNAVASDELMARQUES)",1,56.5
+1,vuelta ciclista comunidad de madrid,2019,161,Visible,subidagasolineraChinchón,1,134
+1,vuelta ciclista comunidad de madrid,2019,161,Visible,TorresBlando,1,92.5
+1,vuelta ciclista comunidad de madrid,2019,161,Hidden,SubidadesdeValdilechahaciaPozuelodelRey,1,54
+1,vuelta ciclista comunidad de madrid,2019,161,Hidden,subidaalMolinoAldehuelahastaelP.M.,1,25
+1,liege - bastogne - liege,2017,258,Hidden,Côted'ans,1,258
+1,liege - bastogne - liege,2017,258,Hidden,SaintNicolas,1,252.5
+1,liege - bastogne - liege,2017,258,Hidden,LaRocheauxFauconsLBLparAvenueEglise,1,239
+1,liege - bastogne - liege,2017,258,Hidden,803.CôtedelaRedoute,1,223
+4,tirreno-adriatico,2018,219,Hidden,Sarnano-Sassotettoincr.SP120,1,219
+1,liege - bastogne - liege,2017,258,Hidden,ColduMaquisard,1,211
+4,presidential cycling tour of turkey,2018,206.9,Hidden,MeryemAnaHeykelsonrasi,1,207
+3,la route d'occitanie,2018,198.4,Hidden,Montd'OlmesFullChallenge,1,198
+1,liege - bastogne - liege,2017,258,Hidden,ColleRosier,1,198
+6,paris - nice,2018,198,Visible,LaColle->LaBoundo,1,190
+3,la route d'occitanie,2018,198.4,Hidden,ColdeMontségur,1,181
+1,liege - bastogne - liege,2017,258,Hidden,FermedeLibert,1,180
+2,int. osterreich-rundfahrt-tour of austria,2018,181.5,Hidden,Schonbergclimb,1,177
+1,liege - bastogne - liege,2017,258,Hidden,Bellevauxomhoog,1,172
+1,tour de romandie,2017,173.3,Visible,Monthey-Champéry,1,172
+4,tirreno-adriatico,2017,171,Hidden,cronoterminillo(vazia-campoforogna),1,171
+4,tirreno-adriatico,2018,219,Visible,saline-penna,1,171
+4,tour de romandie,2017,163.5,Hidden,LeSepey-LowerSporting(Leysin)Climb,1,162
+6,paris - nice,2018,198,Hidden,MonteeGourdondeRoutedeCipierecoteNord,1,160
+2,amgen tour of california,2018,157,Hidden,ALLCLIMBCALIFORNIA2018,1,157
+2,int. osterreich-rundfahrt-tour of austria,2018,181.5,Hidden,Axams,1,156
+4,tirreno-adriatico,2017,171,Visible,CastelfrancodaRieti,1,152
+4,tirreno-adriatico,2018,219,Hidden,xXSaline-BivioperGualdoXx,1,151
+6,paris - nice,2018,198,Hidden,MontéedeCipières,1,149
+4,tour de romandie,2017,163.5,Hidden,ColduPillon-full,1,144
+4,tirreno-adriatico,2018,219,Hidden,PassoSant'AngelotoSanGinesio,1,138
+3,la route d'occitanie,2018,198.4,Hidden,colduchioulalong,1,132
+5,amgen tour of california,2017,125.5,Hidden,Baldy-GRRtosummit,1,126
+4,tour de romandie,2018,149.2,Visible,Vex-LesCollons,1,122
+6,paris - nice,2018,198,Hidden,MonteeColBasdunord,1,121
+4,tour de romandie,2017,163.5,Visible,Zweisimmen-Saanenmöser(Mainstreet),1,119
+1,liege - bastogne - liege,2017,258,Hidden,cotedesaintrochevolledig,1,116
+2,amgen tour of california,2018,157,Hidden,CasitasPassMountain,1,109
+8,paris - nice,2017,115.5,Hidden,6kmCold'Eze,1,101
+6,paris - nice,2018,198,Hidden,Castellane-ColdeLuens,1,101
+8,paris - nice,2018,110,Hidden,coldes4chemins,1,101
+5,amgen tour of california,2017,125.5,Hidden,GlendoraMountainRoad,1,98
+2,amgen tour of california,2017,143,Visible,MtHamiltonBackside,1,97
+4,tour de romandie,2017,163.5,Hidden,Jaunpass,1,95
+3,la route d'occitanie,2018,198.4,Visible,PasdeSouloumbrieclimb(NW),1,93
+4,tour de romandie,2018,149.2,Visible,Fontany-Suen,1,93
+1,tour de romandie,2017,173.3,Visible,Sion-Vex,1,90
+4,tirreno-adriatico,2018,219,Hidden,xXCaccamoSerrapetronaFullXx,1,88
+4,tour de romandie,2018,149.2,Hidden,Loye-Nax,1,86
+4,tour de romandie,2018,149.2,Visible,Chalais-VercorinMarmotte,1,73
+1,liege - bastogne - liege,2017,258,Hidden,CôteLaRocheenArdenne,1,70
+8,paris - nice,2017,115.5,Hidden,ClmPeilleFSGT,1,68
+8,paris - nice,2018,110,Hidden,climASPCPeille,1,68
+1,tour de romandie,2017,173.3,Hidden,MontéeOllons/Sierre,1,65
+4,tirreno-adriatico,2017,171,Visible,Cimina-BivioSoriano,1,57
+2,int. osterreich-rundfahrt-tour of austria,2018,181.5,Visible,Stuben-Arlbergpass,1,53
+3,la route d'occitanie,2018,198.4,Hidden,PortdeLers(LePort),1,53
+8,paris - nice,2017,115.5,Hidden,ColdeCalaisonversantContes,1,52
+8,paris - nice,2018,110,Hidden,ColdeCalaisonversantContes,1,52
+4,int. osterreich-rundfahrt-tour of austria,2018,143,Visible,Felbertauern,1,41
+8,paris - nice,2017,115.5,Hidden,ColChateauneuf-byBlausasctrail,1,37
+8,paris - nice,2018,110,Hidden,ColChateauneuf-byBlausasctrail,1,37
+4,presidential cycling tour of turkey,2018,206.9,Hidden,Benzinliktensonra-Sakartepe,1,37
+5,amgen tour of california,2017,125.5,Hidden,GRRlastclimb,1,26
+8,paris - nice,2017,115.5,Hidden,333melevation(uptoLevens),1,21
+8,paris - nice,2018,110,Hidden,333melevation(uptoLevens),1,21
+4,tour de romandie,2018,149.2,Hidden,Chamoson-Ovronnaz(climb),1,18
+4,int. osterreich-rundfahrt-tour of austria,2018,143,Hidden,PassThurn!,1,15
+2,volta ao algarve em bicicleta,2017,189.3,Hidden,nave-foia,1,189
+2,volta ao algarve em bicicleta,2018,187.9,Hidden,AltodaFóia,1,187.9
+2,volta ao algarve em bicicleta,2017,189.3,Hidden,PMPPomba,1,171
+3,tour of slovenia,2017,167.7,Hidden,Roglaclimb,1,167.7
+2,tour of oman,2018,167.5,Visible,AlJissahClimb-Full,1,163
+5,tour of oman,2017,152.5,Visible,TourofOmanGreenMountainClimb,1,152.5
+5,tour of oman,2018,152,Visible,TourofOmanGreenMountainClimb,1,152
+2,tour of oman,2018,167.5,Visible,HamriyaHillandthensome,1,145
+2,tour of the alps,2017,140.4,Visible,Heinfels-Innervillgraten,1,140
+2,tour of oman,2017,142,Visible,AlJissahClimb-Full,1,138
+2,volta ao algarve em bicicleta,2017,189.3,Hidden,OLDVERSION-SubidadasEirinhas,1,128
+3,tour of slovenia,2018,175.7,Hidden,Jagoce-Celjskakoca,1,126
+2,tour of oman,2017,142,Visible,HamriyaHillandthensome,1,123
+2,volta ao algarve em bicicleta,2018,187.9,Hidden,SubidadaSapeira,1,123
+2,tour of oman,2018,167.5,Hidden,Amarat(FULL-frombridgetosummit),1,119
+2,tour of the alps,2017,140.4,Visible,MittewaldbisWiesen,1,118
+2,volta ao algarve em bicicleta,2018,187.9,Visible,Alferce-S.Marcos2ªSubida,1,107
+2,tour of oman,2017,142,Hidden,Amarat(FULL-frombridgetosummit),1,97
+3,tour of slovenia,2017,167.7,Visible,Padeškivrh-Rogla,1,90
+2,volta ao algarve em bicicleta,2018,187.9,Hidden,OLDVERSION-SubidadasEirinhas,1,71
+2,tour of oman,2018,167.5,Hidden,FanjaHillclimb-backside,1,60
+2,tour of oman,2017,142,Hidden,FanjaHillclimb-backside,1,38
+2,tirreno-adriatico,2017,229,Visible,MontecatiniV.C.DaBacchettona,1,206
+19,giro d'italia,2017,191,Visible,Piancavallo,1,191
+1,giro d'italia,2017,206,Hidden,SanPantaleofull,1,184.5
+8,giro d'italia,2017,189,Visible,SALITAPESCHICIDAVIESTE,1,182
+17,giro d'italia,2017,219,Visible,Molina-bivio,1,179
+19,tour de france,2017,222.5,Visible,ApttoPointu,1,177.5
+20,giro d'italia,2017,190,Visible,Vaslstagna-FozaGPSw/oissues,1,176
+15,giro d'italia,2017,199,Visible,Molino-Selvino(bivioperbergamo),1,171.5
+2,tirreno-adriatico,2017,229,Visible,Saline-Volterra,1,171
+7,tour de suisse,2017,166.3,Hidden,Solden-Rettenbachgletscher,1,163.5
+15,giro d'italia,2017,199,Hidden,zognomiragolos.salvatoregpmgirodilombardia,1,160
+1,strade bianche,2017,175,Hidden,CollePinzutoOff-RoadCote***-FlandresLove,1,158
+2,arctic race of norway,2018,195,Visible,Hopseide,1,157
+8,giro d'italia,2017,189,Visible,CoppaSantaTecladaMattinata,1,143
+5,int. osterreich-rundfahrt-tour of austria,2017,212.5,Hidden,HochtordaPockhorn,1,143
+5,criterium du dauphine,2017,175,Visible,Colduboisclairfacenord,1,142.5
+1,tour of the alps,2017,142.3,Visible,Hungerburgfirstpart,1,140
+17,giro d'italia,2017,219,Visible,PassoCrocefromSanMichele,1,137
+11,giro d'italia,2017,161,Hidden,MONTEFUMAIOLO,1,135.5
+18,giro d'italia,2017,137,Hidden,SalitaPontives,1,133.5
+2,arctic race of norway,2018,195,Visible,TorskefjorddalenClimb,1,131
+20,giro d'italia,2017,190,Visible,MonteGrappadaCaupo-official-,1,124.5
+1,tour of the alps,2017,142.3,Hidden,Terfens-Gnadenwald,1,124
+6,int. osterreich-rundfahrt-tour of austria,2017,203.9,Visible,HochleckenAtterseeclimb,1,114
+18,giro d'italia,2017,137,Visible,PassodiPinei,1,109.5
+19,giro d'italia,2017,191,Visible,SellaChianzutandaVerzegnis(tutta),1,105.5
+8,giro d'italia,2017,189,Visible,MaddonadelleGrazie-MonteSantAngeloGirod'italia2017,1,101.5
+11,giro d'italia,2017,161,Visible,Carnaiodasantasofiafinoalbar,1,101.5
+5,int. osterreich-rundfahrt-tour of austria,2017,212.5,Hidden,Iselsbergkurz,1,100
+2,criterium du dauphine,2017,171,Visible,Barraccuchet,1,91
+1,giro d'italia,2017,206,Hidden,BadesitoTrinitad'AgultueVignola,1,90.5
+18,giro d'italia,2017,137,Visible,PASSOGARDENAfromCorvara(firstcrossroad)OfficialClimb,1,85.5
+1,strade bianche,2017,175,Visible,StradaProvincialePieveASaltiClimb,1,84
+2,criterium du dauphine,2017,171,Hidden,LérigneuxparVerrières,1,83
+4,int. osterreich-rundfahrt-tour of austria,2017,82.7,Hidden,AlpenhausKitzbühelerHorn(start161),1,82.7
+1,tour of the alps,2017,142.3,Hidden,AschauClimb,1,81
+5,criterium du dauphine,2017,175,Visible,ColdeChampJuinparMonsols(RdPoint),1,80.5
+1,giro d'italia,2017,206,Hidden,SS134Castelsardo-Multeddu(Ric),1,68
+5,criterium du dauphine,2017,175,Visible,Coldufutd'Avenas(vanafVillié-Morgon),1,64
+11,giro d'italia,2017,161,Visible,PassodellaCalla(daStia),1,64
+17,giro d'italia,2017,219,Visible,PontediLegno-Tonale,1,60.5
+18,giro d'italia,2017,137,Visible,cernadoi-passovalparola,1,57.5
+1,strade bianche,2017,175,Hidden,salitaMontalcinospBrunello(finoallarotonda),1,57
+6,int. osterreich-rundfahrt-tour of austria,2017,203.9,Visible,PaßGeschüttClimb,1,56
+3,criterium du dauphine,2017,184,Visible,ColdeFontaille,1,55
+3,criterium du dauphine,2017,184,Visible,RetouràSaint-Félicien,1,52
+5,int. osterreich-rundfahrt-tour of austria,2017,212.5,Visible,Felbertauern,1,40
+11,giro d'italia,2017,161,Hidden,PassoConsuma,1,31.5
+18,giro d'italia,2017,137,Visible,Canazei(cartellopasso)-passoPordoi,1,26.5
+19,tour de france,2017,222.5,Hidden,ColLebraut,1,26
+5,int. osterreich-rundfahrt-tour of austria,2017,212.5,Hidden,PassThurn!,1,17
+1,tour of the alps,2017,142.3,Hidden,Sebi-Rettenschöß,1,15
+19,giro d'italia,2017,191,Visible,"DaSesto,PassoCroceComelico",1,14.5
+17,giro d'italia,2017,219,Visible,Aprica™(Stazzona),1,14
+2,criterium du dauphine,2017,171,Visible,CroixBlanchedeChavanne,1,5

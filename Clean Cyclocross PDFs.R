@@ -4,7 +4,17 @@ library(tidyverse)
 
 #
 
-PDF_ALL <- pdf_text("C:/Users/Jake/Downloads/Cyclocross/21375.pdf")
+all_cross <- fs::dir_info("C:/Users/Jake/Downloads/Cyclocross")
+
+list_of_results <- vector("list", length(all_cross$path))
+
+#
+
+for(r in 1:length(all_cross$path)) {
+
+FILE_NAME <- all_cross$path[[r]]
+
+PDF_ALL <- pdf_text(FILE_NAME)
 
 PAGES <- length(PDF_ALL)
 
@@ -1095,4 +1105,10 @@ PAGE1 <- results %>%
 #
 #
 
-ALL_RESULTS <- rbind(PAGE1, PAGE2, PAGE3)
+ALL_RESULTS <- rbind(PAGE1, PAGE2, PAGE3) %>%
+  
+  mutate(event = FILE_NAME)
+
+list_of_results[[r]] <- ALL_RESULTS
+
+}
