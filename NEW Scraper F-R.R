@@ -747,10 +747,10 @@ clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
 
 # build matcher for PCS to FR race names
 
-pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages 
-                  FROM pcs_stage_raw GROUP BY race, year, date, class") %>%
+pcs <- dbGetQuery(con, "SELECT year, race, min(date) as date, class, max(stage) as stages 
+                  FROM pcs_stage_raw GROUP BY race, year, class") %>%
   
-  mutate(class = ifelse(race == "Lillehammer GP", "1.2", class))
+  mutate(class = ifelse(race == "Lillehammer GP", "1.2", class)) %>%
   
   filter(!is.na(class)) %>%
   
@@ -758,10 +758,6 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
          class = ifelse(class == "UWT",
                         ifelse(stages > 1, "2.UWT", "1.UWT"), class),
          class = ifelse(class == "1.2U23", "1.2U", class)) %>%
-  
-  group_by(race, year) %>%
-  mutate(date = min(date, na.rm = T)) %>%
-  ungroup() %>%
   
   unique() %>%
   
@@ -774,7 +770,7 @@ pcs <- dbGetQuery(con, "SELECT year, race, date, class, max(stage) as stages
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date <= '2020-11-15') %>%
+  filter(date <= as.Date('2020-11-15')) %>%
   
   filter(!class == 'NC')
 
@@ -848,6 +844,8 @@ matches <- fr %>%
 #
 
 pcs_fr_matches <- matches %>%
+  
+  mutate(date.y = as.Date(date.y)) %>%
   
   filter(rankHM == 1 |
            ((tolower(fr_race) == "euroeyes cyclassics") & (tolower(pcs_race) == "cyclassics hamburg"))) %>%
