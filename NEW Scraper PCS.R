@@ -442,7 +442,7 @@ if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
     
-    filter(year <= 2012)
+    filter(year >= 2013)
   
 }
 
@@ -763,7 +763,7 @@ for(r in 1:length(all_stages$value)) {
                  parcours_value = profile_value) %>%
           
           mutate(stage = s,
-                 stage_number = str_replace(str_replace(all_stages$value[[r]], all_stages$url[[r]], ""), "https://www.procyclingstats.com//", ""),
+                 stage_number = str_replace(str_replace(all_stages$value[[r]], all_stages$url[[r]], ""), "https://www.procyclingstats.com/", ""),
                  race = all_stages$Race[[r]],
                  year = all_stages$year[[r]],
                  date = DATE,
@@ -972,7 +972,7 @@ stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team,
 
 #
 
-stage_data <- stage_data_raw %>%
+stage_data_int <- stage_data_raw %>%
   
   rename(class = Class) %>%
   unique() %>%
@@ -981,12 +981,32 @@ stage_data <- stage_data_raw %>%
                                ifelse(stage_name == "Prologue", '0', str_replace(stage_number, "stage-", "")))) %>%
   
   mutate(stage = ifelse(stage_name == "Prologue", '0', 
-                        ifelse(stage_name == "One day race", '1', stage_number))) %>%
+                        ifelse(stage_name == "One day race", '1', stage_number)))
+  
+  
+
+stage_data <- stage_data_int %>%
+  
+  left_join(
+    
+    stage_data_int %>%
+      select(stage, race, year, class) %>%
+      mutate(valid = 1) %>%
+      unique() %>% 
+      spread(stage, valid) %>%
+      filter(`0` == 1 & is.na(`1`) & is.na(`1a`)) %>%
+      select(race, year, class) %>%
+      mutate(stage = '0',
+             valid = 1), by = c("race", "stage", "year", "class")
+    
+  ) %>%
+  
+  mutate(valid = ifelse(is.na(valid), 0, valid)) %>%
   
   mutate(stage = ifelse(stage == '0',
-                        ifelse(year == 2015 & race == "Tour de Suisse", '1',
-                               ifelse(year == 2015 & race == "Tirreno-Adriatico", '1', 
-                                      ifelse(year == 2017 & race == "Olympia's Tour	", '1', stage))), stage)) %>%
+                        ifelse(valid == 1, '1', stage), stage)) %>%
+  
+  select(-valid) %>%
   
   mutate(stage = ifelse(is.na(stage) & stage_number == "prologue", '0',
                         ifelse(is.na(stage), '1', stage))) %>%
@@ -1147,6 +1167,8 @@ stage_data <- stage_data %>%
   
   select(-back_5)
 
+#
+#
 # Need to clean-up and re-write climbs information before joining
 
 f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
@@ -1160,6 +1182,10 @@ f_r_climbs <- dbReadTable(con, "flamme_rouge_climbs") %>%
   filter(!(race %in% c("Eschborn-Frankfurt") & year %in% c(2018, 2019))) %>%
   filter(!(race == 'Liege - Bastogne - Liege' & year == 2018))
 
+#
+#
+# bring in f_r stage characteristics
+
 f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
   mutate(year = as.numeric(year)) %>%
   unique() %>%
@@ -1168,7 +1194,12 @@ f_r_data <- dbReadTable(con, "flamme_rouge_characteristics") %>%
                         ifelse(str_detect(stage, "-2"), str_replace(stage, "-2", "b"), stage))) %>%
   # NEED TO CLEAN UP fr DATA
   filter(!(race %in% c("Eschborn-Frankfurt") & year %in% c(2018, 2019))) %>%
-  filter(!(race == 'Liege - Bastogne - Liege' & year == 2018))
+  filter(!(race == 'Liege - Bastogne - Liege' & year == 2018)) %>%
+  filter(!(race == "Chrono des Nations" & year %in% c(2018, 2019) & stage_type == "Plain"))
+
+#
+#
+# manually bring in some higher profile race climb info
 
 supp_climbs <- read_csv("supplemental-profile-data.csv") %>%
   fill(stage, race, year) %>%
@@ -1193,6 +1224,16 @@ stage_data <- stage_data %>%
   
   unique() %>%
   
+  left_join(
+    
+    read_csv("pcs-fr-mismatched-stages.csv") %>%
+      select(stage, race, year, class, fr_stage) %>%
+      unique(), by = c("stage", "race", 'year', 'class')
+    
+  ) %>%
+  
+  mutate(fr_stage = ifelse(is.na(fr_stage), stage, fr_stage)) %>%
+  
   # join with stage characteristic data
   
   left_join(
@@ -1200,7 +1241,7 @@ stage_data <- stage_data %>%
     f_r_data %>%
       select(-length, -slug, -date) %>%
       rename(fr_stage_type = stage_type) %>%
-      mutate(race = tolower(race)), by = c("race", "stage", "year")
+      mutate(race = tolower(race)), by = c("race", "fr_stage" = "stage", "year")
     
   ) %>%
   
@@ -1303,7 +1344,7 @@ stage_data <- stage_data %>%
                 last_climb = max(last_climb, na.rm = T),
                 position_highest = mean(position_highest, na.rm = T),
                 summit_finish = max(summit_finish, na.rm = T)) %>%
-      ungroup(), by = c("race", "stage", "year")
+      ungroup(), by = c("race", "fr_stage" = "stage", "year")
     
   ) %>%
   
@@ -1340,7 +1381,7 @@ stage_data <- stage_data %>%
          grand_tour = as.numeric(grand_tour),
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
-
+  select(-fr_stage) %>%
   filter(!(str_detect(url, "81st-sch"))) %>%
   
   # world championships rr 2016 joins twice onto profile data
@@ -1368,7 +1409,7 @@ stage_data <- stage_data %>%
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data, 
+             stage_data , 
              
              append = TRUE, row.names = FALSE)
 
