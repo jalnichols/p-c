@@ -34,7 +34,11 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
-  filter(!url %in% c('race/world-championship-itt/2017', 'race/world-championship-itt/2015', 'race/world-championship-itt/2014', 'race/world-championship-itt/2013', 'race/world-championship-itt/2018')) %>%
+  filter(!url %in% c('race/world-championship-itt/2017',
+                     'race/world-championship-itt/2015', 
+                     'race/world-championship-itt/2014',
+                     'race/world-championship-itt/2013',
+                     'race/world-championship-itt/2018')) %>%
   
   unique() %>%
   
@@ -396,21 +400,45 @@ strength_of_peloton <- stage_data %>%
 
 #
 
-dates_to_generate_sop <- stage_data %>%
+REWRITE <- FALSE
+
+if(REWRITE == TRUE) {
   
-  group_by(race, year, class) %>%
-  summarize(date = min(date, na.rm = T)) %>%
-  ungroup() %>%
+  dbSendQuery(con, "DELETE FROM performance_rider_strengthpeloton")
   
-  filter(!is.na(date)) %>%
+  dates_to_generate_sop <- stage_data %>%
+    
+    group_by(race, year, class) %>%
+    summarize(date = min(date, na.rm = T)) %>%
+    ungroup() %>%
+    
+    filter(!is.na(date)) %>%
+    
+    select(date) %>%
+    unique() %>%
+    
+    mutate(date = as.Date(date)) %>%
+    filter(date >= '2013-01-01')
   
-  select(date) %>%
-  unique() %>%
+} else {
   
-  mutate(date = as.Date(date)) %>%
-  filter(date >= '2013-01-01') %>%
+  dates_to_generate_sop <- stage_data %>%
+    
+    group_by(race, year, class) %>%
+    summarize(date = min(date, na.rm = T)) %>%
+    ungroup() %>%
+    
+    filter(!is.na(date)) %>%
+    
+    select(date) %>%
+    unique() %>%
+    
+    mutate(date = as.Date(date)) %>%
+    filter(date >= '2013-01-01') %>%
+    
+    anti_join(dbGetQuery(con, "SELECT DISTINCT DATE as date FROM performance_rider_strengthpeloton"), by = c("date"))
   
-  anti_join(dbGetQuery(con, "SELECT DISTINCT DATE as date FROM performance_rider_strengthpeloton"), by = c("date"))
+}
 
 #
 
