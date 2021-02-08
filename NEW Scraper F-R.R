@@ -31,8 +31,8 @@ con <- dbConnect(MySQL(),
 
 # Scrape all UCI World Tour races for 2013-20
 
-scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020),
-                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2))
+scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020, 2021, 2021),
+                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2, 1,2))
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -96,29 +96,32 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                 2017, 2017, 2017, 2017, 2017, 
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
                                 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
-                                2020, 2020, 2020, 2020, 2020, 2020, #2
-                                2017, 2018, 2019, 2020, #5
-                                2017, 2018, 2019, 2020, #6
-                                2017, 2018, 2019, 2020, #3
-                                2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, #8
-                                2017, 2018, 2018, 2019, 2020), #4
+                                2020, 2020, 2020, 2020, 2020, 2020, 
+                                2021, 2021, #2
+                                2017, 2018, 2019, 2020, 2021, #5
+                                2017, 2018, 2019, 2020, 2021, #6
+                                2017, 2018, 2019, 2020, 2021, #3
+                                2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, #8
+                                2017, 2018, 2018, 2019, 2020, 2021), #4
                        page_no = c(1,1,1,1,1,1,
                                    1,2,3,4,5, 
                                    1,2,3,4,5,6,7,8,9,10, 
                                    1,2,3,4,5,6,7,8,9,10,
                                    1,2,3,4,5,6,
-                                   1, 1, 1, 1,
-                                   1, 1, 1, 1,
-                                   1, 1, 1, 1,
-                                   1, 1, 1, 1, 1, 1, 1, 1, 
-                                   1, 1, 2, 1, 1),
+                                   1,2,
+                                   1, 1, 1, 1,1,
+                                   1, 1, 1, 1,1,
+                                   1, 1, 1, 1,1,
+                                   1, 1, 1, 1, 1, 1, 1, 1,1, 
+                                   1, 1, 2, 1, 1,1),
                        type = c(2,2,2,2,2,2,
                                 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-                                5,5,5,5,
-                                6,6,6,6,
-                                3,3,3,3,
-                                8,8,8,8,8,8,8,8,
-                                4,4,4,4,4))
+                                2,2,
+                                5,5,5,5,5,
+                                6,6,6,6,6,
+                                3,3,3,3,3,
+                                8,8,8,8,8,8,8,8,8,
+                                4,4,4,4,4,4))
 
 #
 
@@ -195,7 +198,7 @@ all_races <- intermediate_races %>%
 
 # find data we already have
 
-already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_urls") %>%
+already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_info") %>%
   
   select(race_url) %>%
   unique()
@@ -336,7 +339,7 @@ tictoc::tic()
 
 #
 
-for(y in 3227:length(all_stages$race_url)) {
+for(y in 4271:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
@@ -626,6 +629,7 @@ tictoc::toc()
 
 clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
   filter(updated >= '2020-11-25') %>%
+  filter(updated >= '2021-01-20') %>%
   mutate(year = str_sub(race_url, 48, 51)) %>%
   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
@@ -770,7 +774,7 @@ pcs <- dbGetQuery(con, "SELECT year, race, min(date) as date, class, max(stage) 
                       "Tour of Fuzhou", "Tour of Iran (Azarbaijan)", "Tour of Peninsular",
                       "Tour of Taihu Lake", "UEC Road European Championships - ITT")) %>%
   filter(year > 2012) %>%
-  filter(date <= as.Date('2020-11-15')) %>%
+  filter(date >= as.Date('2020-11-15')) %>%
   
   filter(!class == 'NC')
 
@@ -799,7 +803,7 @@ fr <- dbGetQuery(con, "SELECT DISTINCT race, year, race_url as url FROM fr_stage
   mutate(date = lubridate::dmy(date)) %>%
 
   select(race, year, date, class, tour) %>%
-  filter(date <= '2020-11-15') %>%
+  filter(date >= '2020-11-15') %>%
 
   #filter(!race %in% c("UCI Road World Championships - ITT (Men Elite)")) %>%
   
