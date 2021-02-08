@@ -102,10 +102,10 @@ pull_from_schedule <- c(
 
 store_from_schedule <- vector("list", length(pull_from_schedule))
 
-pull_years = 3
+pull_years = 1
 
 current_year = year(today())
-start_year = 2009 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -136,6 +136,7 @@ for(t in 1:length(pull_from_schedule)) {
         html_nodes('table') %>%
         html_table(dec = ",") %>%
         .[[1]] %>%
+        .[, c(1, 3:5)] %>%
         filter(Winner != "") %>%
         count() %>%
         as.list() %>%
@@ -152,6 +153,7 @@ for(t in 1:length(pull_from_schedule)) {
           html_nodes('table') %>%
           html_table(dec = ",") %>%
           .[[1]] %>%
+         .[, c(1, 3:5)] %>%
           filter(Winner != ""),
         
         page %>%
@@ -208,8 +210,6 @@ for(t in 1:length(pull_from_schedule)) {
       year_list[[y]] <- events
       
     }
-    
-    year_list[[y]] <- events
     
   }
   
@@ -320,7 +320,7 @@ for(e in 1:length(all_events$url)) {
   
   page <- paste0('https://www.procyclingstats.com/', 
                  all_events$url[[e]],
-                 '/gc/history') %>%
+                 '/gc/result/result') %>%
     
     read_html()
   
@@ -340,24 +340,33 @@ for(e in 1:length(all_events$url)) {
     filter(str_detect(value, 'race/'))
   
   # this part will break if there's multiple races in one year
-  gc_winner <- page %>% 
-    html_nodes('table') %>%
-    html_table()
   
-  if(length(gc_winner)==0) {
+  which_is_gc <- page %>%
+    html_nodes('ul.restabs') %>%
+    html_nodes('li') %>%
+    html_text() %>%
+    enframe(name=NULL) %>%
+    mutate(isGC = value == "GC") %>%
+    rowid_to_column() %>%
+    filter(isGC == TRUE) %>%
+    .[[1]]
+  
+  if(is.null(which_is_gc)) {
     
     gc_winner = tibble(value = "One Day Race")
     
-    
-  }  else {
-    
-    gc_winner <- gc_winner %>%
-      .[[1]] %>%
-      filter(Season == all_events$year[[e]]) %>%
-      select(Winner) %>%
-      .[1,1] %>%
-      enframe(name = NULL)
-    
+  } else {
+  
+  gc_winner <- page %>% 
+    html_nodes('div.resultCont') %>%
+    html_nodes('table') %>%
+    html_table() %>%
+    .[[which_is_gc]] %>%
+    select(Rider,Team) %>%
+    mutate(Rider = str_sub(Rider, 1, nchar(Rider)-nchar(Team))) %>%
+    .[1,] %>%
+    select(value = Rider)
+  
   }
   
   # assign to gc list
