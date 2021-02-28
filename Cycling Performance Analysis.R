@@ -88,18 +88,20 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
                "tour of qinghai lake", "tour of qinghai lake", "tour of qinghai lake",
                "tour of qinghai lake", "usa pro challenge","amgen tour of california",
                "the larry h.miller tour of utah", "tour of china i", "tour de korea", "tour de korea",
-               "tour de korea", "ronde van vlaanderen / tour des flandres"),
+               "tour de korea", "ronde van vlaanderen / tour des flandres",
+               "etoile de besseges - tour du gard", "etoile de besseges - tour du gard",
+               "etoile de besseges - tour du gard", "etoile de besseges - tour du gard"),
       
       stage = c(4,6,5,3,3,3,4,1,1,1,3,4,6,7,2,3,2,3,8,3,6,7,4,5,2,2,2,3,4,1,4,3,6,8,10,
-                7,7,5,6,3,4,6,1),
+                7,7,5,6,3,4,6,1,1,2,3,4),
       
       year = c(2015,2014,2014,2020,2018,2016,2016,2013,2014,2015,2016,2016,2016,2016,2016,2016,
                2015,2015,2015,2015,2015,2015,2015,2015,2015,2016,2017,2017,2017,2014,2014,
-               2014,2014,2014,2014,2014,2014,2014,2014,2014,2014,2014, 2015),
+               2014,2014,2014,2014,2014,2014,2014,2014,2014,2014,2014, 2015, 2021, 2021, 2021, 2021),
       
       NEW = c("p2", "p2","p2","p2","p2","p2","p2","p4","p4","p4","p2","p2","p2","p2","p2","p2",
               "p2","p2","p2","p2","p2","p2","p2","p3","p2","p2","p2","p2","p2","p2","p2",
-              "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3","p2")
+              "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3","p2", "p3", "p2", "p2", "p3")
       
     ) %>%
       mutate(stage = as.character(stage)), by = c("year", "stage", "race")
@@ -173,14 +175,6 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
                   FROM strava_activity_data 
                   WHERE Stat IN ('Elevation', 'Distance')") %>% 
   
-  # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
-  
-  inner_join(
-    
-    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
-      
-      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
-  
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
   separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
@@ -198,18 +192,14 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
   spread(Stat, VALUE) %>% 
   filter(!is.na(`Elevation`)) %>% 
   janitor::clean_names() %>% 
-  
-  group_by(date) %>% 
-  mutate(n=n()) %>% 
-  ungroup() %>% 
-  
+
   inner_join(stage_data %>%
                
                select(rider, date, year, race, class, stage, length, total_vert_gain, act_climb_difficulty,
                       stage_type, fr_stage_type, parcours_value, time_trial, grand_tour, one_day_race,
                       rnk) %>%
                
-               filter(year %in% c("2014", "2015", "2016", "2017", "2019", "2020")) %>%
+               filter(year %in% c("2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021")) %>%
                unique() %>%
                
                mutate(date = as.Date(date)), by = c("date", "pcs" = "rider")) %>% 
@@ -436,7 +426,8 @@ if(REWRITE == TRUE) {
     mutate(date = as.Date(date)) %>%
     filter(date >= '2013-01-01') %>%
     
-    anti_join(dbGetQuery(con, "SELECT DISTINCT DATE as date FROM performance_rider_strengthpeloton"), by = c("date"))
+    anti_join(dbGetQuery(con, "SELECT DISTINCT DATE as date FROM performance_rider_strengthpeloton") %>%
+                mutate(date = as.Date(date)), by = c("date"))
   
 }
 
@@ -572,7 +563,7 @@ strava_elev_mod <- stage_level_strava %>%
   
   filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
   filter(rnk != 200) %>%
@@ -602,7 +593,7 @@ strava_elev_data <- cbind(
     
     filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
     
-    mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
     filter(n()>0) %>%
@@ -622,7 +613,7 @@ strava_elev_data <- cbind(
       
       filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
       
-      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+      mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
       filter(n()>0) %>%
@@ -650,7 +641,7 @@ pv_mod <- stage_data %>%
   
   filter(rnk == 1 & time_trial == FALSE) %>% 
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
   select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -669,7 +660,7 @@ pv_data <- cbind(
   stage_data %>%
     filter(rnk == 1 & time_trial == FALSE) %>% 
     
-    mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     
     select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -684,7 +675,7 @@ pv_data <- cbind(
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>%  
       
-      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+      mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       
       select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -706,7 +697,7 @@ no_climbs_mod <- stage_data %>%
   
   filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
   select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -762,7 +753,7 @@ icon_mod <- stage_data %>%
   
   filter(rnk == 1 & time_trial == FALSE) %>% 
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
   select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -786,7 +777,7 @@ icon_data <- cbind(
   stage_data %>%
     filter(rnk == 1 & time_trial == FALSE) %>% 
     
-    mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     
     select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -802,7 +793,7 @@ icon_data <- cbind(
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>% 
       
-      mutate(est = ifelse(str_detect(parcours_value, "\\*"),1,0), 
+      mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       
       select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
