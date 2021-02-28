@@ -65,6 +65,8 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=NC&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=&class=NC&filter=Filter',
+  
   # ASIA
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
   
@@ -96,6 +98,7 @@ pull_from_schedule <- c(
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
+  
   'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter')
 
 #
@@ -150,25 +153,34 @@ for(t in 1:length(pull_from_schedule)) {
       events <- cbind(
         
        page %>%
-          html_nodes('table') %>%
+          html_nodes('table.basic') %>%
           html_table(dec = ",") %>%
           .[[1]] %>%
          .[, c(1, 3:5)] %>%
           filter(Winner != ""),
         
-        page %>%
-         html_nodes('table') %>%
+        value = cbind(page %>%
+         html_nodes('table.basic') %>%
           html_nodes('a') %>%
           html_attr(name = "href") %>%
           enframe(name = NULL) %>%
-          #.[-(1:99),] %>%
-          filter(str_detect(value, "race/")) %>%
-          filter(str_detect(value, as.character(year))) %>%
-          filter(!str_detect(value, "stage-")) %>%
-          filter(!str_detect(value, "result")) %>%
-          filter(!(str_detect(value, "2020/"))) %>%
-          unique() %>%
-          .[1:evts,]
+           filter(str_detect(value, "race/")) %>%
+           filter(str_detect(value, as.character(year))) %>%
+           filter(!str_detect(value, "stage-")) %>%
+           filter(!str_detect(value, "result")) %>%
+           filter(!(str_detect(value, "2020/"))) %>%
+          #unique() %>%
+           rename(url = value),
+         
+         page %>%
+           html_nodes('table.basic') %>%
+           html_nodes('tbody') %>%
+           html_nodes('tr') %>%
+           html_attr(name = "class") %>%
+           enframe(name = NULL)) %>%
+         filter(is.na(value)) %>%
+         select(-value) %>%
+         .[1:evts,]
         
       ) %>%
         
@@ -333,7 +345,8 @@ for(e in 1:length(all_events$url)) {
   # pull in stages
   
   as <- page2 %>%
-    html_nodes('body > div.wrapper > div.content > div.statDivLeft > ul.list.table') %>%
+    html_nodes('table.basic') %>%
+    html_nodes('td') %>%
     html_nodes('a') %>%
     html_attr(name = "href") %>%
     enframe(name = NULL) %>% 
@@ -351,14 +364,14 @@ for(e in 1:length(all_events$url)) {
     filter(isGC == TRUE) %>%
     .[[1]]
   
-  if(is.null(which_is_gc)) {
+  if(is.null(which_is_gc) | length(which_is_gc) == 0) {
     
     gc_winner = tibble(value = "One Day Race")
     
   } else {
   
   gc_winner <- page %>% 
-    html_nodes('div.resultCont') %>%
+    html_nodes('div.result-cont') %>%
     html_nodes('table') %>%
     html_table() %>%
     .[[which_is_gc]] %>%
@@ -559,29 +572,55 @@ for(r in 1:length(all_stages$value)) {
         html_nodes('div') %>%
         html_attr(name = "class") %>%
         enframe(name = NULL) %>%
-        filter(value %in% c("resultCont hide", "resultCont ")) %>%
+        filter(value %in% c("result-cont hide", "result-cont ")) %>%
         tibble::rowid_to_column() %>%
-        filter(value == "resultCont ") %>%
+        filter(value == "result-cont ") %>%
         .[[1]]
       
       # bring in stage characteristics
       characteristics <- page %>%
-        html_nodes('h2') %>%
-        html_nodes('span') %>%
-        html_text()
+        html_nodes('ul.infolist') %>%
+        html_nodes('li') %>%
+        html_text() %>%
+        enframe(name = NULL) %>%
+        separate(value, into = c("col", "data"), sep = ": ") %>%
+        mutate(col = str_trim(col),
+               data = str_trim(data))
       
-      # Characteristics start
-      if(length(characteristics) == 4) {
+      if(length(choose) == 0) {
         
-        distance = characteristics[[4]]
-        stage_name = characteristics[[2]]
-        
-      } else {
-        
-        distance = NA
-        stage_name = "one day race"
+        choose = 1
         
       }
+      
+      if(length(characteristics) == 0) {
+        
+        characteristics = 0
+        
+      }
+      
+      distance <- characteristics %>%
+        filter(col == "Distance") %>%
+        mutate(data = parse_number(data)) %>%
+        select(data) %>%
+        .[[1]]
+      
+      if(length(distance) == 0) {
+        
+        distance = NA
+        
+      }
+      
+      stage_name <- page %>%
+        html_nodes(xpath = '/html/body/div[1]/div[1]/div[2]/div[2]/span[3]') %>%
+        html_text()
+      
+      if(length(stage_name) == 0) {
+        
+        stage_name = NA
+        
+      }
+  
       # Characteristics End
       
       # if it's a TTT or some other error, just move on
@@ -611,62 +650,45 @@ for(r in 1:length(all_stages$value)) {
         # bring in stage distance again
         
         length <- page %>%
-          html_nodes(xpath = '//*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]') %>% 
+          html_nodes(xpath = '/html/body/div[1]/div[1]/div[2]/div[2]/span[8]') %>%
           html_text() 
         
-        if(identical(length, character(0)) == TRUE) {
+        if(length(length) == 0) {
           
-          length = NA
-          
-        } else if(length(length) == 1) {
-          
-          length = 150 
+          length = 150
           
         } else {
           
-          length <- length %>% .[[2]] %>%
-            str_replace_all("k","") %>%
-            enframe(name = NULL) %>%
-            #mutate(value = ifelse(nchar(value) == 5, str_sub(value, 2,4),
-            #                      ifelse(nchar(value) == 6, str_sub(value, 2,5), str_sub(value, 2,6)))) %>%
-            mutate(value = parse_number(value)) %>%
-            mutate(value = as.numeric(value)) %>%
-            as.data.frame() %>%
-            .[1,1]
+          length = parse_number(str_replace(length, " km", ""))
           
         }
         
         # in case the winner's time is missing (eg, their stupid doping shit with Armstrong) bring in speed
         
-        spd <- page %>% html_nodes('div.res-right') %>% html_text()
+        spd <- characteristics %>%
+          filter(col == 'Avg. speed winner') %>%
+          mutate(data = parse_number(data)) %>%
+          select(data) %>%
+          .[[1]]
         
-        x <- str_locate(spd, 'Avg. speed winner:') %>% .[[2]]
-        
-        SPD_WIN <- readr::parse_number(str_sub(spd, x+1, x+7))
+        SPD_WIN <- spd
         
         # bring in parcours type information
         
         parcours <- page %>%
-          html_nodes('span.icon') %>%
-          html_attr(name = "class") %>%
-          enframe(name = NULL) %>%
-          filter(str_detect(value, "profile")) %>%
-          str_trim() %>%
-          as.list() %>%
-          .[[1]]
+          html_nodes('ul.infolist') %>%
+          html_nodes('li') %>%
+          html_nodes('span') %>%
+          html_attr(name = "class")
         
-        profile_value <- page %>%
-          html_nodes('div.res-right') %>%
-          html_nodes('a') %>%
-          html_text() %>%
-          enframe(name = NULL) %>%
-          as.list() %>%
-          .[[1]] %>%
+        profile_value <- characteristics %>%
+          filter(col == 'ProfileScore') %>%
+          select(data) %>%
           .[[1]]
         
         if(length(parcours) == 0) {
           
-          parcours = NA
+          parcours = "icon profile p0"
           
         }
         
@@ -678,15 +700,11 @@ for(r in 1:length(all_stages$value)) {
         
         # bring in actual date
         
-        DATE <- page %>%
-          html_nodes('div.res-right') %>%
-          html_text() %>%
-          str_replace('Race informationDate: ', '') %>%
-          str_replace('Avg.', "-") %>%
-          enframe(name = NULL) %>%
-          separate(value, into = c("date", "junk"), sep = "-") %>%
+        DATE <- characteristics %>%
+          filter(col == 'Date') %>%
+          select(data) %>%
+          mutate(date = lubridate::dmy(str_trim(data))) %>%
           select(date) %>%
-          mutate(date = lubridate::dmy(str_trim(date))) %>%
           .[[1]]
         
         # now actually process the stage including getting times correct
@@ -838,6 +856,7 @@ for(f in 1:length(races_list)) {
 
 test_dl <- bind_rows(df_list) %>% unique()
 
+# DONT DELETE WHEN UPDATING
 #dbSendQuery(con, "DELETE FROM pcs_stage_raw")
 
 #dbWriteTable(con, "pcs_stage_raw", test_dl, append = TRUE, row.names = FALSE)
@@ -987,7 +1006,9 @@ stage_data_int <- stage_data_raw %>%
   unique() %>%
   
   mutate(stage_number = ifelse(stage_name == "One day race", '1',
-                               ifelse(stage_name == "Prologue", '0', str_replace(stage_number, "stage-", "")))) %>%
+                               ifelse(stage_name == "Prologue", '0', 
+                                      str_replace(
+                                        str_replace(stage_number, "/stage-", ""), "stage-", "")))) %>%
   
   mutate(stage = ifelse(stage_name == "Prologue", '0', 
                         ifelse(stage_name == "One day race", '1', stage_number)))
@@ -1109,7 +1130,7 @@ stage_data <- stage_data_int %>%
   mutate(tm_pos = rank(rnk, ties.method = "first")) %>%
   ungroup() %>%
   
-  select(-stage_number, -stage_name)
+  select(-stage_number)
 
 #
 
@@ -1418,7 +1439,7 @@ stage_data <- stage_data %>%
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data , 
+             stage_data, 
              
              append = TRUE, row.names = FALSE)
 
@@ -1467,7 +1488,7 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
   anti_join(dbGetQuery(con, "SELECT race, year, url FROM pcs_all_startlists"), by = c("race", "year", "url"))
 
 #
-#
+# THIS IS PROBABLY BROKEN
 #
 
 for(r in 1:length(all_races$url)) {
@@ -1494,18 +1515,22 @@ for(r in 1:length(all_races$url)) {
   
   if(length(d) == 0) {
     
-  } else {
+  } else if(length(d) > 1) {
     
     # find which table to choose by searching for the one generically displayed (will be stage standings)
     choose <- page %>%
       html_nodes('div') %>%
       html_attr(name = "class") %>%
       enframe(name = NULL) %>%
-      filter(value %in% c("resultCont hide", "resultCont ")) %>%
+      filter(value %in% c("result-cont hide", "result-cont")) %>%
       tibble::rowid_to_column() %>%
       .[[1]] %>%
       .[[1]]
   
+  } else {
+    
+    choose <- 1
+    
   }
   
   #
