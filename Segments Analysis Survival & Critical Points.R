@@ -235,8 +235,12 @@ spec_race <- segment_data_races %>%
          Power, weight, pred_climb_difficulty, gain_1st) %>%
   unique() %>% 
   
-  mutate(t25_time = ifelse(rnk <= 25, time, NA),
-         t25_stage = ifelse(rnk <= 25, total_seconds, NA)) %>%
+  group_by(race, stage, year, class) %>%
+  mutate(best_rank = min(rnk, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(t25_time = ifelse(rnk <= (best_rank + 10), time, NA),
+         t25_stage = ifelse(rnk <= (best_rank + 10), total_seconds, NA)) %>%
   
   group_by(Segment, race, stage, year, class, Distance, Gradient, OrderInRace) %>%
   
