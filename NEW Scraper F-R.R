@@ -29,10 +29,12 @@ con <- dbConnect(MySQL(),
                  user='jalnichols',
                  password='braves')
 
-# Scrape all UCI World Tour races for 2013-20
+# Scrape all UCI World Tour races for 2011-21
 
 scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020, 2021, 2021),
-                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2, 1,2))
+                       page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2, 1,2)) %>%
+  
+  filter(year == 2021)
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -121,7 +123,9 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                 6,6,6,6,6,
                                 3,3,3,3,3,
                                 8,8,8,8,8,8,8,8,8,
-                                4,4,4,4,4,4))
+                                4,4,4,4,4,4)) %>%
+  
+  filter(year == 2021)
 
 #
 
@@ -207,7 +211,9 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_info") %>%
 
  all_races <- all_races %>%
    
-   filter((!(url %in% already_scraped$race_url)))
+   filter((!(url %in% already_scraped$race_url))) %>%
+   
+   filter(str_detect(date, "January") | str_detect(date, "February"))
  #
  
  dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
@@ -339,7 +345,7 @@ tictoc::tic()
 
 #
 
-for(y in 4271:length(all_stages$race_url)) {
+for(y in 4301:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
