@@ -1431,7 +1431,9 @@ stage_data <- stage_data %>%
   
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
 
-  unique()
+  unique() %>% 
+  
+  mutate(rider = str_to_title(rider))
 
 # Write the cleaned-up data to database
 

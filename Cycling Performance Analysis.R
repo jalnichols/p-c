@@ -849,6 +849,7 @@ three_methods <- rbind(
     mutate(type = "ic") %>%
     anti_join(pv_data %>% select(stage, race, year, class)) %>%
     anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
+    anti_join(strava_elev_data %>% select(stage, race, year, class)) %>%
     select(-class),
   
   pv_data %>%
