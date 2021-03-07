@@ -88,8 +88,9 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   # so maybe accept any riders +/- 10 km? or maybe we just can't get accurate TT data
   
   mutate(distance = distance * 1.609) %>% 
-  filter((distance / length) > 0.8) %>%
+  filter((distance / length) > 0.5) %>%
   filter((distance / length) < 1.2) %>%
+  filter((time_trial == 1 & (distance / length) > 0.8) | time_trial == 0) %>%
   
   select(-win_seconds,
          -parcours_value, -stage_type,
@@ -110,7 +111,11 @@ segment_data_races <- stage_level_power %>%
   
   inner_join(
     
-    dbGetQuery(con, "SELECT * FROM strava_segment_data"), by = c("activity_id")
+    dbGetQuery(con, "SELECT rowname, Segment,
+               Distance, Gradient, Speed,
+               Power, Type,
+               activity_id
+               FROM strava_segment_data"), by = c("activity_id")
     
   ) %>%
   
@@ -119,12 +124,27 @@ segment_data_races <- stage_level_power %>%
   ungroup() %>%
   
   select(-gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
-         -sof_limit, -success, -points_finish, -cobbles, -VerticalGain, -VAM, -HR, -Tour,
+         -sof_limit, -success, -points_finish, -cobbles, -Tour,
          -gc_winner, -time_trial, -stage_name) %>%
   
   mutate(rowname = as.numeric(rowname)) %>% 
   
   mutate(time = Distance / Speed * 3600)
+
+#
+
+abc %>% filter(year==2019) %>% group_by(race, stage, year, class) %>% summarize(n = n_distinct(rider)) %>% arrange(desc(n)) -> r
+
+abc <- segment_data_races %>%
+  
+  anti_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
+              select(stage, race, year, class) %>%
+              unique(), by = c("stage", "race", 'year', "class")) %>%
+  
+  filter(race %in% c("la fleche wallonne", "la vuelta ciclista a espana", "liege-bastogne-liege",
+                     "faun environnement - classic de l'ardeche rhone crussol", "royal bernard drome classic") & year %in% c(2019)) %>%
+  filter(rnk != 200) %>%
+  select(activity_id, pcs, rnk, stage, race, year, class, rowname, Segment, Distance, Gradient, Type, distance, length)
 
 #
 #
@@ -162,6 +182,7 @@ segment_impact <- segment_data_races %>%
             power = mean(wattskg, na.rm = T),
             peak_power = mean(t25_watts, na.rm = T),
             with_power = sum(!is.na(wattskg)),
+            t25_power = sum(!is.na(t25_watts)),
             riders = n()) %>% 
   
   ungroup() %>%
@@ -173,8 +194,11 @@ segment_impact <- segment_data_races %>%
   
   filter(riders >= 10) %>% 
   
-  mutate(perc_90_10 = (x90-x10) / med)
+  mutate(perc_90_10 = (x90-x10) / med,
+         fastest = (med / x10) - 1)
 
+#
+#
 #
 
 segment_impact %>% 
@@ -281,6 +305,25 @@ spec_race <- segment_data_races %>%
          time_lost_after_point = segments_time_lost - subsequent_time_lost,
          alive = ifelse((time_lost_to_point + rel25) > 45, 0, 1))
 
+#
+
+spec_race %>% 
+  arrange(rider, year, class, race, stage, perc_thru) %>%
+  
+  group_by(stage, race, year, rider, class) %>% 
+  mutate(alive_start = lag(alive)) %>% 
+  filter(perc_thru == max(perc_thru, na.rm = T)) %>%
+  ungroup() %>% 
+  
+  filter(perc_thru >= 0.9) %>% 
+  
+  group_by(rider) %>% 
+  summarize(alive = mean(alive, na.rm = T), 
+            alive_start = mean(alive_start, na.rm = T),
+            time_on_climb = sum(time, na.rm = T) / sum(t25, na.rm = T), 
+            power = mean(Power/weight, na.rm = T),
+            n = n()) %>% 
+  ungroup() -> final_segments
 
 #
 
@@ -293,8 +336,15 @@ spec_race %>%
 
 spec_race %>% 
   
+  arrange(rider, year, class, race, stage, perc_thru) %>%
+  
+  group_by(stage, race, year, rider, class) %>% 
+  mutate(alive_start = lag(alive)) %>% 
+  ungroup() %>%
+  
   group_by(race, stage, year, class, Segment, OrderInRace, perc_thru) %>% 
   summarize(still_in_group = mean(alive, na.rm = T), 
+            in_group_start = mean(alive_start, na.rm = T),
             riders = n()) %>% 
   ungroup() %>%
   
