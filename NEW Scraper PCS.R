@@ -307,9 +307,20 @@ new_events <- all_events %>%
     dbReadTable(con, "pcs_all_races") %>%
       filter(type != "scraper"), by = c("url")
     
+  ) %>%
+  
+  anti_join(
+    
+    dbReadTable(con, "pcs_all_races") %>%
+      filter(type != "scraper"), by = c("Race", "year", "Class")
+    
   )
+  
+  
 
 all_events <- new_events
+
+print(all_events)
 
 dbWriteTable(con, "pcs_all_races", new_events, row.names = FALSE, append = TRUE)
 
@@ -1606,12 +1617,11 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
                         WHERE year > 2019 AND time_trial = 0") %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT")) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year == 2021 & !class %in% c("1.2", "2.2"))) %>%
   
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT race, year, stage FROM pcs_km_breakaway") %>%
-              mutate(stage = as.numeric(stage)), by = c("race", "year", "stage"))
+  anti_join(dbGetQuery(con, "SELECT race, year, stage FROM pcs_km_breakaway"), by = c("race", "year", "stage"))
 
 #
 
@@ -1664,9 +1674,11 @@ for(r in 1:length(all_races$url)) {
     
     #
     
-    dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
+    #dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
     
     print(r)
+    
+    print(breaks)
     
   }
   
