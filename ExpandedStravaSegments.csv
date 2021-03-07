@@ -766,7 +766,7 @@ CôtedeHaute-Levee,1,185,liege-bastogne-liege,2020,1,1.UWT
 ColduRosierNo44HellingenApp,1,198,liege-bastogne-liege,2020,1,1.UWT
 ColduMaquisardNo45HellingenApp,1,210.5,liege-bastogne-liege,2020,1,1.UWT
 CôtedelaRedouteNo47HellingenApp,1,222,liege-bastogne-liege,2020,1,1.UWT
-819.CôteduHornay,1,227.5,liege-bastogne-liege,2020,1,1.UWT
+CôteduHornay(Cotacoln°819)#CotacolHunting,1,227.5,liege-bastogne-liege,2020,1,1.UWT
 ThierdesForgesClimb,1,234,liege-bastogne-liege,2020,1,1.UWT
 RocheAuxFauconsPGC'19,1,244,liege-bastogne-liege,2020,1,1.UWT
 Alped'Torquay,1,56.5,cadel evans great ocean road race,2020,1,1.UWT
@@ -2021,40 +2021,636 @@ coldecastillon(sortiedesospel),1,79.5,tour des alpes maritimes et du var,2021,3,
 ColdelaMadoneviaGorbio,1,106,tour des alpes maritimes et du var,2021,3,2.1
 GravaClimb,1,119.5,tour des alpes maritimes et du var,2021,3,2.1
 RoutedeTrambis,1,124.5,tour des alpes maritimes et du var,2021,3,2.1
-tunneltoledro,1,10.5,giro d'italia,2018,17,2.UWT
-HautevillejunctiontoArc1800,1,16.5,tour de l'avenir,2018,9,2.Ncup
-RouteDesEspagnolsClimb,1,20,tour de l'avenir,2018,9,2.Ncup
-StradaEsternaCorsoSpangherClimb,1,25,giro d'italia,2018,15,2.UWT
+Lacotedupin2,1,9,criterium du dauphine,2018,1,2.UWT
+Alboussière-ColdesFans,1,19,criterium du dauphine,2018,1,2.UWT
+LesChalayesClimb,1,50,criterium du dauphine,2018,1,2.UWT
+aurondpoint,1,55,criterium du dauphine,2018,1,2.UWT
+TerrièresClimb,1,90,criterium du dauphine,2018,1,2.UWT
+MontéeUnieuxCroixdeMarlet,1,140,criterium du dauphine,2018,1,2.UWT
+Digue-Rossignolet,1,40,criterium du dauphine,2018,2,2.UWT
+ColdelaCambuse,1,84,criterium du dauphine,2018,2,2.UWT
+ColdelaCroixMarchampt,1,105,criterium du dauphine,2018,2,2.UWT
+MontéRégnié-Durette,1,118,criterium du dauphine,2018,2,2.UWT
+ColdeCrie(LesDépôts)-622m,1,134,criterium du dauphine,2018,2,2.UWT
+ourouxavenas,1,147,criterium du dauphine,2018,2,2.UWT
+LastKMFûtd'Avenas,1,148,criterium du dauphine,2018,2,2.UWT
+MontéedelaBatieDivisindesAbrets,1,60,criterium du dauphine,2018,4,2.UWT
+ToutesAuresDepuisStEtienne,1,102,criterium du dauphine,2018,4,2.UWT
+ColduMontNoirparStPierredeCherennes,1,141,criterium du dauphine,2018,4,2.UWT
+"CarrefourPattente/Patted'oie""Bridou""",1,143,criterium du dauphine,2018,4,2.UWT
+Pontdelagoulenoire-Villard,1,166,criterium du dauphine,2018,4,2.UWT
+CLMStadedesNeiges,1,181,criterium du dauphine,2018,4,2.UWT
+MonterdePétain,1,4,criterium du dauphine,2018,5,2.UWT
+MasJulien-ColdesMouilles,1,19,criterium du dauphine,2018,5,2.UWT
+Goncelin-StPierred'A,1,43,criterium du dauphine,2018,5,2.UWT
+Valmorel,1,129,criterium du dauphine,2018,5,2.UWT
+Albertville-Bisanne,1,28,criterium du dauphine,2018,6,2.UWT
+ColdePré(fromBeaufortstop),1,59,criterium du dauphine,2018,6,2.UWT
+Colmerailletroselland,1,72,criterium du dauphine,2018,6,2.UWT
+MonteeCyclisteLaRosiere,1,110,criterium du dauphine,2018,6,2.UWT
+Cormet-de-RoselandNo68GreatestTDFClimbs,1,42,criterium du dauphine,2018,7,2.UWT
+ClimbtoVille-Dessus,1,64,criterium du dauphine,2018,7,2.UWT
+ColdeSaisiestoTDFroundabout,1,88,criterium du dauphine,2018,7,2.UWT
+Vervex-BettexparAmerands(CriteriumduDauphiné2015),1,126,criterium du dauphine,2018,7,2.UWT
+BettexClimb,1,136,criterium du dauphine,2018,7,2.UWT
 MontediRagognadaMuris,1,42.5,giro d'italia,2018,14,2.UWT
-BellentretoLesChapelles,1,46,tour de l'avenir,2018,9,2.Ncup
-MycoldelLysdaViu,1,49,giro d'italia,2018,19,2.UWT
-passomauriatotalclimb,1,50,giro d'italia,2018,15,2.UWT
 ForgariaClimb,1,56.5,giro d'italia,2018,14,2.UWT
-FutzeKopf,1,64,tour de l'avenir,2018,9,2.Ncup
-ChaletSlog,1,71,tour de l'avenir,2018,9,2.Ncup
-PievediCadore,1,71.5,giro d'italia,2018,15,2.UWT
-LodrinodagiÃ¹PB,1,71.5,giro d'italia,2018,17,2.UWT
-LaThuiletoTignesBarrage,1,82,tour de l'avenir,2018,9,2.Ncup
 SellaChianzutandaVerzegnis(partI),1,88.5,giro d'italia,2018,14,2.UWT
-BarrageTignes-Vald'IsÃ¨re,1,89,tour de l'avenir,2018,9,2.Ncup
-<U+2622>3<U+FE0F><U+20E3>SanGiovanni,1,94,giro d'italia,2018,17,2.UWT
-"ViaP.F.Calvi,32Climb",1,96,giro d'italia,2018,15,2.UWT
-FinestrePavedsegment,1,104,giro d'italia,2018,19,2.UWT
 GPMAvaglio,1,105,giro d'italia,2018,14,2.UWT
-ColleDelleFinestreClimbGravel,1,110.5,giro d'italia,2018,19,2.UWT
-COTA2014TTPassoTreCroci,1,111,giro d'italia,2018,15,2.UWT
-SestrieredaTraverses,1,138,giro d'italia,2018,19,2.UWT
-Verres-Quincod,1,140,giro d'italia,2018,20,2.UWT
 PassoDuron,1,141.5,giro d'italia,2018,14,2.UWT
-coltzecoregpm,1,146.5,giro d'italia,2018,20,2.UWT
-<U+2622>***MONTEROTONDO***<U+2622>,1,147,giro d'italia,2018,17,2.UWT
-"PassoS.AntonioSoloSalitaPura,FinoaCartello!",1,147.5,giro d'italia,2018,15,2.UWT
-CostalissoioClimb,1,161,giro d'italia,2018,15,2.UWT
 atacdavalcjalde,1,161.5,giro d'italia,2018,14,2.UWT
 valcalda(torrente-cartello),1,165.5,giro d'italia,2018,14,2.UWT
-PonteCordevole-Sappada,1,173,giro d'italia,2018,15,2.UWT
 Zoncolanfirsthalf,1,181.5,giro d'italia,2018,14,2.UWT
-myBardonecchia-Jafferau,1,185.5,giro d'italia,2018,19,2.UWT
 Zoncolan2ndhalf,1,186,giro d'italia,2018,14,2.UWT
+StradaEsternaCorsoSpangherClimb,1,25,giro d'italia,2018,15,2.UWT
+passomauriatotalclimb,1,50,giro d'italia,2018,15,2.UWT
+PievediCadore,1,71.5,giro d'italia,2018,15,2.UWT
+"ViaP.F.Calvi,32Climb",1,96,giro d'italia,2018,15,2.UWT
+COTA2014TTPassoTreCroci,1,111,giro d'italia,2018,15,2.UWT
+"PassoS.AntonioSoloSalitaPura,FinoaCartello!",1,147.5,giro d'italia,2018,15,2.UWT
+CostalissoioClimb,1,161,giro d'italia,2018,15,2.UWT
+PonteCordevole-Sappada,1,173,giro d'italia,2018,15,2.UWT
+tunneltoledro,1,10.5,giro d'italia,2018,17,2.UWT
+LodrinodagiùPB,1,71.5,giro d'italia,2018,17,2.UWT
+<U+2622>3<U+FE0F><U+20E3>SanGiovanni,1,94,giro d'italia,2018,17,2.UWT
+<U+2622>***MONTEROTONDO***<U+2622>,1,147,giro d'italia,2018,17,2.UWT
+MycoldelLysdaViu,1,49,giro d'italia,2018,19,2.UWT
+FinestrePavedsegment,1,104,giro d'italia,2018,19,2.UWT
+ColleDelleFinestreClimbGravel,1,110.5,giro d'italia,2018,19,2.UWT
+SestrieredaTraverses,1,138,giro d'italia,2018,19,2.UWT
+myBardonecchia-Jafferau,1,185.5,giro d'italia,2018,19,2.UWT
+Verres-Quincod,1,140,giro d'italia,2018,20,2.UWT
+coltzecoregpm,1,146.5,giro d'italia,2018,20,2.UWT
 SanPantaleon,1,187,giro d'italia,2018,20,2.UWT
 Antey-Cervinia||ArrivalKOM4thstage#girovda2017,1,214,giro d'italia,2018,20,2.UWT
+HautevillejunctiontoArc1800,1,16.5,tour de l'avenir,2018,9,2.Ncup
+RouteDesEspagnolsClimb,1,20,tour de l'avenir,2018,9,2.Ncup
+BellentretoLesChapelles,1,46,tour de l'avenir,2018,9,2.Ncup
+FutzeKopf,1,64,tour de l'avenir,2018,9,2.Ncup
+ChaletSlog,1,71,tour de l'avenir,2018,9,2.Ncup
+LaThuiletoTignesBarrage,1,82,tour de l'avenir,2018,9,2.Ncup
+AlloftheJabel,1,166,uae tour,2021,3,2.UWT
+JebelJais-VeloViewer,1,170,uae tour,2021,5,2.UWT
+Cotedelauris,1,56.5,tour de la provence,2021,3,2.Pro
+MyBonnieuxclimb,1,72,tour de la provence,2021,3,2.Pro
+GordesclimbtoSenanqueTjunction,1,104.5,tour de la provence,2021,3,2.Pro
+Blauvacfull,1,122.5,tour de la provence,2021,3,2.Pro
+SteEstève-ChaletReynard,1,154,tour de la provence,2021,3,2.Pro
+StradeBianche:Vidritta,1,20,strade bianche,2018,1,1.UWT
+GrottiOff-RoadCote***-FlandresLove,1,30,strade bianche,2018,1,1.UWT
+Radi-SettoreSterrato,1,42,strade bianche,2018,1,1.UWT
+smitragliataPiana-Stile,1,53,strade bianche,2018,1,1.UWT
+SALITADIMONTALCINO-LATOBUONCONVENTOFINOROTONDA,1,66,strade bianche,2018,1,1.UWT
+EROICA1,1,86,strade bianche,2018,1,1.UWT
+StradeBianche/L'Eroica-PieveaSalti,1,99,strade bianche,2018,1,1.UWT
+SLITASANMARTINOINGRANIA,1,121,strade bianche,2018,1,1.UWT
+StradeBianche/L'Eroica-MonteSanteMarie,1,141.5,strade bianche,2018,1,1.UWT
+StradeBianche-Monteaperti,1,161,strade bianche,2018,1,1.UWT
+StradeBianche-CollePinzuto,1,167,strade bianche,2018,1,1.UWT
+Stradebianche7°settore,1,172,strade bianche,2018,1,1.UWT
+StradeBianche-FinishHillSiena,1,184,strade bianche,2018,1,1.UWT
+StradeBianche:Vidritta,1,20,strade bianche,2019,1,1.UWT
+GrottiOff-RoadCote***-FlandresLove,1,30.5,strade bianche,2019,1,1.UWT
+Radi-SettoreSterrato,1,41,strade bianche,2019,1,1.UWT
+smitragliataPiana-Stile,1,53,strade bianche,2019,1,1.UWT
+SALITADIMONTALCINO-LATOBUONCONVENTOFINOROTONDA,1,66.5,strade bianche,2019,1,1.UWT
+EROICA1,1,86,strade bianche,2019,1,1.UWT
+StradeBianche/L'Eroica-PieveaSalti,1,99,strade bianche,2019,1,1.UWT
+SLITASANMARTINOINGRANIA,1,121,strade bianche,2019,1,1.UWT
+StradeBianche/L'Eroica-MonteSanteMarie,1,141.5,strade bianche,2019,1,1.UWT
+StradeBianche-Monteaperti,1,161,strade bianche,2019,1,1.UWT
+StradeBianche-CollePinzuto,1,167,strade bianche,2019,1,1.UWT
+Stradebianche7°settore,1,172,strade bianche,2019,1,1.UWT
+StradeBianche-FinishHillSiena,1,184,strade bianche,2019,1,1.UWT
+SaintRomaindeLerpsparSaintPéray,1,8.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+AlboussièreparlePont,1,27.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+cotelepinet,1,45.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+SaintRomaindeLerpsparSaintPéray,2,66.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+AlboussièreparlePont,2,85.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+cotelepinet,2,103.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+SaintRomaindeLerpsparSaintPéray,3,124.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+AlboussièreparlePont,3,143.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+cotelepinet,3,162,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+coteauxducarnas,1,179,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+CheminDeToulaudClimb,1,190.5,faun environnement - classic de l'ardeche rhone crussol,2019,1,1.1
+Murducimetière(Beauvallon),1,4,royal bernard drome classic,2019,1,1.1
+Montéed'Allex,1,33.5,royal bernard drome classic,2019,1,1.1
+HautLivron(DrômeClassic),1,41,royal bernard drome classic,2019,1,1.1
+Murducimetière(Beauvallon),2,54.5,royal bernard drome classic,2019,1,1.1
+Montéed'Allex,2,84,royal bernard drome classic,2019,1,1.1
+HautLivron(DrômeClassic),2,91.5,royal bernard drome classic,2019,1,1.1
+Murducimetière(Beauvallon),3,105.5,royal bernard drome classic,2019,1,1.1
+Montéed'Allex,3,134.5,royal bernard drome classic,2019,1,1.1
+TestChabrillan,1,144,royal bernard drome classic,2019,1,1.1
+MontéedesFaures,1,150,royal bernard drome classic,2019,1,1.1
+granecroisementdevestartaiguille,1,159,royal bernard drome classic,2019,1,1.1
+Coldelagrandelimite,1,169,royal bernard drome classic,2019,1,1.1
+"D204""lesroberts""",1,180,royal bernard drome classic,2019,1,1.1
+CôtedeGrane,1,187,royal bernard drome classic,2019,1,1.1
+Montéed'Allex,4,193,royal bernard drome classic,2019,1,1.1
+HautLivron(DrômeClassic),3,201,royal bernard drome classic,2019,1,1.1
+CotedeTancremont,1,47.5,la fleche wallonne,2019,1,1.UWT
+ThierdesForgesClimb,1,57,la fleche wallonne,2019,1,1.UWT
+CôtedeEreffeNo30HellingenApp,1,120.5,la fleche wallonne,2019,1,1.UWT
+CheraveSC(FlècheWallonneClassic),1,131,la fleche wallonne,2019,1,1.UWT
+MurdeHuyNo31HellingenApp,1,137,la fleche wallonne,2019,1,1.UWT
+CôtedeEreffeNo30HellingenApp,1,149.5,la fleche wallonne,2019,1,1.UWT
+CheraveSC(FlècheWallonneClassic),1,160,la fleche wallonne,2019,1,1.UWT
+MurdeHuyNo31HellingenApp,1,166,la fleche wallonne,2019,1,1.UWT
+CôtedeEreffeNo30HellingenApp,1,178.5,la fleche wallonne,2019,1,1.UWT
+CheraveSC(FlècheWallonneClassic),1,189.5,la fleche wallonne,2019,1,1.UWT
+MurdeHuyNo31HellingenApp,1,196,la fleche wallonne,2019,1,1.UWT
+CôtedeTohogne(GranFondoMerckx2013),1,94,la fleche wallonne,2019,1,1.UWT
+CôtedeLaRoche-en-ArdenneNo34HellingenApp,1,75,liege-bastogne-liege,2019,1,1.UWT
+MurSaint-Roch,1,120.5,liege-bastogne-liege,2019,1,1.UWT
+montlesoie,1,161,liege-bastogne-liege,2019,1,1.UWT
+CôtedeWanneNo38HellingenApp,1,169,liege-bastogne-liege,2019,1,1.UWT
+CôtedeStockeuNo41HellingenApp,1,176,liege-bastogne-liege,2019,1,1.UWT
+CôtedeHaute-Levee,1,182,liege-bastogne-liege,2019,1,1.UWT
+ColduRosierNo44HellingenApp,1,194.5,liege-bastogne-liege,2019,1,1.UWT
+ColduMaquisardNo45HellingenApp,1,207.5,liege-bastogne-liege,2019,1,1.UWT
+CôtedelaRedouteNo47HellingenApp,1,219.5,liege-bastogne-liege,2019,1,1.UWT
+CôteduHornay(Cotacoln°819)#CotacolHunting,1,224.5,liege-bastogne-liege,2019,1,1.UWT
+ThierdesForgesClimb,1,231,liege-bastogne-liege,2019,1,1.UWT
+RocheAuxFauconsPGC'19,1,241,liege-bastogne-liege,2019,1,1.UWT
+CôtedeLanne(versantBarcus),1,28,la vuelta ciclista a espana,2019,11,2.UWT
+ChallengedesCols64,1,76.5,la vuelta ciclista a espana,2019,11,2.UWT
+VentasdeIzpegiOfficial,1,123,la vuelta ciclista a espana,2019,11,2.UWT
+OtsondohastaOrabidea(Arizkun)www.pirenaica.com,1,142.5,la vuelta ciclista a espana,2019,11,2.UWT
+IstilarteXBeitikokarrika,1,172,la vuelta ciclista a espana,2019,11,2.UWT
+MontéeLohitzun(Oyhercq),1,6,la vuelta ciclista a espana,2019,11,2.UWT
+MugularClimb,1,23,la vuelta ciclista a espana,2019,11,2.UWT
+Galxetaburu,1,92,la vuelta ciclista a espana,2019,11,2.UWT
+Laribaud,1,114,la vuelta ciclista a espana,2019,11,2.UWT
+Maeztu->PuertoAzazeta,1,42,la vuelta ciclista a espana,2019,12,2.UWT
+1/2SubidaaMorga,1,127,la vuelta ciclista a espana,2019,12,2.UWT
+UrruztimendiporFika,1,134,la vuelta ciclista a espana,2019,12,2.UWT
+VIVEROXTREM(PorLezama)),1,144,la vuelta ciclista a espana,2019,12,2.UWT
+Arraiz(hastareventar),1,162,la vuelta ciclista a espana,2019,12,2.UWT
+LaEscritaporTrucios,1,38.5,la vuelta ciclista a espana,2019,13,2.UWT
+UbalporSoscaño,1,55,la vuelta ciclista a espana,2019,13,2.UWT
+ColladodelAsón(desdeRegules),1,85,la vuelta ciclista a espana,2019,13,2.UWT
+PuertodeAlisas(Arreondo),1,105.5,la vuelta ciclista a espana,2019,13,2.UWT
+PuertodeFuenteLasVaras(DesdeAlbergueMax),1,136.5,la vuelta ciclista a espana,2019,13,2.UWT
+AltoCruzdeUsano,1,146.5,la vuelta ciclista a espana,2019,13,2.UWT
+MachucoshastametaLaVuelta,1,166,la vuelta ciclista a espana,2019,13,2.UWT
+zalla-herbosaclimb,1,22,la vuelta ciclista a espana,2019,13,2.UWT
+AltodelAcebo(hastaVillanuevaSanCristóbal),1,28,la vuelta ciclista a espana,2019,15,2.UWT
+Conniocompleto,1,72,la vuelta ciclista a espana,2019,15,2.UWT
+Pozodelasmujeresmuertas-AltoValvaler(poribias),1,113,la vuelta ciclista a espana,2019,15,2.UWT
+SantuariodelAceboporCastrodeLimés,1,154,la vuelta ciclista a espana,2019,15,2.UWT
+Sanlorenzodesdecruceacarteldealto,1,60,la vuelta ciclista a espana,2019,16,2.UWT
+cobertoriatex,1,100.5,la vuelta ciclista a espana,2019,16,2.UWT
+LaCubillaOEAFullGas,1,145,la vuelta ciclista a espana,2019,16,2.UWT
+NavacerradaSurdesdecruceBoalo,1,40,la vuelta ciclista a espana,2019,18,2.UWT
+PuertodeLaMorcuera(Norte)-real,1,77.5,la vuelta ciclista a espana,2019,18,2.UWT
+SubidaSotodelReal-PuertoMorcuera,1,120,la vuelta ciclista a espana,2019,18,2.UWT
+CotosdesdedesvíoLasPresillas,1,151,la vuelta ciclista a espana,2019,18,2.UWT
+PºPedrobernardohastafinbatería,1,33,la vuelta ciclista a espana,2019,20,2.UWT
+PTO.SERRANILLOSOFICIALSUR(DESDEP.K.32HASTACARTELPTO.),1,45,la vuelta ciclista a espana,2019,20,2.UWT
+Moriscosubiendo.,1,68.5,la vuelta ciclista a espana,2019,20,2.UWT
+SubidaParadorMadrid-Lisboa,1,108.5,la vuelta ciclista a espana,2019,20,2.UWT
+ChíavertienteSur(BF),1,118,la vuelta ciclista a espana,2019,20,2.UWT
+PuertodePeñanegra1ªCategoria,1,154,la vuelta ciclista a espana,2019,20,2.UWT
+SubidadePlataformadeGredos,1,189,la vuelta ciclista a espana,2019,20,2.UWT
+AltoCollado(desdeNavacepedadeTormes),1,170,la vuelta ciclista a espana,2019,20,2.UWT
+Neringstraatkanegem=>aarsele,1,21,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+NieuweKwaremont+Knoktstraat,1,78.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+KluisbergNo4HellingenApp,1,107.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+Knokteberg/CôtedeTrieuNo5HellingenApp,1,114.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+KortekeerNo8HellingenApp,1,122,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+SteenbeekdriesCobblesSection,1,125.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+TaaienbergWall****-flandreslove.com,1,128,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+BergTenHoute(B),1,131.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+hotondsteilstestuk,1,138.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+Knokteberg/CôtedeTrieuNo5HellingenApp,1,146,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+VaarentstraatvanN453-Kouterlindeweg,1,155,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+Tiegemberg-Vossenhol,1,158,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+HolstraatGijzelbrechtegem,1,162.5,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+<U+0001F3C6>FlandrienChallenge<U+0001F3C6>Nokereberg,1,170,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+Herlegemstraat(kasseieno-z),1,174,dwars door vlaanderen - a travers la flandre,2019,1,1.UWT
+toullaeron,1,46,bretagne classic - ouest-france,2019,1,1.UWT
+CôteduBot,1,96.5,bretagne classic - ouest-france,2019,1,1.UWT
+MarrosClimb,1,115,bretagne classic - ouest-france,2019,1,1.UWT
+MenezQuelerc'houest,1,136.5,bretagne classic - ouest-france,2019,1,1.UWT
+BaradozigClimb,1,147.5,bretagne classic - ouest-france,2019,1,1.UWT
+CôtedeLaz,1,167,bretagne classic - ouest-france,2019,1,1.UWT
+CalifornClimb,1,174,bretagne classic - ouest-france,2019,1,1.UWT
+Ribin-Bretagneclassic,1,178.5,bretagne classic - ouest-france,2019,1,1.UWT
+RibinoùdeStracou,1,182,bretagne classic - ouest-france,2019,1,1.UWT
+"MurdeCoatenHaie,LeFaouët",1,209.5,bretagne classic - ouest-france,2019,1,1.UWT
+CôtedeMartapremièrepartie,1,224.5,bretagne classic - ouest-france,2019,1,1.UWT
+CôtedeTy-Marrecvialeribin(D769),1,233,bretagne classic - ouest-france,2019,1,1.UWT
+MontéduLézot,2,238.5,bretagne classic - ouest-france,2019,1,1.UWT
+CôtedeTy-Marrecvialeribin(D769),2,247,bretagne classic - ouest-france,2019,1,1.UWT
+MontedeLennon,1,70.5,bretagne classic - ouest-france,2019,1,1.UWT
+MontéduLézot,1,2,bretagne classic - ouest-france,2019,1,1.UWT
+HoltdaleGarthClimb,1,22.5,world championships - road race,2019,1,WC
+Ooossshhh#239KidstonesPass,1,63,world championships - road race,2019,1,WC
+GrindintoLeyburn,1,85,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,1,145.5,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,2,159,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,3,173,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,4,187,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,5,201,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,6,215,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,7,229,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,8,242.5,world championships - road race,2019,1,WC
+HarlowHillfromHarrogate,9,256.5,world championships - road race,2019,1,WC
+Circuit2017,1,12.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,2,25,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,3,37.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,4,50,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,5,62.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,6,75,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,7,87.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,8,100,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,9,112.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,10,125,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,11,137.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,12,150,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,13,162.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,14,175,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,15,187.5,grand prix cycliste de quebec,2019,1,1.UWT
+Circuit2017,16,200,grand prix cycliste de quebec,2019,1,1.UWT
+Slingerberg(tunneltotAveMaria),1,10.5,amstel gold race,2019,1,1.UWT
+Adsteeg(Steeppart),1,15,amstel gold race,2019,1,1.UWT
+GWCyclingLangeRaarberg(kort),1,24,amstel gold race,2019,1,1.UWT
+Bergsewegsteilstestukje,1,40.5,amstel gold race,2019,1,1.UWT
+MonteSibbe,1,51.5,amstel gold race,2019,1,1.UWT
+Cauberg(ChduMonde),1,55,amstel gold race,2019,1,1.UWT
+Geulhemmerberg(correct),1,59.5,amstel gold race,2019,1,1.UWT
+Heiweg(myCols.net),1,79.5,amstel gold race,2019,1,1.UWT
+Duivenstraat(VoltaLimburgClassic),1,86,amstel gold race,2019,1,1.UWT
+Wolfsberg(myCols.app),1,90.5,amstel gold race,2019,1,1.UWT
+Loorberg(finishline),1,103,amstel gold race,2019,1,1.UWT
+SchweibergEperheideKLIM,1,107,amstel gold race,2019,1,1.UWT
+CamerigtotaanbochtHijgendHert,1,114.5,amstel gold race,2019,1,1.UWT
+eschbergtot3landenpunt,1,123.5,amstel gold race,2019,1,1.UWT
+Vals3-landenvanafGemmenicherweg,1,128,amstel gold race,2019,1,1.UWT
+CamerigOost,1,132.5,amstel gold race,2019,1,1.UWT
+EperheidevanafWilhelminastraat,1,141,amstel gold race,2019,1,1.UWT
+GulpenerbergPartij,1,149,amstel gold race,2019,1,1.UWT
+Rowanaandewandel,1,153,amstel gold race,2019,1,1.UWT
+>NL-Eys/Eyserweg,1,156,amstel gold race,2019,1,1.UWT
+GWCyclingHulsberg,1,160,amstel gold race,2019,1,1.UWT
+vrakelberg,1,164.5,amstel gold race,2019,1,1.UWT
+MonteSibbe,2,173.5,amstel gold race,2019,1,1.UWT
+Cauberg(ChduMonde),2,177.5,amstel gold race,2019,1,1.UWT
+Geulhemmerberg(correct),2,181.5,amstel gold race,2019,1,1.UWT
+#NL-climbfinder.com-Bemelerberg,1,195.5,amstel gold race,2019,1,1.UWT
+Loorberg(finishline),2,213,amstel gold race,2019,1,1.UWT
+GulpenerbergPartij,2,222,amstel gold race,2019,1,1.UWT
+Kruisberg(Amstel),1,227.5,amstel gold race,2019,1,1.UWT
+HFEyserbosweg,1,239,amstel gold race,2019,1,1.UWT
+FrombergOost(tottop),1,234,amstel gold race,2019,1,1.UWT
+GWCyclingKeutenberg,1,238,amstel gold race,2019,1,1.UWT
+Cauberg(ChduMonde),3,248,amstel gold race,2019,1,1.UWT
+Geulhemmerberg(correct),3,252.5,amstel gold race,2019,1,1.UWT
+#NL-climbfinder.com-Bemelerberg,2,259.5,amstel gold race,2019,1,1.UWT
+#NL-climbfinder.com-Hamelsbach,1,66,amstel gold race,2019,1,1.UWT
+PøtmøllehurtigstHCK,1,63,postnord danmark rundt - tour of denmark,2019,1,2.HC
+Loddenhøjoffgmp,1,78.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+Løndalvej,1,118.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+Lystrupmindebakkendenstejledel,1,134.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+Italienerbakken(ikkeflagged),1,145.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+"Hvinningdalvej,short",1,150.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+"Hvinningdalvej,short",2,156,postnord danmark rundt - tour of denmark,2019,1,2.HC
+"Hvinningdalvej,short",3,161.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+"Hvinningdalvej,short",4,166.5,postnord danmark rundt - tour of denmark,2019,1,2.HC
+BlueHorsetilskiltet,1,129,postnord danmark rundt - tour of denmark,2019,3,2.HC
+Tørskindefteråen,1,133,postnord danmark rundt - tour of denmark,2019,3,2.HC
+Ravningebakkenlong,1,140,postnord danmark rundt - tour of denmark,2019,3,2.HC
+Stejlstykke,1,153,postnord danmark rundt - tour of denmark,2019,3,2.HC
+GMLKONGEVEJ&CHR.WINTHERSVEJ-FULDLÆNGDE,1,158.5,postnord danmark rundt - tour of denmark,2019,3,2.HC
+Hørupbakken,1,164,postnord danmark rundt - tour of denmark,2019,3,2.HC
+HopballeMølleBakke,1,167.5,postnord danmark rundt - tour of denmark,2019,3,2.HC
+KongespurtenpåKongeetapen,1,182,postnord danmark rundt - tour of denmark,2019,3,2.HC
+KongespurtenpåKongeetapen,2,187,postnord danmark rundt - tour of denmark,2019,3,2.HC
+KongespurtenpåKongeetapen,3,192,postnord danmark rundt - tour of denmark,2019,3,2.HC
+KongespurtenpåKongeetapen,4,197,postnord danmark rundt - tour of denmark,2019,3,2.HC
+Haraldskær-Nr.Vilstrup,1,175.5,postnord danmark rundt - tour of denmark,2019,3,2.HC
+MonteeCamilienHoude,1,2,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,2,14.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,3,26.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,4,39,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,5,51,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,6,63.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,7,75.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,8,88,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,9,100,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,10,112.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,11,124.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,12,137,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,13,149,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,14,161.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,15,173.5,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,16,186,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,17,198,grand prix cycliste de montreal,2019,1,1.UWT
+MonteeCamilienHoude,18,210.5,grand prix cycliste de montreal,2019,1,1.UWT
+Trassenternorth-west,1,14,grand prix de wallonie,2019,1,1.1
+Duvélo-Stoumont,1,31,grand prix de wallonie,2019,1,1.1
+CôtedeWerbomont(Cotacoln°982)#CotacolHunting,1,53.5,grand prix de wallonie,2019,1,1.1
+Longchampsfu,1,78,grand prix de wallonie,2019,1,1.1
+CôtedeFalaën,1,152.5,grand prix de wallonie,2019,1,1.1
+Côted'Ermeton,1,163,grand prix de wallonie,2019,1,1.1
+Cotedelustin,1,180.5,grand prix de wallonie,2019,1,1.1
+Tienneauxpierresclimb,1,190.5,grand prix de wallonie,2019,1,1.1
+CitadelleNamurUp,1,206,grand prix de wallonie,2019,1,1.1
+cotedelandrecy,1,62,grand prix de wallonie,2019,1,1.1
+Salita:SanMarino-PortaS.Francesco(daMonteGiardino),1,42,settimana internazionale coppi e bartali,2019,2,2.1
+Torrianadaponteverucchio,1,59.5,settimana internazionale coppi e bartali,2019,2,2.1
+IXGoroloCote****-FlandresLove,1,70.5,settimana internazionale coppi e bartali,2019,2,2.1
+villemontetiffi,1,86,settimana internazionale coppi e bartali,2019,2,2.1
+villemontetiffi,2,108.5,settimana internazionale coppi e bartali,2019,2,2.1
+villemontetiffi,3,130.5,settimana internazionale coppi e bartali,2019,2,2.1
+RoccadelleCaminate(dalpontealbiviocima),1,18,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),2,40,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),3,62,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),4,84,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),5,106,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),6,128.5,settimana internazionale coppi e bartali,2019,3,2.1
+RoccadelleCaminate(dalpontealbiviocima),7,150.5,settimana internazionale coppi e bartali,2019,3,2.1
+Coppi&Bartali2019-Circuitofinale,1,67,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,2,80,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,3,92.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,4,105.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,5,118.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,6,131.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,7,144.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,8,157.5,settimana internazionale coppi e bartali,2019,4,2.1
+Coppi&Bartali2019-Circuitofinale,9,170,settimana internazionale coppi e bartali,2019,4,2.1
+Monte3Crociclimbcompleto,1,18,settimana internazionale coppi e bartali,2019,5,2.1
+Monte3Crociclimbcompleto,2,44.5,settimana internazionale coppi e bartali,2019,5,2.1
+SalitaTestFazzano,1,73.5,settimana internazionale coppi e bartali,2019,5,2.1
+SalitaTestFazzano,2,96.5,settimana internazionale coppi e bartali,2019,5,2.1
+SalitaTestFazzano,3,119.5,settimana internazionale coppi e bartali,2019,5,2.1
+SalitaTestFazzano,4,142,settimana internazionale coppi e bartali,2019,5,2.1
+muurdibelvedere,1,51.5,settimana internazionale coppi e bartali,2019,1,2.1
+muurdibelvedere,2,66,settimana internazionale coppi e bartali,2019,1,2.1
+muurdibelvedere,3,80.5,settimana internazionale coppi e bartali,2019,1,2.1
+KemmelbergKemmel-Top,1,93,bredene koksijde classic,2019,1,1.HC
+Rodeberg,1,98,bredene koksijde classic,2019,1,1.HC
+Hohemark-GrosseFeldbergClimb,1,48,eschborn-frankfurt,2019,1,1.UWT
+RuppertshainerBerg,1,59.5,eschborn-frankfurt,2019,1,1.UWT
+"Mammolshain-Königsteinbutwith""AmSteinbruchClimb""",1,81.5,eschborn-frankfurt,2019,1,1.UWT
+"Mammolshain-Königsteinbutwith""AmSteinbruchClimb""",2,96,eschborn-frankfurt,2019,1,1.UWT
+Billtalhöhe,1,101.5,eschborn-frankfurt,2019,1,1.UWT
+"Mammolshain-Königsteinbutwith""AmSteinbruchClimb""",3,130.5,eschborn-frankfurt,2019,1,1.UWT
+"Mammolshain-Königsteinbutwith""AmSteinbruchClimb""",4,145,eschborn-frankfurt,2019,1,1.UWT
+RuppertshainerBerg,2,108.5,eschborn-frankfurt,2019,1,1.UWT
+Dj105DClimb,1,63.5,sibiu cycling tour,2019,2,2.1
+TransfagarasanClimb,1,162,sibiu cycling tour,2019,2,2.1
+Urcare_Albota,1,132,sibiu cycling tour,2019,2,2.1
+UrcareCornatel-Sacadate,1,97,sibiu cycling tour,2019,2,2.1
+UrcaredupaBirghisspreAgnita,1,40,sibiu cycling tour,2019,2,2.1
+Tilisca-PoianaSibiuluiClimb,1,38.5,sibiu cycling tour,2019,3,2.1
+catarareapoldudesus-benzinarieeurooil,1,64,sibiu cycling tour,2019,3,2.1
+Tilisca-PoianaSibiuluiClimb,2,81.5,sibiu cycling tour,2019,3,2.1
+catarareapoldudesus-benzinarieeurooil,2,107.5,sibiu cycling tour,2019,3,2.1
+urcareCurmatura-drumSanta-asfalt,1,158,sibiu cycling tour,2019,3,2.1
+CapoMulini-Acireale,1,13,giro di sicilia,2019,1,2.1
+"StazioneTaormina/Taormina""G.S""",1,48.5,giro di sicilia,2019,1,2.1
+Messina-PortellaRizzodaViaPalermo,1,110,giro di sicilia,2019,1,2.1
+SalitaCapoMilazzo(borgo),1,155.5,giro di sicilia,2019,1,2.1
+F.Parrino-bivioForzad'Agrò,1,58.5,giro di sicilia,2019,1,2.1
+PortellaMonteneroclimb,1,77.5,giro di sicilia,2019,2,2.1
+SalitaCastelbuono-Primi4km,1,85,giro di sicilia,2019,2,2.1
+GFMADONIE_SalitaperGeraci15km,1,108,giro di sicilia,2019,2,2.1
+BivioGrilloSS120-PetraliaSoprana,1,1205,giro di sicilia,2019,2,2.1
+Ss113Climb,1,188.5,giro di sicilia,2019,2,2.1
+terminiimereseclimb,1,199,giro di sicilia,2019,2,2.1
+Capodarso-EnnaBassatutta,1,28.5,giro di sicilia,2019,3,2.1
+StradaStataleN.117BisClimb,1,46.5,giro di sicilia,2019,3,2.1
+CronoscalatamontiIblei,1,167.5,giro di sicilia,2019,3,2.1
+RagusaClimb(firsthalf),1,189,giro di sicilia,2019,3,2.1
+Mitogio-Portella,1,23.5,giro di sicilia,2019,4,2.1
+SalitadiMaletto,1,54.5,giro di sicilia,2019,4,2.1
+Nicolosi-EtnaSUDascento,1,119,giro di sicilia,2019,4,2.1
+Lousã-Catraia,1,40,volta a portugal santander,2019,1,2.1
+ST-Queriasquefossesempreadescer?,1,61.5,volta a portugal santander,2019,1,2.1
+Climbn350,1,80.5,volta a portugal santander,2019,1,2.1
+SubidadeArega,1,106,volta a portugal santander,2019,1,2.1
+CM1108,1,112,volta a portugal santander,2019,1,2.1
+N348Climb,1,116,volta a portugal santander,2019,1,2.1
+SubidaValePereiro,1,169,volta a portugal santander,2019,1,2.1
+Loures-CabeçodeMontachique,1,159.5,volta a portugal santander,2019,2,2.1
+IvoSubidadeSantaIria,1,186,volta a portugal santander,2019,2,2.1
+Estr.Militar11Climb,1,199,volta a portugal santander,2019,2,2.1
+R.AdrianoCorreiaDeOliveiraClimb,1,205,volta a portugal santander,2019,2,2.1
+VariantedeAlcobaça(vertenteleste),1,44,volta a portugal santander,2019,2,2.1
+R.PortoSalir3Climb,1,50,volta a portugal santander,2019,2,2.1
+Subida-Tunel,1,113,volta a portugal santander,2019,2,2.1
+GradilparaMalveira,1,136,volta a portugal santander,2019,2,2.1
+Esc.PraticadeCavalariaClimb,1,73,volta a portugal santander,2019,3,2.1
+SubidaTotalMouriscas,1,87,volta a portugal santander,2019,3,2.1
+Mouriscas-Penhascoso(completclimb),1,94,volta a portugal santander,2019,3,2.1
+SubidaatéFurtado(Corrigido),1,102,volta a portugal santander,2019,3,2.1
+EstradaoAltoBoavista(chegadaaMação),1,109,volta a portugal santander,2019,3,2.1
+BelveratéGaviao(1ªRotunda),1,122.5,volta a portugal santander,2019,3,2.1
+"RibeiradeNisa-AtéDescidaVVRodão,N18climb",1,162.5,volta a portugal santander,2019,3,2.1
+SubidaVVR-TopoN3,1,186,volta a portugal santander,2019,3,2.1
+SoeirinhoClimb,1,7,volta a portugal santander,2019,4,2.1
+Unhais-o-Velho->PorteladeUnhais,1,29,volta a portugal santander,2019,4,2.1
+CruzamentoN343-CruzamentoN230,1,46,volta a portugal santander,2019,4,2.1
+Covilhã-CentroLimpezadeNeve(PIORNOS),1,139,volta a portugal santander,2019,4,2.1
+ahoratevadolerhastalatorrealta,1,147,volta a portugal santander,2019,4,2.1
+FastClimbFelgueira,1,41,volta a portugal santander,2019,5,2.1
+PortodaCarne(rotunda)-Guarda(rotundabombeiros),1,151,volta a portugal santander,2019,5,2.1
+Polis-JardimJosédeLemos,1,160,volta a portugal santander,2019,5,2.1
+Mondego-EmpedradoParanhosdaBeira,1,62,volta a portugal santander,2019,5,2.1
+RioTuela-cruzamentodePaço,1,20,volta a portugal santander,2019,7,2.1
+"Climb""AsPontes""",1,30,volta a portugal santander,2019,7,2.1
+MontedaForcaClimb,1,35,volta a portugal santander,2019,7,2.1
+fabricacordas>>miradouro,1,119,volta a portugal santander,2019,7,2.1
+Em5091Climb,1,145.5,volta a portugal santander,2019,7,2.1
+SerradoLarouco,1,160,volta a portugal santander,2019,7,2.1
+SubidaPonteRebordeloLebuçao,1,61,volta a portugal santander,2019,7,2.1
+Agrelaaocronómetro,1,89,volta a portugal santander,2019,8,2.1
+CarreiroTotal,1,113,volta a portugal santander,2019,8,2.1
+Paredes-Penafiel(pc),1,126,volta a portugal santander,2019,8,2.1
+SantaQuitériaVoltaaPortugal,1,163,volta a portugal santander,2019,8,2.1
+EstradaReal»»»Ermida,1,146.5,volta a portugal santander,2019,8,2.1
+R.BoucinhaClimb,1,145,volta a portugal santander,2019,8,2.1
+R.MimosasClimb,1,143,volta a portugal santander,2019,8,2.1
+Fafe_Lameira_Hill,1,21.5,volta a portugal santander,2019,9,2.1
+M1733ClimbRegoViso,1,27.5,volta a portugal santander,2019,9,2.1
+SubidaPonte-Paradança,1,54,volta a portugal santander,2019,9,2.1
+SubidaÉpicaPonded'Olo-AltodaBarra,1,72.5,volta a portugal santander,2019,9,2.1
+SubidaÉpicaErmelo-Barreiro,1,96,volta a portugal santander,2019,9,2.1
+Mondim-Sra.daGraça,1,138,volta a portugal santander,2019,9,2.1
+Labaronne-Gattières,1,10.5,paris - nice,2019,7,2.UWT
+MontéedeGourdondepuisPontduLoup,1,47.5,paris - nice,2019,7,2.UWT
+Tourounet/Coursegoules,1,70.5,paris - nice,2019,7,2.UWT
+GILETTETOBONSONTURN-CLIMB,1,126.5,paris - nice,2019,7,2.UWT
+PELASQUECLIMB,1,161.5,paris - nice,2019,7,2.UWT
+Bollène-Turini,1,184,paris - nice,2019,7,2.UWT
+MontéeCipières(côtésud),1,58.5,paris - nice,2019,7,2.UWT
+vallée-LaBolèneVésubie,1,172,paris - nice,2019,7,2.UWT
+LaRoquettesurVar,1,20.5,paris - nice,2019,8,2.UWT
+PMIColdeChateauneuf,1,36.5,paris - nice,2019,8,2.UWT
+ColdeCalaïsson,1,51.5,paris - nice,2019,8,2.UWT
+MonteedePeille,1,67.5,paris - nice,2019,8,2.UWT
+ColdeEzeSummitfromEzeVillage,1,84,paris - nice,2019,8,2.UWT
+coldes4chemins,1,101.5,paris - nice,2019,8,2.UWT
+BaldyRoad-FirehousetoVillage,1,27.5,amgen tour of california,2019,6,2.UWT
+Gate->Shack,1,99.5,amgen tour of california,2019,6,2.UWT
+LastClimbtoBaldy,1,113.5,amgen tour of california,2019,6,2.UWT
+MtBaldyLodgetoSkiLift,1,128,amgen tour of california,2019,6,2.UWT
+AlisoCanyonClimb“Corrected”full,1,59,amgen tour of california,2019,7,2.UWT
+TopofAlisotoMillCreek,1,63.5,amgen tour of california,2019,7,2.UWT
+AFH-bridgetoclearcreek,1,93,amgen tour of california,2019,7,2.UWT
+FullFoxenclimbtotoppastZacaMesa,1,80.5,amgen tour of california,2019,5,2.UWT
+BumpinFoxen,1,88,amgen tour of california,2019,5,2.UWT
+"154,GolfCousetoSummit",1,128.5,amgen tour of california,2019,5,2.UWT
+FirstCasitasPass,1,179,amgen tour of california,2019,5,2.UWT
+SecondCasitasPass,1,183.5,amgen tour of california,2019,5,2.UWT
+FettoDrive,1,213.5,amgen tour of california,2019,5,2.UWT
+PattersonPass(East),1,54,amgen tour of california,2019,3,2.UWT
+MinesRdOutclimbs,1,77.5,amgen tour of california,2019,3,2.UWT
+MtHamiltonBackside,1,140.5,amgen tour of california,2019,3,2.UWT
+QuimbyRdEast,1,160,amgen tour of california,2019,3,2.UWT
+HeartlandtoHurtland,1,179,amgen tour of california,2019,3,2.UWT
+BackofMetcalf,1,187.5,amgen tour of california,2019,3,2.UWT
+GreenValleyfromLotustoP-ville,1,59.5,amgen tour of california,2019,2,2.UWT
+TheFullOmo,1,89,amgen tour of california,2019,2,2.UWT
+Omoand88toCarsonPass,1,147,amgen tour of california,2019,2,2.UWT
+final3kmtoLutherPass,1,165.5,amgen tour of california,2019,2,2.UWT
+PioneertoHeavenlyParking,1,195,amgen tour of california,2019,2,2.UWT
+TEAMVOLTACol'deCavalosS5,1,62,volta ao algarve em bicicleta,2019,2,2.HC
+"RibeirodeBaixo,road",1,129.5,volta ao algarve em bicicleta,2019,2,2.HC
+"Cansino,road",1,137,volta ao algarve em bicicleta,2019,2,2.HC
+riveradeMonchique-Pardieiros,1,144.5,volta ao algarve em bicicleta,2019,2,2.HC
+Pombal,1,151,volta ao algarve em bicicleta,2019,2,2.HC
+Foia-realsegment,1,188,volta ao algarve em bicicleta,2019,2,2.HC
+BP-PicotaCLIMB,1,63.5,volta ao algarve em bicicleta,2019,5,2.HC
+covadamuda,1,99.5,volta ao algarve em bicicleta,2019,5,2.HC
+SubidaFreixoSecoporSalir,1,121.5,volta ao algarve em bicicleta,2019,5,2.HC
+SubidaMalhãoporPédoCoelho,1,131.5,volta ao algarve em bicicleta,2019,5,2.HC
+Vermelhos,1,153,volta ao algarve em bicicleta,2019,5,2.HC
+California-Salir,1,163.5,volta ao algarve em bicicleta,2019,5,2.HC
+SubidaMalhãoporPédoCoelho,2,174,volta ao algarve em bicicleta,2019,5,2.HC
+N2-Cruz.BordeiraaS.Brás,1,16.5,volta ao algarve em bicicleta,2019,5,2.HC
+CaminhoDoPombalVistaOMonteClimb,1,79,volta ao algarve em bicicleta,2019,5,2.HC
+AmendoeiraparaS.Romão,1,87,volta ao algarve em bicicleta,2019,5,2.HC
+Altobaralto,1,3,vuelta a burgos,2019,2,2.HC
+RepechoLaAguilera,1,13,vuelta a burgos,2019,2,2.HC
+SUBIDADEROA,1,44.5,vuelta a burgos,2019,2,2.HC
+Subidasotilloacabañes,1,77.5,vuelta a burgos,2019,2,2.HC
+subidacallemayor,1,155,vuelta a burgos,2019,2,2.HC
+laMhaciaPesquera,1,19.5,vuelta a burgos,2019,3,2.HC
+ElEscalerón,1,38.5,vuelta a burgos,2019,3,2.HC
+AilanesClimb,1,63.5,vuelta a burgos,2019,3,2.HC
+IncinillasBisjuecessubida,1,85.5,vuelta a burgos,2019,3,2.HC
+Retuertaporvariante,1,122.5,vuelta a burgos,2019,3,2.HC
+PicónBlancodesdefinpuebloametavuelta,1,148,vuelta a burgos,2019,3,2.HC
+RampaaCastrillodelVal,1,30.5,vuelta a burgos,2019,4,2.HC
+"Bu901,9Climb",1,95.5,vuelta a burgos,2019,4,2.HC
+SUBIDARETUERTA,1,101.5,vuelta a burgos,2019,4,2.HC
+Bu900Climb,1,106,vuelta a burgos,2019,4,2.HC
+AltolaCruz,1,113,vuelta a burgos,2019,4,2.HC
+CiudadRomanadeClunia,1,177,vuelta a burgos,2019,4,2.HC
+CuestadeArroyo,1,24.5,vuelta a burgos,2019,5,2.HC
+CerrodeHuerta,1,90,vuelta a burgos,2019,5,2.HC
+ColladadeVilviestre,1,121.5,vuelta a burgos,2019,5,2.HC
+Quintanar-CuentodelCaballo,1,142,vuelta a burgos,2019,5,2.HC
+FinalNeiladesdecruceporQuintanar,1,145,vuelta a burgos,2019,5,2.HC
+Volcnica-Tinje,1,26.5,tour of slovenia,2019,2,2.HC
+BezinaClimb,1,44.5,tour of slovenia,2019,2,2.HC
+Kompole(bus)-Svetina(bus),1,123,tour of slovenia,2019,2,2.HC
+NaPema,1,35,tour of slovenia,2019,2,2.HC
+Motnik-Kozjak,1,27.5,tour of slovenia,2019,3,2.HC
+RovteClimb,1,117.5,tour of slovenia,2019,3,2.HC
+MedvedjeBrdoododcepanacestiLogatec-Rovte,1,129,tour of slovenia,2019,3,2.HC
+Mercator-Goreclimb,1,149,tour of slovenia,2019,3,2.HC
+PLAVEMOSTŽELEZNICA-VRHULJEODCEPKORADA,1,27.5,tour of slovenia,2019,4,2.HC
+strappodipodsabotin,1,48,tour of slovenia,2019,4,2.HC
+ZRencnaKras,1,69.5,tour of slovenia,2019,4,2.HC
+stanjel,1,94.5,tour of slovenia,2019,4,2.HC
+predmejadovode,1,125,tour of slovenia,2019,4,2.HC
+Predmejasecondaparte,1,130,tour of slovenia,2019,4,2.HC
+DobrovoGonjace,1,39,tour of slovenia,2019,4,2.HC
+GorenjavaspriCatežuClimb,1,9.5,tour of slovenia,2019,5,2.HC
+Obcice-CrmošnjicetotopClimb,1,94.5,tour of slovenia,2019,5,2.HC
+Metlika(rondo)-Vahta(tabla),1,138,tour of slovenia,2019,5,2.HC
+Auronscomplet,1,28,tour de la provence,2019,2,2.1
+"MontéedupetitgalibierparTrets,arrêtausommet",1,120.5,tour de la provence,2019,2,2.1
+SaintZacharietoColdel'Espigoulier,1,135.5,tour de la provence,2019,2,2.1
+RoquefortparGemenosbyLeMonstre,1,166,tour de la provence,2019,2,2.1
+MontéeduPasd'Ouillier,1,171,tour de la provence,2019,2,2.1
+RoutedescrêtesCassis-premièrepartie,1,179.5,tour de la provence,2019,2,2.1
+CocquioT.-Caldana-Orino,1,61.5,tre valli varesine,2019,1,1.HC
+mottarossa,1,74.5,tre valli varesine,2019,1,1.HC
+"ViaEttorePonti,3Climb",1,161,tre valli varesine,2019,1,1.HC
+CasciagoStazione-Comune,1,165,tre valli varesine,2019,1,1.HC
+"ViaEttorePonti,3Climb",2,185,tre valli varesine,2019,1,1.HC
+CasciagoStazione-Comune,2,189,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,1,86,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,2,100,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,3,113,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,4,126,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,5,139,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,6,152,tre valli varesine,2019,1,1.HC
+VARESE-MONTELLO-cronoscalata2015-funtosbike,7,177,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),1,95,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),2,108,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),3,121,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),4,134,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),5,147,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),6,173,tre valli varesine,2019,1,1.HC
+go-kart>coop_(m.fars),7,197,tre valli varesine,2019,1,1.HC
+GazzadaSchianno-daLozza(VA),1,23,tre valli varesine,2019,1,1.HC
+MontéeDuVieuxCampClimb,1,50,tour de la provence,2019,3,2.1
+MontéeDuVieuxCampClimb,2,80,tour de la provence,2019,3,2.1
+MontéeDuVieuxCampClimb,3,110,tour de la provence,2019,3,2.1
+MontéeDuVieuxCampClimb,4,140,tour de la provence,2019,3,2.1
+MontéeDuVieuxCampClimb,5,170,tour de la provence,2019,3,2.1
+MontéeD121PernesLaRoqueplateau,1,21,tour de la provence,2019,4,2.1
+CôtedeLagnes(Nord),1,32.5,tour de la provence,2019,4,2.1
+Lesimberts-Gordes,1,43,tour de la provence,2019,4,2.1
+D106jusqu'àcroisement.,1,65,tour de la provence,2019,4,2.1
+CôtedeGramboisàMirabeau,1,101,tour de la provence,2019,4,2.1
+ReversRognes,1,139,tour de la provence,2019,4,2.1
+MontéedeLaCride,1,149.5,tour de la provence,2019,4,2.1
+côtedePlumelec,1,52.5,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,2,66,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,3,80,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,4,93.5,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,5,107.5,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,6,121,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,7,135,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,8,148.5,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,9,156.5,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,10,164,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,11,172,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,12,180,grand prix de plumelec-morbihan,2019,1,1.1
+côtedePlumelec,13,188,grand prix de plumelec-morbihan,2019,1,1.1
+CarrosVillage-ColduBroc,1,14.5,tour cycliste international du haut var,2019,1,2.1
+MontéeBouyon-Coursegoules,1,30,tour cycliste international du haut var,2019,1,2.1
+ArrivéeColdeVence(côtéNord),1,38,tour cycliste international du haut var,2019,1,2.1
+CarrosVillage-ColduBroc,2,69,tour cycliste international du haut var,2019,1,2.1
+MontéeBouyon-Coursegoules,2,84.5,tour cycliste international du haut var,2019,1,2.1
+ArrivéeColdeVence(côtéNord),2,92.5,tour cycliste international du haut var,2019,1,2.1
+PontduLoup-PreduLac,1,122,tour cycliste international du haut var,2019,1,2.1
+LeRothschild,1,129.5,tour cycliste international du haut var,2019,1,2.1
+MonteedeTanneron-Olivier,1,146.5,tour cycliste international du haut var,2019,1,2.1
+MontéeStPierredeTourtourdepuisTourtour,1,28,tour cycliste international du haut var,2019,2,2.1
+MontéeStPierredeTourtourdepuisTourtour,2,61,tour cycliste international du haut var,2019,2,2.1
+Figanières-CallasParAncienneVoieFerrée,1,95,tour cycliste international du haut var,2019,2,2.1
+MontéedeBargemon+ColdeStArnoux,1,110.5,tour cycliste international du haut var,2019,2,2.1
+CheminDeFayenceClimb,1,128.5,tour cycliste international du haut var,2019,2,2.1
+BosseCallian,1,142,tour cycliste international du haut var,2019,2,2.1
+STCassiendesBois,1,158,tour cycliste international du haut var,2019,2,2.1
+LesMarjoriscoteest,1,162,tour cycliste international du haut var,2019,2,2.1
+MurdeMonauroux(sensinterdit),1,174,tour cycliste international du haut var,2019,2,2.1
+Cold'Avaye-part1,1,193,tour cycliste international du haut var,2019,2,2.1
+MonsdepuislesMoulins,1,205,tour cycliste international du haut var,2019,2,2.1
+"ClimbRoutedeCarces,RoutedeLorgues",1,14,tour cycliste international du haut var,2019,2,2.1
+PasducerfSudbyLeMonstre,1,8.5,tour cycliste international du haut var,2019,3,2.1
+CôteMazauguesNord-Est,1,65,tour cycliste international du haut var,2019,3,2.1
+mazaugue,1,70.5,tour cycliste international du haut var,2019,3,2.1
+CôtedeMéounes,1,84.5,tour cycliste international du haut var,2019,3,2.1
+MontéePiedRedon,1,109.5,tour cycliste international du haut var,2019,3,2.1
+lesplainesparStAnned'Evenos,1,117.5,tour cycliste international du haut var,2019,3,2.1
+Broussan-ColdeCorpsdeGarde,1,122.5,tour cycliste international du haut var,2019,3,2.1
+MontFaronduCheminduFortRougeauTéléphérique,1,136,tour cycliste international du haut var,2019,3,2.1

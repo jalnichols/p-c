@@ -54,6 +54,8 @@ for(a in 1:length(pull_from_strava_html$activity_id)) {
                                strava_rider_url = RIDER_URL,
                                linked_activity_id = pull_from_strava_html$activity_id[[a]] 
                                )
+    
+    print(a)
   
 }
 
@@ -95,3 +97,31 @@ for(x in 1:length(overwrite_these$strava_rider_url)) {
   
 }
 
+#
+#
+#
+#
+#
+
+mismatch <- readxl::read_excel("Mismatched Names.xlsx") %>%
+  
+  filter(!str_detect(Should_Be, "'"))
+
+#
+
+for(x in 1:length(mismatch$lower_case_match)) {
+  
+  tictoc::tic()
+  
+  dbSendQuery(con,
+              
+              paste0("UPDATE strava_activity_data SET PCS = '", mismatch$Current[[x]],"' WHERE PCS = '", mismatch$Should_Be[[x]], "'")
+              
+  )
+  
+  print(x)
+  print(mismatch$lower_case_match[[x]])
+  
+  tictoc::toc()
+  
+}
