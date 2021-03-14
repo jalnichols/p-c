@@ -213,7 +213,7 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_info") %>%
    
    filter((!(url %in% already_scraped$race_url))) %>%
    
-   filter(str_detect(date, "January") | str_detect(date, "February"))
+   filter(str_detect(date, "January") | str_detect(date, "February") | str_detect(date, "March"))
  #
  
  dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
@@ -345,7 +345,7 @@ tictoc::tic()
 
 #
 
-for(y in 4301:length(all_stages$race_url)) {
+for(y in 4315:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)

@@ -135,60 +135,77 @@ for(t in 1:length(pull_from_schedule)) {
       page <- url %>%
         read_html()
       
+      # bring in all events
       evts <- page %>%
         html_nodes('table') %>%
         html_table(dec = ",") %>%
         .[[1]] %>%
-        .[, c(1, 3:5)] %>%
-        filter(Winner != "") %>%
-        count() %>%
-        as.list() %>%
-        .[[1]]
+        .[, c(1, 3:5)]
       
-      if(evts == 0) {
-        
+      # if no events, skip to next
+      
+      if(length(evts$Date) == 0) {
         
       } else {
-      
-      events <- cbind(
         
-       page %>%
-          html_nodes('table.basic') %>%
-          html_table(dec = ",") %>%
-          .[[1]] %>%
-         .[, c(1, 3:5)] %>%
-          filter(Winner != ""),
+        # calculate events which have started and which have winners
+        # exclude those which have not started AND those with blank winners which have ended
+        evts <- evts %>%
+          mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
+          mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+          filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))) %>%
+          count() %>%
+          as.list() %>%
+          .[[1]]
         
-        value = cbind(page %>%
-         html_nodes('table.basic') %>%
-          html_nodes('a') %>%
-          html_attr(name = "href") %>%
-          enframe(name = NULL) %>%
-           filter(str_detect(value, "race/")) %>%
-           filter(str_detect(value, as.character(year))) %>%
-           filter(!str_detect(value, "stage-")) %>%
-           filter(!str_detect(value, "result")) %>%
-           filter(!(str_detect(value, "2020/"))) %>%
-          #unique() %>%
-           rename(url = value),
-         
-         page %>%
-           html_nodes('table.basic') %>%
-           html_nodes('tbody') %>%
-           html_nodes('tr') %>%
-           html_attr(name = "class") %>%
-           enframe(name = NULL)) %>%
-         filter(is.na(value)) %>%
-         select(-value) %>%
-         .[1:evts,]
+        # if no events qualify, skip to next
+        if(evts == 0) {
+        } else {
+          
+          # if events do qualify, filter to remove cancelled events
+          events <- cbind(
+            
+            page %>%
+              html_nodes('table.basic') %>%
+              html_table(dec = ",") %>%
+              .[[1]] %>%
+              .[, c(1, 3:5)] %>%
+              mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
+              mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))),
+            
+            value = cbind(page %>%
+                            html_nodes('table.basic') %>%
+                            html_nodes('a') %>%
+                            html_attr(name = "href") %>%
+                            enframe(name = NULL) %>%
+                            filter(str_detect(value, "race/")) %>%
+                            filter(str_detect(value, as.character(year))) %>%
+                            filter(!str_detect(value, "stage-")) %>%
+                            filter(!str_detect(value, "result")) %>%
+                            filter(!(str_detect(value, "2020/"))) %>%
+                            #unique() %>%
+                            rename(url = value),
+                          
+                          page %>%
+                            html_nodes('table.basic') %>%
+                            html_nodes('tbody') %>%
+                            html_nodes('tr') %>%
+                            html_attr(name = "class") %>%
+                            enframe(name = NULL)) %>%
+              filter(is.na(value)) %>%
+              select(-value) %>%
+              .[1:evts,]
+            
+          ) %>%
+            
+            mutate(year = year) %>%
+            rename(url = value)
+          
+          year_list[[y]] <- events
+          
+        }
         
-      ) %>%
-        
-        mutate(year = year) %>%
-        rename(url = value)
-      
-      year_list[[y]] <- events
-      
       }
       
     }
@@ -274,7 +291,10 @@ all_events <- bind_rows(store_from_schedule) %>%
   #mutate(type = str_sub(type, 61, nchar(type)),
   #       type = str_replace(type, '&filter=Filter', "")) %>%
   
-  mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+  #mutate(Date = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+  
+  select(-DateEnd,-Date) %>%
+  rename(Date = DateStart) %>%
   
   unique() %>%
   
@@ -292,7 +312,8 @@ all_events <- bind_rows(store_from_schedule) %>%
   
   unique() %>%
   
-  select(-spec_url) 
+  select(-spec_url) %>%
+  mutate(url = str_replace(url, "/startlist/preview", ""))
 
 #
 # Write DB Table
@@ -316,8 +337,6 @@ new_events <- all_events %>%
     
   )
   
-  
-
 all_events <- new_events
 
 print(all_events)
