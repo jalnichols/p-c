@@ -211,12 +211,14 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_info") %>%
 
  all_races <- all_races %>%
    
+   filter(!str_detect(class, "WWT")) %>%
+   
    filter((!(url %in% already_scraped$race_url))) %>%
    
    filter(str_detect(date, "January") | str_detect(date, "February") | str_detect(date, "March"))
- #
  
- dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
+
+dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
  
 #
 #
@@ -345,7 +347,7 @@ tictoc::tic()
 
 #
 
-for(y in 4315:length(all_stages$race_url)) {
+for(y in 4347:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
@@ -1191,7 +1193,10 @@ stage_characteristics <- all_routes %>%
 # write the altitude feature data to database
 #
 
-#dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, overwrite = TRUE)
+stage_characteristics <- stage_characteristics %>%
+  anti_join(dbGetQuery(con, "SELECT DISTINCT slug, year FROM flamme_rouge_characteristics"), by = c("slug", "year"))
+
+#dbWriteTable(con, "flamme_rouge_characteristics", stage_characteristics, row.names = FALSE, append = TRUE)
 
 #
 #
@@ -1406,7 +1411,10 @@ all_climbs_data <- all_climbs_int %>%
 
 #
 
-#dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, overwrite = TRUE)
+all_climbs_data <- all_climbs_data %>%
+  anti_join(dbGetQuery(con, "SELECT slug, year, stage FROM fr_all_climbs_intermediate"), by = c("slug", "year", "stage"))
+
+#dbWriteTable(con, "fr_all_climbs_intermediate", all_climbs_data, row.names = F, append = TRUE)
 
 #
 #
