@@ -40,6 +40,8 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2013&circuit=21&class=&filter=Filter',
   
+  'https://www.procyclingstats.com/races.php?year=2013&circuit=26&class=&filter=Filter',
+  
   # OLYMPICS AND WORLD CHAMPS
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=3&class=Olympics&filter=Filter',
@@ -287,6 +289,9 @@ store_from_schedule <- store_from_schedule[lengths(store_from_schedule) != 0]
 #
 
 all_events <- bind_rows(store_from_schedule) %>%
+  
+  filter(!(str_detect(Race, " WE"))) %>%
+  filter(!(str_detect(Race, "Women"))) %>%
 
   #mutate(type = str_sub(type, 61, nchar(type)),
   #       type = str_replace(type, '&filter=Filter', "")) %>%
@@ -1693,7 +1698,7 @@ for(r in 1:length(all_races$url)) {
     
     #
     
-    #dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
+    dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
     
     print(r)
     
