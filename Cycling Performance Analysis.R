@@ -51,7 +51,8 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
   left_join(
     
-    read_csv("master-teams.csv"), by = c("team", "year")
+    read_csv("master-teams.csv") %>%
+      select(team, year, master_team), by = c("team", "year")
     
   ) %>%
   
@@ -173,7 +174,7 @@ missing_stage_types <- stage_data %>%
 
 stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
                   FROM strava_activity_data 
-                  WHERE Stat IN ('Elevation', 'Distance')") %>% 
+                  WHERE Stat IN ('Elevation', 'Distance', 'AvgSpeed')") %>% 
   
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
@@ -182,7 +183,8 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
   select(-weekday, -drop, -Y) %>% 
   
   # clean up the stat values
-  mutate(VALUE = str_replace(VALUE, "mi", ""), 
+  mutate(VALUE = str_replace(VALUE, "mi/h", ""), 
+         VALUE = str_replace(VALUE, "mi", ""), 
          VALUE = str_replace(VALUE, "ft", ""),
          VALUE = str_replace(VALUE, ",", ""),
          VALUE = as.numeric(VALUE)) %>% 
@@ -210,7 +212,13 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
   mutate(distance = distance * 1.609) %>% 
   filter((distance / length) > 0.8) %>%
   filter((distance / length) < 1.2) %>%
-  mutate(tvg = elevation / distance)
+  filter(time_trial == 0 | (time_trial == 1 & between(distance/length, 0.95, 1.05))) %>%
+  mutate(tvg = elevation / distance) %>%
+  
+  group_by(pcs, date, stage, race, year, class) %>%
+  mutate(matched_activities = n()) %>%
+  filter(avg_speed == max(avg_speed, na.rm = T)) %>%
+  ungroup()
 
 #
 
@@ -584,7 +592,7 @@ strava_elev_mod <- stage_level_strava %>%
   
   filter(act_climb_difficulty > 0) %>%
   mutate(tvg = strava_elevation / strava_distance) %>%
-  lm(act_climb_difficulty ~ tvg + 0 + stage_type, data = .)
+  lm(act_climb_difficulty ~ tvg + 0 + stage_type + strava_elevation, data = .)
 
 #
 
@@ -641,7 +649,7 @@ pv_mod <- stage_data %>%
   
   filter(rnk == 1 & time_trial == FALSE) %>% 
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
   select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -660,7 +668,7 @@ pv_data <- cbind(
   stage_data %>%
     filter(rnk == 1 & time_trial == FALSE) %>% 
     
-    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     
     select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -675,7 +683,7 @@ pv_data <- cbind(
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>%  
       
-      mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+      mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       
       select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
@@ -1488,7 +1496,7 @@ library(xgboost)
 bs_data <- stage_data_perf %>%
   
   group_by(race, year) %>%
-  mutate(finalGT = ifelse(stage == max(stage, na.rm = T) & grand_tour == 1, 1, 0)) %>%
+  mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage), na.rm = T) & grand_tour == 1, 1, 0)) %>%
   ungroup() %>%
   
   filter(time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
@@ -1515,7 +1523,7 @@ bs_data <- stage_data_perf %>%
          -tm_pos, -gc_winner, -gc_seconds, -gc_pos, -back_5_seconds, -gain_back_5,
          -NEW, -new_st, -limit, -success, -success_time, -rel_success, -leader_rating, -points_finish) %>%
   
-  mutate(stage_no = stage - 1) %>%
+  mutate(stage_no = as.numeric(stage) - 1) %>%
   group_by(race, year) %>%
   mutate(perc_thru = stage_no / max(stage_no)) %>%
   ungroup() %>%
@@ -1988,7 +1996,7 @@ rider_clustering <- weighted_pcd %>%
                             "Androni", "Direct Energie", "Vini Zabu", "Burgos", "Caja Rural", "Delko", 
                             "Israel Startup Nation", "Mitchelton Scott",
                             "Bardiani", "Gazprom", "Novo Nordisk", "Riwal",
-                            "Sport Vlaanderen", "Rally", "Uno X Norway",
+                            "Sport Vlaanderen", "Rally", "Uno X Norway", "Eolo Kometa",
                             "Alpecin Fenix")) %>% 
   
   group_by(master_team, year) %>%
@@ -5740,4 +5748,52 @@ x <- bind_rows(ll_list) %>%
 #
 #
 #
+#
+
+# Time trials -------------------------------------------------------------
+
+
+# TIME TRIALS
+
+stage_level_strava %>% 
+  filter(time_trial == 1) %>% 
+  group_by(stage, race, year, class, length, date) %>% 
+  summarize(distance = mean(distance, na.rm = T),
+            elevation = mean(elevation, na.rm = T),
+            tvg = mean(elevation / distance, na.rm = T), 
+            riders = n_distinct(pcs)) %>% 
+  ungroup() -> time_trial_aggs
+
+stage_data %>% 
+  filter(time_trial == 1) %>% 
+  inner_join(time_trial_aggs %>% 
+               filter(riders >= 3) %>% 
+               select(stage, race, year, class, tvg)) -> time_trial_data
+
+time_trial_data %>%
+  filter(!(race %in% c('world championships itt','cycling tour of bihor - bellotto') & year==2019)) %>% 
+  
+  mutate(gain_1st = gain_1st / length) %>% 
+  mutate(adj_loss = gain_1st / (1 + ((tvg * 0.1)))) %>% 
+  
+  mutate(class = ifelse((class == "2.UWT" & grand_tour == 1) | class == "WC", "Elite",
+                        ifelse(class %in% c("1.UWT", "2.UWT"), "WT", 
+                            ifelse(class %in% c("2.HC", "2.Pro", "1.HC", "1.Pro"), "Pro",
+                                   ifelse(class %in% c("2.1", "1.1", "CC"), ".1", ".2"))))) %>%
+  
+  mutate(days_ago = 1 / (365 + as.numeric(lubridate::today() - as.Date(date)))) %>%
+  
+  group_by(rider) %>%
+  mutate(tvg = tvg - mean(tvg, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter(year >= 2014 & year <= 2017) %>% 
+  lme4::lmer(adj_loss ~ (1 + tvg | rider) + (1 | class), 
+             data = ., 
+             weights = days_ago
+             ) -> mixed_mod_itt
+
+lme4::ranef(mixed_mod_itt)[[1]] %>% rownames_to_column() -> ranef_itt
+lme4::ranef(mixed_mod_itt)[[2]] %>% rownames_to_column() -> ranef_itt_class
+
 #
