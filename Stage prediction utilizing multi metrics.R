@@ -52,10 +52,10 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
 predicting_all <- All_data %>%
   
   select(-points_per_opp, -sof_per_opp, -pred_climb_diff_opp, -final_group) %>%
-  
+  mutate(stage_join = as.character(stage)) %>%
   inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
-               select(-bunch_sprint), by = c("stage", "race", "year")) %>%
-  
+               select(-bunch_sprint), by = c("stage_join" = "stage", "race", "year")) %>%
+  select(-stage_join) %>%
   inner_join(
     
     dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks WHERE test_or_prod = 'prod'") %>%
@@ -66,9 +66,8 @@ predicting_all <- All_data %>%
   left_join(
     
     dbReadTable(con, "lme4_rider_logranks")  %>%
-      
       filter(test_or_prod == "prod") %>%
-      
+      select(-test_or_prod) %>%
       #mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
@@ -111,12 +110,37 @@ predicting_all <- All_data %>%
         (one_day_race * odr_logrk_impact) + 
       (pcd_logrk_impact * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
   
+  mutate(pred_sprint_rank = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (0.9 * bs_logrk_impact) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact * 1.5))*-1) / 0.97)+3.9))) %>%
+  
+  mutate(pred_classics_rank = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (0.25 * bs_logrk_impact) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact * 3.5))*-1) / 0.97)+3.9))) %>%
+  
+  mutate(pred_ardennes_rank = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (0.05 * bs_logrk_impact) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact * 7))*-1) / 0.97)+3.9))) %>%
+  
+  mutate(pred_mountains_rank = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (0.01 * bs_logrk_impact) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact * 15))*-1) / 0.97)+3.9))) %>%
+  
   select(-rand_logrk_impact, -pcd_logrk_impact, -bs_logrk_impact) %>%
   
   left_join(
     
     dbReadTable(con, "lme4_rider_points")  %>%
       filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
       #mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
@@ -163,6 +187,7 @@ predicting_all <- All_data %>%
     
     dbReadTable(con, "lme4_rider_teamleader")  %>%
       filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
       #mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
@@ -201,6 +226,7 @@ predicting_all <- All_data %>%
     
     dbReadTable(con, "lme4_rider_succwhenopp")  %>%
       filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
       #mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
@@ -240,6 +266,7 @@ predicting_all <- All_data %>%
     
     dbReadTable(con, "lme4_rider_success") %>%
       filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -318,28 +345,28 @@ predicting_all <- All_data %>%
   
   mutate(rider_match = str_to_title(rider)) %>%
   
-  inner_join(
-    
-    dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
-      
-      mutate(rider = str_to_title(rider)), by = c("rider_match" = "rider")) %>%
+  #inner_join(
+  #  
+  #  dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
+  #    
+  #    mutate(rider = str_to_title(rider)), by = c("rider_match" = "rider")) %>%
+  #
+  #mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
   
-  mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
+  #group_by(stage, race, year, level_data) %>%
+  #mutate(rel_age = age - mean(age, na.rm = T)) %>%
+  #ungroup() %>%
   
-  group_by(stage, race, year, level_data) %>%
-  mutate(rel_age = age - mean(age, na.rm = T)) %>%
-  ungroup() %>%
+  #select(-age, -rider_match, -dob) %>%
+  #mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age)) %>%
   
-  select(-age, -rider_match, -dob) %>%
-  mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age)) %>%
-  
-  inner_join(
-    
-    dbGetQuery(con, "SELECT race, year, rider, bib FROM pcs_all_startlists") %>%
-      mutate(bib_leader = ifelse(bib %% 10 == 1, 1, 0)) %>%
-      unique(), by = c("rider", "race", "year")
-    
-  ) %>%
+  #inner_join(
+  #  
+  #  dbGetQuery(con, "SELECT race, year, rider, bib FROM pcs_all_startlists") %>%
+  #    mutate(bib_leader = ifelse(bib %% 10 == 1, 1, 0)) %>%
+  #    unique(), by = c("rider", "race", "year")
+  #  
+  #) %>%
   
   # give everyone with missing data the median data point
   group_by(stage, race, year, class, level_data) %>%
@@ -364,7 +391,35 @@ predicting_all <- All_data %>%
   mutate(shrunk_teamldr = glmer_pred/sum(glmer_pred, na.rm = T)) %>% 
   # rank within team
   mutate(teamldr_within_team = rank(rk_teamldr, ties.method = "min")) %>% 
-  ungroup()
+  ungroup() %>%
+  
+  filter(!is.na(level_data)) %>%
+  filter(level_data == "bs_added")
+
+#
+# correlations between expected finishes and actual finishes
+#
+
+predicting_all %>% 
+  
+  group_by(stage, race, year, class) %>% 
+  summarize(cor = cor(x = rnk, y = rk_rank, method = "pearson")) %>% 
+  ungroup() -> correlations
+
+predicting_all %>% 
+  
+  group_by(stage, race, year, class) %>% 
+  summarize(cor = cor(x = log(rnk), y = log(rk_rank))) %>% 
+  ungroup() -> errors
+
+predicting_all %>% 
+  group_by(stage, race, year, class, length, bunch_sprint, pred_climb_difficulty, date) %>% 
+  summarize(spr_cor = cor(pred_sprint_rank, rnk), 
+            mtn_cor = cor(pred_mountains_rank, rnk), 
+            ard_cor = cor(pred_ardennes_rank, rnk),
+            classics_cor = cor(pred_classics_rank, rnk),
+            overall_cor = cor(pred_rank, rnk)) %>% 
+  ungroup() -> correlations_of_type
 
 #
 # Predicting team leader
@@ -392,7 +447,7 @@ predicting_all %>%
   # filter non-teams
   filter(!class %in% c("WC", 'CC', 'NC'))  %>%
   filter(!team == "") %>% 
-  filter(date %in% pick) %>%
+  #filter(date %in% pick) %>%
   filter(!is.na(shrunk_teamldr)) -> tmldr_train_data
 
 justrider <- glm(team_ldr ~ shrunk_teamldr + pred_rank + pred_points + rk_teamldr,
