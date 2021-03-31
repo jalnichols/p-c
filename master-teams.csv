@@ -241,6 +241,7 @@ Euskadi Basque Country - Murias,2016,Euskadi
 Euskadi Basque Country - Murias,2017,Euskadi
 Euskadi Basque Country - Murias,2019,Euskadi
 Murias Taldea,2015,Euskadi
+Euskaltel - Euskadi,2020,Euskaltel - Euskadi
 Euskaltel - Euskadi,2013,Euskaltel Euskadi
 FDJ,2013,FDJ
 FDJ,2015,FDJ
@@ -331,6 +332,7 @@ Team Katusha,2016,Katusha
 Team Katusha Alpecin,2017,Katusha
 Team Katusha Alpecin,2018,Katusha
 Team Katusha Alpecin,2019,Katusha
+Equipo Kern Pharma,2020,Kern Pharma
 L.A. Aluminios / L.A. Sport,2020,LA Aluminios
 LA Aluminios,2018,LA Aluminios
 LA Aluminios,2019,LA Aluminios
@@ -510,6 +512,7 @@ Team Sky,2016,Sky
 Team Sky,2017,Sky
 Team Sky,2018,Sky
 Team Sky,2019,Sky
+INEOS Grenadiers,2020,Sky
 Sojasun,2013,Sojasun
 Sport Vlaanderen - Baloise,2017,Sport Vlaanderen
 Sport Vlaanderen - Baloise,2018,Sport Vlaanderen
@@ -595,6 +598,7 @@ Team Vorarlberg,2016,Team Vorarlberg
 Team Vorarlberg,2017,Team Vorarlberg
 Team Vorarlberg Santic,2018,Team Vorarlberg
 Team Vorarlberg Santic,2019,Team Vorarlberg
+Team Vorarlberg Santic,2020,Team Vorarlberg
 Thailand Continental Cycling Team,2017,Thailand Continental
 Thailand Continental Cycling Team,2018,Thailand Continental
 Thailand Continental Cycling Team,2019,Thailand Continental
@@ -643,6 +647,7 @@ Uno-X Hydrogen Development Team,2017,Uno X Norway
 Uno-X Norwegian Development Team,2018,Uno X Norway
 Uno-X Norwegian Development Team,2019,Uno X Norway
 Uno-X Norwegian Development Team,2020,Uno X Norway
+Uno-X Pro Cycling Team,2020,Uno X Norway
 Vacansoleil - DCM,2013,Vacansoleil
 Verandas Willems,2013,Verandas Willems
 Verandas Willems,2014,Verandas Willems
@@ -688,6 +693,7 @@ Wallonie - Bruxelles,2016,Wallonie Bruxelles
 Wallonie-Bruxelles,2019,Wallonie Bruxelles
 WB Aqua Protect Veranclassic,2018,Wallonie Bruxelles
 WB Veranclassic Aqua Protect,2017,Wallonie Bruxelles
+Bingoal - Wallonie Bruxelles,2020,Wallonie Bruxelles
 Accent.jobs - Wanty,2013,Wanty Gobert
 Circus - Wanty Gobert,2020,Wanty Gobert
 Wanty - Gobert Cycling Team,2019,Wanty Gobert
@@ -861,7 +867,6 @@ BHS - Almeborg-Bornholm,2019,X
 BHS - PL Beton Bornholm,2020,X
 Bicicletas Strongman,2017,X
 Bicicletas Strongman Colombia Coldeportes,2018,X
-Bingoal - Wallonie Bruxelles,2020,Wallonie Bruxelles
 Bissell  Development Team,2014,X
 Bissell Pro Cycling,2013,X
 Black Inc Cycling Team,2016,X
@@ -1098,7 +1103,6 @@ Equipo Continental Municipalidad de Pocito,2019,X
 Equipo Continental Municipalidad de Pocito,2020,X
 Equipo Continental Supergiros,2020,X
 Equipo de ciclismo Coldeportes Zenu,2017,X
-Equipo Kern Pharma,2020,Kern Pharma
 Era - Circus,2017,X
 Era-MurProtec,2016,X
 Eritrea,2013,X
@@ -1366,8 +1370,8 @@ Kolss BDC Team,2016,X
 Kolss Cycling Team,2013,X
 Kolss Cycling Team,2014,X
 Kolss Cycling Team,2017,X
-Kometa Cycling Team,2019,X
-Kometa Xstra Cycling Team,2020,X
+Kometa Cycling Team,2019,Eolo Kometa
+Kometa Xstra Cycling Team,2020,Eolo Kometa
 Konya Torku Sekerspor,2013,X
 Korail Cycling Team,2014,X
 Korail Cycling Team,2015,X
@@ -1634,7 +1638,7 @@ Poland,2016,X
 Poland,2017,X
 Poland,2018,X
 Poland,2019,X
-Polartec-Kometa,2018,X
+Polartec-Kometa,2018,Eolo Kometa
 Polygon Sweet Nice Team,2013,X
 Portugal,2013,X
 Portugal,2014,X
@@ -2132,6 +2136,49 @@ X23 - Saroni Factory Team,2015,X
 X-Speed United,2019,X
 Yunnan Lvshan Landscape,2017,X
 Yunnan Lvshan Landscape,2018,X
+Cofidis,2021,Cofidis
+Team Arkea Samsic,2021,Arkea Samsic
+Trek - Segafredo,2021,Trek
+Team Qhubeka ASSOS,2021,NTT
+INEOS Grenadiers,2021,Sky
+BORA - hansgrohe,2021,BORA
+B&B Hotels p/b KTM,2021,Vital Concept
+Lotto Soudal,2021,Lotto Soudal
+Groupama - FDJ,2021,FDJ
+Intermarche - Wanty - Gobert Materiaux,2021,Wanty Gobert
+Alpecin-Fenix,2021,Alpecin Fenix
+Bingoal - Wallonie Bruxelles,2021,Wallonie Bruxelles
+Israel Start-Up Nation,2021,Israel Startup Nation
+AG2R Citroen Team,2021,AG2R
+Equipo Kern Pharma,2021,Kern Pharma
+Team Total Direct Energie,2021,Direct Energie
+DELKO,2021,Delko
+Xelliss - Roubaix Lille Metropole,2021,X
+EF Education - Nippo,2021,EF Education Firs
+Cambodia Cycling Academy,2021,X
+St Michel - Auber93,2021,Auber93
+Astana - Premier Tech,2021,Astana
+UAE-Team Emirates,2021,UAE Team
+Team DSM,2021,Sunweb
+Burgos-BH,2021,Burgos
+Swiss Racing Academy,2021,X
+Sport Vlaanderen - Baloise,2021,Sport Vlaanderen
+Caja Rural - Seguros RGA,2021,Caja Rural
+Euskaltel - Euskadi,2021,X
+EOLO-Kometa,2021,Eolo Kometa
+Bardiani-CSF-Faizane,2021,Bardiani
+Canyon dhb SunGod,2021,X
+Electro Hiper Europa,2021,X
+Spain,2021,X
+Tarteletto - Isorex,2021,X
+Gios Kiwi Atlantico,2021,X
+Vino - Astana Motors,2021,X
+Deceuninck - Quick Step,2021,Quick Step
+Bahrain - Victorious,2021,Bahrain McLaren
+Movistar Team,2021,Movistar
+Gazprom - RusVelo,2021,Gazprom
+Team BikeExchange,2021,Mitchelton Scott
+Rally Cycling,2021,Rally
 ,2013,X
 ,2014,X
 ,2015,X
@@ -2140,7 +2187,83 @@ Yunnan Lvshan Landscape,2018,X
 ,2018,X
 ,2019,X
 ,2020,X
-INEOS Grenadiers,2020,Sky
-Uno-X Pro Cycling Team,2020,Uno X Norway
-Euskaltel - Euskadi,2020,Euskaltel - Euskadi
-Team Vorarlberg Santic,2020,Team Vorarlberg
+,2021,X
+ACA Pro Racing Sunshine Coast,2021,X
+Adria Mobil,2021,Adria Mobil
+Androni Giocattoli - Sidermec,2021,Androni
+Team Jumbo-Visma,2021,Jumbo Visma
+Team Vorarlberg,2021,Team Vorarlberg
+Uno-X Pro Cycling Team,2021,Uno X Norway
+Ampler Development Team,2021,X
+Azerbaijan,2021,X
+Bahrain Cycling Academy,2021,X
+BEAT Cycling,2021,X
+Belarus,2021,X
+BelAZ,2021,X
+Beltrami TSA - Tre Colli,2021,X
+CCN Metalac Sunbelt,2021,X
+CSA Steaua Bucharest,2021,X
+Development Team DSM,2021,X
+Dukla Banska Bystrica,2021,X
+Elkov - Kasper,2021,X
+Equipe continentale Groupama-FDJ,2021,X
+Eurocar Grawe Ukraine,2021,X
+EvoPro Racing,2021,X
+Gallina Ecotek Colosio,2021,X
+General Store Essegibi F.lli Curia,2021,X
+Inex,2021,X
+Italy,2021,X
+Jumbo-Visma Development Team,2021,X
+Kazakhstan,2021,X
+KK Kranj,2021,X
+Leopard Pro Cycling,2021,X
+Ljubljana Gusto Santic,2021,X
+Lotus Cycling Team,2021,X
+Lviv Continental Cycling Team,2021,X
+Maloja Pushbikers,2021,X
+Marathon-Tula Cycling Team,2021,X
+Mazowsze Serce Polski,2021,X
+mebloJOGI Pro-concrete,2021,X
+Mega Saray,2021,X
+MEIYO CCN Pro Cycling Team,2021,X
+Meridiana Kamen Team,2021,X
+Metec - Solarwatt p/b Mantel,2021,X
+Mg.k Vis VPM,2021,X
+Minsk Cycling Club,2021,X
+Nero Continental,2021,X
+Oliver's Real Food,2021,X
+P&S Metalltechnik,2021,X
+Panama es Cultura y Valores,2021,X
+Rad - Net Rose Team,2021,X
+Riwal Cycling Team,2021,X
+Russia,2021,X
+Salcano Sakarya BB Team,2021,X
+Sankt Petersburg,2021,X
+SEG Racing Academy,2021,X
+Slovakia,2021,X
+Spor Toto Cycling Team,2021,X
+Sprinter Nice Metropole,2021,X
+St George Continental Cycling Team,2021,X
+Switzerland,2021,X
+Team BridgeLane,2021,X
+Team Colpack Ballan,2021,X
+Team Felbermayr - Simplon Wels,2021,X
+Team KIBAG-OBOR-CKT,2021,X
+Team NIPPO-Provence-PTS Conti,2021,X
+Team Novo Nordisk,2021,X
+Team Novo Nordisk Development,2021,X
+Team Sapura Cycling,2021,X
+Team SKS Sauerland NRW,2021,X
+Team UKYO,2021,X
+Terengganu Cycling Team,2021,X
+Topforex - ATT Investments,2021,X
+Trek Trakya,2021,X
+Ukraine,2021,X
+Union Raiffeisen Radteam Tirol,2021,X
+Uzbekistan,2021,X
+Vini Zabu,2021,X
+Vivarovar,2021,X
+Voster ATS Team,2021,X
+Wildlife Generation Pro Cycling,2021,X
+Work Service Marchiol Vega,2021,X
+WSA KTM Graz,2021,X
