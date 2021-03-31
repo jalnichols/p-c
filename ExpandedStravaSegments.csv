@@ -1340,7 +1340,7 @@ LagachetdeValfleury,1,221,criterium du dauphine,2020,1,2.UWT
 RouteDeRoybonClimb,1,49.5,criterium du dauphine,2020,2,2.UWT
 LeavingRoystonVasey,1,56.5,criterium du dauphine,2020,2,2.UWT
 MontéedeMontaud,1,98,criterium du dauphine,2020,2,2.UWT
-MontéedeQuaix,1,118.5,criterium du dauphine,2020,2,2.UWT
+MontQuaix-Sarcenas,1,118.5,criterium du dauphine,2020,2,2.UWT
 QuaixtoSarcenas,1,128.5,criterium du dauphine,2020,2,2.UWT
 fincoldeporte,1,133,criterium du dauphine,2020,2,2.UWT
 ColdelaMadeleine(parMontgellafrey/LesPerelles),1,105.5,criterium du dauphine,2020,3,2.UWT
@@ -2654,3 +2654,33 @@ MontéePiedRedon,1,109.5,tour cycliste international du haut var,2019,3,2.1
 lesplainesparStAnned'Evenos,1,117.5,tour cycliste international du haut var,2019,3,2.1
 Broussan-ColdeCorpsdeGarde,1,122.5,tour cycliste international du haut var,2019,3,2.1
 MontFaronduCheminduFortRougeauTéléphérique,1,136,tour cycliste international du haut var,2019,3,2.1
+Forcad'ArronedaArrone,1,12.5,tirreno-adriatico,2021,4,2.UWT
+CollisulvelinodaMadonnadellaluce,1,22,tirreno-adriatico,2021,4,2.UWT
+Antrodoco-SelladiCorno,1,77,tirreno-adriatico,2021,4,2.UWT
+salitadellecapannelle,1,106.5,tirreno-adriatico,2021,4,2.UWT
+SalitaPratidiTivo,1,148,tirreno-adriatico,2021,4,2.UWT
+coldeschevres,1,27.5,paris-nice,2021,4,2.UWT
+ColdeBrancionparRoyer,1,36,paris-nice,2021,4,2.UWT
+pistolecommun,1,47,paris-nice,2021,4,2.UWT
+Blanot-Donzy,1,52.5,paris-nice,2021,4,2.UWT
+CroixMontmain,1,63,paris-nice,2021,4,2.UWT
+davayérochedesolutré,1,84.5,paris-nice,2021,4,2.UWT
+MontBrouillyFULL,1,122,paris-nice,2021,4,2.UWT
+MontéRégnié-Durette,1,128.5,paris-nice,2021,4,2.UWT
+ColdeDurbize(myCols.app),1,139.5,paris-nice,2021,4,2.UWT
+MontBrouillyFULL,2,167,paris-nice,2021,4,2.UWT
+MontéRégnié-Durette,2,174,paris-nice,2021,4,2.UWT
+ColdeDurbize(myCols.app),2,184,paris-nice,2021,4,2.UWT
+d18,1,188,paris-nice,2021,4,2.UWT
+SaintMartinClimb,1,51.5,paris-nice,2021,6,2.UWT
+Côtedel'Eouvière,1,66.5,paris-nice,2021,6,2.UWT
+rondpointTignet-RondpointStVallierlegrandpré,1,105,paris-nice,2021,6,2.UWT
+rd-pointSaintVallier/colduFerrier,1,112.5,paris-nice,2021,6,2.UWT
+CipieresClimb.BridgetoLayby,1,145,paris-nice,2021,6,2.UWT
+FullGourdonAscencion,1,155.5,paris-nice,2021,6,2.UWT
+Levallonrouge-Roquefort,1,183,paris-nice,2021,6,2.UWT
+MontéeBiotSophia-arrivéeParisNice2014,1,203,paris-nice,2021,6,2.UWT
+LesQuatreCheminsàRoumeguières,1,55,paris-nice,2021,6,2.UWT
+CôtedePéron,1,59,paris-nice,2021,6,2.UWT
+CôtedeLaColleNoire,1,84,paris-nice,2021,6,2.UWT
+MontéePontdeSiagne-Tignet,1,94,paris-nice,2021,6,2.UWT
