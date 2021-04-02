@@ -33,10 +33,11 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
            (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
            (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
-           (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
-  unique() %>% 
+           (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
+           (year == 2021)) %>%
   
   left_join(read_csv("cobbles.csv")) %>% 
+  
   mutate(cobbles = ifelse(is.na(cobbles), 0, cobbles)) %>%
   
   mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
@@ -391,20 +392,20 @@ predicting_all <- All_data %>%
   
   mutate(rider_match = str_to_title(rider)) %>%
   
-  #inner_join(
-  #  
-  #  dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
-  #    
-  #    mutate(rider = str_to_title(rider)), by = c("rider_match" = "rider")) %>%
-  #
-  #mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)), by = c("rider_match" = "rider")) %>%
   
-  #group_by(stage, race, year, level_data) %>%
-  #mutate(rel_age = age - mean(age, na.rm = T)) %>%
-  #ungroup() %>%
+  mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
   
-  #select(-age, -rider_match, -dob) %>%
-  #mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age)) %>%
+  group_by(stage, race, year, level_data) %>%
+  mutate(rel_age = age - mean(age, na.rm = T)) %>%
+  ungroup() %>%
+  
+  select(-age, -rider_match, -dob) %>%
+  mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age)) %>%
   
   #inner_join(
   #  
@@ -443,6 +444,22 @@ predicting_all <- All_data %>%
   
   filter(!is.na(level_data)) %>%
   filter(level_data == "bs_added")
+
+#
+# Recent performances
+#
+
+predicting_all %>%
+  
+  filter(date > '2021-01-01' & date < '2021-12-01') %>%
+  
+  group_by(rider) %>%
+  summarize(exp_points = mean(pred_points, na.rm = T),
+            act_points = mean(points_finish, na.rm = T),
+            races = n()) %>%
+  ungroup() %>%
+  
+  mutate(ratio = act_points / exp_points) -> recent_performances
 
 #
 # correlations between expected finishes and actual finishes
