@@ -111,13 +111,15 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
   mutate(stage_type = ifelse(is.na(NEW), stage_type, paste0("icon profile ", NEW))) %>%
   
-  mutate(uphill_finish = ifelse(stage_type %in% c('icon profile p5', 'icon profile p3'), TRUE,
-                                ifelse(summit_finish == 1 & missing_profile_data == 0, TRUE,
-                                       ifelse(missing_profile_data == 0 & final_1km_gradient > 0.04, TRUE, FALSE))),
-         uphill_finish = ifelse(missing_profile_data == 1 & is.na(final_1km_gradient) & stage_type == 'icon profile p0',
-                                NA, uphill_finish)) %>%
-  
-  left_join(read_csv("uphill-finish.csv") %>% select(stage, race, year, uphill_finish) %>%
+  mutate(uphill_finish = ifelse(stage_type %in% c('icon profile p5', 'icon profile p3'), 1,
+                                ifelse(missing_profile_data == 0,
+                                       ifelse(summit_finish == 1, 1,
+                                              ifelse(final_1km_gradient >= 0.04, 1, 0)),
+                                       ifelse(stage_type %in% c("icon profile p1", "icon profile p2", "icon profile p4"), 0, NA)))) %>%
+
+  left_join(read_csv("uphill-finish.csv") %>% 
+              select(stage, race, year, uphill_finish) %>%
+              mutate(race = str_replace_all(race, "\xa0", " ")) %>%
               mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
   
   mutate(uphill_finish = ifelse(is.na(uphill_finish.x), uphill_finish.y, uphill_finish.x)) %>%
@@ -1540,7 +1542,7 @@ for(i in 1:length(test_list)) {
   
   #
   
-  bs_glm <- glm(bunch_sprint ~ grand_tour + one_day_race + sq_pcd + pred_climb_difficulty + length + summit_finish + finalGT + cobbles,
+  bs_glm <- glm(bunch_sprint ~ grand_tour + one_day_race + sq_pcd + pred_climb_difficulty + length + uphill_finish + finalGT + cobbles,
                 family = "binomial",
                 data = bs_data[train, ])
   
@@ -1579,7 +1581,7 @@ for(i in 1:length(test_list)) {
   xgb.train <- xgb.DMatrix(
     
     data = as.matrix(bs_data[train, ] %>%
-                       select(pred_climb_difficulty, length, one_day_race, summit_finish, grand_tour, sq_pcd, finalGT, cobbles)),
+                       select(pred_climb_difficulty, length, one_day_race, uphill_finish, grand_tour, sq_pcd, finalGT, cobbles)),
     
     label = bs_data[train, ]$bunch_sprint
     
@@ -1590,7 +1592,7 @@ for(i in 1:length(test_list)) {
   xgb.test <- xgb.DMatrix(
     
     data = as.matrix(bs_data[-train, ] %>%
-                       select(pred_climb_difficulty, length, one_day_race, summit_finish, grand_tour, sq_pcd, finalGT, cobbles)),
+                       select(pred_climb_difficulty, length, one_day_race, uphill_finish, grand_tour, sq_pcd, finalGT, cobbles)),
     
     label = bs_data[-train, ]$bunch_sprint
     
@@ -1628,37 +1630,37 @@ for(i in 1:length(test_list)) {
   gbm_INS = cbind(
     
     bs_data[train, ] %>%
-      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, summit_finish, pred_climb_difficulty, cobbles,
+      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, uphill_finish, pred_climb_difficulty, cobbles,
              bunch_sprint) %>%
       mutate(length = length + 200),
     
     pred = predict(gbm_model, 
                    as.matrix(bs_data[train, ] %>% 
-                               select(pred_climb_difficulty, length, one_day_race, summit_finish, grand_tour, sq_pcd, finalGT, cobbles), 
+                               select(pred_climb_difficulty, length, one_day_race, uphill_finish, grand_tour, sq_pcd, finalGT, cobbles), 
                              reshape=T)))
   
   gbm_OOS = cbind(
     
     bs_data[-train, ] %>%
-      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, summit_finish, pred_climb_difficulty, cobbles,
+      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, uphill_finish, pred_climb_difficulty, cobbles,
              bunch_sprint) %>%
       mutate(length = length + 200),
     
     pred = predict(gbm_model, 
                    as.matrix(bs_data[-train, ] %>% 
-                               select(pred_climb_difficulty, length, one_day_race, summit_finish, grand_tour, sq_pcd, finalGT, cobbles), 
+                               select(pred_climb_difficulty, length, one_day_race, uphill_finish, grand_tour, sq_pcd, finalGT, cobbles), 
                              reshape=T)))
   
   gbm_predict = cbind(
     
     bs_data %>%
-      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, summit_finish, pred_climb_difficulty, cobbles,
+      select(stage, race, year, one_day_race, grand_tour, length, date, sq_pcd, uphill_finish, pred_climb_difficulty, cobbles,
              bunch_sprint) %>%
       mutate(length = length + 200),
     
     pred = predict(gbm_model, 
                    as.matrix(bs_data %>% 
-                               select(pred_climb_difficulty, length, one_day_race, summit_finish, grand_tour, sq_pcd, finalGT, cobbles), 
+                               select(pred_climb_difficulty, length, one_day_race, uphill_finish, grand_tour, sq_pcd, finalGT, cobbles), 
                              reshape=T)))
   
   xgb_list[[i]] <- tibble(insample = mean(((gbm_INS$pred) - (gbm_INS$bunch_sprint))^2),
@@ -1679,7 +1681,7 @@ bs_glm <- glm(bunch_sprint ~ grand_tour +
                 sq_pcd + 
                 pred_climb_difficulty + 
                 length + 
-                summit_finish + 
+                uphill_finish + 
                 finalGT + 
                 cobbles,
               family = "binomial",
@@ -1704,6 +1706,7 @@ coef(bs_glm)
 write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
 
 dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, overwrite = T)
+
 
 
 
