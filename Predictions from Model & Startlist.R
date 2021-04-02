@@ -11,10 +11,10 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/dwars-door-vlaanderen/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/ronde-van-vlaanderen/2021/startlist/'
 
 PCD = 3.5
-BS = 0.25
+BS = 0.10
 
 #
 
@@ -79,6 +79,17 @@ most_recent_models <- rbind(
              WHERE test_or_prod = 'prod'") %>% mutate(Type = 'LogRanks'),
   
   dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
+             FROM lme4_rider_pointswhenopp r
+             JOIN (
+             
+             SELECT max(Date) as Date
+             FROM lme4_rider_pointswhenopp r
+             WHERE test_or_prod = 'prod'
+             
+             ) x ON r.Date = x.Date
+             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'PointsWhenOpp'),
+  
+  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
              FROM lme4_rider_points r
              JOIN (
              
@@ -127,14 +138,15 @@ models <- riders %>%
   ) %>%
 
   mutate(coef = ifelse(Type == "Points", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
+                       ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
                        ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS),
                               ifelse(Type == "Success", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 4.5),
                                      ifelse(Type == "Leader", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 2), 
-                                            ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 2), NA))))),
+                                            ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 2), NA)))))),
          coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), coef / (1+coef), coef)) %>%
   
   mutate(coef = ifelse(is.na(coef),
-                       ifelse(Type == "Points", 0.01,
+                       ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
                               ifelse(Type == "LogRanks", min(coef, na.rm = T),
                                      ifelse(Type == "Leader", 0.02,
                                             ifelse(Type %in% c("Success","WhenOpp"), 0.01, NA)))), coef)) %>%
@@ -156,7 +168,8 @@ wide_models <- models %>%
   spread(Type, adj) %>%
   
   mutate(rankPoints = rank(-Points, ties.method = "min"),
+         rankPointsWhenOpp = rank(-PointsWhenOpp, ties.method = "min"),
          rankLog = rank(-LogRanks, ties.method = "min"),
          rankSuccess = rank(-Success, ties.method = "min")) %>%
   
-  mutate(rankOverall = 3 / ((1/rankPoints)+(1/rankLog)+(1/rankPoints)))
+  mutate(rankOverall = 4 / ((1/rankPoints)+(1/rankLog)+(1/rankPoints)+(1/rankPointsWhenOpp)))
