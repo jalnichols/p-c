@@ -32,6 +32,10 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 
 #
 
+missing_strava <- dbReadTable(con, "strava_stage_characteristics")
+
+#
+
 stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   
   filter(!url %in% c('race/world-championship-itt/2017',
@@ -109,7 +113,39 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
     
   ) %>%
   
-  mutate(stage_type = ifelse(is.na(NEW), stage_type, paste0("icon profile ", NEW))) %>%
+  mutate(stage_type = ifelse(is.na(NEW), stage_type, paste0("icon profile ", NEW)))
+
+#
+#
+# replace missing FR stage chars with data from strava
+
+replace_missing <- stage_data %>%
+  
+  filter(missing_profile_data == 1 | stage_type == "icon profile p0") %>%
+  
+  inner_join(missing_strava %>%
+               select(stage, race, year, class), by = c("stage", "race", "year", "class")) %>%
+  
+  select(-length, -avg_alt, -highest_point, -total_elev_change,
+         -time_at_1500m, -perc_elev_change, -final_20km_vert_gain,
+         -total_vert_gain, -perc_gain_end, -final_1km_elev,
+         -final_1km_gradient, -final_5km_elev, -final_5km_gradient) %>%
+  
+  inner_join(missing_strava, by = c("stage", "race", "year", "class")) %>%
+  
+  mutate(missing_profile_data = 0)
+
+#
+#
+# then remerge stage data with the replacement data
+
+stage_data <- rbind(
+  
+  stage_data %>% 
+    anti_join(missing_strava %>%
+                select(stage, race, year, class), by = c("stage", "race", "year", "class")),
+  
+  replace_missing) %>%
   
   mutate(uphill_finish = ifelse(stage_type %in% c('icon profile p5', 'icon profile p3'), 1,
                                 ifelse(missing_profile_data == 0,
@@ -128,9 +164,7 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
   left_join(read_csv("cobbles.csv") %>% select(stage, race, year, cobbles) %>%
               mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
   
-  mutate(cobbles = ifelse(is.na(cobbles), 0, 1)) %>%
-  
-  unique()
+  mutate(cobbles = ifelse(is.na(cobbles), 0, 1))
 
 #
 #
@@ -221,20 +255,6 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
   mutate(matched_activities = n()) %>%
   filter(avg_speed == max(avg_speed, na.rm = T)) %>%
   ungroup()
-
-#
-
-stage_level_strava %>% 
-  group_by(stage, race, year, class) %>%
-  summarize(tvg = median(total_vert_gain), 
-            elev = median(elevation)) %>%
-  ungroup() %>% 
-  
-  ggplot(aes(x = tvg, y = elev))+
-  geom_point()+
-  geom_smooth(color = "red", se = F, method = "lm", formula = y ~ x)+
-  labs(x = "FR total vertical gain", 
-       y = 'Strava Elevation')
 
 
 # Strength of Peloton -----------------------------------------------------
