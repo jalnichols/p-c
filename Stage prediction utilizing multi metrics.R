@@ -57,6 +57,9 @@ predicting_all <- All_data %>%
   inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
                select(-bunch_sprint), by = c("stage_join" = "stage", "race", "year")) %>%
   select(-stage_join) %>%
+  
+  unique() %>%
+  
   inner_join(
     
     dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks WHERE test_or_prod = 'prod'") %>%
@@ -64,12 +67,15 @@ predicting_all <- All_data %>%
     
   ) %>%
   
+  unique() %>%
+  
   left_join(
     
     dbReadTable(con, "lme4_rider_logranks")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
-      #mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -142,7 +148,8 @@ predicting_all <- All_data %>%
     dbReadTable(con, "lme4_rider_points")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
-      #mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -189,7 +196,8 @@ predicting_all <- All_data %>%
     dbReadTable(con, "lme4_rider_pointswhenopp")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
-      #mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -236,7 +244,8 @@ predicting_all <- All_data %>%
     dbReadTable(con, "lme4_rider_teamleader")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
-      #mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -270,12 +279,22 @@ predicting_all <- All_data %>%
     
   ) %>%
   
+  # calculate team leader and success predictions using random effects
+  mutate(glmer_pred = -2.11 + (random_intercept + 
+                                 (pred_climb_difficulty * pcd_tmldr_impact) + 
+                                 (one_day_race * odr_tmldr_impact) + 
+                                 (predicted_bs * bs_tmldr_impact)),
+         glmer_pred = exp(glmer_pred) / (1+exp(glmer_pred))) %>%
+  
+  select(-random_intercept, -pcd_tmldr_impact, -odr_tmldr_impact, -bs_tmldr_impact) %>%
+  
   left_join(
     
     dbReadTable(con, "lme4_rider_succwhenopp")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
-      #mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -310,11 +329,22 @@ predicting_all <- All_data %>%
     
   ) %>%
   
+  mutate(succwhenopp_pred = -2.13 +
+           (#(cobbles_intercept * cobbles) + 
+             succwhenopp_intercept + 
+               (one_day_race * odr_succwhenopp_impact) +
+               (pred_climb_difficulty * pcd_succwhenopp_impact) + 
+               (predicted_bs * bs_succwhenopp_impact)),
+         succwhenopp_pred = exp(succwhenopp_pred) / (1+exp(succwhenopp_pred))) %>%
+  
+  select(-succwhenopp_intercept, -pcd_succwhenopp_impact, -odr_succwhenopp_impact, -bs_succwhenopp_impact) %>%
+  
   left_join(
     
     dbReadTable(con, "lme4_rider_success") %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
+      unique() %>%
       mutate(date = as.Date(Date)) %>%
       select(-Date) %>%
       
@@ -324,7 +354,7 @@ predicting_all <- All_data %>%
       
       filter(date >= as.Date('2017-01-01'))  %>%
       
-      #mutate(rider = str_to_title(rider)) %>%
+      mutate(rider = str_to_title(rider)) %>%
       
       # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
       # we adjust here
@@ -348,47 +378,33 @@ predicting_all <- All_data %>%
              bs_success_impact = ifelse(is.na(bs_success_impact), 0, bs_success_impact),
              odr_success_impact = ifelse(is.na(odr_success_impact), 0, odr_success_impact)), by = c("rider", "date", 'level_data')) %>%
   
-  # add in cobbles performance
-  left_join(
-    
-    dbReadTable(con, "performance_rider_cobbles")  %>%
-      
-      #mutate(rider = str_to_title(rider)) %>%
-      
-      rename(cobbles_intercept = cobbles), by = c("rider")) %>%
-  
-  # calculate team leader and success predictions using random effects
-  mutate(glmer_pred = -2.11 + (random_intercept + 
-                                 (pred_climb_difficulty * pcd_tmldr_impact) + 
-                                 (one_day_race * odr_tmldr_impact) + 
-                                 (predicted_bs * bs_tmldr_impact)),
-         glmer_pred = exp(glmer_pred) / (1+exp(glmer_pred))) %>%
-  
   mutate(succ_pred = -4.5 +
-           ((cobbles_intercept * cobbles) + 
-              success_intercept + 
-              (pred_climb_difficulty * pcd_success_impact) + 
-              (one_day_race * odr_success_impact) +
-              (predicted_bs * bs_success_impact)),
+           (#(cobbles_intercept * cobbles) + 
+             success_intercept + 
+               (pred_climb_difficulty * pcd_success_impact) + 
+               (one_day_race * odr_success_impact) +
+               (predicted_bs * bs_success_impact)),
          succ_pred = exp(succ_pred) / (1+exp(succ_pred))) %>%
   
-  mutate(succwhenopp_pred = -2.13 +
-           ((cobbles_intercept * cobbles) + 
-              succwhenopp_intercept + 
-              (one_day_race * odr_succwhenopp_impact) +
-              (pred_climb_difficulty * pcd_succwhenopp_impact) + 
-              (predicted_bs * bs_succwhenopp_impact)),
-         succwhenopp_pred = exp(succwhenopp_pred) / (1+exp(succwhenopp_pred))) %>%
+  select(-success_intercept, -pcd_success_impact, -odr_success_impact, -bs_success_impact) %>%
+  
+  # add in cobbles performance
+  #left_join(
+    
+  #  dbReadTable(con, "performance_rider_cobbles")  %>%
+      
+  #    #mutate(rider = str_to_title(rider)) %>%
+      
+  #    rename(cobbles_intercept = cobbles), by = c("rider")) %>%
+
+  unique() %>%
   
   group_by(stage, race, year, team, level_data) %>%
   mutate(No1_Team = ifelse(rank(-glmer_pred, ties.method = "min")==1, 1, 0),
          No1_Team_succ = ifelse(rank(-succ_pred, ties.method = "min")==1, 1, 0)) %>%
   ungroup() %>%
   
-  select(-pcd_succwhenopp_impact, -bs_succwhenopp_impact, -succwhenopp_intercept, 
-         -cobbles_intercept, -bs_success_impact, -success_intercept, -pcd_success_impact,
-         -random_intercept, -pcd_tmldr_impact, -bs_tmldr_impact,
-         -odr_tmldr_impact, -odr_success_impact, -odr_succwhenopp_impact) %>%
+  #select(-cobbles_intercept %>%
   
   mutate(rider_match = str_to_title(rider)) %>%
   
@@ -460,6 +476,12 @@ predicting_all %>%
   ungroup() %>%
   
   mutate(ratio = act_points / exp_points) -> recent_performances
+
+ggplot(recent_performances %>% 
+         filter(exp_points > 0.005 & races >= 6), 
+       aes(x = exp_points, y = act_points, label = rider))+
+  geom_text()+
+  geom_abline(slope = 1, intercept = 0)
 
 #
 # correlations between expected finishes and actual finishes
