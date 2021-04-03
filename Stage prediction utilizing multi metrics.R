@@ -4,6 +4,8 @@ library(RMySQL)
 
 #
 
+dbDisconnect(con)
+
 con <- dbConnect(MySQL(),
                  host='localhost',
                  dbname='cycling',
@@ -477,11 +479,52 @@ predicting_all %>%
   
   mutate(ratio = act_points / exp_points) -> recent_performances
 
+#
+
 ggplot(recent_performances %>% 
          filter(exp_points > 0.005 & races >= 6), 
        aes(x = exp_points, y = act_points, label = rider))+
   geom_text()+
   geom_abline(slope = 1, intercept = 0)
+
+#
+# iterate through a last ten races model for every date
+#
+
+unique_dates <- predicting_all %>%
+  select(date) %>%
+  unique() %>%
+  filter(date > '2017-07-01')
+
+for(i in 1:length(unique_dates$date)) {
+  
+  MAX = unique_dates$date[[i]] - 1
+  MIN = MAX - 366
+  
+  vs_exp <- predicting_all %>%
+    filter(between(date, MIN, MAX)) %>%
+    
+    group_by(stage, race, year, class) %>%
+    mutate(succ_pred = succ_pred / (sum(succ_pred) / sof_limit)) %>%
+    ungroup() %>%
+    
+    group_by(rider) %>%
+    filter(rank(desc(date), ties.method = "first") <= 10 | date >= (MAX - 30)) %>%
+    summarize(exp_points = mean(pred_points, na.rm = T),
+              act_points = mean(points_finish, na.rm = T),
+              exp_success = sum(succ_pred, na.rm = T),
+              act_success = sum(success, na.rm = T),
+              races = n()) %>%
+    ungroup() %>%
+    
+    mutate(date = unique_dates$date[[i]])
+  
+  dbWriteTable(con, "performance_last10races_vsmodel", vs_exp, append = TRUE, row.names = F)
+  
+  print(i)
+  
+}
+
 
 #
 # correlations between expected finishes and actual finishes
