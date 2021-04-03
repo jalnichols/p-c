@@ -153,18 +153,17 @@ stage_data <- rbind(
                                               ifelse(final_1km_gradient >= 0.04, 1, 0)),
                                        ifelse(stage_type %in% c("icon profile p1", "icon profile p2", "icon profile p4"), 0, NA)))) %>%
 
-  left_join(read_csv("uphill-finish.csv") %>% 
-              select(stage, race, year, uphill_finish) %>%
-              mutate(race = str_replace_all(race, "\xa0", " ")) %>%
-              mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
-  
-  mutate(uphill_finish = ifelse(is.na(uphill_finish.x), uphill_finish.y, uphill_finish.x)) %>%
-  select(-uphill_finish.x, -uphill_finish.y) %>%
-  
   left_join(read_csv("cobbles.csv") %>% select(stage, race, year, cobbles) %>%
               mutate(stage = as.character(stage)), by = c("stage", "race", "year")) %>%
   
-  mutate(cobbles = ifelse(is.na(cobbles), 0, 1))
+  mutate(cobbles = ifelse(is.na(cobbles), 0, 1)) %>%
+  
+  unique()
+
+#
+
+rm(replace_missing)
+rm(missing_strava)
 
 #
 #
