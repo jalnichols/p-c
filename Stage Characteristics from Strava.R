@@ -69,6 +69,11 @@ all_routes <- telem %>%
 
 #
 
+rm(telem)
+gc()
+
+#
+
 final_1km <- all_routes %>%
   
   group_by(stage, class, year, race, rider) %>%
@@ -197,3 +202,37 @@ stage_characteristics <- all_routes %>%
   
   spread(stat, value)
 
+#
+#
+#
+
+dbWriteTable(con, "strava_stage_characteristics", stage_characteristics, overwrite = T, row.names = F)
+
+#
+#
+#
+
+gam_mod <- read_rds('Stored models/power-required-throughout-race-gam.rds')
+
+#
+
+preds <- cbind(all_routes %>% mutate(perc_thru = distances/length),
+               
+               pred = mgcv::predict.gam(gam_mod, all_routes %>% mutate(perc_thru = distances/length))) %>%
+  
+  group_by(stage, race, year, class, rider) %>%
+  mutate(pred = pred / max(pred, na.rm = T)) %>%
+  ungroup()
+
+#
+
+preds %>%
+  
+  mutate(grades = ifelse(grades <= 0, 0, grades)) %>%
+  
+  arrange(year, rider, class, race, stage, distances) %>%
+  
+  group_by(stage, race, year, class, rider) %>% 
+  summarize(weighted_vert_gain = sum(pred * grades, na.rm = T) / sum(pred, na.rm = T) * mean(length * 1000, na.rm = T),
+            vert_gain = mean(grades, na.rm = T) * mean(length * 1000, na.rm = T)) %>%
+  ungroup() -> abc
