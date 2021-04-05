@@ -5793,7 +5793,11 @@ stage_data %>%
                select(stage, race, year, class, tvg)) -> time_trial_data
 
 time_trial_data %>%
-  filter(!(race %in% c('world championships itt','cycling tour of bihor - bellotto') & year==2019)) %>% 
+  
+  mutate(gain_1st = ifelse(race == "world championships itt" & year == 2019,
+                           ifelse(rnk == 1, 0, gain_1st - 3905.35), gain_1st)) %>%
+
+  filter(!(race %in% c('cycling tour of bihor - bellotto') & year==2019)) %>% 
   
   mutate(gain_1st = gain_1st / length) %>% 
   mutate(adj_loss = gain_1st / (1 + ((tvg * 0.1)))) %>% 
@@ -5809,7 +5813,7 @@ time_trial_data %>%
   mutate(tvg = tvg - mean(tvg, na.rm = T)) %>%
   ungroup() %>%
   
-  filter(year >= 2014 & year <= 2017) %>% 
+  filter(year >= 2018 & year <= 2021) %>% 
   lme4::lmer(adj_loss ~ (1 + tvg | rider) + (1 | class), 
              data = ., 
              weights = days_ago
