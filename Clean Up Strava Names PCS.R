@@ -61,7 +61,11 @@ for(a in 1:length(pull_from_strava_html$activity_id)) {
 
 #
 
-new_rider_matches <- bind_rows(data_pulled)
+new_rider_matches <- bind_rows(data_pulled) %>%
+  
+  inner_join(df %>%
+               mutate(rider = str_replace(rider, "https://www.strava.com", "")) %>%
+               group_by(rider) %>% count() %>% ungroup(), by = c("strava_rider_url" = "rider"))
 
 #
 #
@@ -76,7 +80,9 @@ overwrite_these <- read_csv('pcs-to-overwrite.csv') %>%
   mutate(strava_rider_url = paste0('https://www.strava.com', strava_rider_url)) %>%
   filter(!str_detect(PCS, "'")) %>%
   
-  filter(strava_rider_url %in% missing$rider)
+  filter(strava_rider_url %in% missing$rider) %>%
+  
+  mutate(PCS = str_to_title(tolower(PCS)))
 
 #
 

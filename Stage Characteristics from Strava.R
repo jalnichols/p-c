@@ -35,7 +35,7 @@ all_routes <- telem %>%
   
   inner_join(dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
                
-               filter(year %in% c("2014", "2015", "2016", "2017")) %>%
+               filter(year %in% c("2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021")) %>%
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
                unique(), by = c("date", "pcs" = "rider")) %>% 
   
@@ -197,7 +197,8 @@ stage_characteristics <- all_routes %>%
   gather(stat, value, -stage, -race, -year, -class, -rider) %>%
   
   group_by(stat, stage, race, year, class) %>%
-  summarize(value = median(value, na.rm = T)) %>%
+  summarize(value = median(value, na.rm = T),
+            metric = n()) %>%
   ungroup() %>%
   
   spread(stat, value)
@@ -206,7 +207,7 @@ stage_characteristics <- all_routes %>%
 #
 #
 
-dbWriteTable(con, "strava_stage_characteristics", stage_characteristics, overwrite = T, row.names = F)
+dbWriteTable(con, "strava_stage_characteristics", stage_characteristics %>% select(-metric), overwrite = T, row.names = F)
 
 #
 #

@@ -1499,6 +1499,8 @@ library(lubridate)
 library(rvest)
 library(RMySQL)
 
+dbDisconnect(con)
+
 con <- dbConnect(MySQL(),
                  host='localhost',
                  dbname='cycling',
@@ -1627,6 +1629,8 @@ library(tidyverse)
 library(lubridate)
 library(rvest)
 library(RMySQL)
+
+dbDisconnect(con)
 
 con <- dbConnect(MySQL(),
                  host='localhost',

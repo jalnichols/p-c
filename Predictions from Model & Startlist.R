@@ -11,10 +11,10 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/ronde-van-vlaanderen/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/scheldeprijs/2021/startlist/'
 
-PCD = 3.5
-BS = 0.10
+PCD = 0
+BS = 0.95
 
 #
 
@@ -166,10 +166,10 @@ wide_models <- models %>%
   filter(!is.na(adj)) %>%
   select(rider, team, Type, adj) %>%
   spread(Type, adj) %>%
-  
+
   mutate(rankPoints = rank(-Points, ties.method = "min"),
          rankPointsWhenOpp = rank(-PointsWhenOpp, ties.method = "min"),
          rankLog = rank(-LogRanks, ties.method = "min"),
          rankSuccess = rank(-Success, ties.method = "min")) %>%
-  
+
   mutate(rankOverall = 4 / ((1/rankPoints)+(1/rankLog)+(1/rankPoints)+(1/rankPointsWhenOpp)))
