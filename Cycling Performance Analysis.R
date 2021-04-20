@@ -613,6 +613,7 @@ strava_elev_mod <- stage_level_strava %>%
   
   filter(act_climb_difficulty > 0) %>%
   mutate(tvg = strava_elevation / strava_distance) %>%
+  
   lm(act_climb_difficulty ~ tvg + 0 + stage_type + strava_elevation, data = .)
 
 #
@@ -658,7 +659,7 @@ strava_elev_data <- cbind(
   )) %>%
   
   filter(is.na(act_climb_difficulty)) %>%
-  filter(is.na(total_vert_gain))
+  filter(!is.na(pred_strv))
 
 #
 # this model predicts actual climb difficulty based on the parcours value in the PCS data
@@ -715,7 +716,8 @@ pv_data <- cbind(
     
   )) %>%
   
-  mutate(pred_pv = ifelse(pred_pv < 0, 0, pred_pv))
+  mutate(pred_pv = ifelse(pred_pv < 0, 0, pred_pv)) %>%
+  filter(!is.na(pred_pv))
 
 # act_climb_difficulty = 1 + (0.063 * parcours_value) -- R^2 = 0.81
 
@@ -772,7 +774,8 @@ no_climbs_data <- cbind(
              tvg20 = final_20km_vert_gain / 20)
     
   )) %>%
-  mutate(pred_no_climbs = ifelse(pred_no_climbs < 1, 1, pred_no_climbs))
+  mutate(pred_no_climbs = ifelse(pred_no_climbs < 1, 1, pred_no_climbs)) %>%
+  filter(!is.na(pred_no_climbs))
 
 # R^2 = 0.78
 
@@ -836,7 +839,9 @@ icon_data <- cbind(
                                   ifelse(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "CC"), 3,
                                          ifelse(class %in% c("2.1", "1.1", "NC"), 2, 1))))
     
-  ))
+  )) %>%
+  
+  filter(!is.na(pred_icon))
 
 #
 # write models to folder
@@ -908,7 +913,7 @@ three_methods <- rbind(
 
 #
 
-stage_data <- stage_data %>%
+stage_data_with_pcd <- stage_data %>%
   select(-climbing_final_20km, -final_5km_elev, -final_5km_gradient, -final_1km_elev,
          -perc_gain_end, -time_at_1500m, -total_elev_change, -highest_point) %>%
   
@@ -1114,7 +1119,7 @@ stage_data <- stage_data %>%
 #
 # take in top 200 UWT riders
 
-top_200_WT <- stage_data %>%
+top_200_WT <- stage_data_with_pcd %>%
   
   inner_join(
     
@@ -1134,7 +1139,7 @@ top_200_WT <- stage_data %>%
 
 # take in all events
 
-perf_by_level_data <- stage_data %>%
+perf_by_level_data <- stage_data_with_pcd %>%
   
   inner_join(
     
@@ -1251,7 +1256,7 @@ write_rds(limits_actual, "sof-limits-mod.rds")
 # Stage Data Perf ---------------------------------------------------------
 
 
-stage_data_perf <- stage_data %>%
+stage_data_perf <- stage_data_with_pcd %>%
   
   # the limit is predicted from the limits_actual model above
   
