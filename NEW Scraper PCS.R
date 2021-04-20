@@ -499,7 +499,7 @@ if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
     
-    filter(year >= 2013)
+    filter(year >= 2021)
   
 }
 
@@ -947,7 +947,9 @@ all_games <- bind_rows(game_race_list) %>%
   ) %>%
   select(Date, Race, Url = value, year, Stage = s) %>%
   
-  mutate(Url = paste0(Url, "/game/most-picked"))
+  mutate(Url = paste0(Url, "/game/most-picked")) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT stage, race, year FROM pcs_game_picks GROUP BY stage, race, year"), by = c("Stage" = "stage", "Race" = "race", "year"))
 
 #
 #
