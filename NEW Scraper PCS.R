@@ -733,11 +733,12 @@ for(r in 1:length(all_stages$value)) {
           
         }
         
-        # bring in actual date
+        # bring in actual date / added separate because they started adding time of day
         
         DATE <- characteristics %>%
           filter(col == 'Date') %>%
           select(data) %>%
+          separate(data, c("data", "junk"), sep = ",") %>%
           mutate(date = lubridate::dmy(str_trim(data))) %>%
           select(date) %>%
           .[[1]]
