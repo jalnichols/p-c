@@ -13,11 +13,6 @@ con <- dbConnect(MySQL(),
 
 #
 
-x2021_acts <- dbGetQuery(con, "SELECT DISTINCT activity_id
-                    FROM strava_activity_data")
-
-#
-
 telem <- dbGetQuery(con, "SELECT *
                     
                     FROM strava_telemetry")
@@ -40,9 +35,8 @@ all_routes <- telem %>%
                unique() %>%
                janitor::clean_names(), by = c("activity_id")) %>%
   
-  inner_join(dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
+  inner_join(dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0 AND year = '2021'") %>%
                
-               filter(year %in% c("2014", "2016", "2017", "2018", "2019", "2020", "2021", "2015")) %>%
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
                unique(), by = c("date", "pcs" = "rider")) %>% 
   
@@ -214,7 +208,9 @@ stage_characteristics <- all_routes %>%
 #
 #
 
-dbWriteTable(con, "strava_stage_characteristics", stage_characteristics %>% select(-metric), overwrite = T, row.names = F)
+#dbSendQuery(con, "DELETE FROM strava_stage_characteristics WHERE year = '2021'")
+
+dbWriteTable(con, "strava_stage_characteristics", stage_characteristics %>% select(-metric), append = T, row.names = F)
 
 #
 #
@@ -343,7 +339,7 @@ for(S in 1:length(koms_list_tdf)) {
                                     ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
     
     mutate(every_km3 = floor(every_km)) %>%
-    mutate(everytenth = floor(every_km/0.5)/2) %>%
+    mutate(everytenth = floor(every_km/0.25)/4) %>%
     
     mutate(every_km3 = ifelse(every_km < 3, everytenth, every_km3)) %>%
     
@@ -423,36 +419,36 @@ for(S in 1:length(koms_list_tdf)) {
     .[[1]] %>%
     round()
   
-  if(riders > 1) {
+  #if(riders > 1) {
     
-    kmeans(different_groupings %>% select(end_km, end_elev, gradient, length) %>% scale(), centers = unique_climbs, nstart = 500) -> K
+    #kmeans(different_groupings %>% select(end_km, end_elev, gradient, length) %>% scale(), centers = unique_climbs, nstart = 500) -> K
     
-    cbind(cl = K$cluster, different_groupings) %>%
-      group_by(cl, stage, race, year) %>%
-      summarize(alt = mean(end_elev, na.rm = T),
-                start_km = mean(start_km, na.rm = T),
-                end_km = mean(end_km, na.rm = T),
-                gradient = mean(gradient, na.rm = T),
-                length = mean(length, na.rm = T),
-                stage_length = mean(stage_length, na.rm = T),
-                matches = n()) %>%
-      ungroup() -> clustered_climbs
+    #cbind(cl = K$cluster, different_groupings) %>%
+    #  group_by(cl, stage, race, year) %>%
+    #  summarize(alt = mean(end_elev, na.rm = T),
+    #            start_km = mean(start_km, na.rm = T),
+    #            end_km = mean(end_km, na.rm = T),
+    #            gradient = mean(gradient, na.rm = T),
+    #            length = mean(length, na.rm = T),
+    #            stage_length = mean(stage_length, na.rm = T),
+    #            matches = n()) %>%
+    #  ungroup() -> clustered_climbs
     
-  } else {
+  #} else {
     
-    different_groupings %>% 
-      rowid_to_column() %>% 
-      rename(cl = rowid) %>%
-      group_by(cl, stage, race, year) %>%
-      summarize(alt = mean(end_elev, na.rm = T),
-                start_km = mean(start_km, na.rm = T),
-                end_km = mean(end_km, na.rm = T),
-                gradient = mean(gradient, na.rm = T),
-                length = mean(length, na.rm = T),
-                stage_length = mean(stage_length, na.rm = T)) %>%
-      ungroup() -> clustered_climbs
+    #different_groupings %>% 
+    #  rowid_to_column() %>% 
+    #  rename(cl = rowid) %>%
+    #  group_by(cl, stage, race, year) %>%
+    #  summarize(alt = mean(end_elev, na.rm = T),
+    #            start_km = mean(start_km, na.rm = T),
+    #            end_km = mean(end_km, na.rm = T),
+    #            gradient = mean(gradient, na.rm = T),
+    #            length = mean(length, na.rm = T),
+    #            stage_length = mean(stage_length, na.rm = T)) %>%
+    #  ungroup() -> clustered_climbs
     
-  }
+  #}
   
   if(length(different_groupings$grouping) == 0) {
     
@@ -460,12 +456,12 @@ for(S in 1:length(koms_list_tdf)) {
     
     #
     
-    data_climbs <- cbind(clustered_climbs,
+    data_climbs <- cbind(different_groupings,
                                  
                                  model_category = mgcv::predict.gam(read_rds('model-climb-difficulty.rds'),
-                                                                    clustered_climbs %>%
+                                                                    different_groupings %>%
                                                                       mutate(vam_poly = ((gradient^2)*length)) %>%
-                                                                      mutate(alt = alt - 1000))) %>%
+                                                                      mutate(alt = end_elev - 1000))) %>%
       mutate(perc_thru = 1 - (end_km / stage_length))
     
     #
@@ -488,7 +484,18 @@ for(S in 1:length(koms_list_tdf)) {
     
     #
     
-    koms_list_tdf[[S]] <- final_data_climbs
+    all_2021_koms <- final_data_climbs %>%
+      select(-grouping, -stage_length, -start_km, -end_km, -start_elev) %>%
+      rename(alt = end_elev) %>%
+      mutate(alt = round(alt, 0),
+             gain = round(gain, 0),
+             gradient = round(gradient, 3),
+             model_category = round(model_category, 1),
+             perc_thru = round(perc_thru, 2),
+             power_required = round(power_required, 2),
+             power_model_category = round(power_model_category, 1))
+    
+    dbWriteTable(con, "climbs_from_strava_telemetry", all_2021_koms, append = TRUE, row.names = F)
     
     print(races_pull_in$race[[S]])
     
@@ -497,9 +504,3 @@ for(S in 1:length(koms_list_tdf)) {
 }
 
 #
-
-all_2021_koms <- bind_rows(koms_list_tdf)
-
-#
-
-dbWriteTable(con, "climbs_from_strava_telemetry", all_2021_koms, append = TRUE, row.names = F)
