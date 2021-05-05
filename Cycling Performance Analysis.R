@@ -21,12 +21,13 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
   inner_join(
     
     tibble(Tour = c("Missing", "Americas Tour", "Europe Tour", "World Championships", "World Tour", "Asia Tour",
-                    "Oceania Tour", "Africa Tour", "Olympic Games", "National Cup"),
-           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3", "21")), by = c("Circuit")
+                    "Oceania Tour", "Africa Tour", "Olympic Games", "National Cup", "Pro Tour"),
+           Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3", "21",
+                       "26")), by = c("Circuit")
     
   ) %>%
   
-  mutate(Tour = ifelse(str_detect(Race, "National Champ"), "National Championship", Tour)) %>%
+  mutate(Tour = ifelse(str_detect(Race, "National Champ") | Class == "NC", "National Championship", Tour)) %>%
   
   select(Race, Tour, URL = url, Year = year)
 
@@ -142,7 +143,7 @@ replace_missing <- stage_data %>%
 stage_data <- rbind(
   
   stage_data %>% 
-    anti_join(missing_strava %>%
+    anti_join(replace_missing %>%
                 select(stage, race, year, class), by = c("stage", "race", "year", "class")),
   
   replace_missing) %>%
@@ -310,7 +311,7 @@ relative_strength_of_tours %>%
   mutate(log_rank = log(rnk)) %>%
   
   mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
-                       ifelse(Tour == "World Tour" & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
+                       ifelse(Tour %in% c("World Tour", "Pro Tour") & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
   
   mutate(class = ifelse(class == "WT", "1.UWT", class),
          class = ifelse(class %in% c("WC", "Olympics"), "1.UWT", class),
@@ -371,7 +372,7 @@ strength_of_peloton <- stage_data %>%
   filter(!is.na(rider)) %>%
   
   mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
-                       ifelse(Tour == "World Tour" & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
+                       ifelse(Tour %in% c("World Tour", "Pro Tour") & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
   
   mutate(class = ifelse(class == "JR", "2U", class),
          class = ifelse(class == "WT", "1.UWT", class),
@@ -503,24 +504,54 @@ for(d in 1:length(dates_to_generate_sop$date)) {
       mutate(rk = rank(-POINTS, ties.method = "min")) %>% 
       ungroup() %>%
       
-      mutate(DATE = dates_to_generate_sop$date[[d]]))
+      mutate(DATE = dates_to_generate_sop$date[[d]])) %>%
+    
+    mutate(POINTS = round(POINTS, 2))
   
-  dbWriteTable(con, "performance_rider_strengthpeloton", best_riders_sop, append = TRUE, row.names = FALSE)
+  # now top 150
+
+  top150 <- best_riders_sop %>%
+    
+    filter(rk < 151) %>%
+    
+    group_by(race_type) %>%
+    summarize(top150 = sum(POINTS, na.rm = T)) %>%
+    ungroup() %>%
+    mutate(DATE = dates_to_generate_sop$date[[d]])
+  
+  dbWriteTable(con, "performance_rider_soptop150", top150, append = TRUE, row.names = FALSE)
+  
+  #
+  
+  filtered_best_riders_sop <- best_riders_sop %>%
+    
+    inner_join(strength_of_peloton %>% 
+                 filter(date == dates_to_generate_sop$date[[d]]) %>%
+                 select(rider, date), by = c("rider", "DATE" = "date")) %>%
+    select(-rk) %>%
+    filter(POINTS != 0)
+  
+  dbWriteTable(con, "performance_rider_strengthpeloton", filtered_best_riders_sop, append = TRUE, row.names = FALSE)
   
   print(d)
-
+  
 }
 
 #
 
-best_riders_sop <- dbReadTable(con, "performance_rider_strengthpeloton") %>%
+tictoc::tic()
+
+best_riders_sop <- dbGetQuery(con, "SELECT race_type, rider, POINTS, DATE
+
+FROM performance_rider_strengthpeloton") %>%
   mutate(DATE = as.Date(DATE))
 
-best_possible_sop <- best_riders_sop %>%
-  filter(rk < 151) %>% 
-  group_by(DATE, race_type) %>%
-  summarize(top150 = sum(POINTS, na.rm = T)) %>%
-  ungroup()
+#
+
+best_possible_sop <- dbGetQuery(con, "SELECT top150, DATE, race_type FROM performance_rider_soptop150") %>%
+  mutate(DATE = as.Date(DATE))
+
+tictoc::toc()
 
 #
 
@@ -534,14 +565,16 @@ individual_races_sop <- strength_of_peloton %>%
   mutate(DATE = min(date, na.rm = T)) %>%
   ungroup() %>%
   
-  inner_join(best_riders_sop %>%
+  left_join(best_riders_sop %>%
                select(rider, DATE, race_type, POINTS), by = c("rider", "DATE", "race_type")) %>%
+  
+  mutate(POINTS = ifelse(is.na(POINTS), 0, POINTS)) %>%
   
   inner_join(best_possible_sop, by = c("DATE", "race_type")) %>%
   
   select(-DATE) %>%
   
-  mutate(Top25 = ifelse(rnk <= 25, POINTS, NA))%>%
+  mutate(Top25 = ifelse(rnk <= 25, POINTS, NA)) %>%
   
   # sum up total points rating for all of race
   group_by(race, stage, year, url, class, race_type, grand_tour) %>%
