@@ -61,7 +61,10 @@ All_dates <- dbReadTable(con, "stage_data_perf") %>%
   #rbind(tibble(date = as.Date(lubridate::today()))) %>%
   
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
-  arrange(desc(date))
+  arrange(desc(date)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_wins") %>%
+              mutate(date = as.Date(date, origin = '1970-01-01')), by = c("date"))
 
 #write_csv(All_dates, "C:/Users/Jake/Documents/all-stage-type-preds-dates-AWS.csv")
 
@@ -337,38 +340,38 @@ for(b in 1:length(All_dates$date)) {
   # # run a lme4 model for rider success and impact of pcd on success
   #
    
-   tictoc::tic()
+   #tictoc::tic()
   
-   mod_succ <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) +
+   #mod_succ <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) +
   
-                           (0 + bunch_sprint | rider) +
-                           #(0 + one_day_race | rider) +
-                             sof,
-                        data = dx,
-                        family = binomial("logit"),
-                        nAGQ=0,
-                        control=lme4::glmerControl(optimizer = "nloptwrap"))
+    #                       (0 + bunch_sprint | rider) +
+    #                       #(0 + one_day_race | rider) +
+    #                         sof,
+    #                    data = dx,
+    #                    family = binomial("logit"),
+    #                   nAGQ=0,
+    #                    control=lme4::glmerControl(optimizer = "nloptwrap"))
   
-   tictoc::toc()
+   #tictoc::toc()
   
-   random_effects <- lme4::ranef(mod_succ)[[1]] %>%
-    rownames_to_column() %>%
-    rename(rider = rowname,
-           random_intercept = `(Intercept)`,
-           pcd_impact = pred_climb_difficulty,
-           bunchsprint_impact = bunch_sprint
-    ) %>%
-   #what date are we predicting
-   mutate(Date = as.Date(maxD + 1)) %>%
+   #random_effects <- lme4::ranef(mod_succ)[[1]] %>%
+   #  rownames_to_column() %>%
+   # rename(rider = rowname,
+   #         random_intercept = `(Intercept)`,
+   #        pcd_impact = pred_climb_difficulty,
+   #         bunchsprint_impact = bunch_sprint
+   # ) %>%
+   ##what date are we predicting
+   #mutate(Date = as.Date(maxD + 1)) %>%
   
-     mutate(one_day_race = NA,
-            test_or_prod = 'prod')
+   # mutate(one_day_race = NA,
+   #         test_or_prod = 'prod')
   
   # ################################################
   
-   dbWriteTable(con, "lme4_rider_success", random_effects, append = TRUE, row.names = FALSE)
+   #dbWriteTable(con, "lme4_rider_success", random_effects, append = TRUE, row.names = FALSE)
   
-   rm(random_effects)
+   #rm(random_effects)
   
   # ################################################
   
@@ -411,38 +414,38 @@ for(b in 1:length(All_dates$date)) {
   # # run a lme4 model for rider success and impact of pcd on success
   # # SOLELY for races where they finished as team's leader
   
-   tictoc::tic()
+   #tictoc::tic()
   
-   mod_succwhenopp <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) +
+   #mod_succwhenopp <- lme4::glmer(success ~ (1 + pred_climb_difficulty | rider) +
   
-                                  (0 + bunch_sprint | rider) +
-                                  #(0 + one_day_race | rider) +
-                                  sof,
-                           data = dy %>% filter(tm_pos == 1),
-                           family = binomial("logit"),
-                           nAGQ=0,
-                           control=lme4::glmerControl(optimizer = "nloptwrap"))
+    #                              (0 + bunch_sprint | rider) +
+    #                              #(0 + one_day_race | rider) +
+    #                              sof,
+    #                       data = dy %>% filter(tm_pos == 1),
+    #                       family = binomial("logit"),
+    #                       nAGQ=0,
+    #                       control=lme4::glmerControl(optimizer = "nloptwrap"))
   
-   tictoc::toc()
+   #tictoc::toc()
   
-   random_effects <- lme4::ranef(mod_succwhenopp)[[1]] %>%
-     rownames_to_column() %>%
-     rename(rider = rowname,
-            random_intercept = `(Intercept)`,
-            pcd_impact = pred_climb_difficulty,
-            bunchsprint_impact = bunch_sprint
-            ) %>%
-     #what date are we predicting
-     mutate(Date = as.Date(maxD + 1)) %>%
-  
-     mutate(one_day_race = NA,
-            test_or_prod = 'prod')
+   # random_effects <- lme4::ranef(mod_succwhenopp)[[1]] %>%
+   #   rownames_to_column() %>%
+   #   rename(rider = rowname,
+   #          random_intercept = `(Intercept)`,
+   #          pcd_impact = pred_climb_difficulty,
+   #          bunchsprint_impact = bunch_sprint
+   #          ) %>%
+   #   #what date are we predicting
+   #   mutate(Date = as.Date(maxD + 1)) %>%
+   # 
+   #   mutate(one_day_race = NA,
+   #          test_or_prod = 'prod')
   
   # ################################################
   
-   dbWriteTable(con, "lme4_rider_succwhenopp", random_effects, append = TRUE, row.names = FALSE)
+   #dbWriteTable(con, "lme4_rider_succwhenopp", random_effects, append = TRUE, row.names = FALSE)
   
-   rm(random_effects)
+   #rm(random_effects)
   
   # ################################################
   #
@@ -506,7 +509,7 @@ for(b in 1:length(All_dates$date)) {
   # ############################################################
   #
   
-   #dbWriteTable(con, "performance_rider_allpcd", All_riders, append = TRUE, row.names = FALSE)
+   dbWriteTable(con, "performance_rider_allpcd", All_riders, append = TRUE, row.names = FALSE)
   
   #
   # ############################################################
@@ -562,7 +565,7 @@ for(b in 1:length(All_dates$date)) {
   # ############################################################
   #
   
-   #dbWriteTable(con, "performance_rider_clustering", weighted_pcd, append = TRUE, row.names = FALSE)
+   dbWriteTable(con, "performance_rider_clustering", weighted_pcd, append = TRUE, row.names = FALSE)
 
   ############################################################
 
@@ -570,12 +573,6 @@ for(b in 1:length(All_dates$date)) {
   rm(dx)
   rm(dy)
   rm(dz)
-  
-  rm(mod_logrk)
-  rm(mod_points)
-  rm(mod_succ)
-  rm(mod4)
-  rm(mod_succwhenopp)
   
   print(b)
   
