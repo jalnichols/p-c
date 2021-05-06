@@ -35,7 +35,7 @@ all_routes <- telem %>%
                unique() %>%
                janitor::clean_names(), by = c("activity_id")) %>%
   
-  inner_join(dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0 AND year = '2021'") %>%
+  inner_join(dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
                
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
                unique(), by = c("date", "pcs" = "rider")) %>% 
@@ -144,6 +144,22 @@ percentage_climbing_in_final_climb <- all_routes %>%
   
   mutate(perc_gain_end = final_20km_vert_gain / total_vert_gain)
 
+# data below taken from a paper showing aerobic power at certain elevation levels (in feet) compared to sea-level
+# eg, at 14,000 feet it's about 71% of at sea-level
+
+model_data <- tibble(elev = seq(0,14000,1000), 
+              aap = c(0.999, 0.992, 0.983, 0.972, 0.959, 0.944, 0.927, 0.907, 0.886, 0.863, 0.837, 0.809, 0.78, 0.748, 0.714)) %>% 
+  mutate(elev = elev * 0.3048)
+
+mgcv::gam(aap ~ s(elev, k = 5), data = model_data) -> gam_mod
+
+weighted_alt <- cbind(all_routes, pred = all_routes %>%
+                        rename(elev = elevations) %>% 
+                        mgcv::predict.gam(object = gam_mod)) %>% 
+  group_by(stage, race, year, class, rider) %>% 
+  summarize(weighted_altitude = mean(pred, na.rm = T)) %>%
+  ungroup()
+
 #
 
 lumpiness <- all_routes %>%
@@ -175,6 +191,12 @@ stage_characteristics <- all_routes %>%
     
     lumpiness %>%
       select(-stage_end), by = c("stage", "race", "year", "class", "rider")
+    
+  ) %>%
+  
+  inner_join(
+    
+    weighted_alt, by = c("stage", "race", "year", "class", "rider")
     
   ) %>%
   inner_join(
@@ -253,6 +275,7 @@ preds %>%
 #
 
 races_pull_in <- all_routes %>%
+  filter(distances < 1000) %>%
   select(stage, race, year, class) %>%
   unique()
 
