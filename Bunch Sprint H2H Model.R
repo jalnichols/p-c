@@ -64,7 +64,9 @@ sprint_h2h_data <- All_data %>%
   
   filter(bunch_sprint == 1) %>%
   filter(!is.na(rnk)) %>%
-  filter(rnk < 31)
+  filter(rnk < 31) %>%
+  filter(team_ldr == 1) %>%
+  mutate(master_team = ifelse(master_team == "X", team, master_team))
 
 #
 #
@@ -85,6 +87,7 @@ sprint_h2h <- sprint_h2h_data %>%
              rnk2 = rnk), by = c("stage", "race", "year")) %>%
   
   filter(!rider1 == rider2) %>%
+  filter(!team1 == team2) %>%
   
   mutate(adv1 = ifelse(rnk1 < rnk2, 1, 0),
          adv2 = ifelse(rnk1 > rnk2, 1, 0)) %>%
@@ -99,7 +102,9 @@ sprint_h2h <- sprint_h2h_data %>%
   mutate(r2_n = n()) %>%
   ungroup() %>%
   
-  filter(!is.na(date))
+  filter(!is.na(date)) %>%
+  
+  unique()
 
 #
 
@@ -139,6 +144,19 @@ sprint_h2h_team <- All_data %>%
   ungroup() %>%
   
   filter(!is.na(date))
+
+#
+
+teammate_data <- All_data %>%
+  
+  filter(bunch_sprint == 1) %>%
+  filter(!is.na(rnk)) %>%
+  
+  # only take those within 5 seconds of winner
+  filter(gain_1st <= 5) %>%
+  
+  select(date, race, stage, year, team=master_team, rider) %>%
+  unique()
 
 #
 #
@@ -313,11 +331,11 @@ sprint_h2h <- sprint_h2h %>%
 sprint_h2h_team <- sprint_h2h_team %>%
   
   select(adv1, adv2, date, race, stage, year, r1_n, r2_n, rnk1, rnk2, team1, team2)
-
+  
 #
 
 dates_to_pull <- expand_grid(months = c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'),
-                             years = c('2016', '2017', '2018', '2019', '2020')) %>%
+                             years = c('2016', '2017', '2018', '2019', '2020', '2021')) %>%
   
   mutate(days = ifelse(months == "11", '10',
                        ifelse(months == '01', "15", '01'))) %>%
@@ -326,7 +344,9 @@ dates_to_pull <- expand_grid(months = c('01', '02', '03', '04', '05', '06', '07'
   
   filter(date < '2020-04-01' | date > '2020-07-15') %>%
   
-  filter(!date %in% as.Date(c("2019-11-10", "2018-11-10", "2017-11-10", "2016-11-10")))
+  filter(!date %in% as.Date(c("2019-11-10", "2018-11-10", "2017-11-10", "2016-11-10"))) %>%
+  
+  filter(date < '2021-05-06')
 
 #
 
@@ -362,60 +382,49 @@ for(y in 1:length(df_list)) {
   
   #
   
-  team_data <- sprint_h2h_team %>%
-    
-    filter(date < cutoff & date >= (cutoff - start)) %>%
-    
-    group_by(team1) %>%
-    mutate(r1_n = n()) %>%
-    ungroup() %>%
-    
-    group_by(team2) %>%
-    mutate(r2_n = n()) %>%
-    ungroup() %>%
-    
-    filter((r1_n >= 1000 & r2_n >= 1000))
+  # team_data <- sprint_h2h_team %>%
+  #   filter(date < cutoff & date >= (cutoff - start)) %>%
+  #   group_by(team1) %>%
+  #   mutate(r1_n = n()) %>%
+  #   ungroup() %>%
+  #   group_by(team2) %>%
+  #   mutate(r2_n = n()) %>%
+  #   ungroup() %>%
+  #   filter((r1_n >= 1000 & r2_n >= 1000))
   
   #
   
-  tm_bs_glmer <- glmer(adv1 ~ (1 | team1) + (1 | team2), 
-                     data = team_data,
-                     family = binomial("logit"),
-                     nAGQ=0,
-                     control=lme4::glmerControl(optimizer = "nloptwrap"))
+  # tm_bs_glmer <- glmer(adv1 ~ (1 | team1) + (1 | team2), 
+  #                    data = team_data,
+  #                    family = binomial("logit"),
+  #                    nAGQ=0,
+  #                    control=lme4::glmerControl(optimizer = "nloptwrap"))
   
-  tm_ranefs <- ranef(tm_bs_glmer)[[1]] %>%
-    rownames_to_column() %>%
-    janitor::clean_names() %>%
-    rename(team = rowname) %>%
-    
-    mutate(pred_date = cutoff)
+  # tm_ranefs <- ranef(tm_bs_glmer)[[1]] %>%
+  #   rownames_to_column() %>%
+  #   janitor::clean_names() %>%
+  #   rename(team = rowname) %>%
+  #   mutate(pred_date = cutoff)
   
   #
   
-  tm_list[[y]] <- tm_ranefs
+  # tm_list[[y]] <- tm_ranefs
   
   #
   
   training <- sprint_h2h %>%
-    
     filter(date < cutoff & date >= (cutoff - start)) %>%
-    
     group_by(rider1) %>%
     mutate(r1_n = n()) %>%
     ungroup() %>%
-    
     group_by(rider2) %>%
     mutate(r2_n = n()) %>%
     ungroup() %>%
-    
-    filter((r1_n >= 250 & r2_n >= 250))
+    filter((r1_n >= 100 & r2_n >= 100))
   
-  training <- cbind(training,
-                    
-                    pred_team = predict(tm_bs_glmer, training, allow.new.levels = TRUE)) %>%
-    
-    mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
+  #training <- cbind(training,
+  #                  pred_team = predict(tm_bs_glmer, training, allow.new.levels = TRUE)) %>%
+  #  mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
 
   #
   
@@ -431,36 +440,45 @@ for(y in 1:length(df_list)) {
       mutate(r2_n = n()) %>%
       ungroup() %>%
       
-      filter((r1_n >= 250 & r2_n >= 250))
+      filter((r1_n >= 50 & r2_n >= 50))
 
   #
   
   tictoc::tic()
   
-   h2h_glmer <- glmer(adv1 ~ (1 | rider1) + (1 | rider2) + pred_team, 
-                      data = training,
-                      family = binomial("logit"),
-                      nAGQ=0,
-                      control=lme4::glmerControl(optimizer = "nloptwrap"))
+   # h2h_glmer <- glmer(adv1 ~ (1 | rider1) + (1 | rider2) + pred_team, 
+   #                    data = training,
+   #                    family = binomial("logit"),
+   #                    nAGQ=0,
+   #                    control=lme4::glmerControl(optimizer = "nloptwrap"))
 
+  # ranefs <- ranef(h2h_glmer)[[1]] %>%
+  #   rownames_to_column() %>%
+  #   janitor::clean_names() %>%
+  #   rename(rider = rowname) %>%
+  #   mutate(pred_date = cutoff)
+
+  h2h_glmer <- glmer(adv1 ~ (1 | rider1) + (1 | rider2), 
+                     data = training,
+                     family = binomial("logit"),
+                     nAGQ=0,
+                     control=lme4::glmerControl(optimizer = "nloptwrap"))
+  
   ranefs <- ranef(h2h_glmer)[[1]] %>%
     rownames_to_column() %>%
     janitor::clean_names() %>%
     rename(rider = rowname) %>%
-    
     mutate(pred_date = cutoff)
-
+  
   tictoc::toc()
   
-  if(cutoff > '2020-08-01') {
+  if(cutoff > '2020-12-01') {
     
   } else {
     
-    testing <- cbind(testing,
-                     
-                     pred_team = predict(tm_bs_glmer, testing, allow.new.levels = TRUE)) %>%
-      
-      mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
+    # testing <- cbind(testing,
+    #                  pred_team = predict(tm_bs_glmer, testing, allow.new.levels = TRUE)) %>%
+    #   mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
     
   preds <- cbind(coef = predict(h2h_glmer, testing %>%
                                   filter(rider1 %in% ranefs$rider & rider2 %in% ranefs$rider)),
@@ -485,13 +503,13 @@ for(y in 1:length(df_list)) {
 
 model_results <- bind_rows(df_list) %>%
   
-  filter(pred_date < '2020-09-01')
+  filter(pred_date < '2020-12-01')
   
 # model is fairly well calibrated, but could benefit from regression at tails
 # regress 10% to 50% using regr_prob below and it is perfectly matched
 
 model_results %>% 
-  mutate(regr_prob = ((prob * 9)+(0.5))/10) %>%
+  mutate(regr_prob = ((prob * 8)+(0.5))/9) %>%
   
   group_by(f = floor(prob / 0.02) / 50) %>% 
   summarize(pred = mean(prob, na.rm = T), 
@@ -510,7 +528,7 @@ model_results %>%
   geom_blank(data = tibble(pred = c(0,1), act = c(0,1)))
 
 model_results %>% 
-  mutate(regr_prob = ((prob * 9)+(0.5))/10) %>%
+  mutate(regr_prob = ((prob * 8)+(0.5))/9) %>%
   
   summarize(BRIER_RAW = mean((adv1-prob)^2),
             BRIER_REGR = mean((adv1-regr_prob)^2))
@@ -519,7 +537,7 @@ model_results %>%
 #
 #
 
-rider_results<- bind_rows(ranef_list) %>%
+rider_results <- bind_rows(ranef_list) %>%
   group_by(pred_date) %>% 
   mutate(rk = rank(-intercept, ties.method = "min")) %>% 
   ungroup() %>% 
@@ -602,38 +620,38 @@ for(y in 1:length(df_list)) {
   
   #
   
-  team_data <- sprint_h2h_team %>%
-    
-    filter(date < cutoff & date >= (cutoff - start)) %>%
-    
-    group_by(team1) %>%
-    mutate(r1_n = n()) %>%
-    ungroup() %>%
-    
-    group_by(team2) %>%
-    mutate(r2_n = n()) %>%
-    ungroup() %>%
-    
-    filter((r1_n >= 1000 & r2_n >= 1000))
-  
-  #
-  
-  tm_bs_glmer <- glmer(adv1 ~ (1 | team1) + (1 | team2), 
-                       data = team_data,
-                       family = binomial("logit"),
-                       nAGQ=0,
-                       control=lme4::glmerControl(optimizer = "nloptwrap"))
-  
-  tm_ranefs <- ranef(tm_bs_glmer)[[1]] %>%
-    rownames_to_column() %>%
-    janitor::clean_names() %>%
-    rename(team = rowname) %>%
-    
-    mutate(pred_date = cutoff)
-  
-  #
-  
-  tm_list[[y]] <- tm_ranefs
+  # team_data <- sprint_h2h_team %>%
+  #   
+  #   filter(date < cutoff & date >= (cutoff - start)) %>%
+  #   
+  #   group_by(team1) %>%
+  #   mutate(r1_n = n()) %>%
+  #   ungroup() %>%
+  #   
+  #   group_by(team2) %>%
+  #   mutate(r2_n = n()) %>%
+  #   ungroup() %>%
+  #   
+  #   filter((r1_n >= 1000 & r2_n >= 1000))
+  # 
+  # #
+  # 
+  # tm_bs_glmer <- glmer(adv1 ~ (1 | team1) + (1 | team2), 
+  #                      data = team_data,
+  #                      family = binomial("logit"),
+  #                      nAGQ=0,
+  #                      control=lme4::glmerControl(optimizer = "nloptwrap"))
+  # 
+  # tm_ranefs <- ranef(tm_bs_glmer)[[1]] %>%
+  #   rownames_to_column() %>%
+  #   janitor::clean_names() %>%
+  #   rename(team = rowname) %>%
+  #   
+  #   mutate(pred_date = cutoff)
+  # 
+  # #
+  # 
+  # tm_list[[y]] <- tm_ranefs
   
   #
   
@@ -649,17 +667,17 @@ for(y in 1:length(df_list)) {
     mutate(r2_n = n()) %>%
     ungroup() %>%
     
-    filter((r1_n >= 250 & r2_n >= 250))
+    filter((r1_n >= 100 & r2_n >= 100))
   
-  training <- cbind(training,
-                    
-                    pred_team = predict(tm_bs_glmer, training, allow.new.levels = TRUE)) %>%
-    
-    mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
+  # training <- cbind(training,
+  #                   
+  #                   pred_team = predict(tm_bs_glmer, training, allow.new.levels = TRUE)) %>%
+  #   
+  #   mutate(pred_team = exp(pred_team)/(1+exp(pred_team)))
 
   #
   
-  h2h_glmer <- glmer(adv1 ~ (1 | rider1) + (1 | rider2) + pred_team, 
+  h2h_glmer <- glmer(adv1 ~ (1 | rider1) + (1 | rider2), #+ pred_team, 
                      data = training,
                      family = binomial("logit"),
                      nAGQ=0,
@@ -798,7 +816,7 @@ BS_data <- All_data %>%
   
   filter(bunch_sprint == 1 & year >= 2016) %>%
   
-  left_join(dbGetQuery(con, "SELECT date, rider, intercept
+  left_join(dbGetQuery(con, "SELECT date, rider, intercept, prob_vs_top10
                         FROM lme4_rider_bunchsprinth2h") %>%
               mutate(date = as.Date(date)), by = c("date", "rider")) %>%
   
@@ -846,3 +864,426 @@ BS_data %>%
   glm(win ~ rel_to_best + log(bs_rank), data = ., family = "binomial") %>%
   
   summary()
+
+#
+#
+#
+#
+#
+
+strength_of_sprinting <- BS_data %>%
+  
+  group_by(stage, race, year, class, date) %>%
+  mutate(bs_rank = rank(-intercept, ties.method = 'min')) %>%
+  filter(sum(!is.na(intercept)) >= 10) %>%
+  ungroup() %>%
+  
+  mutate(best_intercept = ifelse(bs_rank == 1, intercept, NA),
+         win_intercept = ifelse(rnk == 1, is.na(intercept), NA)) %>%
+  
+  group_by(stage, race, year, class, date, team) %>%
+  filter(bs_rank == min(bs_rank, ties.method = "first")) %>%
+  ungroup() %>%
+  
+  group_by(race, year, stage, class, date) %>%
+  summarize(sprinter_points = sum(prob_vs_top10, na.rm = T)) %>%
+  ungroup()
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+sprint_h2h <- sprint_h2h %>%
+  
+  select(rider1, rider2, adv1, adv2, date, race, stage, year, r1_n, r2_n, rnk1, rnk2, team1, team2) %>%
+  
+  group_by(team1, stage, race, year, date) %>% 
+  mutate(tm_best = rank(rnk1, ties.method = "min")) %>%
+  mutate(tmldr1 = ifelse(tm_best == min(tm_best, na.rm = T), 1, 0)) %>% 
+  ungroup() %>% 
+  
+  group_by(team2, stage, race, year, date) %>% 
+  mutate(tm_best = rank(rnk2, ties.method = "min")) %>%
+  mutate(tmldr2 = ifelse(tm_best == min(tm_best, na.rm = T), 1, 0)) %>% 
+  ungroup() %>%
+  
+  mutate(type = ifelse(tmldr1 == 1,
+                       ifelse(tmldr2 == 1, "both leaders", 'not matched'),
+                       ifelse(tmldr2 == 1, "not matched", "both helpers"))) %>%
+  
+  filter(type == "both leaders") %>%
+  
+  select(-type, -tm_best)
+
+#
+
+sprint_h2h_team <- sprint_h2h_team %>%
+  
+  select(adv1, adv2, date, race, stage, year, r1_n, r2_n, rnk1, rnk2, team1, team2)
+
+#
+
+dates_to_pull <- dbReadTable(con, "stage_data_perf") %>%
+  filter(!is.na(bunch_sprint)) %>%
+  filter(!is.na(pred_climb_difficulty)) %>%
+  filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
+           (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
+           (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
+           (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
+  
+  filter(year > 2015 & year <= 2019) %>%
+  select(date) %>%
+  unique() %>%
+  filter(!is.na(date)) %>%
+  
+  mutate(date = as.Date(date)) %>%
+  
+  rbind(tibble(date = as.Date(lubridate::today()))) %>%
+  
+  mutate(date = as.Date(date, origin = '1970-01-01')) %>%
+  
+  group_by(m = lubridate::month(date), y = lubridate::year(date)) %>% 
+  filter(rank(m, ties.method = "random")==1) %>% 
+  ungroup() %>% 
+  filter(m < 10 & m > 1)
+
+#
+
+tictoc::tic()
+
+df_list <- vector("list", length(dates_to_pull$date))
+tm_list <- vector("list", length(dates_to_pull$date))
+mod_list <- vector("list", length(dates_to_pull$date))
+
+# for loops by year
+
+for(y in 1:length(df_list)) {
+  
+  cutoff <- dates_to_pull$date[[y]]
+  
+  end = 366
+  
+  start = 731
+  
+  # find who will have teammates to match with later on
+  
+  sprint_h2h %>%
+    
+    filter(date < cutoff & date >= (cutoff - start)) %>%
+    
+    group_by(rider1) %>%
+    mutate(r1_n = n()) %>%
+    ungroup() %>%
+    
+    group_by(rider2) %>%
+    mutate(r2_n = n()) %>%
+    ungroup() %>%
+    
+    filter((r1_n >= 250 & r2_n >= 250)) %>%
+    
+    select(team1) %>%
+    unique() -> valid_teams_train
+  
+  sprint_h2h %>%
+    
+    filter(date >= cutoff & date < (cutoff + end)) %>%
+    
+    group_by(rider1) %>%
+    mutate(r1_n = n()) %>%
+    ungroup() %>%
+    
+    group_by(rider2) %>%
+    mutate(r2_n = n()) %>%
+    ungroup() %>%
+    
+    filter((r1_n >= 250 & r2_n >= 250)) %>%
+    
+    select(team1) %>%
+    unique()-> valid_teams_test
+
+  # find correct teammates in race with required # of appearances in final of BS
+  
+  tmate_df_train <- teammate_data %>%
+    
+    filter(date < cutoff & date >= (cutoff - start)) %>%
+    
+    group_by(rider) %>%
+    filter(n() >= 30) %>%
+    ungroup() %>%
+    
+    mutate(inrace = 1) %>%
+    filter(team %in% valid_teams_test$team1 & team %in% valid_teams_train$team1)
+  
+  tmate_df_test <- teammate_data %>%
+    
+    filter(date >= cutoff & date < (cutoff + end)) %>%
+    
+    filter(rider %in% 
+             (tmate_df_train$rider)) %>%
+    
+    mutate(inrace = 1) %>%
+    filter(team %in% valid_teams_test$team1 & team %in% valid_teams_train$team1)
+  
+  tmate_df_train <- tmate_df_train %>%
+    
+    filter(rider %in%
+             (tmate_df_test$rider))
+
+  # and combine with each teammate in top 30 of BS
+  
+  impact_model_test <- rbind(
+    
+    sprint_h2h %>%
+      
+      filter(date >= cutoff & date < (cutoff + end)) %>%
+      
+      group_by(rider1) %>%
+      mutate(r1_n = n()) %>%
+      ungroup() %>%
+      
+      group_by(rider2) %>%
+      mutate(r2_n = n()) %>%
+      ungroup() %>%
+      
+      filter((r1_n >= 250 & r2_n >= 250)) %>%
+      
+      left_join(tmate_df_test, by = c("race", "stage", 'year', 'date', 'team1' = "team")) %>%
+      mutate(rider = ifelse(is.na(rider), "No teammates", rider),
+             inrace = ifelse(is.na(inrace), 1, inrace)),
+    
+    sprint_h2h %>%
+      
+      filter(date >= cutoff & date < (cutoff + end)) %>%
+      
+      group_by(rider1) %>%
+      mutate(r1_n = n()) %>%
+      ungroup() %>%
+      
+      group_by(rider2) %>%
+      mutate(r2_n = n()) %>%
+      ungroup() %>%
+      
+      filter((r1_n >= 250 & r2_n >= 250)) %>%
+      
+      left_join(tmate_df_test, by = c("race", "stage", 'year', 'date', 'team2' = "team")) %>%
+      mutate(rider = ifelse(is.na(rider), "No teammates2", rider),
+             inrace = ifelse(is.na(inrace), 1, inrace)) %>%
+      mutate(inrace = ifelse(inrace == 1, -1, inrace))) %>%
+    
+    unique()
+  
+  #
+  
+  impact_model_train <- rbind(
+    
+    sprint_h2h %>%
+      
+      filter(date < cutoff & date >= (cutoff - start)) %>%
+      
+      group_by(rider1) %>%
+      mutate(r1_n = n()) %>%
+      ungroup() %>%
+      
+      group_by(rider2) %>%
+      mutate(r2_n = n()) %>%
+      ungroup() %>%
+      
+      filter((r1_n >= 250 & r2_n >= 250)) %>%
+      
+      left_join(tmate_df_train, by = c("race", "stage", 'year', 'date', 'team1' = "team")) %>%
+      mutate(rider = ifelse(is.na(rider), "No teammates", rider),
+             inrace = ifelse(is.na(inrace), 1, inrace)),
+    
+    sprint_h2h %>%
+      
+      filter(date < cutoff & date >= (cutoff - start)) %>%
+      
+      group_by(rider1) %>%
+      mutate(r1_n = n()) %>%
+      ungroup() %>%
+      
+      group_by(rider2) %>%
+      mutate(r2_n = n()) %>%
+      ungroup() %>%
+      
+      filter((r1_n >= 250 & r2_n >= 250)) %>%
+      
+      left_join(tmate_df_train, by = c("race", "stage", 'year', 'date', 'team2' = "team")) %>%
+      mutate(rider = ifelse(is.na(rider), "No teammates2", rider),
+             inrace = ifelse(is.na(inrace), 1, inrace)) %>%
+      mutate(inrace = ifelse(inrace == 1, -1, inrace))) %>% 
+    
+    unique() %>%
+    
+    filter(rider %in% impact_model_test$rider)
+  
+  #
+  
+  impact_model_test <- impact_model_test %>%
+    
+    filter(rider %in% impact_model_train$rider) %>%
+    
+    spread(rider, inrace) %>%
+    
+    filter(str_sub(rider1,1,1) > str_sub(rider2,1,1))
+  
+  impact_model_train <- impact_model_train %>%
+
+    spread(rider, inrace) %>%
+    
+    filter(str_sub(rider1,1,1) > str_sub(rider2,1,1))
+  
+  #
+  
+  x = as.matrix(impact_model_train %>% 
+                  select(-rider1, -rider2, -adv1, -adv2, -date, -race, -stage, -year, -r1_n, -r2_n, -rnk1, -rnk2, -team1, -team2,
+                         -tmldr1, -tmldr2))
+  y_train = impact_model_train$adv1
+  
+  x_test = as.matrix(impact_model_test %>% 
+                       select(-rider1, -rider2, -adv1, -adv2, -date, -race, -stage, -year, -r1_n, -r2_n, -rnk1, -rnk2, -team1, -team2,
+                              -tmldr1, -tmldr2))
+  y_test = impact_model_test$adv1
+  
+  x[is.na(x)] <- 0
+  
+  x_test[is.na(x_test)] <- 0
+  
+  x <- x[, colnames(x_test)]
+  
+  # run to find optimal lambda
+  
+  tictoc::tic()
+  
+  lambdas <- 10^seq(0, -6, by = -.25)
+  
+  # Setting alpha = 1 implements lasso regression
+  lasso_reg <- glmnet::cv.glmnet(x, 
+                                 y_train,
+                                 alpha = 1, 
+                                 lambda = lambdas,
+                                 family = "binomial",
+                                 nfolds = 5)
+  
+  # Best 
+  lambda_best <- lasso_reg$lambda.min 
+  
+  # lambda around 0.0002
+  
+  tictoc::toc()
+  
+  # run the lasso model
+  
+  tictoc::tic()
+  
+  lasso_model_all <- glmnet::glmnet(x, 
+                                    y_train,
+                                    alpha = 1, 
+                                    lambda = lambda_best, 
+                                    standardize = TRUE,
+                                    family = "binomial")
+  
+  tictoc::toc()
+  
+  #
+  
+  cbind(coef = lasso_model_all$beta@x,
+        rider = lasso_model_all$beta@Dimnames[[1]][lasso_model_all$beta@i+1]) %>% 
+    as_tibble() %>%
+    mutate(coef = as.numeric(coef)) -> all_coefs
+  
+  #
+  
+  df_list[[y]] <- cbind(
+    
+    pred = predict(obj = lasso_model_all, newx = x_test),
+    
+    impact_model_test[, 1:16]
+    
+  ) %>%
+    
+    mutate(cutoff = cutoff)
+  
+  mod_list[[y]] <- lasso_model_all
+  
+  tm_list[[y]] <- all_coefs %>%
+    
+    mutate(cutoff = cutoff)
+  
+  #
+  
+  rm(x)
+  rm(x_test)
+  rm(y)
+  rm(y_test)
+  rm(impact_model_test)
+  rm(impact_model_train)
+  rm(tmate_df_test)
+  rm(tmate_df_train)
+  rm(lasso_model_all)
+  rm(lasso_reg)
+  
+  gc()
+
+}
+
+tictoc::toc()
+
+#
+
+all_coefs <- bind_rows(tm_list)
+
+#
+
+all_preds <- bind_rows(df_list) %>% 
+  
+  mutate(prob = exp(s0)/(1+exp(s0))) # %>%
+  
+  # find where the sprinter ranked in team on that day
+  #inner_join(sprint_h2h %>%
+               
+  #             group_by(team1, stage, race, year, date) %>% 
+  #             mutate(tm_best = rank(rnk1, ties.method = "min")) %>%
+  #             mutate(tmldr1 = ifelse(tm_best == min(tm_best, na.rm = T), 1, 0)) %>% 
+  #             ungroup() %>% 
+               
+  #             group_by(team2, stage, race, year, date) %>% 
+  #             mutate(tm_best = rank(rnk2, ties.method = "min")) %>%
+  #             mutate(tmldr2 = ifelse(tm_best == min(tm_best, na.rm = T), 1, 0)) %>% 
+  #             ungroup() %>%
+               
+  #             select(rider1, rider2, tmldr1, tmldr2, stage, race, year, date), by = c("rider1", "rider2", "stage", "race", "year", "date"))
+
+results <- all_preds %>% 
+  
+  #mutate(type = ifelse(tmldr1 == 1,
+  #                     ifelse(tmldr2 == 1, "both leaders", 'not matched'),
+  #                     ifelse(tmldr2 == 1, "not matched", "both helpers"))) %>%
+  
+  group_by(f = floor(prob/0.05)) %>% #, type) %>% 
+  summarize(act = mean(adv1, na.rm = T), 
+            pred = mean(prob, na.rm = T), 
+            n = n()) %>% 
+  ungroup()
+
+#
+
+results %>% 
+  ggplot(aes(x = pred, y = act))+
+  geom_abline(slope = 1, intercept = 0)+
+  geom_point(size=3)
+

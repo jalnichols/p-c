@@ -1560,9 +1560,7 @@ bs_data <- stage_data_perf %>%
   
   filter(time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
   mutate(length = length - 200) %>%
-  
-  select(-data) %>%
-  
+
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%
   
@@ -1576,11 +1574,6 @@ bs_data <- stage_data_perf %>%
          sof40 = ifelse(sof >= 0.4, 1, 0)) %>%
   
   filter(U23 == 0) %>%
-  
-  select(-parcours_value, -stage_type, -variance, -top_variance, -rel_speed, -speed,
-         -gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, -gain_gc,
-         -tm_pos, -gc_winner, -gc_seconds, -gc_pos, -back_5_seconds, -gain_back_5,
-         -NEW, -new_st, -limit, -success, -success_time, -rel_success, -leader_rating, -points_finish) %>%
   
   mutate(stage_no = as.numeric(stage) - 1) %>%
   group_by(race, year) %>%
@@ -5824,11 +5817,15 @@ stage_level_strava %>%
             riders = n_distinct(pcs)) %>% 
   ungroup() -> time_trial_aggs
 
+#
+
 stage_data %>% 
   filter(time_trial == 1) %>% 
   inner_join(time_trial_aggs %>% 
                filter(riders >= 3) %>% 
                select(stage, race, year, class, tvg)) -> time_trial_data
+
+#
 
 time_trial_data %>%
   
