@@ -184,6 +184,40 @@ for(b in 1:length(All_dates$date)) {
   
   #
   #
+  # time lost model
+  
+  tictoc::tic()
+  
+  mod_timelost <- lme4::lmer(gain_gc ~ (1 + pred_climb_difficulty | rider) +
+                           (0 + bunch_sprint | rider) +
+                           sof,
+                         data = dx %>% mutate(gain_gc = ifelse(gain_gc < 0, 0, gain_gc)),
+                         weights = (1 / tm_pos),
+                         control = lme4::lmerControl(optimizer = "nloptwrap"))
+  
+  tictoc::toc()
+  
+  random_effects <- lme4::ranef(mod_timelost)[[1]] %>%
+    rownames_to_column() %>%
+    rename(rider = rowname,
+           random_intercept = `(Intercept)`,
+           pcd_impact = pred_climb_difficulty,
+           bunchsprint_impact = bunch_sprint
+    ) %>%
+    #what date are we predicting
+    mutate(Date = as.Date(maxD + 1)) %>%
+    
+    mutate(one_day_race = NA,
+           test_or_prod = 'prod')
+  
+  ################################################
+  
+  dbWriteTable(con, "lme4_rider_timelost", random_effects, append = TRUE, row.names = FALSE)
+  
+  rm(random_effects)
+  
+  #
+  #
   # win level model
   
    tictoc::tic()
