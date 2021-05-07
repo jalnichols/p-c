@@ -5823,15 +5823,11 @@ stage_data %>%
   filter(time_trial == 1) %>% 
   inner_join(time_trial_aggs %>% 
                filter(riders >= 3) %>% 
-               select(stage, race, year, class, tvg)) -> time_trial_data
+               select(stage, race, year, class, tvg)) %>%
 
-#
-
-time_trial_data %>%
-  
   mutate(gain_1st = ifelse(race == "world championships itt" & year == 2019,
                            ifelse(rnk == 1, 0, gain_1st - 3905.35), gain_1st)) %>%
-
+  
   filter(!(race %in% c('cycling tour of bihor - bellotto') & year==2019)) %>% 
   
   mutate(gain_1st = gain_1st / length) %>% 
@@ -5839,14 +5835,18 @@ time_trial_data %>%
   
   mutate(class = ifelse((class == "2.UWT" & grand_tour == 1) | class == "WC", "Elite",
                         ifelse(class %in% c("1.UWT", "2.UWT"), "WT", 
-                            ifelse(class %in% c("2.HC", "2.Pro", "1.HC", "1.Pro"), "Pro",
-                                   ifelse(class %in% c("2.1", "1.1", "CC"), ".1", ".2"))))) %>%
+                               ifelse(class %in% c("2.HC", "2.Pro", "1.HC", "1.Pro"), "Pro",
+                                      ifelse(class %in% c("2.1", "1.1", "CC"), ".1", ".2"))))) %>%
   
   mutate(days_ago = 1 / (365 + as.numeric(lubridate::today() - as.Date(date)))) %>%
   
   group_by(rider) %>%
   mutate(tvg = tvg - mean(tvg, na.rm = T)) %>%
-  ungroup() %>%
+  ungroup() -> time_trial_data
+
+#
+
+time_trial_data %>%
   
   filter(year >= 2018 & year <= 2021) %>% 
   lme4::lmer(adj_loss ~ (1 + tvg | rider) + (1 | class), 
@@ -5858,3 +5858,74 @@ lme4::ranef(mixed_mod_itt)[[1]] %>% rownames_to_column() -> ranef_itt
 lme4::ranef(mixed_mod_itt)[[2]] %>% rownames_to_column() -> ranef_itt_class
 
 #
+#
+#
+
+All_dates <- time_trial_data %>%
+  
+  filter(date > '2018-01-01') %>%
+  select(date) %>%
+  unique()
+
+#
+
+for(b in 1:length(All_dates$date)) {
+  
+  # go back 4 months further in 2020 post-lockdown
+  
+  if(All_dates$date[[b]] > '2020-04-01' & All_dates$date[[b]] < '2022-08-01') {
+    
+    howfar = 120
+    
+  } else {
+    
+    howfar = 0
+    
+  }
+  
+  # one day before predicting date and two years back
+  maxD <- as.Date(All_dates$date[[b]]) - 1
+  minD <- maxD - 1095 - howfar
+  
+  # set-up different time length data-sets
+  
+  dx <- time_trial_data %>% 
+    mutate(date = as.Date(date)) %>%
+    filter(between(date, minD, maxD)==TRUE) %>%
+    
+    select(rider, days_ago, tvg, class, adj_loss)
+
+  #
+  #
+  # time lost model
+  
+  tictoc::tic()
+  
+  lme4::lmer(adj_loss ~ (1 + tvg | rider) + (1 | class), 
+             data = dx, 
+             weights = days_ago,
+             control = lme4::lmerControl(optimizer = "nloptwrap")
+  ) -> mixed_mod_itt
+  
+  tictoc::toc()
+  
+  #
+  
+  random_effects <- lme4::ranef(mixed_mod_itt)[[1]] %>%
+    rownames_to_column() %>%
+    rename(rider = rowname,
+           random_intercept = `(Intercept)`,
+           tvg_impact = tvg
+    ) %>%
+    #what date are we predicting
+    mutate(Date = as.Date(maxD + 1))
+  
+  ################################################
+  
+  dbWriteTable(con, "lme4_rider_timetrial", random_effects, append = TRUE, row.names = FALSE)
+  
+  rm(random_effects)
+  
+  print(b)
+  
+}
