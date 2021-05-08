@@ -5929,3 +5929,80 @@ for(b in 1:length(All_dates$date)) {
   print(b)
   
 }
+
+#
+#
+#
+
+tt_model_preds <- dbReadTable(con, "lme4_rider_timetrial")
+
+#
+
+joined_with_preds <- time_trial_data %>%
+  filter(date > '2018-01-01') %>%
+  
+  left_join(tt_model_preds, by = c("rider", "date" = "Date")) %>%
+  mutate(predicted = (random_intercept + (tvg_impact * tvg))) %>%
+  
+  group_by(stage, race, year, class) %>%
+  mutate(predicted = predicted - min(predicted, na.rm = T)) %>%
+  ungroup() %>%
+  
+  select(rnk, rider, team, stage, race, year, date, class, tvg, length, gain_1st, adj_loss, predicted) %>%
+  
+  group_by(stage, race, year, class) %>%
+  mutate(pred_rnk = rank(predicted, ties.method = "min")) %>%
+  ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# TIME LOST
+
+timelost <- dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
+             FROM lme4_rider_timelost r
+             WHERE test_or_prod = 'prod'")
+
+#
+#
+#
+
+stage_data_perf <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year >= 2017")
+
+#
+
+joined_with_timelost <- stage_data_perf %>%
+  
+  filter(grand_tour == 1) %>%
+  group_by(class, race, year) %>%
+  filter(date == min(date, na.rm = T)) %>%
+  ungroup() %>%
+  
+  left_join(timelost, by = c("rider", "date" = "Date")) %>%
+  
+  mutate(time_lost_pred = (random_intercept + (10 * pcd_impact) + (bunchsprint_impact * 0.01))) %>%
+  
+  group_by(team, race, year) %>%
+  mutate(rk = rank(time_lost_pred, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(top5 = ifelse(rk <= 5, time_lost_pred, NA)) %>%
+  
+  group_by(race, year) %>%
+  mutate(pct_rk = percent_rank(-time_lost_pred)) %>%
+  ungroup() %>%
+
+  group_by(team, race, year) %>%
+  summarize(best = min(time_lost_pred, na.rm = T),
+            median = median(time_lost_pred, na.rm = T),
+            mean = mean(time_lost_pred, na.rm = T),
+            top5 = mean(top5, na.rm = T),
+            runners = n()) %>%
+  ungroup()
