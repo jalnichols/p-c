@@ -11,10 +11,10 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/scheldeprijs/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/giro-d-italia/2021/startlist/'
 
-PCD = 0
-BS = 0.95
+PCD = 10
+BS = 0.01
 
 #
 
@@ -56,16 +56,6 @@ riders <- cbind(riders %>% rename(rider = value)) %>%
 #
 
 most_recent_models <- rbind(
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_success r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_success r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Success'),
   
   dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
              FROM lme4_rider_logranks r
@@ -77,6 +67,17 @@ most_recent_models <- rbind(
              
              ) x ON r.Date = x.Date
              WHERE test_or_prod = 'prod'") %>% mutate(Type = 'LogRanks'),
+  
+  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
+             FROM lme4_rider_timelost r
+             JOIN (
+             
+             SELECT max(Date) as Date
+             FROM lme4_rider_logranks r
+             WHERE test_or_prod = 'prod'
+             
+             ) x ON r.Date = x.Date
+             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'TimeLost'),
   
   dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
              FROM lme4_rider_pointswhenopp r
@@ -109,19 +110,7 @@ most_recent_models <- rbind(
              WHERE test_or_prod = 'prod'
              
              ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Leader'),
-  
-  
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_succwhenopp r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_succwhenopp r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'WhenOpp')
+             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Leader')
   
 )
 
@@ -140,7 +129,7 @@ models <- riders %>%
   mutate(coef = ifelse(Type == "Points", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
                        ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
                        ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS),
-                              ifelse(Type == "Success", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 4.5),
+                              ifelse(Type == "TimeLost", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS),
                                      ifelse(Type == "Leader", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 2), 
                                             ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) - 2), NA)))))),
          coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), coef / (1+coef), coef)) %>%
@@ -149,7 +138,8 @@ models <- riders %>%
                        ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
                               ifelse(Type == "LogRanks", min(coef, na.rm = T),
                                      ifelse(Type == "Leader", 0.02,
-                                            ifelse(Type %in% c("Success","WhenOpp"), 0.01, NA)))), coef)) %>%
+                                            ifelse(Type %in% c("Success","WhenOpp"), 0.01,
+                                                   ifelse(Type == "TimeLost", max(coef, na.rm = T), NA))))), coef)) %>%
   group_by(team, Type) %>%
   mutate(coef = ifelse(Type == "Leader", ifelse(coef <= 0.05, 0, coef), coef)) %>%
   ungroup() %>%
@@ -169,7 +159,108 @@ wide_models <- models %>%
 
   mutate(rankPoints = rank(-Points, ties.method = "min"),
          rankPointsWhenOpp = rank(-PointsWhenOpp, ties.method = "min"),
-         rankLog = rank(-LogRanks, ties.method = "min"),
-         rankSuccess = rank(-Success, ties.method = "min")) %>%
+         rankLog = rank(-LogRanks, ties.method = "min")) %>%
 
-  mutate(rankOverall = 4 / ((1/rankPoints)+(1/rankLog)+(1/rankPoints)+(1/rankPointsWhenOpp)))
+  mutate(rankOverall = 3 / ((1/rankPoints)+(1/rankLog)+(1/rankPointsWhenOpp)))
+
+#
+#
+#
+
+all_models <- riders %>%
+  
+  group_by(team) %>%
+  filter(rank(team, ties.method = "first") <= 8) %>%
+  ungroup() %>%
+  
+  left_join(
+    
+    most_recent_models, by = c("rider")
+    
+  ) %>%
+  
+  mutate(climb_coef = ifelse(Type == "Points", random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01) + 0.012,
+                       ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01) + 0.012,
+                              ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01),
+                                     ifelse(Type == "TimeLost", random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01),
+                                            ifelse(Type == "Leader", exp(random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01) - 2), 
+                                                   ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * 12) + (bunchsprint_impact * 0.01) - 2), NA)))))),
+         climb_coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), climb_coef / (1+climb_coef), climb_coef)) %>%
+  
+  mutate(climb_coef = ifelse(is.na(climb_coef),
+                       ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
+                              ifelse(Type == "LogRanks", min(climb_coef, na.rm = T),
+                                     ifelse(Type == "Leader", 0.02,
+                                            ifelse(Type %in% c("Success","WhenOpp"), 0.01,
+                                                   ifelse(Type == "TimeLost", max(climb_coef, na.rm = T), NA))))), climb_coef)) %>%
+  
+  mutate(sprint_coef = ifelse(Type == "Points", random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9) + 0.012,
+                             ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9) + 0.012,
+                                    ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9),
+                                           ifelse(Type == "TimeLost", random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9),
+                                                  ifelse(Type == "Leader", exp(random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9) - 2), 
+                                                         ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * 1) + (bunchsprint_impact * 0.9) - 2), NA)))))),
+         sprint_coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), sprint_coef / (1+sprint_coef), sprint_coef)) %>%
+  
+  mutate(sprint_coef = ifelse(is.na(sprint_coef),
+                             ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
+                                    ifelse(Type == "LogRanks", min(sprint_coef, na.rm = T),
+                                           ifelse(Type == "Leader", 0.02,
+                                                  ifelse(Type %in% c("Success","WhenOpp"), 0.01,
+                                                         ifelse(Type == "TimeLost", max(sprint_coef, na.rm = T), NA))))), sprint_coef)) %>%
+  
+  mutate(hills_coef = ifelse(Type == "Points", random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.25) + 0.012,
+                              ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.25) + 0.012,
+                                     ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.5),
+                                            ifelse(Type == "TimeLost", random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.25),
+                                                   ifelse(Type == "Leader", exp(random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.25) - 2), 
+                                                          ifelse(Type == "WhenOpp", exp(random_intercept + (pcd_impact * 5) + (bunchsprint_impact * 0.25) - 2), NA)))))),
+         hills_coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), hills_coef / (1+hills_coef), hills_coef)) %>%
+  
+  mutate(hills_coef = ifelse(is.na(hills_coef),
+                              ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
+                                     ifelse(Type == "LogRanks", min(hills_coef, na.rm = T),
+                                            ifelse(Type == "Leader", 0.02,
+                                                   ifelse(Type %in% c("Success","WhenOpp"), 0.01,
+                                                          ifelse(Type == "TimeLost", max(hills_coef, na.rm = T), NA))))), hills_coef)) %>%
+  
+  select(rider, team, Type, hills_coef, sprint_coef, climb_coef) %>%
+  
+  group_by(Type) %>%
+  mutate(hillsrank = rank(hills_coef, ties.method = "min"),
+            sprintrank = rank(sprint_coef, ties.method = "min"),
+            climbrank = rank(climb_coef, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  filter(Type %in% c("TimeLost"))
+
+#
+#
+#
+
+team_ranks <- all_models %>%
+  
+  select(team, hillsrank, climbrank, hills_coef, climb_coef) %>%
+  gather(type, rank, -team) %>%
+  
+  group_by(team, type) %>%
+  mutate(rk = rank(rank, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(top5 = ifelse(rk <= 5, rank, NA)) %>%
+  
+  group_by(team, type) %>%
+  summarize(harm = sum(1 / rank, na.rm = T),
+            best = min(rank, na.rm = T),
+            median = median(rank, na.rm = T),
+            mean = mean(rank, na.rm = T),
+            top5 = mean(top5, na.rm = T),
+            runners = n()) %>%
+  ungroup() %>%
+  
+  mutate(harm = round(runners / (harm), 0)) %>%
+  select(-runners) %>%
+  
+  mutate(stat = ifelse(str_detect(type, "coef"), round(top5 + mean,0)/2, harm)) %>%
+  select(type, stat, team) %>%
+  spread(type, stat)
