@@ -2709,17 +2709,18 @@ RouteDeBessoni8Climb,1,6,tour de romandie,2021,4,2.UWT
 Sion/Anzère(viaArbaz),1,45,tour de romandie,2021,4,2.UWT
 Pont-de-la-Lienne-Lens,1,58,tour de romandie,2021,4,2.UWT
 Bramois-Suen,1,114.5,tour de romandie,2021,4,2.UWT
-Thyon2000,1,161,tour de romandie,2021,4,2.UWT
-KalbarioclimbOlatzbidegurutzetik,1,4.5,itzulia basque country,2021,6,2.UWT
-ElkorrietaP.M.,1,12,itzulia basque country,2021,6,2.UWT
-2021ItzuliaAzurki,1,23,itzulia basque country,2021,6,2.UWT
-Azkoitia-Gorla,1,43.5,itzulia basque country,2021,6,2.UWT
-TT-climb,1,68,itzulia basque country,2021,6,2.UWT
-TrabakuaUP,1,90.5,itzulia basque country,2021,6,2.UWT
-MallaldeaAuzoa,1,95,itzulia basque country,2021,6,2.UWT
-Areitio(Mallabia),1,97,itzulia basque country,2021,6,2.UWT
-Arrate-Partiepentue,1,109,itzulia basque country,2021,6,2.UWT
-subidaamaña,1,103.5,itzulia basque country,2021,6,2.UWT
+Sion-LeBouillet,1,154,tour de romandie,2021,4,2.UWT
+LesZefaugestoThyon,1,161,tour de romandie,2021,4,2.UWT
+KalbarioclimbOlatzbidegurutzetik,1,4.5,itzulia basque country,2021,6,2.UWT
+ElkorrietaP.M.,1,12,itzulia basque country,2021,6,2.UWT
+2021ItzuliaAzurki,1,23,itzulia basque country,2021,6,2.UWT
+Azkoitia-Gorla,1,43.5,itzulia basque country,2021,6,2.UWT
+TT-climb,1,68,itzulia basque country,2021,6,2.UWT
+TrabakuaUP,1,90.5,itzulia basque country,2021,6,2.UWT
+MallaldeaAuzoa,1,95,itzulia basque country,2021,6,2.UWT
+Areitio(Mallabia),1,97,itzulia basque country,2021,6,2.UWT
+Arrate-Partiepentue,1,109,itzulia basque country,2021,6,2.UWT
+subidaamaña,1,103.5,itzulia basque country,2021,6,2.UWT
 CôtedeSurpierre,1,31,tour de romandie,2021,3,2.UWT
 LeChâblesuphill,1,85,tour de romandie,2021,3,2.UWT
 CôtedesGrangesdeCheyres,1,90.5,tour de romandie,2021,3,2.UWT
@@ -2835,3 +2836,60 @@ STRV.Puertodelpicodesdecrucedestacruzhastacarteldepuerto,1,52,la vuelta ciclista
 SubidaParadorMadrid-Lisboa,1,67,la vuelta ciclista a espana,2018,9,2.UWT
 PUERTODEPEÑANEGRA(caraNorte),1,97,la vuelta ciclista a espana,2018,9,2.UWT
 Covatilla(hastalametadelaVuelta2018),1,200,la vuelta ciclista a espana,2018,9,2.UWT
+Lamaderarotondacovid,1,21,la vuelta ciclista a espana,2018,13,2.UWT
+Gargantada(desdeelBerrón),1,39,la vuelta ciclista a espana,2018,13,2.UWT
+ElPuertu(Tarna)AS-117<U+24F5><U+0001F53A>,1,105.5,la vuelta ciclista a espana,2018,13,2.UWT
+SABERO-LACAMPERONAmf,1,176,la vuelta ciclista a espana,2018,13,2.UWT
+CruceSaberoaSotillosdeSabero,1,7.5,la vuelta ciclista a espana,2018,14,2.UWT
+Pto.SanIsidroporLeon,1,60,la vuelta ciclista a espana,2018,14,2.UWT
+LaColladona(desdeCabañaquinta),1,92.5,la vuelta ciclista a espana,2018,14,2.UWT
+ColladiellaporlaMozquetadesdeloduro,1,127,la vuelta ciclista a espana,2018,14,2.UWT
+FayadesdeBarredoshastaelBANCODEMADERA,1,1505.5,la vuelta ciclista a espana,2018,14,2.UWT
+SubidaaLesPraeres.LaVuelta2018.,1,172,la vuelta ciclista a espana,2018,14,2.UWT
+AltoSto.Emiliano(Mieres)AS-111<U+24F7><U+0001F53A>,1,20,la vuelta ciclista a espana,2018,15,2.UWT
+AltodelaCampa(porVegadeSariego),1,52,la vuelta ciclista a espana,2018,15,2.UWT
+Fuentes-Breceña,1,73,la vuelta ciclista a espana,2018,15,2.UWT
+SubidaalFitodesdebarrioBarrigón(costa),1,99,la vuelta ciclista a espana,2018,15,2.UWT
+ElFitu(Desdeduyos),1,136,la vuelta ciclista a espana,2018,15,2.UWT
+"SubidaaBada,porArriondas",1,152,la vuelta ciclista a espana,2018,15,2.UWT
+LagosdeCovadonga(Enol),1,179,la vuelta ciclista a espana,2018,15,2.UWT
+Arboleda(FTP),1,16.5,la vuelta ciclista a espana,2018,17,2.UWT
+santoDomingo,1,54,la vuelta ciclista a espana,2018,17,2.UWT
+SanPelaio(desdeBakio),1,85,la vuelta ciclista a espana,2018,17,2.UWT
+Oka+balconbizkaia,1,122,la vuelta ciclista a espana,2018,17,2.UWT
+Aulestia-SantaEufemia,1,136,la vuelta ciclista a espana,2018,17,2.UWT
+GontzugaraiBolibartik,1,147.5,la vuelta ciclista a espana,2018,17,2.UWT
+Munitibar-oizvuelta,1,158,la vuelta ciclista a espana,2018,17,2.UWT
+RabassaTotalJuberri,1,154,la vuelta ciclista a espana,2018,19,2.UWT
+LaComella(LaVuelta)],1,5.5,la vuelta ciclista a espana,2018,20,2.UWT
+cm-climb,1,19.5,la vuelta ciclista a espana,2018,20,2.UWT
+ORDINO->COLLORDINO,1,42,la vuelta ciclista a espana,2018,20,2.UWT
+cm-climb,2,64,la vuelta ciclista a espana,2018,20,2.UWT
+Comellaxescaldes,1,80.5,la vuelta ciclista a espana,2018,20,2.UWT
+aixovall-MaredeDéuCanòlich,1,98,la vuelta ciclista a espana,2018,20,2.UWT
+PuertoPadornelo,1,38,la vuelta ciclista a espana,2018,12,2.UWT
+PontedeViana-AltodeCovelo,1,101,la vuelta ciclista a espana,2018,12,2.UWT
+Subidaatrives,1,139.5,la vuelta ciclista a espana,2018,12,2.UWT
+AltodeCerdeiraporTrives,1,148,la vuelta ciclista a espana,2018,12,2.UWT
+ATeixeiradesdeOIvedo,1,168.5,la vuelta ciclista a espana,2018,12,2.UWT
+FabricadelaLuz-ParadadoSil,1,189.5,la vuelta ciclista a espana,2018,12,2.UWT
+N525Climb,1,55,la vuelta ciclista a espana,2018,12,2.UWT
+TuttalasalitafinoaPratoNevoso,1,197,giro d'italia,2018,18,2.UWT
+Barolo-Novello,1,140.5,giro d'italia,2018,18,2.UWT
+SalitaRoccaraso,1,109,giro d'italia,2018,9,2.UWT
+ViaGiovanniPaoloIIClimb,1,91.5,giro d'italia,2018,9,2.UWT
+SalitadellevigneCalascio,1,192.5,giro d'italia,2018,9,2.UWT
+GranSassod’ItaliaNo84Italy’sGreatestClimbs,1,225,giro d'italia,2018,9,2.UWT
+ViaFontanaClimb,1,177.5,giro d'italia,2018,8,2.UWT
+GiroStage8climb,1,208,giro d'italia,2018,8,2.UWT
+AllEtnaClimb,1,169,giro d'italia,2018,6,2.UWT
+PaternòStazione-Belpasso(ECB),1,144,giro d'italia,2018,6,2.UWT
+Gsteig-ColduPillon-Climb,1,16,tour de suisse,2018,5,2.UWT
+Granges-Lens-Bluche,1,120,tour de suisse,2018,5,2.UWT
+Rendez-vous-LeukerbadLLB,1,154.6,tour de suisse,2018,5,2.UWT
+FurkafromOberwald,1,39,tour de suisse,2018,6,2.UWT
+KreiselKollegium_Chlausenchapeli,1,118,tour de suisse,2018,6,2.UWT
+AlteRickenstrasse,1,186,tour de suisse,2018,6,2.UWT
+RickenvollSchnapps,1,11,tour de suisse,2018,7,2.UWT
+Lichtensteig-Wasserfluh,1,25,tour de suisse,2018,7,2.UWT
+Chur--Arosa,1,170.5,tour de suisse,2018,7,2.UWT
