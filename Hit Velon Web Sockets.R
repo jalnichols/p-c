@@ -4,17 +4,17 @@ library(websocket)
 library(rvest)
 library(jsonlite)
 
-result_list <- vector("list", 10000)
+result_list <- vector("list", 8000)
 
 x=0
 
 ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
                     
-                    headers =list('Sec-WebSocket-Key' = "dKFYbfysty+FGC2/SoHFwQ=="))
+                    headers = list('Sec-WebSocket-Key' = "0JZJhFaiEoCqdzLNBn+uYw=="))
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":49276,"stageId":255626,"jsonpack":false}')
+  ws$send('{"type":"group","eventId":49409,"stageId":255971,"jsonpack":false}')
 })
 
 ws$onMessage(function(event) {
@@ -42,7 +42,7 @@ ws$onMessage(function(event) {
   
   print(x)
   
-  if(lubridate::now() > '2021-04-04 11:30:00 AM') {
+  if(lubridate::now() > lubridate::as_datetime('2021-05-11 05:00:00 PM')) {
     
     ws$close()
     
@@ -68,20 +68,26 @@ for(v in 1:length(result_list)) {
   
   json <- result_list[[v]]
   
-  race_data <- tibble(eventId = json$eventId,
-                      stageId = json$stageId,
-                      utcTime = json$time$utc,
-                      epochTime = json$time$epochTime)
+  if(length(json) < 3) {
   
-  groups_info <- json$groups %>%
-    select(groupId, riders) %>%
-    unnest(cols = c("riders")) %>%
+  } else {
     
-    cbind(race_data) %>%
-    mutate(sequence = v)
-  
-  data_list[[v]] <- groups_info
-  
+    race_data <- tibble(eventId = json$eventId,
+                        stageId = json$stageId,
+                        utcTime = json$time$utc,
+                        epochTime = json$time$epochTime)
+    
+    groups_info <- json$groups %>%
+      select(groupId, riders) %>%
+      unnest(cols = c("riders")) %>%
+      
+      cbind(race_data) %>%
+      mutate(sequence = v)
+    
+    data_list[[v]] <- groups_info
+    
+  }
+
 }
 
 #
@@ -91,4 +97,141 @@ for(v in 1:length(result_list)) {
 
 telemetry <- bind_rows(data_list)
 
-write_csv(telemetry, "rvv-2021-velon-telemetry.csv")
+write_csv(telemetry, "giro-4-2021-velon-telemetry.csv")
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+library(tidyverse)
+
+#
+
+riders <- read_csv("giro-startlist-2021.csv")
+
+telemetry <- read_csv("giro-3-2021-velon-telemetry.csv") %>%
+  mutate(kmToFinish = distanceToGo / 1000) %>%
+  
+  inner_join(riders %>% select(-teamId, -riderId), by = c("bibNumber")) %>%
+  
+  rename(Bib = bibNumber,
+         StageId = stageId) %>%
+  
+  select(-assumed, -avgWattsPerKg, -avgCadence, -avgPower, -avgSpeed,
+         -sequence, -eventId, -powerPer, -maxCadence, -maxPower,
+         -heartrate, -maxSpeed, -hrPer, -distance) %>%
+  
+  filter(kmToFinish > 0)
+
+#
+
+telemetry %>%
+
+  mutate(RIDER = ifelse(Bib == "71", kmToFinish, NA)) %>% 
+  
+  group_by(epochTime) %>%
+  mutate(RIDER = mean(RIDER, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  mutate(to_rider = ifelse(abs(kmToFinish - RIDER) < 0.5, 1, 
+                            ifelse(kmToFinish < RIDER, 1, 0)),
+         near_rider = ifelse(abs(kmToFinish - RIDER) < 1, 1, 0)) %>% 
+  
+  filter(kmToFinish > 0) %>% 
+  
+  mutate(valid = ifelse(to_rider == 1, kmToFinish, NA)) -> survival
+
+#
+
+survival %>%
+  
+  group_by(Bib, name, teamName, StageId) %>% 
+  summarize(to_rider = mean(to_rider, na.rm = T),
+            near_rider = mean(near_rider, na.rm = T),
+            furthest = min(valid, na.rm = T),
+            stages = n_distinct(StageId),
+            stamps = n()) %>%
+  ungroup() -> survival_w_rider
+
+#
+
+survival %>%
+  
+  group_by(RIDER, StageId) %>%
+  summarize(in_touch = mean(to_rider, na.rm = T),
+            near = mean(near_rider, na.rm = T),
+            sample = n()) %>%
+  ungroup() %>%
+  
+  ggplot(aes(x = RIDER, y = in_touch))+
+  geom_point()+
+  scale_x_reverse()+
+  geom_smooth(se=F)
+
+#
+#
+#
+#
+#
+
+climbing <- telemetry %>%
+  
+  mutate(within_01 = ifelse(kmToFinish < 0.1, epochTime, NA)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(epochTime <= within_01) %>%
+  ungroup() %>%
+  
+  filter(gradient > 0 & kmToFinish > 0) %>%
+  
+  # Orcieres Merlette St4
+  # Lusette St6
+  # Peyresource St8
+  # Marie Blanque St9
+  # Puy Mary and Neronne St13
+  filter((StageId == "255970" & kmToFinish < 51 & kmToFinish > 35)) %>%
+  
+  group_by(Bib, name, StageId) %>%
+  summarize(mindist = min(kmToFinish,na.rm=T),
+            maxdist = max(kmToFinish, na.rm = T),
+            max = max(utcTime, na.rm = T),
+            min = min(utcTime, na.rm = T),
+            n=n()) %>%
+  ungroup() %>%
+  
+  mutate(seconds = as.numeric(max-min)*60,
+         meters = (maxdist - mindist)*1000,
+         m_s = meters / seconds,
+         kph = (meters / 1000) / (seconds / 60 / 60)) %>%
+  
+  group_by(StageId) %>%
+  mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
+  ungroup() %>%
+  
+  group_by(StageId) %>%
+  filter((meters / max(meters, na.rm = T) > 0.90)) %>%
+  mutate(rk = rank(-kph, ties.method = "first")) %>%
+  mutate(x20th = ifelse(rk == 10, kph, NA)) %>%
+  mutate(x20th = mean(x20th, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(RelTo20th = kph / x20th) %>%
+  
+  group_by(StageId) %>%
+  mutate(max_meters = max(meters, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(implied_seconds = max_meters / m_s)
+
+#
+#
+#
+#
+#
