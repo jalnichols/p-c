@@ -113,6 +113,8 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
+  filter(year == 2018) %>%
+  
   inner_join(
     
     dbGetQuery(con, "SELECT rowname, Segment,
@@ -142,7 +144,9 @@ segment_data_races %>%
   anti_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
-  filter(year==2021) %>% group_by(race, stage, year, class) %>% summarize(n = n_distinct(rider)) %>% arrange(desc(n)) -> r
+  #filter(str_detect(race, "algarve")) %>%
+  group_by(race, stage, year, class) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
+  arrange(desc(n)) -> r
 
 #
 
@@ -152,7 +156,7 @@ abc <- segment_data_races %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
   
-  filter(race %in% c("tirreno-adriatico", "paris-nice") & year %in% c(2021)) %>%
+  #filter(year == 2021) %>%
   filter(rnk != 200) %>%
   select(activity_id, pcs, rnk, stage, race, year, class, rowname, Segment, Distance, Gradient, Type, distance, length)
 
