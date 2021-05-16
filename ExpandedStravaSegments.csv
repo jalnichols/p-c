@@ -2867,13 +2867,13 @@ ORDINO->COLLORDINO,1,42,la vuelta ciclista a espana,2018,20,2.UWT
 cm-climb,2,64,la vuelta ciclista a espana,2018,20,2.UWT
 Comellaxescaldes,1,80.5,la vuelta ciclista a espana,2018,20,2.UWT
 aixovall-MaredeDéuCanòlich,1,98,la vuelta ciclista a espana,2018,20,2.UWT
-PuertoPadornelo,1,38,la vuelta ciclista a espana,2018,12,2.UWT
-PontedeViana-AltodeCovelo,1,101,la vuelta ciclista a espana,2018,12,2.UWT
-Subidaatrives,1,139.5,la vuelta ciclista a espana,2018,12,2.UWT
-AltodeCerdeiraporTrives,1,148,la vuelta ciclista a espana,2018,12,2.UWT
-ATeixeiradesdeOIvedo,1,168.5,la vuelta ciclista a espana,2018,12,2.UWT
-FabricadelaLuz-ParadadoSil,1,189.5,la vuelta ciclista a espana,2018,12,2.UWT
-N525Climb,1,55,la vuelta ciclista a espana,2018,12,2.UWT
+PuertoPadornelo,1,38,la vuelta ciclista a espana,2018,11,2.UWT
+PontedeViana-AltodeCovelo,1,101,la vuelta ciclista a espana,2018,11,2.UWT
+Subidaatrives,1,139.5,la vuelta ciclista a espana,2018,11,2.UWT
+AltodeCerdeiraporTrives,1,148,la vuelta ciclista a espana,2018,11,2.UWT
+ATeixeiradesdeOIvedo,1,168.5,la vuelta ciclista a espana,2018,11,2.UWT
+FabricadelaLuz-ParadadoSil,1,189.5,la vuelta ciclista a espana,2018,11,2.UWT
+N525Climb,1,55,la vuelta ciclista a espana,2018,11,2.UWT
 TuttalasalitafinoaPratoNevoso,1,197,giro d'italia,2018,18,2.UWT
 Barolo-Novello,1,140.5,giro d'italia,2018,18,2.UWT
 SalitaRoccaraso,1,109,giro d'italia,2018,9,2.UWT
@@ -3031,3 +3031,282 @@ St.ThomastoSummit,1,76,amgen tour of california,2018,2,2.UWT
 CasitasWestClimb,1,108.5,amgen tour of california,2018,2,2.UWT
 JustGreenwell,1,131.5,amgen tour of california,2018,2,2.UWT
 "GibraltarClimb,bottomofStanwoodtotopofGibraltar",1,155,amgen tour of california,2018,2,2.UWT
+Bitterwaterclimb(Westside),1,66,amgen tour of california,2018,3,2.UWT
+CarmelValleyRd.fromArroyoSecoRd.,1,143.5,amgen tour of california,2018,3,2.UWT
+"Cachagua,southside",1,168.5,amgen tour of california,2018,3,2.UWT
+SouthApproachLaurelesGrade,1,188.5,amgen tour of california,2018,3,2.UWT
+LagunaSecaSouthEntrance,1,194.5,amgen tour of california,2018,3,2.UWT
+AmgenTOCCederRavineKOMSegment,1,41,amgen tour of california,2018,6,2.UWT
+Bottomtothetop!,1,100.5,amgen tour of california,2018,6,2.UWT
+CarsonSpur-WestSide,1,117,amgen tour of california,2018,6,2.UWT
+KirkwoodtoCarsonPass,1,128.5,amgen tour of california,2018,6,2.UWT
+KingsburyTT,1,186,amgen tour of california,2018,6,2.UWT
+PioneertoHeavenlyParking,1,192.5,amgen tour of california,2018,6,2.UWT
+WolfCreekKOM,1,58,the larry h.miller tour of utah,2018,6,2.HC
+WasatchMtStateParktoKOMguardsman,1,117,the larry h.miller tour of utah,2018,6,2.HC
+Jordanelle--justtheclimb,1,22,the larry h.miller tour of utah,2018,5,2.HC
+MarsacandGuardsmanfromHillside,1,110,the larry h.miller tour of utah,2018,5,2.HC
+ParkandRidetoEntrance#2,1,154,the larry h.miller tour of utah,2018,5,2.HC
+BrownsCanyon(almostbottom2almosttop),1,85,the larry h.miller tour of utah,2018,5,2.HC
+TOU2018|Stage4SLCLOOP,1,11,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,2,22,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,3,34,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,4,45,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,5,57,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,6,69,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,7,80,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,8,91,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,9,102,the larry h.miller tour of utah,2018,4,2.HC
+TOU2018|Stage4SLCLOOP,10,114,the larry h.miller tour of utah,2018,4,2.HC
+Nebo-southclimbtosummit,1,103,the larry h.miller tour of utah,2018,2,2.HC
+Parowancanyonfullclimbtocedarbreaks,1,60,the larry h.miller tour of utah,2018,1,2.HC
+DuckCreekCampGroundtoGooseberry,1,124,the larry h.miller tour of utah,2018,1,2.HC
+MairbachClimb,1,69,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'18,1,94,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'19,2,118,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'20,3,142,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'21,4,166,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'22,5,190,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'23,6,214,world championships - road race,2018,1,WC
+Boa-ClimbingChallengeInnsbruck'24,7,238,world championships - road race,2018,1,WC
+Hölluvaride-HöttingerHöll'-SchlussanstiegStraßen-WM2018,1,257,world championships - road race,2018,1,WC
+LaMota(PM),1,19,vuelta a burgos,2018,3,2.HC
+ElEscalerón,1,39,vuelta a burgos,2018,3,2.HC
+AilanesClimb,1,64,vuelta a burgos,2018,3,2.HC
+Retuertaporvariante,1,122,vuelta a burgos,2018,3,2.HC
+PicónBlancodesdefinpuebloametavuelta,1,148,vuelta a burgos,2018,3,2.HC
+CuestadeArroyo,1,6,vuelta a burgos,2018,5,2.HC
+HacinasCarazo,1,41,vuelta a burgos,2018,5,2.HC
+Silos-Hortezuelos,1,56,vuelta a burgos,2018,5,2.HC
+CerrodeHuerta,1,86,vuelta a burgos,2018,5,2.HC
+ColladadeVilviestre,1,118,vuelta a burgos,2018,5,2.HC
+LagunasdeNeiladesdeQuintanardelaSierraporserrería,1,141,vuelta a burgos,2018,5,2.HC
+TransfagarasannordCompletClimb(DN1-BaleaLac),1,90,sibiu cycling tour,2018,1,2.1
+RotondaCasazza-Gallo,1,54.5,il lombardia,2018,1,1.UWT
+ColleBrianzadaRovagnate-KL,1,115,il lombardia,2018,1,1.UWT
+MADONNADELGHISALLOdaBellagio,1,180.5,il lombardia,2018,1,1.UWT
+ColmadiSormano,1,193.5,il lombardia,2018,1,1.UWT
+CiviglioGFLombardia,1,227,il lombardia,2018,1,1.UWT
+SanFermonuova/2,1,237,il lombardia,2018,1,1.UWT
+VerrucchiodaSanPaolo,1,42,settimana internazionale coppi e bartali,2018,2,2.1
+Torrianadaponteverucchio,1,48,settimana internazionale coppi e bartali,2018,2,2.1
+villemontetiffi,1,74,settimana internazionale coppi e bartali,2018,2,2.1
+villemontetiffi,2,97,settimana internazionale coppi e bartali,2018,2,2.1
+villemontetiffi,3,119,settimana internazionale coppi e bartali,2018,2,2.1
+Tupalice-Zg.Jezersko(jezero),1,88,tour of slovenia,2018,4,2.1
+Vellach26Climb,1,100,tour of slovenia,2018,4,2.1
+Podvolovjek-KranjskiRak,1,135,tour of slovenia,2018,4,2.1
+Mirabello-LuClimb,1,85,milano-torino,2018,1,1.HC
+AlfianoNatta,1,120,milano-torino,2018,1,1.HC
+Villadeatidasud,1,128,milano-torino,2018,1,1.HC
+Milano-Torinoclimb,1,180,milano-torino,2018,1,1.HC
+Milano-Torinoclimb,2,200,milano-torino,2018,1,1.HC
+Chronomontéesaintromaindelerps,1,7.5,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+AlboussièreparlePont,1,25,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+cotelepinet,1,47,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+Chronomontéesaintromaindelerps,2,67,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+AlboussièreparlePont,2,84,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+cotelepinet,2,106,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+Chronomontéesaintromaindelerps,3,126,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+AlboussièreparlePont,3,144,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+cotelepinet,3,165.5,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+coteauxducarnas,1,182.5,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+CheminDeToulaudClimb,1,194,faun environnement - classic de l'ardeche rhone crussol,2018,1,1.1
+AltodePetralba(S)GBP,1,15,vuelta aragon,2018,3,2.1
+PuertodeForadada(porSamper-LaFueva),1,72,vuelta aragon,2018,3,2.1
+Ampriu(estacióndeesquídeCerler),1,126.5,vuelta aragon,2018,3,2.1
+Segment,1,60,tour of oman,2018,2,2.HC
+ClimbofBousherAlamrat,1,119.5,tour of oman,2018,2,2.HC
+HamriyaHillandthensome,1,148,tour of oman,2018,2,2.HC
+AlJissahClimb-Full,1,165.5,tour of oman,2018,2,2.HC
+ItreallyhurtstoleaveSifah..,1,2,tour of oman,2018,4,2.HC
+AlJissahClimb-Full,1,31,tour of oman,2018,4,2.HC
+AlBustantoRuwi,1,38,tour of oman,2018,4,2.HC
+Ameratbackside-straightup,1,74.5,tour of oman,2018,4,2.HC
+ClimbofBousherAlamrat,1,89,tour of oman,2018,4,2.HC
+Ameratbackside-straightup,2,104,tour of oman,2018,4,2.HC
+YitiStClimb,1,3,tour of oman,2018,4,2.HC
+TourofOmanGreenMountainClimb,1,152,tour of oman,2018,5,2.HC
+"subidacompletavillicum..pd,williquinter",1,63,vuelta a san juan internacional,2018,5,2.1
+MatagusanosaBañosdeTalacasto,1,107,vuelta a san juan internacional,2018,5,2.1
+SanjuanColoradoClimb,1,169.5,vuelta a san juan internacional,2018,5,2.1
+StailIschGail,1,74,tour de suisse,2018,3,2.UWT
+DillierClassic-Hagenfirst,1,117,tour de suisse,2018,3,2.UWT
+BürenClimb,1,127,tour de suisse,2018,3,2.UWT
+DillierClassic-Hagenfirst,2,147,tour de suisse,2018,3,2.UWT
+BürenClimb,2,157,tour de suisse,2018,3,2.UWT
+DillierClassic-Hagenfirst,3,177,tour de suisse,2018,3,2.UWT
+sarnano-sassotetto,1,219,tirreno-adriatico,2018,4,2.UWT
+FOLIGNO-LEGGIANA,1,12,tirreno-adriatico,2018,4,2.UWT
+SerrapetronadaCaccamo,1,88,tirreno-adriatico,2018,4,2.UWT
+PasoSanGinesio-SanGinesio,1,138,tirreno-adriatico,2018,4,2.UWT
+Cerreto-Gualdo,1,151,tirreno-adriatico,2018,4,2.UWT
+saline-penna,1,171,tirreno-adriatico,2018,4,2.UWT
+Amandola+valicorustici[fullclimb],1,198.5,tirreno-adriatico,2018,4,2.UWT
+Tolen-pater,1,105,tirreno-adriatico,2018,4,2.UWT
+Sp56Climb,1,162,tirreno-adriatico,2018,4,2.UWT
+ContradaMolinoClimb,1,178,tirreno-adriatico,2018,4,2.UWT
+PrèSaintDidier-->Verrand.stradavecchia,1,72,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+Sancarlorifugio,1,99,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+LesCombesdaArvier,1,139,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+MuroAvalon,1,146,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+IntrodBivio>Rhêmes-Notre-Dame,1,163,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+SS26-LASALLE(CIMITERO),1,59.5,giro ciclistico della valle d'aosta mont blanc,2018,1,2.2U
+Walchsee-Straße,1,78,int. osterreich-rundfahrt-tour of austria,2018,3,2.1
+Aschentalweg28Climb,1,91,int. osterreich-rundfahrt-tour of austria,2018,3,2.1
+KitzbühelerHorn(kurz),1,134,int. osterreich-rundfahrt-tour of austria,2018,3,2.1
+Glocknerkoenig,1,92.5,int. osterreich-rundfahrt-tour of austria,2018,5,2.1
+FelbertauernStraßeClimb,1,10,int. osterreich-rundfahrt-tour of austria,2018,5,2.1
+Gouveia-PenhasDouradas,1,95,volta a portugal em bicicleta santander totta,2018,4,2.1
+RC/Verdelhos-AltodeS.Gião,1,141,volta a portugal em bicicleta santander totta,2018,4,2.1
+APPACDM-CentroLimp.Neve,1,168,volta a portugal em bicicleta santander totta,2018,4,2.1
+senhoradoscaminhos+rosmaninhal,1,75,volta a portugal em bicicleta santander totta,2018,4,2.1
+LancetsDuMontvenier(OfficialTDF),1,38.5,le tour de savoie mont blanc,2018,2,2.2
+Saint-Martin-de-la-Porte|Climbtothechurch,1,58,le tour de savoie mont blanc,2018,2,2.2
+EWQRALPColduTelegraphe,1,75,le tour de savoie mont blanc,2018,2,2.2
+SignaldeBisanne,1,73,le tour de savoie mont blanc,2018,4,2.2
+ColdePré(fromBeaufortstop),1,104.5,le tour de savoie mont blanc,2018,4,2.2
+Colmerailletroselland,1,117,le tour de savoie mont blanc,2018,4,2.2
+Moutiers-Saint-MartindeBelleville,1,184,le tour de savoie mont blanc,2018,4,2.2
+adoubes/coudrays,1,61,le tour de savoie mont blanc,2018,4,2.2
+RouteDeLossiegeClimb,1,3,le tour de savoie mont blanc,2018,5,2.2
+MarigniertoSt.Sigismond,1,29,le tour de savoie mont blanc,2018,5,2.2
+MontéeduPlateaudesGlières,1,76.5,le tour de savoie mont blanc,2018,5,2.2
+StPierre/PetitBornand,1,68,le tour de savoie mont blanc,2018,5,2.2
+ColdesFleuriesbis,1,98.5,le tour de savoie mont blanc,2018,5,2.2
+ClimbThuet-Brison,1,124,le tour de savoie mont blanc,2018,5,2.2
+SecteurSterratoColDesGlieresAller,1,78.5,le tour de savoie mont blanc,2018,5,2.2
+AntagnoddaCorbeteLignod,1,5,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+SalitaColdiJoux(daBrusson),1,24.5,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+SalitaIvery,1,72,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+Montjovet-Cold'Arlaz,1,113,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+ColTzecoredaChalland,1,125.5,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+BivioColTzecore-ColdeJoux,1,138.5,giro ciclistico della valle d'aosta mont blanc,2018,3,2.2U
+Maillod-Jeançeyazclimb,1,50.5,giro ciclistico della valle d'aosta mont blanc,2018,4,2.2U
+ColleSaintPantoleonfromMessignè,1,81,giro ciclistico della valle d'aosta mont blanc,2018,4,2.2U
+PonteAntey-PonteLosancheclimb,1,105,giro ciclistico della valle d'aosta mont blanc,2018,4,2.2U
+Cavalcavia-Pallein,1,45,giro ciclistico della valle d'aosta mont blanc,2018,4,2.2U
+colldeSoller-fullclimb,1,10,trofeo serra de tramuntana,2018,1,1.1
+SonMaxella-NovaValldemossa,1,35,trofeo serra de tramuntana,2018,1,1.1
+CollD'HonorandOrient,1,63,trofeo serra de tramuntana,2018,1,1.1
+Caimari-LlucClimb,1,102,trofeo serra de tramuntana,2018,1,1.1
+PUIGMAJOR(PantádeGorgBlau)/www.pirenaica.com,1,118,trofeo serra de tramuntana,2018,1,1.1
+DENBLEDA(Soller)/www.pirenaica.com,1,135,trofeo serra de tramuntana,2018,1,1.1
+castagnolaaGPM,1,68,giro dell'appennino,2018,1,1.1
+Krtc-salitaGiovidaBusalla,1,78,giro dell'appennino,2018,1,1.1
+GPMOreroClimbCat.3(dalponte),1,106,giro dell'appennino,2018,1,1.1
+Krtc-salitaGiovidaBusalla,2,117,giro dell'appennino,2018,1,1.1
+"[EB]PassodellaBocchetta,daCampomorone",1,137,giro dell'appennino,2018,1,1.1
+FraconaltodaVoltaggio,1,153,giro dell'appennino,2018,1,1.1
+Krtc-salitaGiovidaBusalla,3,165,giro dell'appennino,2018,1,1.1
+MontéedesTermes,1,9,grand prix cycliste la marseillaise,2018,1,1.1
+ptgalibierparTrets,1,43.5,grand prix cycliste la marseillaise,2018,1,1.1
+Monteedel'Espigoulier(parAuriol),1,69,grand prix cycliste la marseillaise,2018,1,1.1
+PetitCaunetCoulin,1,91.5,grand prix cycliste la marseillaise,2018,1,1.1
+PasdeBellefille(depuisCassis),1,108.5,grand prix cycliste la marseillaise,2018,1,1.1
+RouteDesCrêtes(LaVigie),1,119,grand prix cycliste la marseillaise,2018,1,1.1
+MontéedelaGineste(parCassis),1,136.5,grand prix cycliste la marseillaise,2018,1,1.1
+biciccera,1,48.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,1,55,coppa bernocchi - 43e gp bpm,2018,1,1.1
+biciccera,2,65.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,2,72,coppa bernocchi - 43e gp bpm,2018,1,1.1
+biciccera,3,82.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,3,88.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+biciccera,4,98.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,4,105.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+biciccera,5,106,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,5,122.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+biciccera,6,132.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+PICCOLOSTELVIOUFFICIALE,6,139,coppa bernocchi - 43e gp bpm,2018,1,1.1
+torba,1,149,coppa bernocchi - 43e gp bpm,2018,1,1.1
+ValleCairate,1,153.5,coppa bernocchi - 43e gp bpm,2018,1,1.1
+gpmgorlamaggiore,1,160,coppa bernocchi - 43e gp bpm,2018,1,1.1
+RouteDeLacaugneClimb,1,52.5,ronde de l'isard,2018,2,2.2U
+Gouliercomplet,1,154,ronde de l'isard,2018,2,2.2U
+ColdePortetd'AspetNo18GreatestTDFClimbs,1,95,ronde de l'isard,2018,1,2.2U
+MontéeOuerdesRondedel'isard.,1,132,ronde de l'isard,2018,1,2.2U
+ColdeCatchaudégué,1,60,ronde de l'isard,2018,4,2.2U
+ColD'Agnès(Aulus),1,95.5,ronde de l'isard,2018,4,2.2U
+098ColdePéguère#100cols,1,123.5,ronde de l'isard,2018,4,2.2U
+OdGondolinaBialyKrzyz,1,112,tour de pologne,2018,4,2.UWT
+Zameczek,1,127,tour de pologne,2018,4,2.UWT
+Zameczek,2,144,tour de pologne,2018,4,2.UWT
+rondoWisla-BialyKrzyz,1,166,tour de pologne,2018,4,2.UWT
+Wrzosowa-Orle,1,177,tour de pologne,2018,4,2.UWT
+kozmiceclimb,1,13,tour de pologne,2018,5,2.UWT
+Sulkowice_Obelisk,1,38,tour de pologne,2018,5,2.UWT
+TarnawaGórnaup,1,62,tour de pologne,2018,5,2.UWT
+uphucisko,1,78,tour de pologne,2018,5,2.UWT
+PrzeleczRychwaldzkaClimb(odzakretuzakosciolem),1,95,tour de pologne,2018,5,2.UWT
+PrzegibekGórskadoszczytu,1,119,tour de pologne,2018,5,2.UWT
+TourdePolognepodjazdArmiKrajowejdoZIAD,1,131,tour de pologne,2018,5,2.UWT
+TourdePolognepodjazdArmiKrajowejdoZIAD,2,138,tour de pologne,2018,5,2.UWT
+TourdePolognepodjazdArmiKrajowejdoZIAD,3,145,tour de pologne,2018,5,2.UWT
+TourdePolognepodjazdArmiKrajowejdoZIAD,4,152.5,tour de pologne,2018,5,2.UWT
+Bystre-ToporowaCyrhla,1,6,tour de pologne,2018,6,2.UWT
+Zazadnia-Wierchrondo,1,14,tour de pologne,2018,6,2.UWT
+PotokGrocholow,1,28,tour de pologne,2018,6,2.UWT
+Zagóra159Climb,1,45,tour de pologne,2018,6,2.UWT
+PotokGrocholow,2,53,tour de pologne,2018,6,2.UWT
+Zagóra159Climb,2,69,tour de pologne,2018,6,2.UWT
+PotokGrocholow,3,78,tour de pologne,2018,6,2.UWT
+Zagóra159Climb,3,94,tour de pologne,2018,6,2.UWT
+PotokGrocholow,4,103,tour de pologne,2018,6,2.UWT
+Zagóra159Climb,4,119,tour de pologne,2018,6,2.UWT
+Podjazdprzezbrzegi,1,129,tour de pologne,2018,6,2.UWT
+PotokGrocholow,1,10,tour de pologne,2018,7,2.UWT
+PitoniówkaClimb,1,42,tour de pologne,2018,7,2.UWT
+GliczarówodStradeBianche,1,52,tour de pologne,2018,7,2.UWT
+BUKOWINA_calyodronda,1,66,tour de pologne,2018,7,2.UWT
+PotokGrocholow,2,76,tour de pologne,2018,7,2.UWT
+PitoniówkaClimb,2,108,tour de pologne,2018,7,2.UWT
+GliczarówodStradeBianche,2,119,tour de pologne,2018,7,2.UWT
+BUKOWINA_calyodronda,2,132,tour de pologne,2018,7,2.UWT
+LosienaRusinskiW,1,55,tour de pologne,2018,7,2.UWT
+LosienaRusinskiW,2,122,tour de pologne,2018,7,2.UWT
+AlloftheJabel,1,199,abu dhabi tour,2018,5,2.UWT
+CôtedeWerbomontparFerrière,1,43.5,la fleche wallonne,2018,1,1.UWT
+Targnon-Vecquécompleet,1,65,la fleche wallonne,2018,1,1.UWT
+CôtedelaRedouteNo47HellingenApp,1,82,la fleche wallonne,2018,1,1.UWT
+CôtedeMontcomplet,1,100,la fleche wallonne,2018,1,1.UWT
+MuurvanAmayZuid,1,126.5,la fleche wallonne,2018,1,1.UWT
+OLDVERSION-MurdehuyTRNN,1,140.5,la fleche wallonne,2018,1,1.UWT
+CôtedeEreffeNo30HellingenApp,1,153,la fleche wallonne,2018,1,1.UWT
+Cheravenahetspoor,1,163,la fleche wallonne,2018,1,1.UWT
+OLDVERSION-MurdehuyTRNN,2,169.5,la fleche wallonne,2018,1,1.UWT
+CôtedeEreffeNo30HellingenApp,2,182,la fleche wallonne,2018,1,1.UWT
+Cheravenahetspoor,2,193,la fleche wallonne,2018,1,1.UWT
+OLDVERSION-MurdehuyTRNN,3,198.5,la fleche wallonne,2018,1,1.UWT
+RouteDeCondrozClimb,1,35,la fleche wallonne,2018,1,1.UWT
+AltodeOrio,1,17,clasica ciclista san sebastian,2018,1,1.UWT
+PuertoMEAGAdesdeZarautz,1,25,clasica ciclista san sebastian,2018,1,1.UWT
+Artzalluz-Iturburu,1,57,clasica ciclista san sebastian,2018,1,1.UWT
+ALKIZAIGOERA(Anoeta),1,79,clasica ciclista san sebastian,2018,1,1.UWT
+Jaizkibelpanorámico,1,132,clasica ciclista san sebastian,2018,1,1.UWT
+ArkalekoBideaClimb,1,156,clasica ciclista san sebastian,2018,1,1.UWT
+Jaizkibelpanorámico,2,173,clasica ciclista san sebastian,2018,1,1.UWT
+ArkalekoBideaClimb,2,197,clasica ciclista san sebastian,2018,1,1.UWT
+SubidaMurgildesdeCamping,1,221,clasica ciclista san sebastian,2018,1,1.UWT
+GurutzedesdeMateo,1,114,clasica ciclista san sebastian,2018,1,1.UWT
+Astigarraga-Perurena,1,105,clasica ciclista san sebastian,2018,1,1.UWT
+COLDeAduna,1,86,clasica ciclista san sebastian,2018,1,1.UWT
+Labaronne-Gattières,1,10,paris - nice,2018,7,2.UWT
+COLSAINT-MICHEL(FROMGILETTE),1,84.5,paris - nice,2018,7,2.UWT
+ColStRaphaëldernièrepartie,1,108,paris - nice,2018,7,2.UWT
+RouteDeMassoinsClimb,1,134.5,paris - nice,2018,7,2.UWT
+ColdeSaint-Martinouest,1,175,paris - nice,2018,7,2.UWT
+LaRoquettesurVar,1,20.5,paris - nice,2018,8,2.UWT
+ColdeChateauneuf,1,36.5,paris - nice,2018,8,2.UWT
+ColdeCalaïsson,1,51,paris - nice,2018,8,2.UWT
+MonteedePeille,1,67.5,paris - nice,2018,8,2.UWT
+ColdeEzeSummitfromEzeVillage,1,83.5,paris - nice,2018,8,2.UWT
+coldes4chemins,1,101,paris - nice,2018,8,2.UWT
+"GökbelCdClimb,(proper,fromtrafficlights)",1,4,presidential cycling tour of turkey,2018,4,2.UWT
+Gökova-SakarTepe,1,36.5,presidential cycling tour of turkey,2018,4,2.UWT
+OrtaklarCamlikClimb,1,202.5,presidential cycling tour of turkey,2018,4,2.UWT
+MeryemAnaTirmanis,1,215,presidential cycling tour of turkey,2018,4,2.UWT
+Lot2IvereneRoadClimb,1,27,santos tour down under,2018,5,2.UWT
+Lot2IvereneRoadClimb,2,65,santos tour down under,2018,5,2.UWT
+Lot2IvereneRoadClimb,3,104,santos tour down under,2018,5,2.UWT
+OldWillungaHill,1,123,santos tour down under,2018,5,2.UWT
+OldWillungaHill,2,152,santos tour down under,2018,5,2.UWT

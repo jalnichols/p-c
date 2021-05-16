@@ -145,7 +145,7 @@ segment_data_races %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
   #filter(str_detect(race, "algarve")) %>%
-  group_by(race, stage, year, class) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
+  group_by(race, stage, year, class, pred_climb_difficulty) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
   arrange(desc(n)) -> r
 
 #
