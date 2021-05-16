@@ -1664,13 +1664,13 @@ for(r in 1:length(all_races$url)) {
                    all_races$url[[r]], 
                    "/stage-", 
                    str_replace(all_races$stage_name[[r]], "Stage ", ""), 
-                   "/today/kms-in-the-break-today")
+                   "/today/kms-in-the-break")
     
   } else {
     
     page <- paste0("https://www.procyclingstats.com/", 
                    all_races$url[[r]], 
-                   "/today/kms-in-the-break-today")
+                   "/today/kms-in-the-break")
     
   }
   
@@ -1746,7 +1746,7 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
     
-    filter(Date > as.Date('2020-10-15'))
+    filter(as.Date(Date) > as.Date('2021-01-01'))
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 
@@ -1880,7 +1880,7 @@ for(r in 1:length(all_stages$value)) {
         stage_GC <- d[[chooser$n[[1]]]] %>%
           janitor::clean_names() %>%
           
-          select(gc_rnk = gc, gc_time, rider, team) %>%
+          select(gc_rnk = gc, gc_time = timelag, rider, team) %>%
           
           mutate(stage = s,
                  race = all_stages$Race[[r]],
