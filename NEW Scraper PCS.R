@@ -907,7 +907,7 @@ test_dl <- bind_rows(df_list) %>% unique()
 
 game_race_list <- vector("list", 4)
 
-pull_in_game <- c("2020")
+pull_in_game <- c("2021")
 
 for(g in 1:length(pull_in_game)) {
   
@@ -1746,7 +1746,7 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
     
-    filter(as.Date(Date) > as.Date('2021-01-01'))
+    filter(as.Date(Date) > as.Date('2021-05-01'))
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 

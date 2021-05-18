@@ -132,7 +132,8 @@ replace_missing <- stage_data %>%
          -total_vert_gain, -perc_gain_end, -final_1km_elev,
          -final_1km_gradient, -final_5km_elev, -final_5km_gradient) %>%
   
-  inner_join(missing_strava, by = c("stage", "race", "year", "class")) %>%
+  inner_join(missing_strava %>%
+               select(-weighted_altitude), by = c("stage", "race", "year", "class")) %>%
   
   mutate(missing_profile_data = 0)
 
@@ -226,7 +227,12 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
          VALUE = as.numeric(VALUE)) %>% 
   
   mutate(date = lubridate::mdy(date)) %>% 
-  unique() %>% 
+  unique() %>%
+  
+  group_by(activity_id, PCS, Stat, date) %>%
+  summarize(VALUE = mean(VALUE, na.rm = T)) %>%
+  ungroup() %>%
+  
   spread(Stat, VALUE) %>% 
   filter(!is.na(`Elevation`)) %>% 
   janitor::clean_names() %>% 
@@ -5980,7 +5986,8 @@ stage_data_perf <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year >= 
 
 joined_with_timelost <- stage_data_perf %>%
   
-  filter(grand_tour == 1) %>%
+  #filter(grand_tour == 1) %>%
+  
   group_by(class, race, year) %>%
   filter(date == min(date, na.rm = T)) %>%
   ungroup() %>%
