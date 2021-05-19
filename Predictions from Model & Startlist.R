@@ -11,9 +11,9 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/giro-d-italia/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/ruta-del-sol/2021/startlist/'
 
-PCD = 10
+PCD = 9
 BS = 0.01
 
 #
@@ -159,9 +159,10 @@ wide_models <- models %>%
 
   mutate(rankPoints = rank(-Points, ties.method = "min"),
          rankPointsWhenOpp = rank(-PointsWhenOpp, ties.method = "min"),
-         rankLog = rank(-LogRanks, ties.method = "min")) %>%
+         rankLog = rank(-LogRanks, ties.method = "min"),
+         rankTimeLost = rank(TimeLost, ties.method = "min")) %>%
 
-  mutate(rankOverall = 3 / ((1/rankPoints)+(1/rankLog)+(1/rankPointsWhenOpp)))
+  mutate(rankOverall = 4 / ((1/rankPoints)+(1/rankLog)+(1/rankPointsWhenOpp)+(1/rankTimeLost)))
 
 #
 #
