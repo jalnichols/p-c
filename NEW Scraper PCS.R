@@ -331,6 +331,23 @@ new_events <- all_events %>%
   anti_join(
     
     dbReadTable(con, "pcs_all_races") %>%
+      filter(type != "scraper") %>%
+      filter(Winner != ""), by = c("url")
+    
+  ) %>%
+  
+  anti_join(
+    
+    dbReadTable(con, "pcs_all_races") %>%
+      filter(type != "scraper") %>%
+      filter(Winner != ""), by = c("Race", "year", "Class")
+    
+  )
+
+all_events <- all_events %>%
+  anti_join(
+    
+    dbReadTable(con, "pcs_all_races") %>%
       filter(type != "scraper"), by = c("url")
     
   ) %>%
@@ -341,12 +358,12 @@ new_events <- all_events %>%
       filter(type != "scraper"), by = c("Race", "year", "Class")
     
   )
-  
+
+print(new_events)
+
+dbWriteTable(con, "pcs_all_races", all_events, row.names = FALSE, append = TRUE)
+
 all_events <- new_events
-
-print(all_events)
-
-dbWriteTable(con, "pcs_all_races", new_events, row.names = FALSE, append = TRUE)
 
 #
 #
@@ -450,7 +467,7 @@ gc_winners <- bind_rows(gc_list) %>%
 
 gc_winners$gc_winner <- iconv(gc_winners$gc_winner, from="UTF-8", to = "ASCII//TRANSLIT")
 
-dbWriteTable(con, "pcs_gc_winners", gc_winners, append = TRUE, row.names = FALSE)
+dbWriteTable(con, "pcs_gc_winners", gc_winners %>% filter(!is.na(gc_winner)), append = TRUE, row.names = FALSE)
 
 #
 #
@@ -891,6 +908,8 @@ for(f in 1:length(races_list)) {
 #
 
 test_dl <- bind_rows(df_list) %>% unique()
+
+test_dl %>% filter(rnk == 1)
 
 # DONT DELETE WHEN UPDATING
 #dbSendQuery(con, "DELETE FROM pcs_stage_raw")
