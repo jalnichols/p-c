@@ -113,7 +113,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year == 2018) %>%
+  filter(year == 2021) %>%
   
   inner_join(
     
@@ -145,7 +145,7 @@ segment_data_races %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
   #filter(str_detect(race, "algarve")) %>%
-  group_by(race, stage, year, class, pred_climb_difficulty) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
+  group_by(race, stage, year, date, class, pred_climb_difficulty) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
   arrange(desc(n)) -> r
 
 #
