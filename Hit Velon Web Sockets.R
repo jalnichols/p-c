@@ -14,7 +14,7 @@ ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":49409,"stageId":255971,"jsonpack":false}')
+  ws$send('{"type":"group","eventId":49409,"stageId":255981,"jsonpack":false}')
 })
 
 ws$onMessage(function(event) {
@@ -42,7 +42,7 @@ ws$onMessage(function(event) {
   
   print(x)
   
-  if(lubridate::now() > lubridate::as_datetime('2021-05-11 05:00:00 PM')) {
+  if(lubridate::now() > lubridate::as_datetime('2021-05-21 05:00:00 PM')) {
     
     ws$close()
     
@@ -58,7 +58,8 @@ ws$connect()
 #
 #
 #
-#
+
+# RUN JUST LINES 64 to 98
 
 result_list <- result_list[lengths(result_list) != 0]
 
@@ -91,13 +92,13 @@ for(v in 1:length(result_list)) {
 }
 
 #
-#
-#
-#
 
-telemetry <- bind_rows(data_list)
+telemetry <- bind_rows(data_list) %>%
+  group_by(sequence) %>%
+  filter(mean(is.na(distanceToGo)) < 1) %>%
+  ungroup()
 
-write_csv(telemetry, "giro-4-2021-velon-telemetry.csv")
+#write_csv(telemetry, "giro-13-2021-velon-telemetry.csv")
 
 #
 #
@@ -115,16 +116,16 @@ library(tidyverse)
 
 riders <- read_csv("giro-startlist-2021.csv")
 
-telemetry <- read_csv("giro-3-2021-velon-telemetry.csv") %>%
+telemetry <- read_csv("giro-12-2021-velon-telemetry.csv") %>%
   mutate(kmToFinish = distanceToGo / 1000) %>%
   
-  inner_join(riders %>% select(-teamId, -riderId), by = c("bibNumber")) %>%
+  left_join(riders %>% select(-teamId, -riderId), by = c("bibNumber")) %>%
   
   rename(Bib = bibNumber,
          StageId = stageId) %>%
   
   select(-assumed, -avgWattsPerKg, -avgCadence, -avgPower, -avgSpeed,
-         -sequence, -eventId, -powerPer, -maxCadence, -maxPower,
+         -eventId, -powerPer, -maxCadence, -maxPower,
          -heartrate, -maxSpeed, -hrPer, -distance) %>%
   
   filter(kmToFinish > 0)
@@ -133,7 +134,7 @@ telemetry <- read_csv("giro-3-2021-velon-telemetry.csv") %>%
 
 telemetry %>%
 
-  mutate(RIDER = ifelse(Bib == "71", kmToFinish, NA)) %>% 
+  mutate(RIDER = ifelse(Bib == "1", kmToFinish, NA)) %>% 
   
   group_by(epochTime) %>%
   mutate(RIDER = mean(RIDER, na.rm = T)) %>% 
@@ -154,7 +155,7 @@ survival %>%
   group_by(Bib, name, teamName, StageId) %>% 
   summarize(to_rider = mean(to_rider, na.rm = T),
             near_rider = mean(near_rider, na.rm = T),
-            furthest = min(valid, na.rm = T),
+            furthest = round(min(valid, na.rm = T),1),
             stages = n_distinct(StageId),
             stamps = n()) %>%
   ungroup() -> survival_w_rider
@@ -189,14 +190,14 @@ climbing <- telemetry %>%
   filter(epochTime <= within_01) %>%
   ungroup() %>%
   
-  filter(gradient > 0 & kmToFinish > 0) %>%
-  
-  # Orcieres Merlette St4
-  # Lusette St6
-  # Peyresource St8
-  # Marie Blanque St9
-  # Puy Mary and Neronne St13
-  filter((StageId == "255970" & kmToFinish < 51 & kmToFinish > 35)) %>%
+  filter(kmToFinish > 0) %>%
+
+  filter((StageId == "255970" & kmToFinish < 51 & kmToFinish > 35) |
+           (StageId == "255971" & kmToFinish < 7 & kmToFinish > 2.5) |
+           (StageId == '255973' & kmToFinish < 16 & kmToFinish > 0) |
+           (StageId == '255979' & kmToFinish < 53 & kmToFinish > 38) |
+           (StageId == '255980' & kmToFinish < 21.5 & kmToFinish > 10.5) |
+           ((StageId == '255976' & kmToFinish < 6 & kmToFinish > 0))) %>%
   
   group_by(Bib, name, StageId) %>%
   summarize(mindist = min(kmToFinish,na.rm=T),
@@ -235,3 +236,53 @@ climbing <- telemetry %>%
 #
 #
 #
+
+
+climbing <- telemetry %>%
+  
+  mutate(within_01 = ifelse(kmToFinish < 0.1, epochTime, NA)) %>%
+  
+  group_by(StageId, Bib) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(epochTime <= within_01) %>%
+  ungroup() %>%
+  
+  filter(kmToFinish > 0) %>%
+  
+  #filter((StageId == '255979' & kmToFinish < 66 & kmToFinish > 60)) %>% # initial gravel section
+  
+  #filter((StageId == '255979' & kmToFinish <= 60 & kmToFinish >= 53)) %>% # after 1st section to 2nd section
+  
+  #filter((StageId == '255979' & kmToFinish <= 53 & kmToFinish >= 38)) %>% # main climb to KOM point
+  
+  #filter((StageId == '255979' & kmToFinish <= 38 & kmToFinish >= 26.5)) %>% # downhill to next gravel section
+  
+  #filter((StageId == '255979' & kmToFinish <= 26.5 & kmToFinish >= 19)) %>% # 3rd gravel section
+  
+  #filter((StageId == '255979' & kmToFinish <= 19 & kmToFinish >= 15)) %>% # downhill section to last gravel section
+  
+  #filter((StageId == '255979' & kmToFinish <= 15 & kmToFinish >= 9)) %>% # last gravel section
+  
+  filter((StageId == '255979' & kmToFinish <= 9 & kmToFinish >= 4.5)) %>% # last climb
+
+  group_by(Bib, name, StageId) %>%
+  summarize(mindist = min(kmToFinish,na.rm=T),
+            maxdist = max(kmToFinish, na.rm = T),
+            max = max(utcTime, na.rm = T),
+            min = min(utcTime, na.rm = T),
+            n=n()) %>%
+  ungroup() %>%
+  
+  mutate(seconds = as.numeric(max-min)*60,
+         meters = (maxdist - mindist)*1000,
+         m_s = meters / seconds,
+         kph = (meters / 1000) / (seconds / 60 / 60)) %>%
+  
+  group_by(StageId) %>%
+  mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
+  ungroup() 
+
+#
+#
+#
+
