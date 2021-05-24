@@ -113,7 +113,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year == 2021) %>%
+  filter(year == 2019) %>%
   
   inner_join(
     
@@ -144,8 +144,8 @@ segment_data_races %>%
   anti_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
-  #filter(str_detect(race, "algarve")) %>%
-  group_by(race, stage, year, date, class, pred_climb_difficulty) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
+
+  group_by(race, stage, year, date, class, pred_climb_difficulty, length) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
   arrange(desc(n)) -> r
 
 #
@@ -621,8 +621,8 @@ modeled_power <- segment_data_races %>%
   
   group_by(Segment, race, stage, year, class, OrderInRace) %>% 
   filter(is.na(wattskg) | (time < (2.5 * mean(time, na.rm = T)))) %>%
-  mutate(rel_time = time_if_power / mean(time_if_power, na.rm = T),
-         rel_power = mean(wattskg, na.rm = T) / wattskg) %>%
+  mutate(rel_time = mean(time_if_power, na.rm = T) / time_if_power,
+         rel_power = wattskg / mean(wattskg, na.rm = T)) %>%
   ungroup()
 
 #
