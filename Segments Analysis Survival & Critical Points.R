@@ -113,7 +113,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year == 2019) %>%
+  filter(year %in% c(2019, 2020, 2021)) %>%
   
   inner_join(
     
@@ -121,11 +121,11 @@ segment_data_races <- stage_level_power %>%
                Distance, Gradient, Speed,
                Power, Type,
                activity_id
-               FROM strava_segment_data"), by = c("activity_id")
+               FROM strava_segment_data WHERE Gradient < -0.029"), by = c("activity_id")
     
   ) %>%
   
-  group_by(rider) %>% 
+  group_by(rider = pcs) %>% 
   mutate(rel_power = Power / mean(Power, na.rm = T)) %>% 
   ungroup() %>%
   
@@ -210,6 +210,42 @@ segment_impact <- segment_data_races %>%
   
   mutate(perc_90_10 = (x90-x10) / med,
          fastest = (med / x10) - 1)
+
+#
+#
+#
+
+downhill <- segment_data_races %>%
+  
+  inner_join(read_csv("DownhillSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
+               select(stage, race, year, class) %>%
+               unique(), by = c("stage", "race", 'year', "class")) %>% 
+  
+  select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
+         rowname, rnk, perc_break, length, total_seconds) %>% 
+  unique() %>% 
+  
+  group_by(Segment, rider, race, stage, year) %>% 
+  mutate(ordered = rank(rowname, ties.method = "first")) %>%
+  ungroup() %>% 
+  
+  select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
+         OrderInRace = ordered, length, rnk) %>%
+  unique() %>% 
+  
+  inner_join(read_csv("DownhillSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
+               rename(Segment = StravaSegment), by = c("Segment", "OrderInRace", "race", "stage", 'year', "class")) %>%
+  
+  mutate(perc_thru = AtKM / length) %>%
+  
+  mutate(kmh_speed = (Distance / (time / 3600))) %>%
+  
+  group_by(Segment, OrderInRace, stage, race, year, class) %>%
+  mutate(rel_time = median(time, na.rm = T) / time) %>%
+  ungroup()
+
+dh <- downhill %>% group_by(rider) %>% summarize(x80 = quantile(rel_time, na.rm = T, probs = 0.8), median = median(rel_time, na.rm = T), succ_weight = sum((log(rnk+1) * rel_time), na.rm = T) / sum(log(rnk+1), na.rm = T), descents = n(), KMs = sum(Distance, na.rm = T), finpos = mean(log(rnk), na.rm = T)) %>% ungroup()
+
 
 #
 #
@@ -624,6 +660,95 @@ modeled_power <- segment_data_races %>%
   mutate(rel_time = mean(time_if_power, na.rm = T) / time_if_power,
          rel_power = wattskg / mean(wattskg, na.rm = T)) %>%
   ungroup()
+
+#
+
+lme4::lmer(rel_power ~ rel_time + (1 | rider), data = modeled_power) -> lmer_power_vs_time_riders
+
+lme4::lmer(wattskg ~ (1 | rider), data = modeled_power) -> lmer_power_riders
+
+lme4::fixef(lmer_power_riders)[[1]] -> avg_power
+
+lme4::ranef(lmer_power_riders)[[1]] %>%
+  rownames_to_column() %>% 
+  
+  inner_join(modeled_power %>% 
+               group_by(rider) %>% 
+               summarize(power_races = n_distinct(race, stage, year, class), power_rnks = mean(log(rnk), na.rm = T)+1) %>%
+               ungroup(), by = c("rowname" = "rider")) %>% 
+  
+  inner_join(all_stage_data %>% 
+               filter(year >= 2018) %>%
+               group_by(rider) %>% 
+               summarize(races = n(), all_rnks = mean(log(rnk), na.rm = T)+1) %>%
+               ungroup(), by = c("rowname" = "rider")) %>% 
+  
+  janitor::clean_names() %>% 
+  
+  mutate(wattskg = intercept + avg_power) %>% 
+  
+  inner_join(lme4::ranef(lmer_power_vs_time_riders)[[1]] %>%
+               rownames_to_column(), by = c("rowname")) %>% 
+  janitor::clean_names() %>% 
+  
+  mutate(wattskg = wattskg / (1+intercept_2)) %>%
+  
+  mutate(perc_w_power = power_races / races,
+         ratio_power = power_rnks / all_rnks) -> rider_power_ability
+
+#
+
+modeled_power %>%
+  group_by(rider) %>%
+  filter(percent_rank(wattskg) > 0.8) %>%
+  summarize(wattskg = mean(wattskg, na.rm = T)) %>%
+  ungroup() %>%
+  
+  inner_join(modeled_power %>% 
+               group_by(rider) %>% 
+               summarize(power_races = n_distinct(race, stage, year, class), power_rnks = mean(log(rnk), na.rm = T)+1) %>%
+               ungroup(), by = c("rider" = "rider")) %>% 
+  
+  inner_join(all_stage_data %>% 
+               filter(year >= 2018) %>%
+               group_by(rider) %>% 
+               summarize(races = n(), all_rnks = mean(log(rnk), na.rm = T)+1) %>%
+               ungroup(), by = c("rider" = "rider")) %>% 
+  
+  janitor::clean_names() %>% 
+  
+  inner_join(lme4::ranef(lmer_power_vs_time_riders)[[1]] %>%
+               rownames_to_column(), by = c("rider" = "rowname")) %>%
+  
+  janitor::clean_names() %>% 
+  
+  mutate(wattskg = wattskg / (1+intercept)) %>%
+  
+  mutate(perc_w_power = power_races / races,
+         ratio_power = power_rnks / all_rnks) -> rider_peak_ability
+
+#
+
+ggplot(rider_power_ability %>% filter(power_races >= 25), aes(x = wattskg))+
+  geom_histogram(color = "white")+
+  geom_vline(xintercept = 4.9, size = 2, color = "gold")+
+  labs(x = "Modeled watts/kg ability on generic climb", 
+       y = "", 
+       title = "Distribution of power ability")
+
+#
+
+ggplot(rider_peak_ability %>% filter(power_races >= 25),
+       aes(x = wattskg, y = exp(power_rnks-1), label = rider))+
+  
+  geom_text()+
+  
+  labs(x = "Modeled watts/kg ability on generic climb",
+       y = "Average finish position")+
+  
+  scale_y_continuous(breaks = seq(0,150,10))+
+  
+  theme(axis.text = element_text(size=15))
 
 #
 #
