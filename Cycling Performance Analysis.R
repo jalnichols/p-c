@@ -6013,3 +6013,93 @@ joined_with_timelost <- stage_data_perf %>%
             top5 = mean(top5, na.rm = T),
             runners = n()) %>%
   ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# was rider in breakaway?
+
+stage_data_perf <- dbReadTable(con, "stage_data_perf")
+
+#
+
+finish_group <- stage_data_perf %>%
+  filter(gain_1st <= 3 & time_trial == 0) %>%
+  group_by(stage, race, year, class, length) %>% 
+  filter(min(rnk, na.rm = T) == 1) %>%
+  count() %>%
+  ungroup()
+
+finish_group %>% 
+  ggplot(aes(x = n))+
+  geom_histogram(binwidth = 1)+
+  labs(title = "Finishers within 3 seconds of stage winner", 
+       subtitle = "22% won solo, 22% in 2-5 rider group, 43% in 20+ rider group")
+
+#
+
+near_gc <- stage_data_perf %>% 
+  filter(!gain_gc == "NaN") %>%
+  filter(one_day_race == 0) %>%
+  filter(time_trial == 0) %>%
+  filter(gain_gc < 0 & gain_gc > -2000) %>% 
+  
+  group_by(stage, race, year, class, length) %>% 
+  filter(min(rnk, na.rm = T) == 1) %>%
+  count() %>%
+  ungroup()
+
+#
+
+breakaway_win <- stage_data_perf %>%
+  
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, km_before_peloton as km_break, race, year, stage FROM pcs_km_breakaway") %>%
+      mutate(stage = as.numeric(stage)), by = c("rider", "year", "race", "stage") 
+    
+  ) %>%
+  
+  group_by(race, stage, year) %>%
+  mutate(valid_data = ifelse(max(!is.na(km_break))==1, 1, 0)) %>%
+  ungroup() %>%
+  
+  mutate(km_break = ifelse(km_break > 300, 0, km_break)) %>%
+  
+  mutate(km_break = ifelse(is.na(km_break),
+                           ifelse(valid_data == 1, 0, NA), km_break),
+         perc_break = km_break / length) %>%
+
+  filter(one_day_race == 0 & time_trial == 0) %>%
+  
+  filter(valid_data == 1)
+
+#
+
+breakaway_win %>% 
+  # give me an actual breakaway, not a GC rider breaking away in the last 20km
+  group_by(in_group = ifelse(perc_break > 0.15,"breakaway", "peloton"), stage, race, year, class, pred_climb_difficulty) %>% 
+  summarize(win_rate = max(rnk == 1, na.rm = TRUE)) %>% 
+  ungroup() %>%
+  spread(in_group, win_rate) -> BR
+
+# 1 PCD  = 14% chance of breakaway winning
+# 18 PCD = 33% chance of breakaway winning
+
+stage_data_perf %>% 
+  filter(time_trial == 0 & rnk == 1 & one_day_race == 0 & gain_gc <= 0) %>% 
+  filter(!is.na(bunch_sprint)) %>% 
+  mutate(gain_gc = ifelse(gain_gc <= -600, -600, gain_gc)) %>% 
+  
+  ggplot(aes(x = gain_gc))+
+  geom_histogram(binwidth=30)+
+  coord_cartesian(ylim = c(0,100))+
+  facet_wrap(~bunch_sprint, nrow = 2)
