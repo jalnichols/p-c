@@ -14,18 +14,20 @@ con <- dbConnect(MySQL(),
 
 #telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2020'
 
-STAGE <- 19
+telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
+
+STAGE <- 2
 
 step = 1
 
-while(step < 700) {
+while(step < 2000) {
 
   json_df <- jsonlite::fromJSON(telemetry_api) %>%
     select(-YGPW) %>%
     unnest(cols = c(Riders)) %>%
-    select(-LatLon)
+    select(-LatLon, -`_origin`)
   
-  #DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
+  DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
 
   if(min(json_df$kmToFinish) < 3) {
 
@@ -35,7 +37,7 @@ while(step < 700) {
 
   } else {
     
-    Sys.sleep(20)
+    Sys.sleep(10)
     
     step = step + 1
     
@@ -47,22 +49,21 @@ while(step < 700) {
 
 #
 
-all_stages <- dbReadTable(con, "telemetry_tdf2020") %>% unique()
+all_stages <- dbGetQuery(con, "SELECT * FROM telemetry_tdf2020 WHERE RaceName = 'CDD 2021'") %>% unique()
 
 #
 
-riders <- 'https://racecenter.letour.fr/api/allCompetitors-2020' %>%
+riders <- 'https://racecenter.criterium-du-dauphine.fr/api/allCompetitors-2021' %>%
   readLines() %>%
   jsonlite::fromJSON() %>%
   select(Bib = bib, firstname, lastname, lastnameshort) %>%
   
-  mutate(GC = ifelse(Bib %in% c("1", "11", "14", "22", "31", "51", '61', '71',
-                                '81', '91', '94', '101', '104', '121',
-                                '131', '161', '141'), "GC","Helper"))
+  mutate(GC = ifelse(Bib %in% c(11, 21, 31, 33, 35, 61, 81, 51, 41, 44,
+                                101, 125, 136), "GC","Helper"))
 
 #
 
-st10 <- all_stages %>% filter(StageId == "0900")
+st10 <- all_stages %>% filter(StageId == "0100")
 
 #
 #
@@ -87,7 +88,7 @@ all_stages %>%
   
   filter(kmToFinish > 0) %>% 
   
-  mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
+  mutate(primoz = ifelse(Bib == "31", kmToFinish, NA)) %>% 
   
   group_by(TimeStamp) %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
