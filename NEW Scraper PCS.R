@@ -1238,7 +1238,7 @@ stage_data <- stage_data %>%
   
   mutate(gain_gc = total_seconds - gc_seconds) %>%
   
-  mutate(gc_pos = ifelse(rider == gc_winner, rnk, NA)) %>%
+  mutate(gc_pos = ifelse(tolower(rider) == tolower(gc_winner), rnk, NA)) %>%
   
   group_by(race, stage, year, url, class) %>%
   mutate(gc_pos = mean(gc_pos, na.rm = T) + 5) %>%
@@ -1765,7 +1765,9 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
     
-    filter(as.Date(Date) > as.Date('2021-05-01'))
+    anti_join(dbGetQuery(con, "SELECT DISTINCT stage as s, race as Race, year FROM pcs_stage_by_stage_gc"), by = c("s", "Race", "year")) %>%
+    
+    filter(year == 2021)
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 
