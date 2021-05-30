@@ -51,7 +51,8 @@ All_dates <- dbReadTable(con, "stage_data_perf") %>%
   #         (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
   #         (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
   #         (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
-  filter(year > 2016 & year <= 2021) %>%
+  filter(year > 2015 & year <= 2021) %>%
+  filter(date >= '2016-07-01') %>%
   select(date) %>%
   unique() %>%
   filter(!is.na(date)) %>%
