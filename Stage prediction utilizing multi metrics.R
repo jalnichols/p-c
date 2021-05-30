@@ -108,7 +108,7 @@ predicting_all <- All_data %>%
              odr_logrk_impact = ifelse(is.na(odr_logrk_impact), 0, odr_logrk_impact)
              ) %>%
       
-      filter(date >= as.Date('2017-01-01')), by = c("rider", "date")
+      filter(date >= as.Date('2016-07-01')), by = c("rider", "date")
     
   ) %>%
   
@@ -119,29 +119,29 @@ predicting_all <- All_data %>%
         (one_day_race * odr_logrk_impact) + 
       (pcd_logrk_impact * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
   
-  mutate(pred_sprint_rank = exp(-0.2 + ((
-    ((rand_logrk_impact + 
-        (0.9 * bs_logrk_impact) + 
-        (one_day_race * odr_logrk_impact) + 
-        (pcd_logrk_impact * 1.5))*-1) / 0.97)+3.9))) %>%
-  
-  mutate(pred_classics_rank = exp(-0.2 + ((
-    ((rand_logrk_impact + 
-        (0.25 * bs_logrk_impact) + 
-        (one_day_race * odr_logrk_impact) + 
-        (pcd_logrk_impact * 3.5))*-1) / 0.97)+3.9))) %>%
-  
-  mutate(pred_ardennes_rank = exp(-0.2 + ((
-    ((rand_logrk_impact + 
-        (0.05 * bs_logrk_impact) + 
-        (one_day_race * odr_logrk_impact) + 
-        (pcd_logrk_impact * 7))*-1) / 0.97)+3.9))) %>%
-  
-  mutate(pred_mountains_rank = exp(-0.2 + ((
-    ((rand_logrk_impact + 
-        (0.01 * bs_logrk_impact) + 
-        (one_day_race * odr_logrk_impact) + 
-        (pcd_logrk_impact * 15))*-1) / 0.97)+3.9))) %>%
+  # mutate(pred_sprint_rank = exp(-0.2 + ((
+  #   ((rand_logrk_impact + 
+  #       (0.9 * bs_logrk_impact) + 
+  #       (one_day_race * odr_logrk_impact) + 
+  #       (pcd_logrk_impact * 1.5))*-1) / 0.97)+3.9))) %>%
+  # 
+  # mutate(pred_classics_rank = exp(-0.2 + ((
+  #   ((rand_logrk_impact + 
+  #       (0.25 * bs_logrk_impact) + 
+  #       (one_day_race * odr_logrk_impact) + 
+  #       (pcd_logrk_impact * 3.5))*-1) / 0.97)+3.9))) %>%
+  # 
+  # mutate(pred_ardennes_rank = exp(-0.2 + ((
+  #   ((rand_logrk_impact + 
+  #       (0.05 * bs_logrk_impact) + 
+  #       (one_day_race * odr_logrk_impact) + 
+  #       (pcd_logrk_impact * 7))*-1) / 0.97)+3.9))) %>%
+  # 
+  # mutate(pred_mountains_rank = exp(-0.2 + ((
+  #   ((rand_logrk_impact + 
+  #       (0.01 * bs_logrk_impact) + 
+  #       (one_day_race * odr_logrk_impact) + 
+  #       (pcd_logrk_impact * 15))*-1) / 0.97)+3.9))) %>%
   
   select(-rand_logrk_impact, -pcd_logrk_impact, -bs_logrk_impact, -odr_logrk_impact) %>%
   
@@ -182,7 +182,7 @@ predicting_all <- All_data %>%
              odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
       ) %>%
       
-      filter(date >= as.Date('2017-01-01')), by = c("rider", "date", 'level_data')
+      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
     
   ) %>%
   
@@ -230,7 +230,7 @@ predicting_all <- All_data %>%
              odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
       ) %>%
       
-      filter(date >= as.Date('2017-01-01')), by = c("rider", "date", 'level_data')
+      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
     
   ) %>%
   
@@ -240,6 +240,54 @@ predicting_all <- All_data %>%
                                    (pcd_points_impact * pred_climb_difficulty))) %>%
   
   select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
+  
+  # left_join(
+  #   
+  #   dbReadTable(con, "lme4_rider_timelost")  %>%
+  #     filter(test_or_prod == "prod") %>%
+  #     select(-test_or_prod) %>%
+  #     unique() %>%
+  #     mutate(rider = str_to_title(rider)) %>%
+  #     mutate(date = as.Date(Date)) %>%
+  #     select(-Date) %>%
+  #     
+  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
+  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+  #     
+  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+  #     # we adjust here
+  #     group_by(date, level_data) %>%
+  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+  #     ungroup() %>%
+  #     
+  #     # this transforms them back to input into the regression equation
+  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
+  #     
+  #     select(-pcd_impact_new, -random_intercept_new) %>%
+  #     
+  #     rename(pcd_time_impact = pcd_impact,
+  #            bs_time_impact = bunchsprint_impact,
+  #            rand_time_impact = random_intercept,
+  #            odr_time_impact = one_day_race) %>%
+  #     
+  #     mutate(pcd_time_impact = ifelse(is.na(pcd_time_impact), 0, pcd_time_impact),
+  #            bs_time_impact = ifelse(is.na(bs_time_impact), 0, bs_time_impact),
+  #            odr_time_impact = ifelse(is.na(odr_time_impact), 0, odr_time_impact)
+  #     ) %>%
+  #     
+  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+  #   
+  # ) %>%
+  # 
+  # mutate(pred_timelost = 500 + (rand_time_impact + 
+  #                                         (predicted_bs * bs_time_impact) + 
+  #                                         (one_day_race * odr_time_impact) + 
+  #                                         (pcd_time_impact * pred_climb_difficulty))) %>%
+  # 
+  # select(-rand_time_impact, -odr_time_impact, -bs_time_impact, -pcd_time_impact) %>%
   
   left_join(
     
@@ -277,7 +325,7 @@ predicting_all <- All_data %>%
              odr_tmldr_impact = ifelse(is.na(odr_tmldr_impact), 0, odr_tmldr_impact)
       ) %>%
       
-      filter(date >= as.Date('2017-01-01')), by = c("rider", "date", 'level_data')
+      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
     
   ) %>%
   
@@ -337,6 +385,7 @@ predicting_all <- All_data %>%
   group_by(stage, race, year, class, level_data) %>%
   mutate(glmer_pred = ifelse(is.na(glmer_pred), median(glmer_pred, na.rm = T), glmer_pred),
          pred_points = ifelse(is.na(pred_points), median(pred_points, na.rm = T), pred_points),
+         #pred_timelost = ifelse(is.na(pred_timelost), median(pred_timelost, na.rm = T), pred_timelost),
          pred_pointswhenopp = ifelse(is.na(pred_pointswhenopp), median(pred_pointswhenopp, na.rm = T), pred_pointswhenopp),
          pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank)) %>%
   ungroup() %>%
@@ -345,6 +394,7 @@ predicting_all <- All_data %>%
   group_by(stage, race, year, class, level_data) %>%
   mutate(rk_teamldr = rank(-glmer_pred, ties.method = "min"),
          rk_points = rank(-pred_points, ties.method = "min"),
+         #rk_timelost = rank(pred_timelost, ties.method = "min"),
          rk_pointswhenopp = rank(-pred_pointswhenopp, ties.method = "min"),
          rk_rank = rank(pred_rank, ties.method = "min")) %>%
   ungroup() %>%
@@ -359,14 +409,34 @@ predicting_all <- All_data %>%
   filter(!is.na(level_data)) %>%
   filter(level_data == "bs_added") %>%
   
-  # adjust pred_rank to make it match data better
-  mutate(pred_rank = exp((log(pred_rank) * 0.82) + 1.13))
+  mutate(class = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
+                           class %in% c("2.2", "1.2") ~ ".2", 
+                           class %in% c("WC", "2.UWT", "1.UWT") ~ "WT", 
+                           class %in% c("1.Pro", "1.HC", "2.Pro", "2.HC") ~ ".HC", 
+                           TRUE ~ class))
+
+#
+# adjust pred_rank for SOF
+#
+
+pred_rank_model <- lm(log(rnk) ~ log(pred_rank) + class + sof,
+                      data = predicting_all)
+
+#
+
+predicting_all_supp <- cbind(
+  
+  predicting_all %>% rename(old_pred_rank = pred_rank),
+  
+  pred_rank = predict(pred_rank_model, predicting_all)) %>%
+  
+  mutate(pred_rank = exp(pred_rank))
 
 #
 # Recent performances
 #
 
-predicting_all %>%
+predicting_all_supp %>%
   
   filter(date > '2021-01-01' & date < '2021-12-01') %>%
   
@@ -387,15 +457,17 @@ predicting_all %>%
 
 #
 
-predicting_all %>%
+predicting_all_supp %>%
   
-  mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA)) %>%
+  mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA),
+         act_for_top_3 = ifelse(rk_rank <= 3, rnk, NA)) %>%
   
   group_by(race, stage, year, class, pred_climb_difficulty, bunch_sprint, grand_tour, one_day_race, predicted_bs) %>% 
   filter(!is.na(pred_rank)) %>% 
   summarize(error = mean(abs(log(rnk)-log(pred_rank)), na.rm = T), 
             correlation = cor(x = log(rnk), y = log(pred_rank), use = 'complete.obs'),
             top_3 = mean(log(pred_for_top_3), na.rm = T),
+            proj_top_3 = mean(log(act_for_top_3), na.rm = T),
             riders = n()) %>% 
   ungroup() -> race_errors
 
@@ -414,10 +486,10 @@ ggplot(recent_performances %>%
 # iterate through a last ten races model for every date
 #
 
-unique_dates <- predicting_all %>%
+unique_dates <- predicting_all_supp %>%
   select(date) %>%
   unique() %>%
-  filter(date > '2017-07-01') %>%
+  filter(date > '2017-01-01') %>%
   arrange(desc(date))
 
 for(i in 1:length(unique_dates$date)) {
@@ -425,7 +497,7 @@ for(i in 1:length(unique_dates$date)) {
   MAX = unique_dates$date[[i]] - 1
   MIN = MAX - 366
 
-  vs_exp1 <- predicting_all %>%
+  vs_exp1 <- predicting_all_supp %>%
     filter(between(date, MIN, MAX)) %>%
     
     group_by(rider) %>%
@@ -444,7 +516,7 @@ for(i in 1:length(unique_dates$date)) {
     
     mutate(date = unique_dates$date[[i]])
   
-  vs_exp2 <- predicting_all %>%
+  vs_exp2 <- predicting_all_supp %>%
     filter(!class %in% c("NC", "WC", 'CC')) %>%
     filter(between(date, MIN, MAX)) %>%
     
@@ -468,15 +540,27 @@ for(i in 1:length(unique_dates$date)) {
 # link with recent performance
 #
 
-predicting_all_with_recent <- predicting_all %>%
+predicting_all_with_recent <- predicting_all_supp %>%
+  
+  select(-pred_climb_diff_succ,
+         -level_data, -leader_rating, -points_finish, -success) %>%
   
   left_join(
     
-    dbGetQuery(con, "SELECT rider, date, (act_leader - exp_leader) as rel_leader, exp_rank, act_rank, error_rank, races
+    dbGetQuery(con, "SELECT rider, date, (act_leader - exp_leader) as rel_leader, 
+    exp_leader, act_leader, exp_rank, act_rank, error_rank, races, days_of_comps
                FROM performance_last10races_vsmodel") %>%
       mutate(date = as.Date(date)), by = c('rider', 'date')
     
-  )
+  ) %>%
+  # center error rank and adjust for <10 races
+  mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
+  
+  group_by(stage, race, year, class) %>%
+  mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(log_rk_pwo = log(rk_pointswhenopp + 1))
   
 #
 # Predicting team leader
@@ -769,28 +853,12 @@ gbm_predict_WIN = cbind(
   
   pred = predict(win_mod, 
                  predicting_all_with_recent %>%
-                   mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
-                   
-                   group_by(stage, race, year, class) %>%
-                   mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
-                   ungroup() %>%
-                   
-                   mutate(log_rk_pwo = log(rk_pointswhenopp + 1)) %>%
                    unique() %>%
                    filter(year >= 2020)),
   
   predicting_all_with_recent %>%
-    mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
-    
-    group_by(stage, race, year, class) %>%
-    mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
-    ungroup() %>%
-    
-    mutate(log_rk_pwo = log(rk_pointswhenopp + 1)) %>%
     unique() %>%
-    filter(year >= 2020)) %>%
-  
-  select(-glmer_pred, -rk_teamldr, -pred_sprint_rank, -pred_classics_rank, -pred_climb_diff_succ, -pred_ardennes_rank, -pred_mountains_rank)
+    filter(year >= 2020))
 
 # predict test set out of sample
 pred <- gbm_predict_WIN %>% 
