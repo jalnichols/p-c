@@ -460,27 +460,59 @@ predicting_all_supp %>%
 predicting_all_supp %>%
   
   mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA),
-         act_for_top_3 = ifelse(rk_rank <= 3, rnk, NA)) %>%
+         pred_for_winner = ifelse(rnk == 1, pred_rank, NA),
+         gain_gc_winner = ifelse(rnk == 1, gain_gc, NA)) %>%
   
   group_by(race, stage, year, class, pred_climb_difficulty, bunch_sprint, grand_tour, one_day_race, predicted_bs) %>% 
   filter(!is.na(pred_rank)) %>% 
   summarize(error = mean(abs(log(rnk)-log(pred_rank)), na.rm = T), 
             correlation = cor(x = log(rnk), y = log(pred_rank), use = 'complete.obs'),
             top_3 = mean(log(pred_for_top_3), na.rm = T),
-            proj_top_3 = mean(log(act_for_top_3), na.rm = T),
+            winner = mean(log(pred_for_winner), na.rm = T),
+            winner_gain_gc = mean(gain_gc_winner, na.rm = T),
             riders = n()) %>% 
   ungroup() -> race_errors
 
+# predict quality of winners
 
+# difficulty of final 20 - 30 km might be a good indication of breakaway likelihood
+
+race_errors %>% lm(winner ~ pred_climb_difficulty + predicted_bs + class + grand_tour + one_day_race, data = .) -> pred_w_qual
+
+cbind(race_errors, pred = predict(pred_w_qual, race_errors)) -> qual_predictions
 
 #
 
-ggplot(recent_performances %>% 
-         filter(exp_points > 0.005 & races >= 6), 
-       aes(x = exp_rank, y = act_rank, label = rider))+
-  geom_text()+
-  geom_abline(slope = 1, intercept = 0)+
-  scale_y_log10()
+train_set_brk <- read_csv("breakaway-training-set.csv") %>% inner_join(race_errors, by = c("stage", "race", 'year'))
+
+train_set_brk %>% glm(breakaway ~ winner + winner_gain_gc, data = ., family = "binomial") -> breakaway_preds
+
+summary(breakaway_preds)
+
+cbind(race_errors, pred = predict(breakaway_preds,race_errors)) %>% 
+  mutate(pred = exp(pred)/(1+exp(pred))) %>% 
+  anti_join(train_set_brk, by = c("stage", "race", "year")) -> preds_break
+
+preds_break %>%
+  select(stage, race, year, breakaway = pred) %>%
+  mutate(breakaway = ifelse(breakaway >= 0.5, 1, 0)) %>%
+  rbind(read_csv("breakaway-training-set.csv")) %>%
+  
+  inner_join(race_errors, by = c("stage", "race", 'year')) %>%
+  
+  filter(!is.na(winner)) %>%
+  filter(one_day_race == 0) -> breakaway_model_data
+
+breakaway_model_data %>%
+  group_by(grand_tour) %>% 
+  summarize(breakaway = mean(breakaway, na.rm = T), 
+            stages = n()) %>% 
+  ungroup()
+
+breakaway_model_data %>%  
+
+  glm(breakaway ~ pred_climb_difficulty * predicted_bs + grand_tour * stage, data = ., family = "binomial") %>% 
+  summary()
 
 #
 # iterate through a last ten races model for every date
@@ -490,7 +522,12 @@ unique_dates <- predicting_all_supp %>%
   select(date) %>%
   unique() %>%
   filter(date > '2017-01-01') %>%
-  arrange(desc(date))
+  arrange(desc(date)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM performance_last10races_vsmodel") %>%
+              mutate(date = as.Date(date)), by = c("date"))
+
+#
 
 for(i in 1:length(unique_dates$date)) {
   
