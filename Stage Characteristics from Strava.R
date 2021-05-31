@@ -144,6 +144,31 @@ percentage_climbing_in_final_climb <- all_routes %>%
   
   mutate(perc_gain_end = final_20km_vert_gain / total_vert_gain)
 
+#
+
+percentage_climbing_start <- all_routes %>%
+  
+  arrange(stage, year, race, class, rider, points) %>%
+  
+  group_by(stage, class, year, race, rider) %>%
+  mutate(stage_end = max(length, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(first_30km = ifelse((distances) < 30.6, grades, NA)) %>%
+  
+  mutate(distance_chunks = distances - lag(distances),
+         distance_chunks = ifelse(distances == 0, NA, distance_chunks)) %>%
+  
+  mutate(vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * first_30km, 0),
+         total_vert_gain = ifelse(grades > 0.02, 1000 * distance_chunks * grades, 0)) %>%
+  
+  group_by(stage, class, year, race, rider) %>%
+  summarize(first_30km_vert_gain = sum(vert_gain, na.rm = T),
+            total_vert_gain = sum(total_vert_gain, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(perc_gain_start = first_30km_vert_gain / total_vert_gain)
+
 # data below taken from a paper showing aerobic power at certain elevation levels (in feet) compared to sea-level
 # eg, at 14,000 feet it's about 71% of at sea-level
 
@@ -202,6 +227,12 @@ stage_characteristics <- all_routes %>%
   inner_join(
     
     percentage_climbing_in_final_climb, by = c("stage", "race", "year", "class", "rider")
+    
+  ) %>%
+  inner_join(
+    
+    percentage_climbing_start %>%
+      select(-total_vert_gain), by = c("stage", "race", "year", "class", "rider")
     
   ) %>%
   inner_join(
