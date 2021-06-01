@@ -463,7 +463,7 @@ predicting_all_supp %>%
          pred_for_winner = ifelse(rnk == 1, pred_rank, NA),
          gain_gc_winner = ifelse(rnk == 1, gain_gc, NA)) %>%
   
-  group_by(race, stage, year, class, pred_climb_difficulty, bunch_sprint, grand_tour, one_day_race, predicted_bs) %>% 
+  group_by(race, stage, year, class, pred_climb_difficulty, bunch_sprint, grand_tour, one_day_race, predicted_bs, uphill_finish) %>% 
   filter(!is.na(pred_rank)) %>% 
   summarize(error = mean(abs(log(rnk)-log(pred_rank)), na.rm = T), 
             correlation = cor(x = log(rnk), y = log(pred_rank), use = 'complete.obs'),
@@ -511,8 +511,7 @@ breakaway_model_data %>%
 
 breakaway_model_data %>%  
 
-  glm(breakaway ~ pred_climb_difficulty * predicted_bs + grand_tour * stage, data = ., family = "binomial") %>% 
-  summary()
+  glm(breakaway ~ pred_climb_difficulty * predicted_bs + grand_tour + uphill_finish, data = ., family = "binomial") -> breakaway_glm
 
 #
 # iterate through a last ten races model for every date
@@ -590,6 +589,12 @@ predicting_all_with_recent <- predicting_all_supp %>%
       mutate(date = as.Date(date)), by = c('rider', 'date')
     
   ) %>%
+  
+  mutate(error_rank = ifelse(is.na(error_rank), 0, error_rank),
+         rel_leader = ifelse(is.na(rel_leader), 0, rel_leader),
+         races = ifelse(is.na(races), 0, races),
+         days_of_comps = ifelse(is.na(days_of_comps), 0, days_of_comps)) %>%
+  
   # center error rank and adjust for <10 races
   mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
   
@@ -597,7 +602,11 @@ predicting_all_with_recent <- predicting_all_supp %>%
   mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(log_rk_pwo = log(rk_pointswhenopp + 1))
+  mutate(log_rk_pwo = log(rk_pointswhenopp + 1)) %>%
+  
+  cbind(pred_break_win = predict(breakaway_glm, predicting_all_supp)) %>%
+  
+  mutate(pred_break_win = exp(pred_break_win)/(1+exp(pred_break_win)))
   
 #
 # Predicting team leader
@@ -868,18 +877,15 @@ glm(win ~
       shrunk_teamldr +       # teamldr prediction shrunk to 1
       rel_age +              # age vs race average (lower is younger)
       rel_leader +           # team ldr recent vs expected
+      pred_break_win:log_rk_pwo +
+      pred_break_win:ppwo +
       error_rank,            # recent performances errors (higher is worse recent performance)
     
     family = "binomial", 
     data = predicting_all_with_recent %>% 
-      mutate(win = ifelse(rnk == 1, 1, 0)) %>%
-      mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
-      
-      group_by(stage, race, year, class) %>%
-      mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
-      ungroup() %>%
-      
-      mutate(log_rk_pwo = log(rk_pointswhenopp + 1)) %>%
+      mutate(win = ifelse(rnk == 1, 1, 0),
+             ppwo = pred_pointswhenopp * -1) %>%
+
       filter(year < 2020) %>%
       filter(!class %in% c("NC", "CC", "WC"))
       ) -> win_mod
@@ -891,17 +897,23 @@ gbm_predict_WIN = cbind(
   pred = predict(win_mod, 
                  predicting_all_with_recent %>%
                    unique() %>%
+                   mutate(ppwo = pred_pointswhenopp * -1) %>%
                    filter(year >= 2020)),
   
   predicting_all_with_recent %>%
     unique() %>%
+    mutate(ppwo = pred_pointswhenopp * -1) %>%
     filter(year >= 2020))
 
 # predict test set out of sample
 pred <- gbm_predict_WIN %>% 
   
   mutate(pred = exp(pred)/(1+exp(pred)),
-         win = rnk==1)
+         win = rnk==1) %>%
+  
+  group_by(stage, race, year, class) %>%
+  mutate(pred = pred / sum(pred, na.rm = T)) %>%
+  ungroup()
 
 # brier score for accuracy
 brierScore <- mean((pred$pred-pred$win)^2, na.rm = T)
@@ -911,6 +923,10 @@ print(brierScore)
 # ROC / AUC
 roc_obj <- pROC::roc(pred$win, pred$pred)
 print(pROC::auc(roc_obj))
+
+# by percentage chance
+
+pred %>% group_by(fl = floor(pred / 0.03)*0.03) %>% summarize(RMSE = sqrt(mean((win-pred)^2)), SAMPLE = n())
 
 pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
   labs(title = "Predict winner", subtitle = pROC::auc(roc_obj))
