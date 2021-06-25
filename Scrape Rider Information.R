@@ -6,11 +6,14 @@ library(rvest)
 
 scraped_list19 <- vector("list",20)
 
-for(x in 1:14) {
+for(x in 1:18) {
   
   url <- paste0('https://www.procyclingstats.com/rankings.php?id=49002&nation=&team=&page=', 
   (x-1)*200, 
   '&prev_id=prev&younger=&older=&limit=200&filter=Filter&morefilters=1')
+  
+  url <- paste0('https://www.procyclingstats.com/rankings.php?date=2021-06-14&nation=&age=&zage=&page=smallerorequal&team=&offset=',
+                (x-1)*100, '&filter=Filter')
   
   page <- url %>%
     read_html()
@@ -19,7 +22,7 @@ for(x in 1:14) {
     html_nodes('table') %>%
     html_nodes('a') %>%
     html_attr(name = 'href') %>%
-    .[seq(1,1195,6)] %>%
+    .[seq(1,300,3)] %>%
     enframe(name = NULL) %>%
     rename(url = value)
   
@@ -27,7 +30,7 @@ for(x in 1:14) {
     html_nodes('table') %>%
     html_nodes('a') %>%
     html_text() %>%
-    .[seq(1,1195,6)]  %>%
+    .[seq(1,300,3)]  %>%
     str_trim() %>%
     enframe(name = NULL) %>%
     rename(rider = value)
@@ -284,7 +287,8 @@ riders_to_scrape <- rbind(riders19 %>% rowid_to_column(),
   
   rename(rider_url = url) %>%
   
-  anti_join(dbReadTable(con, "rider_attributes"), by = c("rider_url"))
+  anti_join(dbReadTable(con, "rider_attributes") %>%
+              filter(!is.na(weight)), by = c("rider_url"))
   
 #
 #
@@ -307,10 +311,10 @@ for(r in 1:length(riders_to_scrape$rider_url)) {
   
   stg <- pg %>%
     
-    html_nodes('div.rdr-info') %>%
+    html_nodes('div.rdr-info-cont') %>%
     html_text()
   
-  rider_data_list[[r]] <- tibble(
+   rid_dat <- tibble(
     
     dob = str_trim(str_sub(stg, str_locate(stg, "Date of birth:")[[1]] + 14, str_locate(stg, "Nationality")[[1]] - 5)),
     weight = str_trim(str_sub(stg, str_locate(stg, "Weight:")[[2]] + 1, str_locate(stg, "Height")[[1]] - 1)),
@@ -320,8 +324,18 @@ for(r in 1:length(riders_to_scrape$rider_url)) {
     
     mutate(rider = riders_to_scrape$rider[[r]],
            rider_url = riders_to_scrape$rider_url[[r]])
+   
+  rider_data_list[[r]] <- rid_dat
   
-  Sys.sleep(runif(1, 10, 30))
+  if(!is.na(rid_dat$weight)) {
+    
+    #dbSendQuery(con, paste0("DELETE FROM rider_attributes WHERE rider = '", riders_to_scrape$rider[[r]], "'"))
+    
+  }
+  
+  #Sys.sleep(runif(1, 10, 30))
+  
+  Sys.sleep(1)
   
   }
   
