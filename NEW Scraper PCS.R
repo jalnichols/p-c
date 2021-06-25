@@ -92,6 +92,13 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
   
+  # JUNIORS
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=1.1&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=2.1&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=1.Ncup&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=2.Ncup&filter=Filter',
+  
   # AMERICAS
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.1&filter=Filter',
   
@@ -116,7 +123,7 @@ start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
 # pull in each type and then each year
 #
 
-for(t in 1:length(pull_from_schedule)) {
+for(t in 24:length(pull_from_schedule)) {
   
   year_list <- vector("list", pull_years)
   
@@ -186,7 +193,7 @@ for(t in 1:length(pull_from_schedule)) {
                             filter(!str_detect(value, "stage-")) %>%
                             filter(!str_detect(value, "result")) %>%
                             filter(!(str_detect(value, "2020/"))) %>%
-                            #unique() %>%
+                            unique() %>%
                             rename(url = value),
                           
                           page %>%
@@ -223,7 +230,8 @@ for(t in 1:length(pull_from_schedule)) {
         page %>%
           html_nodes('table') %>%
           html_table(dec = ",") %>%
-          .[[1]],
+          .[[1]] %>%
+          .[,-1],
         
         page %>%
           html_nodes('table') %>%
@@ -273,10 +281,21 @@ natl_champs <- c("race/nc-spain",
                  "race/nc-south-africa",
                  "race/nc-united-states",
                  "race/nc-australia",
+                 "race/nc-poland",
+                 "race/nc-russia",
+                 "race/nc-portugal",
+                 "race/nc-portugal2",
+                 "race/nc-new-zealand",
                  "race/nc-slovenia")
 
+natl_champs <- c(natl_champs, paste0(natl_champs,"-itt"))
+
 extra_races <- c("race/world-championship",
+                 "race/world-championship-u23",
+                 "race/world-championship-mj",
                  "race/world-championship-itt",
+                 "race/world-championship-itt-u23",
+                 "race/world-championship-itt-mj",
                  "race/olympic-games",
                  "race/olympic-games-itt",
                  "race/uec-road-european-championships",
@@ -289,6 +308,11 @@ store_from_schedule <- store_from_schedule[lengths(store_from_schedule) != 0]
 #
 
 all_events <- bind_rows(store_from_schedule) %>%
+  
+  mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
+  mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+  
+  filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))) %>%
   
   filter(!(str_detect(Race, " WE"))) %>%
   filter(!(str_detect(Race, "Women"))) %>%
@@ -776,6 +800,12 @@ for(r in 1:length(all_stages$value)) {
           
         } 
         
+        if(!"rider" %in% colnames(stage)) {
+          
+          print("no rider column, possibly a TTT")
+          
+        } else {
+          
         stage <- stage %>%
           
           # this processes time
@@ -852,16 +882,21 @@ for(r in 1:length(all_stages$value)) {
           
           mutate(rnk = as.character(rnk))
         
+        }
+        
       }
       
     }
     
     
   }
-  # write to the race list for this race
-  races_list[[r]] <- stage
   
-  print(race_url)
+  if(DATE <= (lubridate::today())) {
+    
+    races_list[[r]] <- stage
+    print(race_url)
+    
+  }
   
   if(dl_html == TRUE) {
     
@@ -893,15 +928,31 @@ df_list <- races_list
 
 for(f in 1:length(races_list)) { 
   
-  df <- races_list[[f]] %>%
-    mutate(date = as.character(date))
-  
-  df$race <- iconv(df$race, from="UTF-8", to = "ASCII//TRANSLIT")
-  df$rider <- iconv(df$rider, from="UTF-8", to = "ASCII//TRANSLIT")
-  
-  df_list[[f]] <- df
+  if(!"rider" %in% colnames(races_list[[f]])) {
+    
+    df_list[[f]] <- NA
+    
+  } else {
+    
+    if(length(races_list[[f]]$rnk) == 0) {
+      
+    } else {
+      
+      df <- races_list[[f]] %>%
+        mutate(date = as.character(date))
+      
+      df$race <- iconv(df$race, from="UTF-8", to = "ASCII//TRANSLIT")
+      df$rider <- iconv(df$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+      
+      df_list[[f]] <- df
+      
+    }
+    
+  }
   
 }
+
+df_list <- df_list[lengths(df_list) > 1]
 
 #
 #
@@ -1057,7 +1108,21 @@ stage_data_raw$team <- stringi::stri_trans_general(str = stage_data_raw$team,
 
 #
 
+pcs_all_races <- dbGetQuery(con, "SELECT DISTINCT url, type FROM pcs_all_races") %>%
+  
+  mutate(junior = str_detect(type, "circuit=15")) %>%
+  select(-type)
+
+#
+
 stage_data_int <- stage_data_raw %>%
+  
+  left_join(pcs_all_races, by = c("url")) %>%
+  
+  mutate(Class = ifelse(is.na(junior), Class,
+                        ifelse(junior == TRUE, "JR", Class))) %>%
+  
+  select(-junior) %>%
   
   rename(class = Class) %>%
   unique() %>%
@@ -1073,6 +1138,8 @@ stage_data_int <- stage_data_raw %>%
   
 
 stage_data <- stage_data_int %>%
+  
+  mutate(team = ifelse(is.na(team), "", team)) %>%
   
   left_join(
     
@@ -1100,8 +1167,7 @@ stage_data <- stage_data_int %>%
 
   mutate(stage = ifelse(stage == "https://www.procyclingstats.com/", 1, stage)) %>%
   
-  filter(!race %in% c("World Championships MJ - ITT", "World Championships MJ - Road Race",
-                      "World Championships WJ - ITT", "World Championships WJ - Road Race",
+  filter(!race %in% c("World Championships WJ - ITT", "World Championships WJ - Road Race",
                       "World Championships WE - ITT", "World Championships WE - Road Race",
                       'Manavgat Side Junior', 'Grand Prix Manavgat - Side WE')) %>%
   
@@ -1203,6 +1269,8 @@ winners$Date <- as.Date(winners$Date)
 #
 
 gc_performance <- winners %>%
+  mutate(junior = str_detect(type, "circuit=15")) %>%
+  mutate(Class = ifelse(junior == TRUE, "JR", Class)) %>%
   
   select(race = Race,
          winner = Winner,
@@ -1464,12 +1532,16 @@ stage_data <- stage_data %>%
 # final cleanup before writing
 
 stage_data <- stage_data %>%
+
   mutate(time_trial = as.numeric(time_trial),
          grand_tour = as.numeric(grand_tour),
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
   select(-fr_stage) %>%
   filter(!(str_detect(url, "81st-sch"))) %>%
+  
+  # if distance isn't known programmed to 150, but need to change for ITTs
+  mutate(length = ifelse(length == 150 & time_trial == 1, 35, length))
   
   # world championships rr 2016 joins twice onto profile data
   
@@ -1485,12 +1557,15 @@ stage_data <- stage_data %>%
   filter(!(race == "brussels cycling classic" & year == 2017)) %>%
   filter(!(race == "la poly normonde")) %>%
   filter(!(race == 'manavgat side junior')) %>%
+  filter(!url == 'race/european-games-we/2019') %>%
   
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
 
   unique() %>% 
   
-  mutate(rider = str_to_title(rider))
+  mutate(rider = str_to_title(rider)) %>%
+  
+  mutate(stage = ifelse(stage == "", 1, stage))
 
 # Write the cleaned-up data to database
 
@@ -1602,7 +1677,7 @@ for(r in 1:length(all_races$url)) {
   
   startlist <- startlist %>%
     
-    .[, 1:7] %>%
+    .[, 1:8] %>%
     
     select(rider = Rider,
            team = Team,
@@ -1683,7 +1758,7 @@ for(r in 1:length(all_races$url)) {
                    all_races$url[[r]], 
                    "/stage-", 
                    str_replace(all_races$stage_name[[r]], "Stage ", ""), 
-                   "/today/kms-in-the-break")
+                   "/live/kms-in-the-break")
     
   } else {
     
@@ -1786,7 +1861,7 @@ if(dl_html == FALSE) {
 
 tictoc::tic()
 
-for(r in 1:length(all_stages$value)) {
+for(r in 8:length(all_stages$value)) {
   
   f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
