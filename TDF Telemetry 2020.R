@@ -4,6 +4,8 @@ library(RMySQL)
 
 Sys.sleep(0)
 
+dbDisconnect(con)
+
 con <- dbConnect(MySQL(),
                  host='localhost',
                  dbname='cycling',
@@ -16,7 +18,7 @@ con <- dbConnect(MySQL(),
 
 telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
 
-STAGE <- 2
+STAGE <- 7
 
 step = 1
 
@@ -63,7 +65,7 @@ riders <- 'https://racecenter.criterium-du-dauphine.fr/api/allCompetitors-2021' 
 
 #
 
-st10 <- all_stages %>% filter(StageId == "0100")
+st10 <- all_stages %>% filter(StageId == "0200")
 
 #
 #
@@ -88,7 +90,7 @@ all_stages %>%
   
   filter(kmToFinish > 0) %>% 
   
-  mutate(primoz = ifelse(Bib == "31", kmToFinish, NA)) %>% 
+  mutate(primoz = ifelse(Bib == "35", kmToFinish, NA)) %>% 
   
   group_by(TimeStamp) %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
@@ -112,7 +114,7 @@ all_stages %>%
   
   inner_join(
     
-    dbGetQuery(con, "SELECT bib, rider FROM pcs_all_startlists WHERE race = 'tour de france' AND year = 2020"), by = c("Bib" = "bib")
+    dbGetQuery(con, "SELECT bib, rider FROM pcs_all_startlists WHERE race = 'criterium du dauphine' AND year = 2021"), by = c("Bib" = "bib")
     
   ) %>%
   
@@ -120,10 +122,10 @@ all_stages %>%
     
     dbGetQuery(con, "SELECT rider, stage, gain_gc
                FROM stage_data_perf
-               WHERE race = 'tour de france' AND year = 2020") %>%
+               WHERE race = 'criterium du dauphine' AND year = 2021") %>%
       mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00"))) %>%
       
-      mutate(primoz = ifelse(rider == "Roglic Primoz", gain_gc, NA)) %>%
+      mutate(primoz = ifelse(rider == "Porte Richie", gain_gc, NA)) %>%
       
       group_by(stage) %>%
       mutate(primoz = mean(primoz, na.rm = T)) %>%
@@ -404,16 +406,11 @@ climbing <- all_stages %>%
   # Peyresource St8
   # Marie Blanque St9
   # Puy Mary and Neronne St13
-  filter((StageId == "0400" & kmToFinish < 10.5 & kmToFinish > 0) |
-           (StageId == "0200" & kmToFinish > 9 & kmToFinish < 14.5) |
-           (StageId == "0600" & kmToFinish > 13.5 & kmToFinish < 25) |
-           (StageId == "0800" & kmToFinish > 10 & kmToFinish < 19.5) |
-           (StageId == "0900" & kmToFinish > 18.5 & kmToFinish < 26) |
-           (StageId == "1300" & kmToFinish > 0 & kmToFinish < 5.4) |
-           (StageId == '1500' & kmToFinish > 0 & kmToFinish < 17.7) |
-           (StageId == '1600' & kmToFinish > 20 & kmToFinish < 33) |
-           (StageId == '1700' & kmToFinish > 0 & kmToFinish < 22) |
-           (StageId == '1800' & kmToFinish > 31.5 & kmToFinish < 37.5)) %>%
+  filter((StageId == "0800" & kmToFinish < 29.5 & kmToFinish > 16) |
+           (StageId == "0700" & kmToFinish > 0 & kmToFinish < 17) |
+           (StageId == "0600" & kmToFinish > 0 & kmToFinish < 10) |
+           (StageId == "0200" & kmToFinish > 6.5 & kmToFinish < 14) |
+           (StageId == "0500" & kmToFinish > 11.5 & kmToFinish < 14)) %>%
   
   group_by(Bib, StageId) %>%
   summarize(speed = mean(kph, na.rm = T),
@@ -447,7 +444,8 @@ climbing <- all_stages %>%
   mutate(max_meters = max(meters, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(implied_seconds = max_meters / m_s)
+  mutate(implied_seconds = max_meters / m_s) %>%
+  inner_join(riders, by = c("Bib"))
 
 #
 #
