@@ -4,6 +4,8 @@ library(websocket)
 library(rvest)
 library(jsonlite)
 
+Sys.sleep(76000)
+
 result_list <- vector("list", 10000)
 
 x=0
@@ -14,7 +16,7 @@ ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":49409,"stageId":255989,"jsonpack":false}')
+  ws$send('{"type":"group","eventId":49448,"stageId":256136,"jsonpack":false}')
 })
 
 ws$onMessage(function(event) {
@@ -42,7 +44,7 @@ ws$onMessage(function(event) {
   
   print(x)
   
-  if(lubridate::now() > lubridate::as_datetime('2021-05-29 05:00:00 PM')) {
+  if(lubridate::now() > lubridate::as_datetime('2021-06-13 04:30:00 PM')) {
     
     ws$close()
     
@@ -98,7 +100,7 @@ telemetry <- bind_rows(data_list) %>%
   filter(mean(is.na(distanceToGo)) < 1) %>%
   ungroup()
 
-#write_csv(telemetry, "giro-20-2021-velon-telemetry.csv")
+#write_csv(telemetry, "tour-de-suisse-8-2021-velon-telemetry.csv")
 
 #
 #
@@ -114,9 +116,9 @@ library(tidyverse)
 
 #
 
-riders <- read_csv("riders-pcs-giro.csv")
+riders <- read_csv("tds-2021-riders.csv")
 
-telemetry <- read_csv("giro-20-2021-velon-telemetry.csv") %>%
+telemetry <- read_csv("tour-de-suisse-8-2021-velon-telemetry.csv") %>%
   mutate(kmToFinish = distanceToGo / 1000) %>%
   
   left_join(riders %>% rename(name = rider, teamName = team), by = c("bibNumber")) %>%
@@ -134,7 +136,7 @@ telemetry <- read_csv("giro-20-2021-velon-telemetry.csv") %>%
 
 telemetry %>%
 
-  mutate(RIDER = ifelse(Bib == "193", kmToFinish, NA)) %>% 
+  mutate(RIDER = ifelse(Bib == "1", kmToFinish, NA)) %>% 
   
   group_by(epochTime) %>%
   mutate(RIDER = mean(RIDER, na.rm = T)) %>% 
