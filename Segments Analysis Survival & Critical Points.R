@@ -113,7 +113,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year %in% c(2019, 2020, 2021)) %>%
+  filter(year %in% c(2018, 2019, 2020, 2021)) %>%
   
   inner_join(
     
@@ -121,7 +121,7 @@ segment_data_races <- stage_level_power %>%
                Distance, Gradient, Speed,
                Power, Type,
                activity_id
-               FROM strava_segment_data WHERE Gradient < -0.029"), by = c("activity_id")
+               FROM strava_segment_data"), by = c("activity_id")
     
   ) %>%
   
@@ -156,7 +156,7 @@ abc <- segment_data_races %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
   
-  #filter(year == 2021) %>%
+  filter(year == 2021) %>%
   filter(rnk != 200) %>%
   select(activity_id, pcs, rnk, stage, race, year, class, rowname, Segment, Distance, Gradient, Type, distance, length)
 
@@ -297,7 +297,7 @@ spec_race <- segment_data_races %>%
                select(stage, race, year, class) %>% 
                unique(), by = c("stage", "race", 'year', "class")) %>% 
   
-  select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
+  select(Segment, race, stage, year, class, date, rider, time, Distance, Gradient,
          rowname, rnk, perc_break, length, total_seconds,
          Power, weight, pred_climb_difficulty, gain_1st) %>% 
   unique() %>% 
@@ -306,7 +306,7 @@ spec_race <- segment_data_races %>%
   mutate(ordered = rank(rowname, ties.method = "first")) %>%
   ungroup() %>% 
   
-  select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
+  select(Segment, race, stage, year, class, date, rider, time, Distance, Gradient,
          OrderInRace = ordered, rnk, length, total_seconds,
          Power, weight, pred_climb_difficulty, gain_1st) %>%
   unique() %>% 
@@ -517,11 +517,78 @@ spec_race %>%
   
   arrange(perc_thru) -> survival_probability
 
+# bring in rider level model data
+
+rider_level_pcd_impact <- dbGetQuery(con, "SELECT rider, Date, pcd_impact, random_intercept + (0.5 * bunchsprint_impact) as ability_intercept
+                                     FROM lme4_rider_logranks
+                                     WHERE test_or_prod = 'prod'") %>%
+  mutate(Date = as.Date(Date))
+
 # rider random intercepts and slopes (perc_thru) for survival
 
-spec_race %>% 
+spec_race %>%
   
-  mutate(vam_poly = (Gradient^2)*(Distance*1000)) %>%
+  filter(date < '2020-07-01') %>%
+  
+  mutate(vam_poly = (Gradient^2)*(Distance*1000),
+         perc_thru = ifelse(perc_thru >= 1, 1, perc_thru),
+         inv_perc_thru = sqrt(1/perc_thru)) %>% 
+  
+  arrange(perc_thru) %>%
+  
+  group_by(stage, race, year, rider) %>%
+  mutate(tot_vam_poly = cumsum(vam_poly)-vam_poly) %>%
+  ungroup() %>%
+  
+  inner_join(rider_level_pcd_impact, by = c("rider", "date" = "Date")) -> surv_mod_data
+
+#
+
+glm(alive ~ pcd_impact + ability_intercept + perc_thru + vam_poly + tot_vam_poly + pcd_impact:inv_perc_thru:vam_poly,
+    
+    data = surv_mod_data,
+    family = "binomial") -> surv_mod
+ 
+#
+ 
+cbind(surv_mod_data,
+  
+  coef_surv = predict(surv_mod,
+                      surv_mod_data)) %>%
+  mutate(pred_surv = exp(coef_surv)/(1+exp(coef_surv))) -> survival_predictions
+ 
+#
+ 
+segment_impact %>% 
+   
+  select(stage, race, year, Segment, OrderInRace, Distance, Gradient, perc_thru) %>% 
+  unique() %>%
+  mutate(vam_poly = (Gradient^2)*(Distance*1000),
+         perc_thru = ifelse(perc_thru >= 1, 1, perc_thru),
+         inv_perc_thru = sqrt(1/perc_thru)) %>%  
+  
+  arrange(perc_thru) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(tot_vam_poly = cumsum(vam_poly)-vam_poly) %>%
+  ungroup() %>%
+  
+  inner_join(all_stage_data %>%
+               filter(date >= '2020-07-01') %>%
+               select(rider, team, Date = date, stage, race, year), by = c("stage", "race", "year")) %>% 
+  
+  inner_join(rider_level_pcd_impact, by = c("rider", "Date")) -> any_stage
+
+cbind(any_stage,
+      
+      coef_surv = predict(surv_mod,
+                          any_stage)) %>%
+  mutate(pred_surv = exp(coef_surv)/(1+exp(coef_surv))) %>%
+  select(-inv_perc_thru, -coef_surv) -> survival_predictions_any
+
+
+  
+
   
   lme4::glmer(alive ~ (1 + perc_thru | rider) + (0 + vam_poly | rider) + vam_poly * perc_thru, 
               data = ., 

@@ -21,19 +21,30 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
   inner_join(
     
     tibble(Tour = c("Missing", "Americas Tour", "Europe Tour", "World Championships", "World Tour", "Asia Tour",
-                    "Oceania Tour", "Africa Tour", "Olympic Games", "National Cup", "Pro Tour"),
+                    "Oceania Tour", "Africa Tour", "Olympic Games", "National Cup", "Pro Tour", "Men Junior"),
            Circuit = c("", "18", "13", "2", "1", "12", "14", "11", "3", "21",
-                       "26")), by = c("Circuit")
+                       "26", "15")), by = c("Circuit")
     
   ) %>%
   
   mutate(Tour = ifelse(str_detect(Race, "National Champ") | Class == "NC", "National Championship", Tour)) %>%
   
-  select(Race, Tour, URL = url, Year = year)
+  select(Race, Tour, URL = url, Year = year) %>%
+  
+  mutate(Race = ifelse(URL == 'race/tro-bro-leon/2021', "Tro-Bro Leon", Race),
+         Tour = ifelse(URL == 'race/tro-bro-leon/2021', "Europe Tour", Tour))
 
 #
 
-missing_strava <- dbReadTable(con, "strava_stage_characteristics")
+missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
+  
+  gather(stat, value, -c("stage", "race", "year", "class")) %>%
+  
+  group_by(stage, race, year, class, stat) %>%
+  summarize(value = median(value, na.rm = T)) %>%
+  ungroup() %>%
+  
+  spread(stat, value)
 
 #
 
@@ -96,18 +107,20 @@ stage_data <- dbReadTable(con, "pcs_stage_data") %>%
                "the larry h.miller tour of utah", "tour of china i", "tour de korea", "tour de korea",
                "tour de korea", "ronde van vlaanderen / tour des flandres",
                "etoile de besseges - tour du gard", "etoile de besseges - tour du gard",
-               "etoile de besseges - tour du gard", "etoile de besseges - tour du gard"),
+               "etoile de besseges - tour du gard", "etoile de besseges - tour du gard",
+               "tour of china i", "japan cup cycle road race"),
       
       stage = c(4,6,5,3,3,3,4,1,1,1,3,4,6,7,2,3,2,3,8,3,6,7,4,5,2,2,2,3,4,1,4,3,6,8,10,
-                7,7,5,6,3,4,6,1,1,2,3,4),
+                7,7,5,6,3,4,6,1,1,2,3,4,7,1),
       
       year = c(2015,2014,2014,2020,2018,2016,2016,2013,2014,2015,2016,2016,2016,2016,2016,2016,
                2015,2015,2015,2015,2015,2015,2015,2015,2015,2016,2017,2017,2017,2014,2014,
-               2014,2014,2014,2014,2014,2014,2014,2014,2014,2014,2014, 2015, 2021, 2021, 2021, 2021),
+               2014,2014,2014,2014,2014,2014,2014,2014,2014,2014,2014, 2015, 2021, 2021, 2021, 2021,
+               2018, 2016),
       
       NEW = c("p2", "p2","p2","p2","p2","p2","p2","p4","p4","p4","p2","p2","p2","p2","p2","p2",
               "p2","p2","p2","p2","p2","p2","p2","p3","p2","p2","p2","p2","p2","p2","p2",
-              "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3","p2", "p3", "p2", "p2", "p3")
+              "p2","p2","p2","p2","p2","p2","p2","p2","p2","p2","p3","p2", "p3", "p2", "p2", "p3","p1","p2")
       
     ) %>%
       mutate(stage = as.character(stage)), by = c("year", "stage", "race")
@@ -133,7 +146,7 @@ replace_missing <- stage_data %>%
          -final_1km_gradient, -final_5km_elev, -final_5km_gradient) %>%
   
   inner_join(missing_strava %>%
-               select(-weighted_altitude), by = c("stage", "race", "year", "class")) %>%
+               select(-weighted_altitude, -perc_gain_start, -first_30km_vert_gain), by = c("stage", "race", "year", "class")) %>%
   
   mutate(missing_profile_data = 0)
 
@@ -307,9 +320,8 @@ non_euro_wt <- c('gree - tour of guangxi', 'uae tour', 'gree-tour of guangxi',
                  'grand prix cycliste de quebec')
 
 relative_strength_of_tours %>%
-  
-  filter(!class %in% c("JR")) %>%
-  
+
+  filter(class != 'JR') %>%
   filter(!is.na(rider)) %>%
   
   mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>%
@@ -338,7 +350,7 @@ summary(mixed_effects_tour)
 
 random_effects <- ranef(mixed_effects_tour)  
 
-tours <- random_effects$class %>% rownames_to_column()
+tours <- random_effects$class %>% rownames_to_column() %>% rbind(tibble(rowname = "JR", `(Intercept)` = -.6))
 riders <- random_effects$rider %>% rownames_to_column()
 
 testing <- cbind(pred = predict(mixed_effects_tour, dat[-choose_rows, ], allow.new.levels = TRUE),
@@ -365,7 +377,15 @@ predicted_places <- cbind(
   
   mutate(ranks = exp(pred)) %>%
   
-  select(-rider, -pred)
+  select(-rider, -pred) %>%
+  
+  # set Juniors as worse than 2.2U / 2.2s
+  rbind(expand_grid(Tour = c("Europe", "Other"),
+        grand_tour = as.numeric(0),
+        class = "JR") %>%
+          mutate(ranks = ifelse(Tour == "Europe", 1.8, 1.5))) %>%
+  # reduces Ncups too
+  mutate(ranks = ifelse(class == "Ncup", ranks - 1, ranks))
 
 #
 #
@@ -380,8 +400,7 @@ strength_of_peloton <- stage_data %>%
   mutate(Tour = ifelse(Tour == "Europe Tour", 'Europe', 
                        ifelse(Tour %in% c("World Tour", "Pro Tour") & !race %in% non_euro_wt, 'Europe', 'Other'))) %>%
   
-  mutate(class = ifelse(class == "JR", "2U", class),
-         class = ifelse(class == "WT", "1.UWT", class),
+  mutate(class = ifelse(class == "WT", "1.UWT", class),
          class = ifelse(class %in% c("WC", "Olympics"), "1.UWT", class),
          class = ifelse(class == "NC", "XXNatCh", 
                         ifelse(class == "JR", "XXJR",
@@ -393,7 +412,8 @@ strength_of_peloton <- stage_data %>%
   
   mutate(rnk = ifelse(is.na(rnk),200,rnk)) %>%
   
-  inner_join(predicted_places, by = c("Tour", "class", "grand_tour")) %>%
+  inner_join(predicted_places %>%
+               mutate(grand_tour = as.numeric(grand_tour)), by = c("Tour", "class", "grand_tour")) %>%
   
   # determine whether bunch sprint #1 same time as #20
   group_by(stage, race, year, url) %>%
@@ -412,12 +432,13 @@ strength_of_peloton <- stage_data %>%
   
   # points are assigned by taking 1 / log(rnk), subtracting out 50th place, and adjusting so that 1 point is max you can get
   # this means any finish worse than 50th loses points
-  mutate(pts = ((1 / log(rnk+1)) - 0.2543) / 1.1884) %>%      # for 50th
+  mutate(pts = ((1 / log(rnk+1)) - 0.2543) / 1.1884,
+         pts = pts * (qual / 4.9)) %>%      # for 50th
   
   # adjusts for tour strength
-  mutate(pts = ifelse(tour %in% c("Oceania Tour", "Asia Tour"), pts * 0.5,
-                      ifelse(tour %in% c("National Championships"), pts * 0.35,
-                             ifelse(tour %in% c("Africa Tour"), pts * 0.2, pts)))) %>%
+  #mutate(pts = ifelse(tour %in% c("Oceania Tour", "Asia Tour"), pts * 0.5,
+  #                    ifelse(tour %in% c("National Championships"), pts * 0.35,
+  #                           ifelse(tour %in% c("Africa Tour"), pts * 0.2, pts)))) %>%
   
   mutate(date = as.Date(date),
          one_day_race = ifelse(time_trial == 1, 0, one_day_race),
@@ -697,7 +718,7 @@ strava_elev_data <- cbind(
     
   )) %>%
   
-  filter(is.na(act_climb_difficulty)) %>%
+  #filter(is.na(act_climb_difficulty)) %>%
   filter(!is.na(pred_strv))
 
 #
@@ -899,7 +920,9 @@ icon_data <- cbind(
 # write_rds(pv_mod, "Stored models/pcd-pv-mod.rds")
 
 #
-# now combine all three methods together
+# now combine all four methods together
+# we retain ANY of strava, no_climbs, or pv predictions
+# we only retain icon prediction if nothing else exists for it
 #
 
 three_methods <- rbind(
@@ -907,14 +930,14 @@ three_methods <- rbind(
   strava_elev_data %>%
     select(race, stage, year, class, pred = pred_strv) %>%
     mutate(type = "sv") %>%
-    anti_join(pv_data %>% select(stage, race, year, class)) %>%
-    anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
+    #anti_join(pv_data %>% select(stage, race, year, class)) %>%
+    #anti_join(no_climbs_data %>% select(stage, race, year, class)) %>%
     select(-class),
   
   no_climbs_data %>%
     select(race, stage, year, class, pred = pred_no_climbs) %>%
     mutate(type = "nc") %>%
-    anti_join(pv_data %>% select(stage, race, year, class)) %>%
+    #anti_join(pv_data %>% select(stage, race, year, class)) %>%
     select(-class),
   
   icon_data %>%
@@ -975,40 +998,19 @@ stage_data_with_pcd <- stage_data %>%
   
   mutate(act_climb_difficulty = ifelse(act_climb_difficulty == 0, NA, act_climb_difficulty)) %>%
   
-  mutate(pred_climb_difficulty = ifelse(is.na(act_climb_difficulty),
-                                        ifelse(is.na(pred_climb_difficulty), NA, pred_climb_difficulty), 
-                                        ifelse(is.na(pred_climb_difficulty), act_climb_difficulty,
-                                               ((2*(act_climb_difficulty)) + (pred_climb_difficulty))/3))) %>%
+  mutate(pred_climb_difficulty = ifelse(is.na(pred_climb_difficulty), act_climb_difficulty, pred_climb_difficulty)) %>%
   
-  # some manual adjustments where older stage are being mis-represented
-  mutate(pred_climb_difficulty = 
-           ifelse(race == "grand prix cycliste de quebec", 2,
-                  ifelse(race == "grand prix cycliste de montreal", 2, 
-                         ifelse(race == "il lombardia",
-                                ifelse(pred_climb_difficulty < 12, 12, pred_climb_difficulty),
-                                ifelse(race == "la fleche wallonne",
-                                       ifelse(pred_climb_difficulty < 7, 7, pred_climb_difficulty),
-                                       ifelse(race == "clasica ciclista san sebastian",
-                                              ifelse(pred_climb_difficulty < 6, 6, pred_climb_difficulty),
-                                              ifelse(race == "amstel gold race",
-                                                     ifelse(pred_climb_difficulty < 4, 4, pred_climb_difficulty),
-                                                     ifelse(race == "liege - bastogne - liege",
-                                                            ifelse(pred_climb_difficulty < 6, 6, pred_climb_difficulty),
-                                                            ifelse(race == "milano-sanremo",
-                                                                   ifelse(pred_climb_difficulty < 3, 3, pred_climb_difficulty),
-                                                                   ifelse(race == "tre valli varesine", 3.5, 
-                                                                          ifelse(race == 'strade bianche', 4.5,
-                                                                                 ifelse(race == "giro dell'emilia", 7.5, pred_climb_difficulty))))))))))),
-         pred_climb_difficulty = ifelse(race == 'chrono des nations', 1,
-                                        ifelse(race == 'japan cup cycle road race', 5, 
-                                               ifelse(race == "le samyn", 1.5,
-                                                      ifelse(race == 'trofeo laigueglia', 6,
-                                                             ifelse(race == "milano-torino", 11.5,
-                                                                    pred_climb_difficulty)))))) %>%
+  left_join(read_csv("pcd_min_max_replacements.csv"), by = c("race")) %>%
+
+  mutate(pred_climb_difficulty = ifelse(is.na(less_than), pred_climb_difficulty,
+                                               ifelse(pred_climb_difficulty < less_than, less_than, 
+                                                      ifelse(pred_climb_difficulty > more_than, more_than, pred_climb_difficulty)))) %>%
   
   # 2020 changes
   mutate(pred_climb_difficulty = ifelse(year == 2020,
-                                        ifelse(race == "milano-torino", 2, pred_climb_difficulty), pred_climb_difficulty))
+                                        ifelse(race == "milano-torino", 1, pred_climb_difficulty), pred_climb_difficulty)) %>%
+  
+  select(-less_than, -more_than)
 
 
 #
@@ -1559,6 +1561,10 @@ age_perf_binned <- perf_age_linked %>%
 library(xgboost)
 
 bs_data <- stage_data_perf %>%
+  
+  group_by(stage, year, class, race) %>%
+  mutate(within_3_secs = mean(gain_1st <= 3, na.rm = T)) %>%
+  ungroup() %>%
   
   group_by(race, year) %>%
   mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage), na.rm = T) & grand_tour == 1, 1, 0)) %>%

@@ -11,10 +11,10 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/ruta-del-sol/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/giro-d-italia/2021/startlist/'
 
-PCD = 9
-BS = 0.01
+PCD = 18
+BS = 0.001
 
 #
 
@@ -163,6 +163,15 @@ wide_models <- models %>%
          rankTimeLost = rank(TimeLost, ties.method = "min")) %>%
 
   mutate(rankOverall = 4 / ((1/rankPoints)+(1/rankLog)+(1/rankPointsWhenOpp)+(1/rankTimeLost)))
+
+#
+
+ggplot(wide_models, 
+       aes(x = sqrt(rankTimeLost), y = sqrt(rankPointsWhenOpp), label = rider))+
+  geom_abline(slope=1, intercept=0, color = 'pink', size=2)+
+  geom_text(alpha=0.5)+
+  scale_x_reverse()+
+  scale_y_reverse()
 
 #
 #
