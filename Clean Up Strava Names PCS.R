@@ -19,12 +19,16 @@ df <- dbGetQuery(con, "SELECT rider, PCS, activity_id FROM strava_activity_data 
 
 unique_df <- df %>%
   
+  arrange(desc(as.numeric(activity_id))) %>%
+  
   group_by(rider) %>%
+  mutate(total = n()) %>%
   filter(rank(activity_id, ties.method = "first") == 1) %>%
-  ungroup()
+  ungroup() %>%
+  
+  filter(total >= 0)
 
 #
-
 
 pull_from_strava_html <- fs::dir_info("D:/Jake/Documents/Strava-Pages") %>%
   
@@ -46,12 +50,8 @@ for(a in 1:length(pull_from_strava_html$activity_id)) {
     
     # rider info
     
-    RIDER <- PAGE %>% html_nodes(xpath = '//*[@id="heading"]/header/h2/span/a') %>% html_text()
-    
-    RIDER_URL <- PAGE %>% html_nodes(xpath = '//*[@id="heading"]/header/h2/span/a') %>% html_attr(name = "href")
-    
-    data_pulled[[a]] <- tibble(rider = RIDER,
-                               strava_rider_url = RIDER_URL,
+    data_pulled[[a]] <- tibble(rider = PAGE %>% html_nodes(xpath = '//*[@id="heading"]/header/h2/span/a') %>% html_text(),
+                               strava_rider_url = PAGE %>% html_nodes(xpath = '//*[@id="heading"]/header/h2/span/a') %>% html_attr(name = "href"),
                                linked_activity_id = pull_from_strava_html$activity_id[[a]] 
                                )
     
