@@ -81,7 +81,8 @@ for(y in 1:length(scraper_list$year)) {
   
 }
 
-all_races <- bind_rows(result_list)
+all_races <- bind_rows(result_list) %>%
+  filter(str_detect(class, "UWT"))
 
 # Now scraper Europe/Americas/WC/Asia Tour for 2017-19
 
@@ -99,7 +100,7 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
                                 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
                                 2020, 2020, 2020, 2020, 2020, 2020, 
-                                2021, 2021, #2
+                                2021, 2021, 2021, #2
                                 2017, 2018, 2019, 2020, 2021, #5
                                 2017, 2018, 2019, 2020, 2021, #6
                                 2017, 2018, 2019, 2020, 2021, #3
@@ -110,7 +111,7 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                    1,2,3,4,5,6,7,8,9,10, 
                                    1,2,3,4,5,6,7,8,9,10,
                                    1,2,3,4,5,6,
-                                   1,2,
+                                   1,2,3,
                                    1, 1, 1, 1,1,
                                    1, 1, 1, 1,1,
                                    1, 1, 1, 1,1,
@@ -118,7 +119,7 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                    1, 1, 2, 1, 1,1),
                        type = c(2,2,2,2,2,2,
                                 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-                                2,2,
+                                2,2,2,
                                 5,5,5,5,5,
                                 6,6,6,6,6,
                                 3,3,3,3,3,
@@ -209,14 +210,15 @@ already_scraped <- dbGetQuery(con, "SELECT * FROM fr_stage_info") %>%
 
 # only scrape ones we don't have OR skip this if we want to re-scrape
 
- all_races <- all_races %>%
-   
-   filter(!str_detect(class, "WWT")) %>%
-   
-   filter((!(url %in% already_scraped$race_url))) %>%
-   
-   filter(str_detect(date, "January") | str_detect(date, "February") | str_detect(date, "March"))
- 
+all_races <- all_races %>%
+  
+  filter(!str_detect(class, "WWT")) %>%
+  filter(class != "CM" | (class == "CM" & str_detect(race, "Men Elite"))) %>%
+  
+  filter((!(url %in% already_scraped$race_url))) #%>%
+  
+  #filter(str_detect(date, "January") | str_detect(date, "February") | str_detect(date, "March"))
+
 
 dbWriteTable(con, "fr_races", all_races, append = TRUE, row.names = FALSE)
  
@@ -347,7 +349,7 @@ tictoc::tic()
 
 #
 
-for(y in 4347:length(all_stages$race_url)) {
+for(y in 4546:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
@@ -637,7 +639,7 @@ tictoc::toc()
 
 clean_climbs <- dbReadTable(con, "fr_climbs_scraped") %>%
   filter(updated >= '2020-11-25') %>%
-  filter(updated >= '2021-01-20') %>%
+  filter(updated >= '2021-04-20') %>%
   mutate(year = str_sub(race_url, 48, 51)) %>%
   
   mutate(climb_name = str_trim(str_replace_all(climb_name, '%2520', ' '))) %>%
