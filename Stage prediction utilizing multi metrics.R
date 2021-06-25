@@ -36,7 +36,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
            (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
            (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
-           (year == 2021)) %>%
+           (year == 2021 & class != "NC")) %>%
   
   left_join(read_csv("cobbles.csv")) %>% 
   
@@ -288,6 +288,55 @@ predicting_all <- All_data %>%
   #                                         (pcd_time_impact * pred_climb_difficulty))) %>%
   # 
   # select(-rand_time_impact, -odr_time_impact, -bs_time_impact, -pcd_time_impact) %>%
+
+left_join(
+  
+  dbReadTable(con, "lme4_rider_wins")  %>%
+    filter(test_or_prod == "prod") %>%
+    select(-test_or_prod) %>%
+    unique() %>%
+    mutate(rider = str_to_title(rider)) %>%
+    mutate(date = as.Date(Date)) %>%
+    select(-Date) %>%
+    
+    mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+                               ifelse(is.na(bunchsprint_impact), "pcd_added",
+                                      ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+    
+    # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+    # we adjust here
+    group_by(date, level_data) %>%
+    mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+           random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+    ungroup() %>%
+    
+    # this transforms them back to input into the regression equation
+    mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+           random_intercept = random_intercept_new * sd(random_intercept)) %>%
+    
+    select(-pcd_impact_new, -random_intercept_new) %>%
+    
+    rename(pcd_w_impact = pcd_impact,
+           bs_w_impact = bunchsprint_impact,
+           odr_w_impact = one_day_race) %>%
+    
+    mutate(pcd_w_impact = ifelse(is.na(pcd_w_impact), 0, pcd_w_impact),
+           bs_w_impact = ifelse(is.na(bs_w_impact), 0, bs_w_impact),
+           odr_w_impact = ifelse(is.na(odr_w_impact), 0, odr_w_impact)
+    ) %>%
+    
+    filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+  
+) %>%
+  
+  # calculate team leader and success predictions using random effects
+  mutate(win_pred = -6.5 + (random_intercept + 
+                              (pred_climb_difficulty * pcd_w_impact) + 
+                              (one_day_race * odr_w_impact) + 
+                              (predicted_bs * bs_w_impact)),
+         win_pred = exp(win_pred) / (1+exp(win_pred))) %>%
+  
+  select(-random_intercept, -pcd_w_impact, -odr_w_impact, -bs_w_impact) %>%
   
   left_join(
     
@@ -384,6 +433,7 @@ predicting_all <- All_data %>%
   # give everyone with missing data the median data point
   group_by(stage, race, year, class, level_data) %>%
   mutate(glmer_pred = ifelse(is.na(glmer_pred), median(glmer_pred, na.rm = T), glmer_pred),
+         win_pred = ifelse(is.na(win_pred), median(win_pred, na.rm = T), win_pred),
          pred_points = ifelse(is.na(pred_points), median(pred_points, na.rm = T), pred_points),
          #pred_timelost = ifelse(is.na(pred_timelost), median(pred_timelost, na.rm = T), pred_timelost),
          pred_pointswhenopp = ifelse(is.na(pred_pointswhenopp), median(pred_pointswhenopp, na.rm = T), pred_pointswhenopp),
@@ -394,6 +444,7 @@ predicting_all <- All_data %>%
   group_by(stage, race, year, class, level_data) %>%
   mutate(rk_teamldr = rank(-glmer_pred, ties.method = "min"),
          rk_points = rank(-pred_points, ties.method = "min"),
+         rk_wins = rank(desc(win_pred), ties.method = "min"),
          #rk_timelost = rank(pred_timelost, ties.method = "min"),
          rk_pointswhenopp = rank(-pred_pointswhenopp, ties.method = "min"),
          rk_rank = rank(pred_rank, ties.method = "min")) %>%
@@ -512,6 +563,8 @@ breakaway_model_data %>%
 breakaway_model_data %>%  
 
   glm(breakaway ~ pred_climb_difficulty * predicted_bs + grand_tour + uphill_finish, data = ., family = "binomial") -> breakaway_glm
+
+write_rds(breakaway_glm, "Stored models/breakaway_glm.rds")
 
 #
 # iterate through a last ten races model for every date
@@ -868,15 +921,14 @@ pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
 #
 #
 
-rk_teamldr + rk_points + rk_rank + rk_pointswhenopp + shrunk_teamldr + 
-  pred_points + pred_rank
-
 glm(win ~ 
       log_rk_pwo +           # rank in PWO
       pred_pointswhenopp +   # actual prediction for PWO
-      shrunk_teamldr +       # teamldr prediction shrunk to 1
+      #shrunk_teamldr +       # teamldr prediction shrunk to 1
       rel_age +              # age vs race average (lower is younger)
       rel_leader +           # team ldr recent vs expected
+      #No1_Team +
+      No1_Team:pred_pointswhenopp +
       pred_break_win:log_rk_pwo +
       pred_break_win:ppwo +
       error_rank,            # recent performances errors (higher is worse recent performance)
@@ -884,7 +936,8 @@ glm(win ~
     family = "binomial", 
     data = predicting_all_with_recent %>% 
       mutate(win = ifelse(rnk == 1, 1, 0),
-             ppwo = pred_pointswhenopp * -1) %>%
+             ppwo = pred_pointswhenopp * -1,
+             pp_diff = pred_points - pred_pointswhenopp) %>%
 
       filter(year < 2020) %>%
       filter(!class %in% c("NC", "CC", "WC"))
@@ -892,17 +945,21 @@ glm(win ~
 
 summary(win_mod)
 
+write_rds(win_mod, "Stored models/final_win_prob_model.rds")
+
 gbm_predict_WIN = cbind(
   
   pred = predict(win_mod, 
                  predicting_all_with_recent %>%
                    unique() %>%
-                   mutate(ppwo = pred_pointswhenopp * -1) %>%
+                   mutate(ppwo = pred_pointswhenopp * -1,
+                          pp_diff = pred_points - pred_pointswhenopp) %>%
                    filter(year >= 2020)),
   
   predicting_all_with_recent %>%
     unique() %>%
-    mutate(ppwo = pred_pointswhenopp * -1) %>%
+    mutate(ppwo = pred_pointswhenopp * -1,
+           pp_diff = pred_points - pred_pointswhenopp) %>%
     filter(year >= 2020))
 
 # predict test set out of sample
@@ -930,3 +987,141 @@ pred %>% group_by(fl = floor(pred / 0.03)*0.03) %>% summarize(RMSE = sqrt(mean((
 
 pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
   labs(title = "Predict winner", subtitle = pROC::auc(roc_obj))
+
+#
+#
+#
+#
+
+library(xgboost)
+
+xgb.train <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_with_recent %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0),
+                            ppwo = pred_pointswhenopp * -1) %>%
+                     
+                     filter(year < 2020) %>%
+                     filter(!class %in% c("NC", "CC", "WC")) %>%
+                     select(log_rk_pwo,
+                              pred_pointswhenopp,
+                              rel_age,
+                              rel_leader,
+                              log_rk_pwo,
+                              pred_break_win,
+                              ppwo,
+                              error_rank)),
+  
+  label = predicting_all %>%
+    filter(year < 2020) %>%
+    filter(!class %in% c("NC", "CC", "WC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# test
+
+xgb.test <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_with_recent %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0),
+                            ppwo = pred_pointswhenopp * -1) %>%
+                     
+                     filter(year >= 2020) %>%
+                     filter(!class %in% c("NC", "CC", "WC")) %>%
+                     select(log_rk_pwo,
+                            pred_pointswhenopp,
+                            rel_age,
+                            rel_leader,
+                            log_rk_pwo,
+                            pred_break_win,
+                            ppwo,
+                            error_rank)),
+  
+  label = predicting_all %>%
+    filter(year >= 2020) %>%
+    filter(!class %in% c("NC", "CC", "WC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# outline parameters
+
+params <- list(
+  
+  booster = "gbtree",
+  eta = 0.1,
+  max_depth = 10,
+  subsample = 1,
+  colsample_bytree = 1,
+  tree_method = "hist",
+  objective = "binary:logistic"
+  
+)
+
+# run xgboost model
+
+gbm_model <- xgb.train(params = params,
+                       data = xgb.train,
+                       nrounds = 10000,
+                       nthreads = 4,
+                       early_stopping_rounds = 500,
+                       watchlist = list(val1 = xgb.train,
+                                        val2 = xgb.test),
+                       verbose = 1)
+
+#
+#
+# xgb Importance
+
+xgb.importance(model = gbm_model)
+
+gbm_model$best_score
+
+#
+
+gbm_predict_WIN = cbind(
+  
+  pred = predict(gbm_model, 
+                 as.matrix(predicting_all_with_recent %>% 
+                             mutate(win = ifelse(rnk == 1, 1, 0),
+                                    ppwo = pred_pointswhenopp * -1) %>%
+                             
+                             filter(year >= 2020) %>%
+                             filter(!class %in% c("NC", "CC", "WC")) %>%
+                             select(log_rk_pwo,
+                                    pred_pointswhenopp,
+                                    rel_age,
+                                    rel_leader,
+                                    log_rk_pwo,
+                                    pred_break_win,
+                                    ppwo,
+                                    error_rank), reshape=T)),
+  
+  predicting_all_with_recent %>% 
+    mutate(win = ifelse(rnk == 1, 1, 0),
+           ppwo = pred_pointswhenopp * -1) %>%
+    
+    filter(year >= 2020) %>%
+    filter(!class %in% c("NC", "CC", "WC")))
+
+# predict test set out of sample
+pred <- gbm_predict_WIN %>% 
+  
+  mutate(win = rnk==1)
+
+# brier score for accuracy
+brierScore <- mean((pred$pred-pred$win)^2)
+
+print(brierScore)
+
+# ROC / AUC
+roc_obj <- pROC::roc(pred$win, pred$pred)
+print(pROC::auc(roc_obj))
+
+pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
+  labs(title = "Predict team leader", subtitle = pROC::auc(roc_obj))
