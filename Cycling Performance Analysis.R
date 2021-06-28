@@ -219,7 +219,6 @@ missing_stage_types <- stage_data %>%
 #
 #
 
-
 # Bring in Strava Data ----------------------------------------------------
 
 stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
@@ -1567,7 +1566,7 @@ bs_data <- stage_data_perf %>%
   ungroup() %>%
   
   group_by(race, year) %>%
-  mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage), na.rm = T) & grand_tour == 1, 1, 0)) %>%
+  mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage) & as.numeric(stage) >= 18, na.rm = T) & grand_tour == 1, 1, 0)) %>%
   ungroup() %>%
   
   filter(time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
