@@ -34,9 +34,11 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   spread(Stat, VALUE) %>% 
   janitor::clean_names() %>% 
   
-  inner_join(dbGetQuery(con, "SELECT rider, date, stage, race, year, class, length, stage_type, missing_profile_data FROM pcs_stage_data") %>%
+  inner_join(dbGetQuery(con, "SELECT rider, date, stage, race, year, class, length, stage_type, missing_profile_data
+                        FROM pcs_stage_data") %>%
               
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
+               mutate(rider = str_to_title(rider)) %>%
                unique(), by = c("date", "pcs" = "rider")) %>% 
   
   # if two results exist for same day matching distance, it's probably a recon and TT which
@@ -56,12 +58,12 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2021-06-02 22:10:00')
+  filter(birth_time > '2021-06-26 01:00:00')
 
 # prep data
 
 pcs_stage_data <- dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
-  
+  mutate(rider = str_to_title(rider)) %>%
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
   unique()
 
@@ -185,9 +187,13 @@ extract_telemetry <- function(act_page) {
     ungroup() %>%
 
     filter((stage_end - distances) < 1.1) %>%
+    
+    mutate(vert_gain = elevations - lag(elevations),
+           vert_gain = ifelse(vert_gain > 0, vert_gain, 0)) %>%
 
     group_by(stage, class, year, race, rider) %>%
     summarize(final_1km_elev = mean(elevations, na.rm = T),
+              final_1km_vertgain = sum(vert_gain, na.rm = T),
               max_gradient = max(grades, na.rm = T),
               med_gradient = median(grades, na.rm = T),
               avg_gradient = mean(grades, na.rm = T),
@@ -197,8 +203,7 @@ extract_telemetry <- function(act_page) {
 
     mutate(final_1km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
 
-
-    select(stage, class, year, race, rider, final_1km_elev, final_1km_gradient)
+    select(stage, class, year, race, rider, final_1km_elev, final_1km_gradient, final_1km_vertgain)
   #
 
   final_5km <- all_routes %>%
@@ -208,9 +213,13 @@ extract_telemetry <- function(act_page) {
     ungroup() %>%
 
     filter((stage_end - distances) < 5.1) %>%
-
+    
+    mutate(vert_gain = elevations - lag(elevations),
+           vert_gain = ifelse(vert_gain > 0, vert_gain, 0)) %>%
+    
     group_by(stage, class, year, race, rider) %>%
     summarize(final_5km_elev = mean(elevations, na.rm = T),
+              final_5km_vertgain = sum(vert_gain, na.rm = T),
               max_gradient = max(grades, na.rm = T),
               med_gradient = median(grades, na.rm = T),
               avg_gradient = mean(grades, na.rm = T),
@@ -220,7 +229,7 @@ extract_telemetry <- function(act_page) {
 
     mutate(final_5km_gradient = (med_gradient + avg_gradient + x25th_gradient) / 3) %>%
 
-    select(stage, class, year, race, rider, final_5km_elev, final_5km_gradient)
+    select(stage, class, year, race, rider, final_5km_elev, final_5km_gradient, final_5km_vertgain)
 
   #
 
@@ -363,6 +372,8 @@ extract_telemetry <- function(act_page) {
   # extract climbs
   #
   #
+  
+  if(skip == 0) {
   
   tdf14_2020 <- all_routes %>%
     
@@ -569,6 +580,8 @@ extract_telemetry <- function(act_page) {
     
     dbWriteTable(con, "climbs_from_strava_telemetry", all_2021_koms, append = TRUE, row.names = F)
     
+  }
+  
   }
   
 }
