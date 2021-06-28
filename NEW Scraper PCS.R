@@ -67,7 +67,7 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=NC&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=&class=NC&filter=Filter',
+  #'https://www.procyclingstats.com/races.php?year=2019&circuit=&class=NC&filter=Filter',
   
   # ASIA
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
@@ -123,7 +123,7 @@ start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
 # pull in each type and then each year
 #
 
-for(t in 24:length(pull_from_schedule)) {
+for(t in 1:length(pull_from_schedule)) {
   
   year_list <- vector("list", pull_years)
   
@@ -538,9 +538,10 @@ dl_html <- TRUE
 
 if(dl_html == FALSE) {
   
+  
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
     
-    filter(year >= 2021)
+    filter(year >= 2021) %>% filter(Race == "Tour de France" & s == 2)
   
 }
 
@@ -1179,7 +1180,8 @@ stage_data <- stage_data_int %>%
   
   mutate(length = ifelse(year == 2013 & race == 'E3 Prijs Vlaanderen - Harelbeke', 206, length)) %>%
   
-  mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team))) %>%
+  mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)),
+         rider = str_to_title(rider)) %>%
   
   mutate(finished = ifelse(rnk %in% c("DNF", "OTL", "DNS", "NQ", "DSQ"), NA, total_seconds)) %>%
   mutate(total_seconds = ifelse(total_seconds > 30000, NA, total_seconds)) %>%
@@ -1541,7 +1543,7 @@ stage_data <- stage_data %>%
   filter(!(str_detect(url, "81st-sch"))) %>%
   
   # if distance isn't known programmed to 150, but need to change for ITTs
-  mutate(length = ifelse(length == 150 & time_trial == 1, 35, length))
+  mutate(length = ifelse(length == 150 & time_trial == 1, 35, length)) %>%
   
   # world championships rr 2016 joins twice onto profile data
   
