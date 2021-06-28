@@ -340,7 +340,7 @@ left_join(
   
   left_join(
     
-    dbReadTable(con, "lme4_rider_teamleader")  %>%
+    dbReadTable(con, "lme4_rider_teamleader_restr")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
       unique() %>%
@@ -379,7 +379,7 @@ left_join(
   ) %>%
   
   # calculate team leader and success predictions using random effects
-  mutate(glmer_pred = -2.11 + (random_intercept + 
+  mutate(glmer_pred = -3.5 + (random_intercept + 
                                  (pred_climb_difficulty * pcd_tmldr_impact) + 
                                  (one_day_race * odr_tmldr_impact) + 
                                  (predicted_bs * bs_tmldr_impact)),

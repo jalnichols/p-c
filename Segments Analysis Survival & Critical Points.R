@@ -736,7 +736,7 @@ modeled_power <- segment_data_races %>%
   mutate(wattskg = Power/weight) %>%
   
   select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
-         rowname, rnk, perc_break, length, total_seconds, wattskg) %>% 
+         rowname, rnk, length, total_seconds, wattskg) %>% 
   unique() %>% 
   
   group_by(Segment, rider, race, stage, year) %>% 
