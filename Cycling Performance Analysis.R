@@ -146,7 +146,8 @@ replace_missing <- stage_data %>%
          -final_1km_gradient, -final_5km_elev, -final_5km_gradient) %>%
   
   inner_join(missing_strava %>%
-               select(-weighted_altitude, -perc_gain_start, -first_30km_vert_gain), by = c("stage", "race", "year", "class")) %>%
+               select(-weighted_altitude, -perc_gain_start, -first_30km_vert_gain,
+                      -final_1km_vertgain, -final_5km_vertgain), by = c("stage", "race", "year", "class")) %>%
   
   mutate(missing_profile_data = 0)
 
@@ -1011,7 +1012,6 @@ stage_data_with_pcd <- stage_data %>%
   
   select(-less_than, -more_than)
 
-
 #
 #
 # STRENGTH OF FIELD
@@ -1380,7 +1380,8 @@ dbWriteTable(con, "stage_data_perf",
 #
 #
 
-stage_data_perf <- dbReadTable(con, "stage_data_perf")
+stage_data_perf <- dbReadTable(con, "stage_data_perf") 
+  
 
 #
 #
@@ -1590,7 +1591,19 @@ bs_data <- stage_data_perf %>%
   group_by(race, year) %>%
   mutate(perc_thru = stage_no / max(stage_no)) %>%
   ungroup() %>%
-  mutate(perc_thru = ifelse(is.na(perc_thru), 0, perc_thru))
+  mutate(perc_thru = ifelse(is.na(perc_thru), 0, perc_thru)) %>%
+  
+  inner_join(dbReadTable(con, "strava_stage_characteristics") %>%
+               
+               gather(stat, value, -c("stage", "race", "year", "class")) %>%
+               
+               group_by(stage, race, year, class, stat) %>%
+               summarize(value = median(value, na.rm = T)) %>%
+               ungroup() %>%
+               
+               spread(stat, value) %>%
+               select(stage, race, year, class, final_1km_vertgain, final_5km_vertgain,
+                      final_20km_vert_gain, first_30km_vert_gain), by = c("stage", "race", "year", "class"))
 
 #
 
