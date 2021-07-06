@@ -5855,7 +5855,8 @@ stage_data %>%
   filter(!(race %in% c('cycling tour of bihor - bellotto') & year==2019)) %>% 
   
   mutate(gain_1st = gain_1st / length) %>% 
-  mutate(adj_loss = gain_1st / (1 + ((tvg * 0.1)))) %>% 
+  mutate(adj_loss = gain_1st / (1 + ((tvg * 0.1))),
+         g10 = gain_10th / (1 + ((tvg * 0.1)))) %>% 
   
   mutate(class = ifelse((class == "2.UWT" & grand_tour == 1) | class == "WC", "Elite",
                         ifelse(class %in% c("1.UWT", "2.UWT"), "WT", 
@@ -5977,6 +5978,24 @@ joined_with_preds <- time_trial_data %>%
   group_by(stage, race, year, class) %>%
   mutate(pred_rnk = rank(predicted, ties.method = "min")) %>%
   ungroup()
+
+joined_with_preds %>% 
+  filter(!is.na(predicted)) %>% 
+  filter(class %in% c("Elite", "WT", "Pro")) %>%
+  filter(!is.na(rnk)) %>% 
+  mutate(win = as.numeric(rnk == 1)) %>% 
+  
+  glm(win ~ log(pred_rnk), data = ., family = "binomial") -> tt_model_glm
+
+cbind(pred = predict(tt_model_glm, tibble(pred_rnk = seq(1,25,1))), 
+      tibble(pred_rnk = seq(1,25,1))) %>% 
+  
+  ggplot(aes(x = pred_rnk, y = exp(pred)/(1+exp(pred)), label = pred_rnk))+
+  geom_line(size=1)+
+  geom_label()+
+  scale_y_continuous(labels = scales::percent)+
+  labs(x = "Predicted rank in TT field", y = "Win probability")+
+  scale_x_reverse()
 
 #
 #
