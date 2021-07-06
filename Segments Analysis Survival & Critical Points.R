@@ -16,7 +16,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2017") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2019") %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -116,7 +116,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year >= 2018) %>%
+  filter(year >= 2020) %>%
   
   inner_join(
     
@@ -428,6 +428,7 @@ data_for_relmodel <- spec_race %>%
   
   group_by(stage, race, year, Segment, OrderInRace) %>%
   mutate(wattskg_rel = wattskg / median(wattskg, na.rm = T),
+         median_wattskg = median(wattskg, na.rm = T),
          speed_rel = speed / median(speed, na.rm = T)) %>%
   ungroup()
 
@@ -442,7 +443,21 @@ spec_race_adj <- data_for_relmodel %>%
   left_join(ranef(rel_model)[[1]] %>% rownames_to_column() %>% rename(rider = rowname, int = `(Intercept)`), by = c("rider")) %>%
   
   mutate(int = ifelse(is.na(int), 0, int)) %>%
-  mutate(wattskg_perf = ifelse(is.na(wattskg_rel), speed_rel, wattskg_rel - int))
+  mutate(wattskg_perf = ifelse(is.na(wattskg_rel), speed_rel, wattskg_rel - int),
+         wattskg_modeled = median_wattskg * wattskg_rel)
+
+#
+
+spec_race_adj %>%
+  
+  filter(stage == 9 & race == "tour de france" & year == 2021) %>%
+  filter(!rider == "Garcia Cortina Ivan") %>%
+  
+  ggplot(aes(x = speed, y = wattskg_modeled, label = rider))+
+  geom_point()+
+  geom_text()+
+  geom_smooth(se=F, method = "lm")+
+  facet_wrap(~Segment, scales = 'free')
 
 #
 
@@ -1052,3 +1067,59 @@ kamna <- race_segments %>%
   ungroup() %>%
   
   inner_join(spec_race %>% select(Segment, stage, race, year, OrderInRace, class, rider, alive))
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+stage_level_power %>% 
+  filter(time_trial == 1 & race == "tour de france" & distance < 28.5) %>% 
+  
+  mutate(wattskg = weighted_avg_power / weight,
+         avgwattskg = avg_power/weight) %>% 
+  
+  select(rnk, rider = pcs, wattskg, avgwattskg) %>% 
+  arrange(rnk) %>%
+  
+  ggplot(aes(x = log(rnk), y = wattskg))+
+  
+  geom_point()+
+  
+  scale_x_reverse()+
+  
+  labs(x = "LN(stage finish position)", 
+       y = "Weighted Avg Power/KG")+
+  
+  geom_point(data = tibble(rider = "Van Der Poel Mathieu", wattskg = 6.03, rnk = 5), 
+             fill = "gold", size=3, shape = 21)+
+  
+  geom_line(data = cbind(wattskg = predict(tt_wattskg_mod, tibble(logrnk = seq(0,5.5,0.25))), 
+                         tibble(logrnk = seq(0,5.5,0.25), rider = "X")), 
+            
+            aes(x = logrnk, y = wattskg), 
+            
+            color = "red", size=2)+
+  
+  ggrepel::geom_text_repel(data = stage_level_power %>% 
+                             filter(time_trial == 1 & race == "tour de france" & distance < 28.5) %>% 
+                             mutate(wattskg = weighted_avg_power / weight), 
+                           aes(x = log(rnk), y = wattskg, label = pcs))+
+  
+  geom_text(data = tibble(rider = "Van Der Poel Mathieu", wattskg = 5.93, rnk = 5), 
+            aes(label = rider))+
+  
+  geom_segment(data = tibble(wattskgTOP = 6.85, wattskgBOT = 6.45, logrnk = 0), 
+               aes(x = logrnk, xend = logrnk, y = wattskgTOP, yend = wattskgBOT), 
+               size = 2, color = "black")
