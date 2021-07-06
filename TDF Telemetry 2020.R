@@ -2,7 +2,7 @@ library(tidyverse)
 library(DBI)
 library(RMySQL)
 
-Sys.sleep(0)
+Sys.sleep(31860)
 
 dbDisconnect(con)
 
@@ -18,11 +18,11 @@ telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2021'
 
 #telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
 
-STAGE <- 2
+STAGE <- 9
 
 step = 1
 
-while(step < 5000) {
+while(step < 3000) {
 
   json_df <- jsonlite::fromJSON(telemetry_api) %>%
     select(-YGPW) %>%
@@ -51,7 +51,15 @@ while(step < 5000) {
 
 #
 
-all_stages <- dbGetQuery(con, "SELECT * FROM telemetry_tdf2020 WHERE RaceName = 'TDF 2021'") %>% unique()
+tictoc::tic()
+
+all_stages <- dbGetQuery(con, "SELECT * 
+                         FROM telemetry_tdf2020 WHERE RaceName IN ('TDF 2021', 'TDF 2020')") %>% 
+  select(-WindDir, -kphWind, -kphAvg, -RiderWindDir, -Course, -Jersey, -Status, -RaceStatus,
+         -`_id`,-`_bind`, -`_updatedAt`, -`_key`, -`_parent`, -kph) %>%
+  unique()
+
+tictoc::toc()
 
 #
 
@@ -59,26 +67,92 @@ riders <- 'https://racecenter.letour.fr/api/allCompetitors-2021' %>%
   readLines() %>%
   jsonlite::fromJSON() %>%
   select(Bib = bib, firstname, lastname, lastnameshort) %>%
-  
+  mutate(RaceName = 'TDF 2021') %>%
   mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
-                                111, 161, 172, 181), "GC","Helper"))
+                                111, 161, 172, 181), "GC","Helper")) %>%
+  
+  rbind('https://racecenter.letour.fr/api/allCompetitors-2020' %>%
+          readLines() %>%
+          jsonlite::fromJSON() %>%
+          select(Bib = bib, firstname, lastname, lastnameshort) %>%
+          mutate(RaceName = 'TDF 2020') %>%
+          mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
+                                        111, 161, 172, 181), "GC","Helper")))
 
 #
 
-st10 <- all_stages %>% filter(StageId == "0100")
+for(s in 1:21) {
+  
+  for(y in c(2020,2021)) {
+
+    climbs <- paste0('https://racecenter.letour.fr/api/checkpoint-', y, '-', s) %>%
+      readLines() %>%
+      rjson::fromJSON() %>%
+      .[[1]] %>%
+      unlist() %>%
+      enframe() %>%
+      mutate(dupe = name) %>%
+      separate(dupe, c("rowid", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", 'v11'), sep = "\\.") %>%
+      filter(v1 == 'checkpointSummits')
+    
+    if(length(climbs$name) > 0) {
+    
+    climbs <- climbs %>%
+      mutate(colname = ifelse(is.na(v3), v2, paste0(v2,"/",v3))) %>%
+      select(colname, value, rowid) %>%
+      spread(colname, value) %>%
+      
+      select(rowid, climb_length = length, category = code, climb_gradient = state, summit_altitude = `summit/altitude`, climb_name = `summit/name`)
+    
+    lengths <- paste0('https://racecenter.letour.fr/api/checkpoint-', y, '-', s) %>%
+      readLines() %>%
+      rjson::fromJSON() %>%
+      .[[1]] %>%
+      unlist() %>%
+      enframe() %>%
+      mutate(dupe = name) %>%
+      separate(dupe, c("rowid", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", 'v11'), sep = "\\.") %>%
+      filter(v1 %in% c("latitude", "longitude", "length")) %>%
+      select(rowid, v1, value) %>%
+      spread(v1, value)
+    
+    merged <- climbs %>%
+      
+      inner_join(lengths %>% mutate(stage_dist = length), by = c("rowid")) %>%
+      select(-rowid) %>%
+      mutate(stage = s,
+             year = y) %>%
+      mutate(climb_length = as.numeric(climb_length),
+             latitude = as.numeric(latitude),
+             longitude = as.numeric(longitude),
+             stage_dist = as.numeric(stage_dist),
+             summit_altitude = as.numeric(summit_altitude),
+             climb_gradient = as.numeric(climb_gradient)/100) %>%
+      select(climb_length, climb_name, climb_gradient, summit_altitude, stage_dist, latitude, longitude,
+             category, stage, year)
+    
+    dbWriteTable(con, "tdf_telemetry_climbs", merged, row.names = F, append = T)
+    
+    }
+    
+  }
+  
+}
 
 #
 #
 #
-#
 
-sprint <- st10 %>% group_by(TimeStamp) %>% filter(min(kmToFinish)>0) %>% ungroup() %>% filter(kmToFinish < 0.51 & kmToFinish > 0)
-
-sprint %>% group_by(Bib) %>% summarize(m = mean(kph, na.rm = T), Pos = median(Pos, na.rm = T), n = n(), leading = mean(Pos < 6, na.rm = T)) %>% ungroup() %>% arrange(-m) -> spr
-
-final3km <- st10 %>% group_by(TimeStamp) %>% filter(min(kmToFinish)>0.5) %>% ungroup() %>% filter(kmToFinish > 0.5 & kmToFinish < 3.01)
-
-final3km %>% group_by(Bib) %>% summarize(m = mean(kph, na.rm = T), medPos = median(Pos, na.rm = T), n = n(), leading = mean(Pos < 6, na.rm = T)) %>% ungroup() %>% arrange(-m) -> f3k
+stages_data <- 'https://racecenter.letour.fr/api/stage-2021' %>%
+  jsonlite::fromJSON() %>%
+  select(stage, length) %>%
+  mutate(year = 2021) %>%
+  rbind(
+    'https://racecenter.letour.fr/api/stage-2020' %>%
+      jsonlite::fromJSON() %>%
+      select(stage, length) %>%
+      mutate(year=2020)
+  )
 
 #
 #
@@ -90,7 +164,7 @@ all_stages %>%
   
   filter(kmToFinish > 0) %>% 
   
-  mutate(primoz = ifelse(Bib == "11", kmToFinish, NA)) %>% 
+  mutate(primoz = ifelse(Bib == "1", kmToFinish, NA)) %>% 
   
   group_by(TimeStamp) %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
@@ -384,29 +458,103 @@ ggsave("top-gc-with-roglic-thru-12.png", height = 6, width = 12)
 #
 #
 
+climbs <- dbGetQuery(con, "SELECT * FROM tdf_telemetry_climbs") %>% 
+  inner_join(stages_data, by = c('stage', 'year')) %>%
+  mutate(StageId = ifelse(nchar(stage)==1, paste0("0", stage, "00"), paste0(stage,"00")),
+         RaceName = paste0("TDF ", year)) %>%
+  mutate(kmToFinish = length - stage_dist) %>%
+  
+  mutate(startKM = 0.1+(kmToFinish + climb_length/1000),
+         endKM = (kmToFinish-0.1))
+
+#
+
 climbing <- all_stages %>%
 
+  mutate(within_01 = ifelse(kmToFinish <= 0, TimeStamp, NA)) %>%
+  
+  group_by(StageId, Bib, RaceName) %>%
+  mutate(within_01 = min(within_01, na.rm = T)) %>%
+  filter(TimeStamp <= within_01) %>%
+  ungroup() %>%
+  
+  filter(!(StageId %in% c("0100", "0200", "0300", "0500", "0700") & RaceName == 'TDF 2020')) %>%  
+  
+  filter(Gradient > 0 & kmToFinish > 0) %>%
+
+  inner_join(climbs %>%
+               select(Climb = climb_name, startKM, endKM, StageId, RaceName) %>%
+               group_by(StageId, RaceName) %>%
+               mutate(ORDER_FINISH = rank(endKM, ties.method = "first")) %>%
+               ungroup(), by = c("StageId", "RaceName")) %>%
+  
+  filter(kmToFinish < startKM & kmToFinish > endKM) %>%
+  mutate(endKM = endKM + 1) %>%
+  
+  group_by(Bib, StageId, Climb, RaceName, endKM, ORDER_FINISH) %>%
+  summarize(min = min(TimeStamp, na.rm=T),
+            max = max(TimeStamp, na.rm = T),
+            mindist = min(kmToFinish,na.rm=T),
+            maxdist = max(kmToFinish, na.rm = T),
+            Ftemp = mean(32 + (degC * 1.9), na.rm = T),
+            n=n()) %>%
+  ungroup() %>%
+  
+  mutate(seconds = max-min,
+         meters = (maxdist - mindist)*1000,
+         m_s = meters / seconds,
+         kph = (meters / 1000) / (seconds / 60 / 60)) %>%
+  
+  group_by(StageId, Climb, RaceName) %>%
+  mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
+  ungroup()  %>%
+  
+  inner_join(riders, by = c("Bib", "RaceName")) #%>%
+  
+  # group_by(StageId) %>%
+  # filter((meters / max(meters, na.rm = T) > 0.90)) %>%
+  # mutate(rk = rank(-kph, ties.method = "first")) %>%
+  # mutate(x20th = ifelse(rk == 10, kph, NA)) %>%
+  # mutate(x20th = mean(x20th, na.rm = T)) %>%
+  # ungroup() %>%
+  # 
+  # mutate(RelTo20th = kph / x20th) %>%
+  # 
+  # group_by(StageId) %>%
+  # mutate(max_meters = max(meters, na.rm = T)) %>%
+  # ungroup() %>%
+  # 
+  # mutate(implied_seconds = max_meters / m_s)
+
+#
+
+downhill <- all_stages %>%
+  
   mutate(within_01 = ifelse(kmToFinish <= 0, TimeStamp, NA)) %>%
   
   group_by(StageId, Bib) %>%
   mutate(within_01 = min(within_01, na.rm = T)) %>%
   filter(TimeStamp <= within_01) %>%
   ungroup() %>%
-    
-  filter(Gradient > 0 & kmToFinish > 0) %>%
-
+  
+  filter(Gradient < 100 & kmToFinish > 0) %>%
+  
   # Orcieres Merlette St4
   # Lusette St6
   # Peyresource St8
   # Marie Blanque St9
   # Puy Mary and Neronne St13
-  filter((StageId == "0100" & kmToFinish < 3.5 & kmToFinish > 0) |
-           (StageId == "0200" & kmToFinish < 2.5 & kmToFinish > 0) |
-           (StageId == "0200" & kmToFinish < 17.7 & kmToFinish > 14.8)) %>%
+  filter((StageId == "0800" & kmToFinish > 21.9 & kmToFinish < 28.7) |
+           (StageId == "0800" & kmToFinish > 2 & kmToFinish < 14.7) |
+           (StageId == "0800" & kmToFinish > 37.3 & kmToFinish < 46.8) |
+           (StageId == '0900' & kmToFinish > 57.4 & kmToFinish < 64.2) |
+           (StageId == '0900' & kmToFinish > 23 & kmToFinish < 51.5)) %>%
   
-  mutate(Climb = case_when(StageId == "0100" ~ "Fosse Loups",
-                           StageId == "0200" & kmToFinish > 10 ~ "Mur Bretagne 1",
-                           StageId == "0200" & kmToFinish < 10 ~ "Mur Bretagne 2",
+  mutate(Climb = case_when(StageId == "0800" & kmToFinish > 20 & kmToFinish < 30 ~ "dh Romme",
+                           StageId == "0800" & kmToFinish > 0 & kmToFinish < 15 ~ "dh Colombiere",
+                           StageId == "0800" & kmToFinish > 30 & kmToFinish < 50 ~ "dh Saxonnex",
+                           StageId == '0900' & kmToFinish < 65 & kmToFinish > 52 ~ "dh Col du Pre",
+                           StageId == "0900" & kmToFinish < 52 ~ "dh Roselend",
                            TRUE ~ "Other")) %>%
   
   group_by(Bib, StageId, Climb) %>%
@@ -428,22 +576,7 @@ climbing <- all_stages %>%
          calc_Rel = kph / mean(kph, na.rm = T)) %>%
   ungroup()  %>%
   
-  inner_join(riders, by = c("Bib")) %>%
-  
-  group_by(StageId) %>%
-  filter((meters / max(meters, na.rm = T) > 0.90)) %>%
-  mutate(rk = rank(-kph, ties.method = "first")) %>%
-  mutate(x20th = ifelse(rk == 10, kph, NA)) %>%
-  mutate(x20th = mean(x20th, na.rm = T)) %>%
-  ungroup() %>%
-  
-  mutate(RelTo20th = kph / x20th) %>%
-  
-  group_by(StageId) %>%
-  mutate(max_meters = max(meters, na.rm = T)) %>%
-  ungroup() %>%
-  
-  mutate(implied_seconds = max_meters / m_s)
+  inner_join(riders, by = c("Bib")) 
 
 #
 #
@@ -1193,3 +1326,121 @@ for(k in 1:length(k_list)) {
 rog <- bind_rows(v_list) %>% select(KM_Mark, kph)
 
 cl <- climbing %>% filter(StageId == '1800') %>% filter(near_roglic == 0 | mindist > 1) %>% group_by(Bib) %>% filter(n()==2) %>% ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+Stage0500 <- read_csv("stage0500-2021-tdf.csv")
+
+all_stages %>% 
+  
+  mutate(join_km = plyr::round_any(kmToFinish, 0.02)) %>%
+  
+  left_join(Stage0500 %>%
+              mutate(kmto = plyr::round_any(kmto, 0.02)), by = c("join_km" = "kmto")) %>%
+  
+  filter(kmToFinish > 0) %>%
+  
+  arrange(Bib, TimeStamp) %>% 
+  
+  group_by(Bib) %>% 
+  mutate(dist_delta = lag(kmToFinish) - kmToFinish,
+         time_delta = TimeStamp - lag(TimeStamp),
+         alt_delta = altitude - lag(altitude),
+         spd_delta = dist_delta / (time_delta/3600)) %>%
+  ungroup() %>% 
+  
+  filter(Bib %in% c(1,11,101,51,22,65,136,201,73,111,114,81,188,21,44,12)) %>% 
+  
+  #filter(dist_delta > 0) %>% 
+  
+  mutate(GradientSmooth = alt_delta / (dist_delta*1000)) %>% 
+  
+  filter(spd_delta > 0 & spd_delta < 90) %>%
+  inner_join(riders, by = c("Bib")) -> segments
+
+#
+
+riders <- 'https://racecenter.letour.fr/api/allCompetitors-2021' %>%
+  readLines() %>%
+  jsonlite::fromJSON() %>%
+  select(Bib = bib, firstname, lastname, lastnameshort) %>%
+  
+  mutate(name = paste0(firstname, " ", lastname)) %>%
+  
+  mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
+                                111, 161, 172, 181), "GC","Helper"))
+
+
+#
+
+segments %>% 
+  inner_join(riders, by = c("Bib")) %>% 
+  
+  mutate(km_dummy = round(kmToFinish,0)) %>%
+  
+  lme4::lmer(spd_delta ~ kmToFinish + 
+               GradientSmooth + 
+               (1 + GradientSmooth | name), data = .) -> mm_tt
+
+summary(mm_tt)
+
+lme4::ranef(mm_tt)[[1]] %>% 
+  rownames_to_column() %>%
+  janitor::clean_names() %>%
+  arrange(desc(intercept))
+
+pred_segments <- cbind(
+  
+  pred_spd = predict(mm_tt, segments %>% mutate(name = "X"), allow.new.levels = T),
+  
+  segments
+) %>%
+  
+  mutate(rel_speed = spd_delta - pred_spd) %>%
+  
+  mutate(rough_km = plyr::round_any(kmToFinish, 0.25)) %>%
+  
+  group_by(rough_km) %>%
+  mutate(sims = n(),
+         spd_vs_field = spd_delta - mean(spd_delta)) %>%
+  ungroup()
+
+#
+
+r_list <- vector("list", 110)
+
+segs = seq(0,27.2,0.5)
+
+for(k in 1:54) {
+
+  d <- pred_segments %>%
+    filter(kmToFinish >= (segs[[k]]-0.1) & kmToFinish < (segs[[k+1]]+0.1)) %>%
+    
+    group_by(Bib, name) %>%
+    summarize(minKM = min(kmToFinish, na.rm = T),
+              maxKM = max(kmToFinish, na.rm = T),
+              minTM = min(TimeStamp, na.rm = T),
+              maxTM = max(TimeStamp, na.rm = T),
+              RelSpeed = sum(spd_vs_field * dist_delta) / sum(dist_delta)) %>%
+    ungroup() %>%
+    
+    mutate(Segment = segs[[k]])
+  
+  r_list[[k]] <- d
+  
+}
+
+bind_rows(r_list) -> xyz
+
+
+#
+#
+#
