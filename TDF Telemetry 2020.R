@@ -2,7 +2,7 @@ library(tidyverse)
 library(DBI)
 library(RMySQL)
 
-Sys.sleep(31860)
+Sys.sleep(0)
 
 dbDisconnect(con)
 
@@ -18,11 +18,11 @@ telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2021'
 
 #telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
 
-STAGE <- 9
+STAGE <- 19
 
 step = 1
 
-while(step < 3000) {
+while(step < 4000) {
 
   json_df <- jsonlite::fromJSON(telemetry_api) %>%
     select(-YGPW) %>%
@@ -53,10 +53,9 @@ while(step < 3000) {
 
 tictoc::tic()
 
-all_stages <- dbGetQuery(con, "SELECT * 
-                         FROM telemetry_tdf2020 WHERE RaceName IN ('TDF 2021', 'TDF 2020')") %>% 
-  select(-WindDir, -kphWind, -kphAvg, -RiderWindDir, -Course, -Jersey, -Status, -RaceStatus,
-         -`_id`,-`_bind`, -`_updatedAt`, -`_key`, -`_parent`, -kph) %>%
+all_stages <- dbGetQuery(con, "SELECT Bib, Longitude, Latitude, degC, kmToFinish, Gradient,
+                         Pos, sectoFirstRider, StageId, RaceName, TimeStamp
+                         FROM telemetry_tdf2020 WHERE RaceName IN ('TDF 2021')") %>% 
   unique()
 
 tictoc::toc()
@@ -76,8 +75,8 @@ riders <- 'https://racecenter.letour.fr/api/allCompetitors-2021' %>%
           jsonlite::fromJSON() %>%
           select(Bib = bib, firstname, lastname, lastnameshort) %>%
           mutate(RaceName = 'TDF 2020') %>%
-          mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
-                                        111, 161, 172, 181), "GC","Helper")))
+          mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
+                                        91, 94, 101, 104, 141, 161, 171), "GC","Helper")))
 
 #
 
@@ -160,7 +159,7 @@ stages_data <- 'https://racecenter.letour.fr/api/stage-2021' %>%
 
 all_stages %>%
   
-  inner_join(riders, by = c("Bib")) %>%
+  inner_join(riders, by = c("Bib", "RaceName")) %>%
   
   filter(kmToFinish > 0) %>% 
   
@@ -178,7 +177,7 @@ all_stages %>%
   
   mutate(valid = ifelse(to_roglic == 1, kmToFinish, NA)) %>%
   
-  group_by(Bib, firstname, lastnameshort, GC, StageId) %>% 
+  group_by(Bib, firstname, lastnameshort, GC, StageId, RaceName) %>% 
   summarize(to_roglic = mean(to_roglic, na.rm = T),
             near_roglic = mean(near_roglic, na.rm = T),
             furthest = min(valid, na.rm = T),
@@ -186,36 +185,23 @@ all_stages %>%
             stamps = n()) %>%
   ungroup()  -> survival_w_roglic
 
-# 
-#   
-#   inner_join(
-#     dbGetQuery(con, "SELECT bib, rider FROM pcs_all_startlists WHERE race = 'criterium du dauphine' AND year = 2021"), by = c("Bib" = "bib")
-#   ) %>%
-#   inner_join(
-#     dbGetQuery(con, "SELECT rider, stage, gain_gc
-#                FROM stage_data_perf
-#                WHERE race = 'criterium du dauphine' AND year = 2021") %>%
-#       mutate(StageId = ifelse(stage < 10, paste0("0", stage, "00"), paste0(stage, "00"))) %>%
-#       mutate(primoz = ifelse(rider == "Porte Richie", gain_gc, NA)) %>%
-#       group_by(stage) %>%
-#       mutate(primoz = mean(primoz, na.rm = T)) %>%
-#       ungroup() %>%
-#       mutate(gain_gc = gain_gc - primoz), by = c("rider", "StageId")
-#   ) %>%
-#   
-#   inner_join(
-#     
-#     dbGetQuery(con, "SELECT rider, type, Date FROM clusters_riders WHERE Date BETWEEN '2020-08-27' AND '2020-09-20'") %>%
-#       
-#       inner_join(
-#         
-#         tibble(StageId = c('0400', '0600', '0700', '0800', '0900', '1200', '1300', '1400', '1500', '1600', '1700', '1800', '1900'),
-#                Date = c('2020-09-01', '2020-09-03', '2020-09-04', '2020-09-05', '2020-09-06',
-#                         '2020-09-10', '2020-09-11', '2020-09-12', '2020-09-13', '2020-09-15',
-#                         '2020-09-16', '2020-09-17', '2020-09-18')), by = c("Date")), 
-#     by = c("StageId", "rider")) %>%
-#   
-#   select(-primoz) -> survival_w_roglic
+#
+
+all_stages %>%
+  
+  filter(StageId %in% c("0300", "0400", "0600", "1000") & RaceName == "TDF 2021") %>%
+
+  filter(kmToFinish < 5 & kmToFinish > 0) %>%
+  
+  group_by(Bib, f = floor(kmToFinish)) %>% 
+  
+  summarize(median_pos = median(Pos, na.rm = T),
+            top10 = mean(Pos<=10, na.rm = T), 
+            appear = n(),
+            stages = n_distinct(StageId)) %>% 
+  ungroup() %>%
+  
+  inner_join(riders %>% filter(RaceName == "TDF 2021") %>% select(-GC, -lastnameshort, -RaceName), by = ("Bib")) -> positions
 
 #
 #
@@ -469,6 +455,15 @@ climbs <- dbGetQuery(con, "SELECT * FROM tdf_telemetry_climbs") %>%
 
 #
 
+downhills <- read_csv("TDF-telemetry-dh.csv") %>%
+  inner_join(stages_data, by = c('stage', 'year')) %>%
+  mutate(StageId = ifelse(nchar(stage)==1, paste0("0", stage, "00"), paste0(stage,"00")),
+         RaceName = paste0("TDF ", year)) %>%
+  mutate(startKM = length - startKM,
+         endKM = length - endKM)
+
+#
+
 climbing <- all_stages %>%
 
   mutate(within_01 = ifelse(kmToFinish <= 0, TimeStamp, NA)) %>%
@@ -532,38 +527,35 @@ downhill <- all_stages %>%
   
   mutate(within_01 = ifelse(kmToFinish <= 0, TimeStamp, NA)) %>%
   
-  group_by(StageId, Bib) %>%
+  group_by(StageId, Bib, RaceName) %>%
   mutate(within_01 = min(within_01, na.rm = T)) %>%
   filter(TimeStamp <= within_01) %>%
   ungroup() %>%
   
-  filter(Gradient < 100 & kmToFinish > 0) %>%
+  filter(!(StageId %in% c("0100", "0200", "0300", "0500", "0700") & RaceName == 'TDF 2020')) %>%  
   
-  # Orcieres Merlette St4
-  # Lusette St6
-  # Peyresource St8
-  # Marie Blanque St9
-  # Puy Mary and Neronne St13
-  filter((StageId == "0800" & kmToFinish > 21.9 & kmToFinish < 28.7) |
-           (StageId == "0800" & kmToFinish > 2 & kmToFinish < 14.7) |
-           (StageId == "0800" & kmToFinish > 37.3 & kmToFinish < 46.8) |
-           (StageId == '0900' & kmToFinish > 57.4 & kmToFinish < 64.2) |
-           (StageId == '0900' & kmToFinish > 23 & kmToFinish < 51.5)) %>%
+  filter(Gradient < 0 & kmToFinish > 0) %>%
   
-  mutate(Climb = case_when(StageId == "0800" & kmToFinish > 20 & kmToFinish < 30 ~ "dh Romme",
-                           StageId == "0800" & kmToFinish > 0 & kmToFinish < 15 ~ "dh Colombiere",
-                           StageId == "0800" & kmToFinish > 30 & kmToFinish < 50 ~ "dh Saxonnex",
-                           StageId == '0900' & kmToFinish < 65 & kmToFinish > 52 ~ "dh Col du Pre",
-                           StageId == "0900" & kmToFinish < 52 ~ "dh Roselend",
-                           TRUE ~ "Other")) %>%
+  inner_join(downhills %>%
+               select(Descent = descent_name, startKM, endKM, StageId, RaceName) %>%
+               group_by(StageId, RaceName) %>%
+               mutate(ORDER_FINISH = rank(endKM, ties.method = "first")) %>%
+               ungroup(), by = c("StageId", "RaceName")) %>%
   
-  group_by(Bib, StageId, Climb) %>%
-  summarize(speed = mean(kph, na.rm = T),
-            min = min(TimeStamp, na.rm=T),
+  filter(kmToFinish < startKM & kmToFinish > endKM) %>%
+  mutate(endKM = endKM + 1) %>%
+  
+  group_by(Bib, StageId, Descent, RaceName, endKM, ORDER_FINISH) %>%
+  summarize(min = min(TimeStamp, na.rm=T),
             max = max(TimeStamp, na.rm = T),
             mindist = min(kmToFinish,na.rm=T),
             maxdist = max(kmToFinish, na.rm = T),
+            Ftemp = mean(32 + (degC * 1.9), na.rm = T),
             n=n()) %>%
+  ungroup() %>%
+  
+  group_by(StageId, Descent, RaceName, endKM, ORDER_FINISH) %>%
+  mutate(Position = rank((min), ties.method = "min")) %>%
   ungroup() %>%
   
   mutate(seconds = max-min,
@@ -571,12 +563,30 @@ downhill <- all_stages %>%
          m_s = meters / seconds,
          kph = (meters / 1000) / (seconds / 60 / 60)) %>%
   
-  group_by(StageId, Climb) %>%
-  mutate(Rel = speed - mean(speed, na.rm = T),
-         calc_Rel = kph / mean(kph, na.rm = T)) %>%
+  group_by(StageId, Descent, RaceName) %>%
+  mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
   ungroup()  %>%
   
-  inner_join(riders, by = c("Bib")) 
+  inner_join(riders, by = c("Bib", "RaceName"))
+
+#
+
+preds <- cbind(
+  
+  pred = predict(dh_model, downhill %>% filter(calc_Rel < 1.5 & calc_Rel > 0.25 & (maxdist - mindist) > 4)),
+  downhill %>% filter(calc_Rel < 1.5 & calc_Rel > 0.25 & (maxdist - mindist) > 4)
+  
+) %>%
+  
+  mutate(relative = calc_Rel - pred)
+
+preds %>% 
+  
+  group_by(Bib, RaceName, firstname, lastname) %>% 
+  summarize(raw = median(calc_Rel, na.rm = T), 
+            adj = median(relative, na.rm = T),
+            dhs = n(),
+            ) %>% ungroup() -> ranking
 
 #
 #
