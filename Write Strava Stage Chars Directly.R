@@ -58,7 +58,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2021-06-26 01:00:00')
+  filter(birth_time > '2021-07-01 10:00:00')
 
 # prep data
 
@@ -106,6 +106,8 @@ st_chars <- dbGetQuery(con, "SELECT stage, race, year, class FROM strava_stage_c
 
 st_climbs <- dbGetQuery(con, "SELECT stage, race, year, rider FROM climbs_from_strava_telemetry") %>%
   unique()
+
+skip = 0
 
 #
 #
