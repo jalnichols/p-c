@@ -16,7 +16,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2019") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2020") %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -224,7 +224,7 @@ downhill <- segment_data_races %>%
                unique(), by = c("stage", "race", 'year', "class")) %>% 
   
   select(Segment, race, stage, year, class, rider, time, Distance, Gradient,
-         rowname, rnk, perc_break, length, total_seconds) %>% 
+         rowname, rnk, length, total_seconds) %>% 
   unique() %>% 
   
   group_by(Segment, rider, race, stage, year) %>% 
