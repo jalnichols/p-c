@@ -2,7 +2,7 @@ library(tidyverse)
 library(DBI)
 library(RMySQL)
 
-Sys.sleep(0)
+Sys.sleep(1000)
 
 dbDisconnect(con)
 
@@ -18,11 +18,11 @@ telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2021'
 
 #telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
 
-STAGE <- 19
+STAGE <- 21
 
 step = 1
 
-while(step < 4000) {
+while(step < 2000) {
 
   json_df <- jsonlite::fromJSON(telemetry_api) %>%
     select(-YGPW) %>%
@@ -33,15 +33,15 @@ while(step < 4000) {
 
   if(min(json_df$kmToFinish) < 3 & min(json_df$kmToFinish) > 0) {
 
-    Sys.sleep(3)
+    Sys.sleep(1)
 
-    step = step + 0.3
+    step = step + 0.1
 
   } else {
     
-    Sys.sleep(10)
+    Sys.sleep(5)
     
-    step = step + 1
+    step = step + 0.5
     
    }
   

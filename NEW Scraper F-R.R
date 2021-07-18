@@ -336,6 +336,8 @@ dbWriteTable(con, "fr_stage_info", bind_rows(stages_list) %>% rename(stage_url =
 
 all_stages <- dbReadTable(con, "fr_stage_info")
 
+all_stages <- bind_rows(stages_list) %>% rename(stage_url = url)
+
 #
 #
 #
@@ -349,7 +351,7 @@ tictoc::tic()
 
 #
 
-for(y in 4546:length(all_stages$race_url)) {
+for(y in 1:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)

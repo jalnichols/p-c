@@ -539,8 +539,7 @@ dl_html <- TRUE
 if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
-    
-    filter(year >= 2021) %>% filter(Race == "Tour de France" & s %in% c(9))
+    filter(year >= 2021) %>% filter(Race == "Tour de France" & s %in% c(18,19,20))
   
 }
 
@@ -1574,7 +1573,7 @@ stage_data <- stage_data %>%
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data %>% filter(race == "tour de france" & year == 2021 & stage %in% c(9)), 
+             stage_data %>% filter(race == "tour de france" & year == 2021 & stage %in% c(18,19,20)), 
              
              append = TRUE, row.names = FALSE)
 
@@ -1749,7 +1748,9 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
   
   anti_join(dbGetQuery(con, "SELECT race, year, stage FROM pcs_km_breakaway"), by = c("race", "year", "stage")) %>%
   
-  arrange(desc(date))
+  arrange(desc(date)) %>%
+  
+  filter(race == "tour de france")
 
 #
 
