@@ -439,7 +439,6 @@ for(r in 1:length(all_race_activities$activity_id)) {
     dbWriteTable(con, "telemetry_strava_fr_rider", 
                  write_to_DB %>%
                    mutate(activity_id = ACTIVITY) %>%
-                   filter(best_start == 0 & best_finish == 0) %>%
                    select(-best_start, -best_finish), append = T, row.names = F)
     
     print(r)
