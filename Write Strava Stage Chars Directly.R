@@ -58,7 +58,11 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2021-07-01 10:00:00')
+  filter(birth_time > '2021-07-01 10:00:00') %>%
+  
+  group_by(stage, race, year, class) %>%
+  filter(rank(abs((distance/length)-1), ties.method = 'random') <= 5) %>%
+  ungroup()
 
 # prep data
 
