@@ -5,6 +5,8 @@ library(lubridate)
 library(rvest)
 library(RMySQL)
 
+dbDisconnect(con)
+
 con <- dbConnect(MySQL(),
                  host='localhost',
                  dbname='cycling',
@@ -27,6 +29,10 @@ pull_from_schedule <- c(
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2U&filter=Filter',
+  
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2U&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.HC&filter=Filter',
   
@@ -162,7 +168,7 @@ for(t in 1:length(pull_from_schedule)) {
         evts <- evts %>%
           mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
           mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-          filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))) %>%
+          filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
           count() %>%
           as.list() %>%
           .[[1]]
@@ -181,7 +187,7 @@ for(t in 1:length(pull_from_schedule)) {
               .[, c(1, 3:5)] %>%
               mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
               mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))),
+              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))),
             
             value = cbind(page %>%
                             html_nodes('table.basic') %>%
@@ -534,12 +540,16 @@ html_stage_dir <- fs::dir_ls("PCS-HTML/")
 # download new stages (TRUE) or use old HTML (FALSE)
 dl_html <- TRUE
 
+# races from this year
+dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 2021 AND rnk = '1'") -> Y21
+
 # start scraping process using old data
 
 if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
-    filter(year >= 2021) %>% filter(Race == "Tour de France" & s %in% c(18,19,20))
+    filter(Date >= '2021-08-13') %>% 
+    .[c(60:63, 68:72, 73:74, 79:100, 20:27),]
   
 }
 
@@ -1569,11 +1579,13 @@ stage_data <- stage_data %>%
 
 # Write the cleaned-up data to database
 
+y21 <- stage_data %>% filter(year == 2021 & rnk == 1)
+
 #dbSendQuery(con, "DELETE FROM pcs_stage_data")
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data %>% filter(race == "tour de france" & year == 2021 & stage %in% c(18,19,20)), 
+             stage_data, 
              
              append = TRUE, row.names = FALSE)
 
@@ -1611,7 +1623,7 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
                         WHERE year > 2013") %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC")) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC", "Olympics")) %>%
   
   filter(stage != 0) %>%
   
@@ -1621,7 +1633,9 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
   
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT race, year, url FROM pcs_all_startlists"), by = c("race", "year", "url"))
+  anti_join(dbGetQuery(con, "SELECT race, year, url FROM pcs_all_startlists"), by = c("race", "year", "url")) %>%
+  
+  mutate(one_day_race = ifelse(stage_name == "Time tri" & class %in% c("WC", "Olympics", "1.1"), 1, one_day_race))
 
 #
 # THIS IS PROBABLY BROKEN
@@ -1742,15 +1756,13 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
                         WHERE year > 2019 AND time_trial = 0") %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year == 2021 & !class %in% c("1.2", "2.2"))) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year == 2021 & class %in% c("2.Pro", "1.Pro"))) %>%
   
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
   anti_join(dbGetQuery(con, "SELECT race, year, stage FROM pcs_km_breakaway"), by = c("race", "year", "stage")) %>%
   
-  arrange(desc(date)) %>%
-  
-  filter(race == "tour de france")
+  arrange(desc(date))
 
 #
 
@@ -1768,7 +1780,7 @@ for(r in 1:length(all_races$url)) {
     
     page <- paste0("https://www.procyclingstats.com/", 
                    all_races$url[[r]], 
-                   "/today/kms-in-the-break")
+                   "/result/live/kms-in-the-break")
     
   }
   
