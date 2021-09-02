@@ -16,7 +16,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2020") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2016") %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -52,7 +52,7 @@ all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 20
 
 stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
                   FROM strava_activity_data 
-                  WHERE Stat IN ('Weighted Avg Power', 'Distance', 'AvgSpeed', 'AvgPower')") %>% 
+                  WHERE Stat IN ('Weighted Avg Power', 'Distance', 'AvgSpeed', 'AvgPower', 'AvgTemperature')") %>% 
   
   # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
   
@@ -60,7 +60,11 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
     
     dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
       
-      mutate(rider = str_to_title(rider)), by = c("PCS" = "rider")) %>%
+      mutate(rider = str_to_title(rider)) %>%
+      filter(!is.na(weight)) %>%
+      group_by(rider) %>%
+      summarize(weight = median(weight)) %>%
+      ungroup(), by = c("PCS" = "rider")) %>%
   
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
@@ -108,7 +112,11 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   filter(rank(-avg_speed, ties.method = "min") == 1) %>%
   ungroup() %>%
   
-  unique()
+  unique() %>%
+  
+  group_by(stage, race, year, class, length, date) %>%
+  mutate(avg_temperature = median(avg_temperature, na.rm = TRUE)) %>%
+  ungroup()
 
 #
 #
@@ -116,7 +124,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 segment_data_races <- stage_level_power %>%
   
-  filter(year >= 2020) %>%
+  #filter(year > 2020) %>%
   
   inner_join(
     
@@ -130,30 +138,33 @@ segment_data_races <- stage_level_power %>%
   
   select(-gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, 
          -sof_limit, -success, -points_finish, -cobbles,
-         -gc_winner, -time_trial, -stage_name, -bib,
+         -gc_winner, -stage_name, -bib,
          -pcs, -master_team, -avg_alt,
          -total_vert_gain, -cobbles, -km_break,
          -perc_break, -speed) %>%
   
   mutate(rowname = as.numeric(rowname)) %>% 
   
-  mutate(time = Distance / Speed * 3600)
+  mutate(time = Distance / Speed * 3600) %>%
+  inner_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
+              select(stage, race, year, class) %>%
+              unique(), by = c("stage", "race", 'year', "class"))
 
 #
 
 segment_data_races %>%
-  
+  filter(time_trial == 0) %>%
   anti_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
 
-  group_by(race, stage, year, date, class, pred_climb_difficulty, length) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
+  group_by(race, stage, year, date, class, pred_climb_difficulty, length, uphill_finish) %>% summarize(n = n_distinct(rider)) %>% ungroup() %>% 
   arrange(desc(n)) -> r
 
 #
 
 abc <- segment_data_races %>%
-  
+  filter(time_trial == 0) %>%
   anti_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
               select(stage, race, year, class) %>%
               unique(), by = c("stage", "race", 'year', "class")) %>%
@@ -296,7 +307,7 @@ spec_race <- segment_data_races %>%
   #filter(year >= 2020) %>%
   
   select(Segment, race, stage, year, class, date, rider, time, Distance, Gradient,
-         rowname, rnk, length, total_seconds,
+         rowname, rnk, length, total_seconds, avg_temperature,
          Power, weight, pred_climb_difficulty, gain_1st) %>% 
   
   inner_join(read_csv("ExpandedStravaSegments.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
@@ -310,7 +321,7 @@ spec_race <- segment_data_races %>%
   ungroup() %>% 
   
   select(Segment, race, stage, year, class, date, rider, time, Distance, Gradient,
-         OrderInRace = ordered, rnk, length, total_seconds,
+         OrderInRace = ordered, rnk, length, total_seconds, avg_temperature,
          Power, weight, pred_climb_difficulty, gain_1st) %>%
   
   group_by(race, stage, year, class, Segment, OrderInRace) %>%
@@ -363,26 +374,6 @@ spec_race <- segment_data_races %>%
 
 #
 
-spec_race %>% 
-  arrange(rider, year, class, race, stage, perc_thru) %>%
-  
-  group_by(stage, race, year, rider, class) %>% 
-  mutate(alive_start = lag(alive)) %>% 
-  filter(perc_thru == max(perc_thru, na.rm = T)) %>%
-  ungroup() %>% 
-  
-  filter(perc_thru >= 0.9) %>% 
-  
-  group_by(rider) %>% 
-  summarize(alive = mean(alive, na.rm = T), 
-            alive_start = mean(alive_start, na.rm = T),
-            time_on_climb = sum(time, na.rm = T) / sum(t25, na.rm = T), 
-            power = mean(Power/weight, na.rm = T),
-            n = n()) %>% 
-  ungroup() -> final_segments
-
-#
-
 library(lme4)
 
 timing_based_wattskg <- spec_race %>%    
@@ -424,7 +415,7 @@ data_for_relmodel <- spec_race %>%
          speed = (Distance/(time/3600))) %>%
   
   filter(speed > 5) %>%
-  filter(wattskg < 10) %>%
+  filter(wattskg < 10 | is.na(wattskg)) %>%
   
   group_by(stage, race, year, Segment, OrderInRace) %>%
   mutate(wattskg_rel = wattskg / median(wattskg, na.rm = T),
@@ -432,15 +423,26 @@ data_for_relmodel <- spec_race %>%
          speed_rel = speed / median(speed, na.rm = T)) %>%
   ungroup()
 
-rel_model <- lme4::lmer(wattskg_rel ~ speed_rel + 0 + (1 | rider), data = data_for_relmodel)
+rel_model <- lme4::lmer(wattskg_rel ~ speed_rel + 0 + (1 | rider:char_date), 
+                        
+                        data = data_for_relmodel %>%
+                          mutate(char_date = as.character(date)))
 
-ranef(rel_model)[[1]] %>% rownames_to_column() %>% rename(rider = rowname, int = `(Intercept)`) -> rider_power_speed_errors
+lme4::ranef(rel_model)[[1]] %>%
+  rownames_to_column() %>% 
+  separate(rowname, c("rowname", "date"), sep = ":") %>%
+  mutate(date = as.Date(date)) %>%
+  rename(rider = rowname, int = `(Intercept)`) -> rider_power_speed_errors
 
 #
 
 spec_race_adj <- data_for_relmodel %>%
   
-  left_join(ranef(rel_model)[[1]] %>% rownames_to_column() %>% rename(rider = rowname, int = `(Intercept)`), by = c("rider")) %>%
+  left_join(lme4::ranef(rel_model)[[1]] %>%
+              rownames_to_column() %>% 
+              separate(rowname, c("rowname", "date"), sep = ":") %>%
+              mutate(date = as.Date(date)) %>%
+              rename(rider = rowname, int = `(Intercept)`), by = c("rider", "date")) %>%
   
   mutate(int = ifelse(is.na(int), 0, int)) %>%
   mutate(wattskg_perf = ifelse(is.na(wattskg_rel), speed_rel, wattskg_rel - int),
@@ -448,16 +450,50 @@ spec_race_adj <- data_for_relmodel %>%
 
 #
 
+SPD = 21
+
 spec_race_adj %>%
   
-  filter(stage == 9 & race == "tour de france" & year == 2021) %>%
-  filter(!rider == "Garcia Cortina Ivan") %>%
+  filter(stage == 8 & race == "tour de france" & year == 2021) %>%
+  #filter(!rider == "Garcia Cortina Ivan") %>%
+  filter(perc_thru > 0.85) %>%
   
-  ggplot(aes(x = speed, y = wattskg_modeled, label = rider))+
+  ggplot(aes(x = speed, y = median_wattskg * wattskg_perf, label = rider))+
   geom_point()+
   geom_text()+
-  geom_smooth(se=F, method = "lm")+
-  facet_wrap(~Segment, scales = 'free')
+  stat_smooth(se=F, method = "lm", fullrange = TRUE)+
+  facet_wrap(~Segment, scales = 'free')+
+  geom_segment(aes(x = SPD, xend = SPD, y = 4.5, yend = 6.25))+
+  labs(x = "speed in kph", y = "estimated watts/kg", title = "St6 2019 TDF")
+
+#
+
+placing_mod <- lm(adj_wattskg ~ log(rnk) + perc_thru:log(rnk) + class,
+                  data = spec_race_adj %>%
+                    mutate(adj_wattskg = median_wattskg * wattskg_perf))
+
+placing_mod <- mgcv::gam(adj_wattskg ~ s(rnk, k = 20, bs = "cr") + perc_thru:log(rnk) + class,
+                         data = spec_race_adj %>%
+                           mutate(adj_wattskg = median_wattskg * wattskg_perf)
+                         )
+
+summary(placing_mod)
+
+#
+
+cbind(pred = predict(placing_mod, expand_grid(rnk = seq(1,150,1), 
+                                                        perc_thru = seq(0,1,0.2),
+                                                        class = c("2.UWT", "2.Pro", "2.1", "2.2", "2.Ncup"))),
+      expand_grid(rnk = seq(1,150,1), 
+                  perc_thru = seq(0,1,0.2),
+                  class = c("2.UWT", "2.Pro", "2.1", "2.2", "2.Ncup"))) %>%
+  
+  ggplot(aes(x = rnk, y = pred, color = perc_thru, group = perc_thru))+
+  geom_hline(yintercept = c(4.5,5))+
+  geom_line()+
+  scale_x_reverse()+
+  facet_wrap(~class)+
+  scale_color_viridis_c(breaks = seq(0,1,0.2), labels = scales::percent, name = "% Thru\nRace")
 
 #
 
@@ -486,38 +522,42 @@ data_for_mod <- spec_race %>%
 
 #
 
-lme4::lmer(speed ~ Gradient * Distance + perc_thru + alive_before + (1 | class), 
+lme4::lmer(speed ~ Gradient * Distance + perc_thru + alive_before + (1 | class) + (1|rider) + avg_temperature, 
            
            data = data_for_mod) -> spd_model
 
 summary(spd_model)
 
-segment_ranef <- ranef(spd_model)[[1]] %>% rownames_to_column()
-rider_ranef <- ranef(spd_model)[[1]] %>% rownames_to_column()
-class_ranef <- ranef(spd_model)[[1]] %>% rownames_to_column()
+#segment_ranef <- ranef(spd_model)[[1]] %>% rownames_to_column()
+rider_ranef <- lme4::ranef(spd_model)[[2]] %>% rownames_to_column()
+class_ranef <- lme4::ranef(spd_model)[[1]] %>% rownames_to_column()
 
 #
 
 rbind(
   cbind(predicted_speed = predict(spd_model, 
                                   data_for_mod %>%
-                                    select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru) %>%
+                                    select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru,
+                                           avg_temperature) %>%
                                     mutate(alive_before = 1,
                                            rider = "Generic Rider") %>%
                                     unique(), allow.new.levels = TRUE),
         data_for_mod %>%
-          select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru) %>%
+          select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru,
+                 avg_temperature) %>%
           mutate(alive_before = 1,
                  rider = "Generic Rider") %>%
           unique()),
   cbind(predicted_speed = predict(spd_model, 
                                   data_for_mod %>%
-                                    select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru) %>%
+                                    select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru,
+                                           avg_temperature) %>%
                                     mutate(alive_before = 0,
                                            rider = "Generic Rider") %>%
                                     unique(), allow.new.levels = TRUE),
         data_for_mod %>%
-          select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru) %>%
+          select(Gradient, Distance, Segment, race, stage, year, class, SpecSeg, OrderInRace, perc_thru,
+                 avg_temperature) %>%
           mutate(alive_before = 0,
                  rider = "Generic Rider") %>%
           unique())) -> predicted_speed_segments
@@ -580,7 +620,7 @@ rider_level_pcd_impact <- dbGetQuery(con, "SELECT rider, Date, pcd_impact, rando
 
 spec_race %>%
   
-  filter(date < '2020-07-01') %>%
+  filter(date < '2021-07-01') %>%
   
   mutate(vam_poly = (Gradient^2)*(Distance*1000),
          perc_thru = ifelse(perc_thru >= 1, 1, perc_thru),
@@ -1085,12 +1125,12 @@ kamna <- race_segments %>%
 #
 
 stage_level_power %>% 
-  filter(time_trial == 1 & race == "tour de france" & distance < 28.5) %>% 
+  filter(time_trial == 1 & race == "tour de france" & distance > 30 & year == 2021) %>% 
   
   mutate(wattskg = weighted_avg_power / weight,
          avgwattskg = avg_power/weight) %>% 
   
-  select(rnk, rider = pcs, wattskg, avgwattskg) %>% 
+  select(rnk, rider = pcs, wattskg, avgwattskg, stage, year) %>% 
   arrange(rnk) %>%
   
   ggplot(aes(x = log(rnk), y = wattskg))+
@@ -1100,17 +1140,17 @@ stage_level_power %>%
   scale_x_reverse()+
   
   labs(x = "LN(stage finish position)", 
-       y = "Weighted Avg Power/KG")+
+       y = "Weighted Avg Power/KG")
   
   geom_point(data = tibble(rider = "Van Der Poel Mathieu", wattskg = 6.03, rnk = 5), 
-             fill = "gold", size=3, shape = 21)+
+             fill = "gold", size=3, shape = 21)
   
   geom_line(data = cbind(wattskg = predict(tt_wattskg_mod, tibble(logrnk = seq(0,5.5,0.25))), 
                          tibble(logrnk = seq(0,5.5,0.25), rider = "X")), 
             
             aes(x = logrnk, y = wattskg), 
             
-            color = "red", size=2)+
+            color = "red", size=2)
   
   ggrepel::geom_text_repel(data = stage_level_power %>% 
                              filter(time_trial == 1 & race == "tour de france" & distance < 28.5) %>% 
