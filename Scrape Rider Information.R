@@ -384,3 +384,210 @@ con <- dbConnect(MySQL(),
 #
 
 dbWriteTable(con, "rider_attributes", rider_attributes, append = TRUE, row.names = FALSE)
+
+#
+#
+#
+#
+#
+#
+#
+
+# use stage_level_power
+
+stage_level_power %>%
+  
+  filter(is.na(weight)) %>%
+  select(rider = pcs) %>%
+  group_by(rider) %>%
+  count() %>%
+  ungroup() %>%
+  
+  arrange(desc(n)) -> RIDERS
+
+#
+
+rider_data_list <- vector("list", length(RIDERS$rider))
+
+#
+
+for(r in 1:length(RIDERS$rider)) {
+  
+  # identify page from search results
+  page <- paste0("https://www.procyclingstats.com/search.php?term=", str_replace_all(RIDERS$rider[[r]], " ", "+")) %>%
+    
+    read_html()
+  
+  first_result <- page %>%
+    html_nodes('div.mt30') %>%
+    html_nodes('a') %>%
+    html_attr(name = "href")
+  
+  if(length(first_result) > 0) {
+    
+    first_result <- first_result[[1]]
+    
+    rider_page <- paste0("https://www.procyclingstats.com/", first_result) %>%
+      read_html()
+    
+    # scrape rider info  
+    stg <- rider_page %>%
+      
+      html_nodes('div.rdr-info-cont') %>%
+      html_text()
+    
+    rid_dat <- tibble(
+      
+      dob = str_trim(str_sub(stg, str_locate(stg, "Date of birth:")[[1]] + 14, str_locate(stg, "Nationality")[[1]] - 5)),
+      weight = str_trim(str_sub(stg, str_locate(stg, "Weight:")[[2]] + 1, str_locate(stg, "Height")[[1]] - 1)),
+      height = str_trim(str_sub(stg, str_locate(stg, "Height:")[[2]] + 1, str_locate(stg, "Height:")[[2]] + 5))
+      
+    ) %>%
+      
+      mutate(rider = RIDERS$rider[[r]],
+             rider_url = first_result)
+    
+    rider_data_list[[r]] <- rid_dat
+    
+    if(!is.na(rid_dat$weight)) {
+      
+      dbSendQuery(con, paste0("DELETE FROM rider_attributes WHERE rider = '", RIDERS$rider[[r]], "'"))
+      
+    }
+    
+  } else {}
+  
+  Sys.sleep(runif(1, 3, 12))
+  
+  print(r)
+  
+}
+
+#
+#
+#
+#
+
+rider_attributes <- bind_rows(rider_data_list) %>%
+  
+  mutate(weight = as.numeric(str_trim(str_replace(weight, "kg", ""))),
+         height = as.numeric(str_trim(str_replace(height, " m", "")))) %>%
+  
+  separate(dob, c("day", "month", "year"), sep = " ") %>%
+  
+  inner_join(tibble(month = c("January","February","March","April","May","June",
+                              "July","August","September","October","November","December"),
+                    m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
+  mutate(day = ifelse(nchar(day)==3, paste0("0",str_sub(day,1,1)), str_sub(day,1,2))) %>%
+  mutate(date = as.Date(paste0(year, "-", m, "-", day))) %>%
+  
+  select(-month, -day, -year, -m)
+
+
+
+#
+
+rider_attributes$rider <- str_to_title(tolower(rider_attributes$rider))
+rider_attributes$rider <- iconv(rider_attributes$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+rider_attributes$rider <- tolower(rider_attributes$rider)
+
+#
+
+
+dbWriteTable(con, "rider_attributes", rider_attributes, append = TRUE, row.names = FALSE)
+
+#
+
+rider_attributes %>%
+  separate(rider_url, c("first", "last"), sep = "-", remove = FALSE) %>%
+  mutate(first = str_replace(first, 'rider/', '')) %>%
+  mutate(yes_first = str_detect(rider, first), 
+         yes_last = str_detect(rider, last)) %>%
+  filter(yes_first == TRUE & yes_last == TRUE) -> rider_attributes1
+
+rider_attributes %>% 
+  separate(rider_url, c("first", "last"), sep = "-", remove = FALSE) %>%
+  mutate(first = str_replace(first, 'rider/', '')) %>% 
+  mutate(yes_first = str_detect(rider, first),
+         yes_last = str_detect(rider, last)) %>%
+  filter((yes_first == TRUE & yes_last == FALSE) | (yes_last == TRUE & yes_first == FALSE)) -> rider_attributes2
+
+rider_attributes3 <- rbind(rider_attributes1, rider_attributes2[c(), ]) %>% select(weight, height, rider, rider_url, date)
+
+dbWriteTable(con, "rider_attributes", rider_attributes3, append = TRUE, row.names = FALSE)
+
+
+#
+#
+#
+#
+#
+#
+#
+
+valid_weight_now <- dbGetQuery(con, 
+
+'SELECT DISTINCT stat_value AS weight, PCS
+
+FROM strava_activity_data sa
+
+JOIN (
+  
+  SELECT DISTINCT stat_value, activity_id
+  
+  FROM strava_activity_power
+  
+  WHERE stat_name = "athlete_weight" AND stat_value <> "0" AND stat_value < 100
+) AS wt ON sa.activity_id = wt.activity_id
+
+WHERE Stat IN ("Distance", "Elevation")') %>%
+  
+  group_by(PCS) %>%
+  summarize(weight = median(weight, na.rm = T)) %>%
+  ungroup()
+
+#
+
+RA <- dbReadTable(con, "rider_attributes")
+
+#
+#
+#
+
+for(r in 1:length(valid_weight_now$PCS)) {
+
+  if(str_to_lower(valid_weight_now$PCS[[r]]) %in% str_to_lower(RA$rider)) {
+    
+    dbSendQuery(con,
+                
+                paste0("UPDATE rider_attributes
+            SET weight = ", valid_weight_now$weight[[r]],
+                       " WHERE rider = '", str_to_lower(valid_weight_now$PCS[[r]]), "'"))
+    
+    print("updated")
+    
+  } else {
+    
+    dbWriteTable(con,
+                 
+                 "rider_attributes",
+                 
+                 valid_weight_now[r,] %>%
+                   mutate(height = NA,
+                          date = NA,
+                          rider_url = NA,
+                          PCS = str_to_lower(PCS)) %>%
+                   rename(rider = PCS),
+                 
+                 append = TRUE,
+                 row.names = FALSE
+            
+                 )
+    
+    print("new record")
+    
+  }
+  
+
+  
+}
