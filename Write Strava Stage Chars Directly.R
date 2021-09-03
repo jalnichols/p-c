@@ -58,7 +58,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2021-08-01 10:00:00') %>%
+  filter(birth_time > '2021-01-01 10:00:00') %>%
   
   group_by(stage, race, year, class) %>%
   filter(rank(abs((distance/length)-1), ties.method = 'random') <= 5) %>%
@@ -149,6 +149,21 @@ extract_telemetry <- function(act_page) {
            time = as.numeric(time)) %>%
     mutate(distance = round(distance, 0),
            altitude = round(altitude, 0))
+  
+  vertical_gain <- df %>% 
+    mutate(vg = altitude - lag(altitude), 
+           vg = ifelse(is.na(vg), 0, ifelse(vg < 0, 0, vg))) %>% 
+    mutate(cum_vg = cumsum(vg)) %>% 
+    
+    group_by(distance = floor(distance / 500)/2, 
+             activity_id) %>% 
+    summarize(vertical_gain = mean(cum_vg, na.rm = T),
+              altitude = max(altitude, na.rm = T)) %>%
+    ungroup()
+  
+  #
+  
+  dbWriteTable(con, "strava_stats_by_kilometer", vertical_gain, append = TRUE, row.names = FALSE)
   
   # set up data for stage characteristics code
   
@@ -630,4 +645,3 @@ tictoc::toc()
 #
 #
 #
-
