@@ -122,9 +122,26 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 #
 #
 
+strava_before_segments <- dbReadTable(con, "strava_stats_by_kilometer") %>%
+
+  filter(altitude < 4000 & vertical_gain < 6500) %>%
+  
+  inner_join(stage_level_power %>%
+               select(activity_id, stage, race, year, class, date, length) %>%
+               unique(), by = c("activity_id")) %>%
+  
+  group_by(stage, race, year, class, date, length, distance) %>%
+  summarize(altitude = median(altitude, na.rm = T),
+            vertical_gain = median(vertical_gain, na.rm = T)) %>%
+  ungroup()
+
+#
+#
+#
+
 segment_data_races <- stage_level_power %>%
   
-  #filter(year > 2020) %>%
+  filter(year == 2021) %>%
   
   inner_join(
     
@@ -370,8 +387,22 @@ spec_race <- segment_data_races %>%
   
   mutate(time_lost_to_point = segments_time_lost - subsequent_time_lost - rel25,
          time_lost_after_point = segments_time_lost - subsequent_time_lost,
-         alive = ifelse((time_lost_to_point + rel25) > 45, 0, 1))
+         alive = ifelse((time_lost_to_point + rel25) > 45, 0, 1)) %>%
+  
+  mutate(rd_AtKM = plyr::round_any(AtKM-Distance, 0.5)) %>%
+  
+  left_join(strava_before_segments %>%
+              select(-altitude), by = c("stage", "race", "year", "class", "date", "length", "rd_AtKM" = "distance")) %>%
+  
+  mutate(rd_AtKM = plyr::round_any(AtKM, 0.5)) %>%
+  
+  left_join(strava_before_segments %>%
+              select(-vertical_gain), by = c("stage", "race", "year", "class", "date", "length", "rd_AtKM" = "distance"))
 
+#
+#
+#
+#
 #
 
 library(lme4)
@@ -466,6 +497,30 @@ spec_race_adj %>%
   geom_segment(aes(x = SPD, xend = SPD, y = 4.5, yend = 6.25))+
   labs(x = "speed in kph", y = "estimated watts/kg", title = "St6 2019 TDF")
 
+#
+
+final_segments_speed <- data_for_relmodel %>%
+  
+  group_by(rider, stage, race, year) %>%
+  filter(max(perc_thru) == perc_thru) %>%
+  ungroup() %>%
+  
+  group_by(stage, race, year, class, Segment, OrderInRace) %>%
+  mutate(q85 = quantile(speed, probs = 0.85, na.rm = T),
+         q50 = quantile(speed, probs = 0.50, na.rm = T),
+         q15 = quantile(speed, probs = 0.15, na.rm = T),
+         n_riders = n()) %>%
+  ungroup() %>%
+  
+  mutate(ref_level = (q85+q50+q15)/3,
+         rel_to_ref = speed / ref_level)
+  
+
+#
+#
+#
+#
+#
 #
 
 placing_mod <- lm(adj_wattskg ~ log(rnk) + perc_thru:log(rnk) + class,
