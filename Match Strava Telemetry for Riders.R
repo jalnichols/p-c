@@ -464,9 +464,48 @@ all_telem <- dbGetQuery(con, "SELECT altitude, distance, dist_left, time, activi
 
 #
 
+
 all_telem %>% 
+  filter(time_race >= 0 & dist_left > 0) %>% 
+  
+  group_by(time_race, stage, race, year) %>%
+  mutate(rel_dist_left = dist_left - median(dist_left, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  group_by(rider, stage, race, year) %>% 
+  mutate(zero_dist_left = ifelse(time_race == 0, rel_dist_left, NA),
+         zero_dist_left = mean(zero_dist_left, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  filter(abs(zero_dist_left) <= 250) -> cleaned_up
+
+all_telem %>% 
+  filter(time_race >= 0 & dist_left > 0) %>% 
+  
+  group_by(time_race, stage, race, year) %>%
+  mutate(rel_dist_left = dist_left - median(dist_left, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  group_by(rider, stage, race, year) %>% 
+  mutate(zero_dist_left = ifelse(time_race == 0, rel_dist_left, NA),
+         zero_dist_left = mean(zero_dist_left, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  mutate(change = ifelse(zero_dist_left <= 0, 
+                         ifelse(rel_dist_left > 0, NA, rel_dist_left), 
+                         ifelse(rel_dist_left <= 0, NA, rel_dist_left))) %>% 
+  
+  mutate(specific = paste0(rider,"/",race,"/",stage,"/",year)) %>%
+  
+  lme4::lmer(change ~ (1 | specific) + zero_dist_left + zero_dist_left:dist_left, data = .) -> mixed_model_dl
+
+#
+
+cleaned_up %>% 
   filter(distance >= 0 & dist_left >= 0) %>% 
-  rename(kmToFinish = dist_left) %>% mutate(kmToFinish = kmToFinish/1000) %>%
+  rename(kmToFinish = dist_left) %>% 
+  
+  mutate(kmToFinish = kmToFinish/1000) %>%
   
   group_by(stage, race, year) %>%
   mutate(best_finisher = min(rnk, na.rm = T)) %>%
