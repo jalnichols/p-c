@@ -16,7 +16,7 @@ con <- dbConnect(MySQL(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2016") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2020") %>%
   
   mutate(date = as.Date(date)) %>%
   
@@ -122,32 +122,17 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 #
 #
 
-strava_before_segments <- dbReadTable(con, "strava_stats_by_kilometer") %>%
-
-  filter(altitude < 4000 & vertical_gain < 6500) %>%
-  
-  inner_join(stage_level_power %>%
-               select(activity_id, stage, race, year, class, date, length) %>%
-               unique(), by = c("activity_id")) %>%
-  
-  group_by(stage, race, year, class, date, length, distance) %>%
-  summarize(altitude = median(altitude, na.rm = T),
-            vertical_gain = median(vertical_gain, na.rm = T)) %>%
-  ungroup()
-
-#
-#
-#
-
 segment_data_races <- stage_level_power %>%
   
-  filter(year == 2021) %>%
+  #filter(year == 2021) %>%
   
   inner_join(
     
     dbGetQuery(con, "SELECT rowname, Segment,
-               Distance, Gradient, Speed,
-               Power, Type,
+               Distance, Gradient, 
+               Speed,
+               Power, 
+               Type,
                activity_id
                FROM strava_segment_data"), by = c("activity_id")
     
@@ -190,6 +175,73 @@ abc <- segment_data_races %>%
   filter(rnk != 200) %>%
   select(activity_id, rider, rnk, stage, race, year, class, rowname, Segment, Distance, Gradient, Type, distance, length)
 
+#
+
+single_kms <- segment_data_races %>%
+  
+  select(-Type, -rowname, -tm_pos,
+         -sof, -bunch_sprint, -uphill_finish,
+         -total_seconds, -gain_1st, -grand_tour,
+         -one_day_race, -distance, -activity_id) %>%
+  
+  filter(Distance > 0.9 & Distance < 1.6 & Gradient > 0) %>%
+  filter(time_trial == 0) %>%
+  inner_join(read_csv("candidates_1km.csv", locale = readr::locale(encoding = 'ISO-8859-1')) %>%
+               select(stage, race, year, class) %>% 
+               unique(), by = c("race", "stage", 'year', "class")) %>%
+  inner_join(read_csv("candidates_1km.csv", locale = readr::locale(encoding = 'ISO-8859-1')), 
+             by = c("Segment", "race", "stage", 'year', "class", "Gradient", "Distance")) %>%
+  
+  mutate(wattskg = Power / weight) %>%
+  
+  mutate(seg_number = abs(parse_number(str_replace_all(Segment, "9,5", "9.5"))))
+
+#
+
+single_kms %>%
+  
+  filter(str_detect(Segment, "Masdesvignes") & race == "tour de la provence" & year == 2020) %>%
+  
+  group_by(rider, stage, race, year, class, rnk) %>% 
+  do(broom::tidy(lm(Speed ~ seg_number, data = .))) %>%
+  ungroup() %>% 
+  
+  select(-std.error, -statistic, -p.value) %>% 
+  spread(term, estimate) -> chalet_reynard
+
+single_kms %>% 
+  filter(str_detect(Segment, "Masdesvignes") & race == "tour de la provence" & year == 2020) %>% 
+  
+  group_by(Segment, stage, race, year, class) %>% 
+  mutate(rel_power = Speed / mean(Speed, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  ggplot(aes(x = seg_number, y = rel_power, group = rider, label = rider, color = (rider %in% c('Bernal Egan',"Mader Gino"))))+
+  
+  geom_line()+
+  
+  geom_text(data = . %>% 
+              group_by(rider) %>% filter(rank(rider, ties.method = "random") == 1) %>% ungroup())+
+  guides(color = F)+
+  scale_color_manual(values = c("gray30", "red"))
+  
+#
+#
+#
+
+strava_before_segments <- dbReadTable(con, "strava_stats_by_kilometer") %>%
+  
+  filter(altitude < 4000 & vertical_gain < 6500) %>%
+  
+  inner_join(stage_level_power %>%
+               select(activity_id, stage, race, year, class, date, length) %>%
+               unique(), by = c("activity_id")) %>%
+  
+  group_by(stage, race, year, class, date, length, distance) %>%
+  summarize(altitude = median(altitude, na.rm = T),
+            vertical_gain = median(vertical_gain, na.rm = T)) %>%
+  ungroup()
+  
 #
 #
 #
