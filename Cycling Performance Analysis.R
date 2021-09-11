@@ -38,6 +38,8 @@ race_data <- dbReadTable(con, "pcs_all_races") %>%
 
 missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
   
+  unique() %>%
+  
   gather(stat, value, -c("stage", "race", "year", "class")) %>%
   
   group_by(stage, race, year, class, stat) %>%
@@ -1580,12 +1582,13 @@ bs_data <- stage_data_perf %>%
   
   mutate(level = ifelse(class %in% c("UWT", "WT", "1.UWT", "2.UWT"), "WT",
                         ifelse(class %in% c("Olympics", "WC", 'CC', "NC"), "Championships",
-                               ifelse(class %in% c("2.2U", "2.Ncup", "1.2U", "1.Ncup"), "U23", "Regular"))),
+                               ifelse(class %in% c("2.2U", "2.Ncup", "1.2U", "1.Ncup"), "U23", 
+                                      ifelse(class == "JR", "JR", "Regular")))),
          WT = ifelse(level == "WT", 1, 0),
          U23 = ifelse(level == "U23", 1, 0),
          sof40 = ifelse(sof >= 0.4, 1, 0)) %>%
   
-  filter(U23 == 0) %>%
+  #filter(U23 == 0) %>%
   
   mutate(stage_no = as.numeric(stage) - 1) %>%
   group_by(race, year) %>%
@@ -1757,6 +1760,7 @@ bs_glm <- glm(bunch_sprint ~ grand_tour +
                 length + 
                 uphill_finish + 
                 finalGT + 
+                level + 
                 cobbles,
               family = "binomial",
               data = bs_data)
@@ -2183,7 +2187,7 @@ cluster_assignment <- bind_rows(cluster_list) %>%
 #
 
 ggplot(weighted_pcd %>% 
-         filter(year == 2020 & master_team == 'UAE Team' & races >= 10) %>%
+         filter(year == 2021 & master_team == 'Quick Step' & races >= 10) %>%
          
          inner_join(cluster_assignment %>%
                       select(rider, type, year, master_team), by = c("rider", 'year', "master_team")),
@@ -2202,7 +2206,7 @@ ggplot(weighted_pcd %>%
   
   labs(x = "Leader: % of races as #1 on team", 
        y = "Parcours fit: climbing difficulty of better performances", 
-       title = "Movistar 2020 team plot", 
+       title = "UAE Team 2021 team plot", 
        subtitle = "how often is rider the team leader / which parcours fit a rider")+
   expand_limits(y = c(0,15))+
   
@@ -5843,7 +5847,12 @@ stage_level_strava %>%
 
 #
 
-stage_data %>% 
+time_trial_data <- stage_data %>% 
+  select(-highest_point, total_elev_change, -time_at_1500m, -perc_elev_change, -final_20km_vert_gain,
+            -perc_gain_end, -final_1km_elev, -final_1km_gradient, -final_5km_elev, -final_5km_gradient, 
+            -cat_climb_length, -concentration, -number_cat_climbs, -climbing_final_20km,
+         -total_elev_change, -new_st, -NEW, -last_climb, -position_highest, -raw_climb_difficulty,
+         -act_climb_difficulty, -summit_finish, -avg_alt) %>%
   filter(time_trial == 1) %>% 
   inner_join(time_trial_aggs %>% 
                filter(riders >= 3) %>% 
@@ -5854,23 +5863,41 @@ stage_data %>%
   
   filter(!(race %in% c('cycling tour of bihor - bellotto') & year==2019)) %>% 
   
-  mutate(gain_1st = gain_1st / length) %>% 
+  mutate(gain_1st = gain_1st / length,
+         spd_tt = length / (total_seconds / 3600),
+         spd_10th = length / ((total_seconds - gain_10th) / 3600),
+         behind_10 = spd_tt - spd_10th) %>% 
   mutate(adj_loss = gain_1st / (1 + ((tvg * 0.1))),
          g10 = gain_10th / (1 + ((tvg * 0.1)))) %>% 
   
-  mutate(class = ifelse((class == "2.UWT" & grand_tour == 1) | class == "WC", "Elite",
+  left_join(read_csv("tt_angles.csv"), by = c("stage", "race", "year", "class", "length")) %>%
+  
+  mutate(class = ifelse((class == "2.UWT" & grand_tour == 1) | 
+                          class %in% c("Olympics") | 
+                          class == "WC" & race %in% c('world championships - itt', "world championships itt"), "Elite",
                         ifelse(class %in% c("1.UWT", "2.UWT"), "WT", 
                                ifelse(class %in% c("2.HC", "2.Pro", "1.HC", "1.Pro"), "Pro",
-                                      ifelse(class %in% c("2.1", "1.1", "CC"), ".1", ".2"))))) %>%
+                                      ifelse(class %in% c("2.1", "1.1", "CC") | 
+                                               class == "WC" & str_detect(race, 'u23'), ".1",
+                                             ifelse(class %in% c("JR"), "JR",  ".2")))))) %>%
   
   mutate(days_ago = 1 / (365 + as.numeric(lubridate::today() - as.Date(date)))) %>%
-  
-  group_by(rider) %>%
-  mutate(tvg = tvg - mean(tvg, na.rm = T)) %>%
-  ungroup() -> time_trial_data
+
+  #group_by(rider) %>%
+  mutate(tvg = tvg - mean(tvg, na.rm = T)) #%>%
+  #ungroup()
 
 #
 
+time_trial_data %>%
+  filter(year >= 2019 & year <= 2021) %>% 
+  mutate(scale_tvg = (tvg / sd(tvg))) %>%
+  lme4::lmer(spd_tt ~ (1  | rider) + scale_tvg + spd_10th, data = .) -> mixed_mod_itt
+
+summary(mixed_mod_itt)
+
+#
+  
 time_trial_data %>%
   
   filter(year >= 2018 & year <= 2021) %>% 
