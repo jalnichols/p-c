@@ -1,35 +1,36 @@
 stage,race,year,cobbles
-9,tour de france,2018,1
-5,tour de france,2014,1
-4,tour de france,2015,1
-1,paris - roubaix,2014,1
-1,paris - roubaix,2015,1
-1,paris - roubaix,2016,1
-1,paris-roubaix,2017,1
-1,paris-roubaix,2018,1
-1,paris-roubaix,2019,1
+5,4 jours de dunkerque / grand prix des hauts de france,2018,1
+5,4 jours de dunkerque / grand prix des hauts de france,2019,1
 1,antwerp port epic / sels trophy,2019,1
-1,schaal sels,2018,1
-1,koga slag om norg,2018,1
-1,slag om norg,2019,1
-1,tro-bro leon,2019,1
-1,tro-bro leon,2018,1
-1,tro-bro leon,2017,1
-1,tro-bro leon,2014,1
-1,strade bianche,2013,1
-1,strade bianche,2014,1
-1,strade bianche,2015,1
-1,strade bianche,2016,1
-1,strade bianche,2017,1
-1,strade bianche,2018,1
-1,strade bianche,2019,1
-1,strade bianche,2020,1
-1,gp de denain porte du hainaut,2014,1
-1,gp de denain porte du hainaut,2015,1
+2,baloise belgium tour,2019,1
+7,binck bank tour,2018,1
+7,binck bank tour,2019,1
+5,binckbank tour,2020,1
+7,benelux tour,2021,1
+1,dwars door het hageland,2019,1
+1,dwars door het hageland,2020,1
+1,dwars door het hageland,2021,1
+1,dwars door het hageland - aarschot,2016,1
+1,dwars door het hageland - aarschot,2017,1
+1,dwars door het hageland - aarschot,2018,1
+1,elfstedenronde,2018,1
+1,elfstedenronde,2019,1
+1,elfstedenronde,2021,1
+11,giro d'italia,2021,1
+1,gooikse pijl,2019,1
+1,gooikse pijl,2020,1
 1,gp de denain - porte du hainaut / valenciennes metropole,2016,1
 1,gp de denain - porte du hainaut / valenciennes metropole,2017,1
+1,gp de denain porte du hainaut,2014,1
+1,gp de denain porte du hainaut,2015,1
 1,grand prix de denain - porte du hainaut,2018,1
 1,grand prix de denain - porte du hainaut,2019,1
+1,gravel and tar classic,2018,1
+1,gravel and tar classic,2019,1
+1,gravel and tar classic,2020,1
+1,gylne gutuer,2018,1
+1,gylne gutuer,2019,1
+1,koga slag om norg,2018,1
 1,le samyn,2013,1
 1,le samyn,2014,1
 1,le samyn,2015,1
@@ -38,18 +39,10 @@ stage,race,year,cobbles
 1,le samyn,2018,1
 1,le samyn,2019,1
 1,le samyn,2020,1
-1,dwars door het hageland - aarschot,2016,1
-1,dwars door het hageland - aarschot,2017,1
-1,dwars door het hageland - aarschot,2018,1
-1,dwars door het hageland,2019,1
-1,dwars door het hageland,2020,1
-1,elfstedenronde,2018,1
-1,elfstedenronde,2019,1
-1,gooikse pijl,2019,1
-1,gooikse pijl,2020,1
-1,ronde van drenthe,2017,1
-1,ronde van drenthe,2018,1
-1,ronde van drenthe,2019,1
+1,le samyn,2021,1
+1,paris - roubaix,2014,1
+1,paris - roubaix,2015,1
+1,paris - roubaix,2016,1
 1,paris - tours,2013,1
 1,paris - tours elite,2014,1
 1,paris - tours elite,2015,1
@@ -57,27 +50,37 @@ stage,race,year,cobbles
 1,paris - tours elite,2018,1
 1,paris - tours elite,2019,1
 1,paris - tours elite,2020,1
+1,paris-roubaix,2017,1
+1,paris-roubaix,2018,1
+1,paris-roubaix,2019,1
 1,paris-tours elite,2017,1
+1,ronde van drenthe,2017,1
+1,ronde van drenthe,2018,1
+1,ronde van drenthe,2019,1
 1,ronde van vlaanderen - tour des flandres,2018,1
 1,ronde van vlaanderen - tour des flandres,2019,1
+1,ronde van vlaanderen - tour des flandres,2020,1
+1,ronde van vlaanderen - tour des flandres me,2021,1
+1,ronde van vlaanderen / tour des flandres,2013,1
 1,ronde van vlaanderen / tour des flandres,2014,1
 1,ronde van vlaanderen / tour des flandres,2016,1
 1,ronde van vlaanderen / tour des flandres,2017,1
-1,ronde van vlaanderen / tour des flandres,2013,1
-1,ronde van vlaanderen - tour des flandres,2020,1
-2,baloise belgium tour,2019,1
-5,4 jours de dunkerque / grand prix des hauts de france,2018,1
-5,4 jours de dunkerque / grand prix des hauts de france,2019,1
-7,binck bank tour,2019,1
-7,binck bank tour,2018,1
-1,gravel and tar classic,2019,1
-1,gravel and tar classic,2018,1
-1,gravel and tar classic,2020,1
-1,gylne gutuer,2019,1
-1,gylne gutuer,2018,1
-5,binckbank tour,2020,1
+1,schaal sels,2018,1
+1,slag om norg,2019,1
+1,strade bianche,2013,1
+1,strade bianche,2014,1
+1,strade bianche,2015,1
+1,strade bianche,2016,1
+1,strade bianche,2017,1
+1,strade bianche,2018,1
+1,strade bianche,2019,1
+1,strade bianche,2020,1
 1,strade bianche,2021,1
-1,ronde van vlaanderen - tour des flandres,2021,1
-1,le samyn,2021,1
+5,tour de france,2014,1
+4,tour de france,2015,1
+9,tour de france,2018,1
+1,tro-bro leon,2014,1
+1,tro-bro leon,2017,1
+1,tro-bro leon,2018,1
+1,tro-bro leon,2019,1
 1,tro-bro leon,2021,1
-11,giro d'italia,2021,1
