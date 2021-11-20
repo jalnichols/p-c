@@ -6,12 +6,11 @@ library(jsonlite)
 
 #
 
-Sys.sleep(0)
+Sys.sleep(143000)
 
 races <- jsonlite::fromJSON("https://race.velon.cc/liveUpcomingRacesForMultiRaces")
 
-races_data <- races$liveUpcomingRacesForMultiRaces$upcoming %>%
-  select(-AdsDetails)
+races_data <- races$liveUpcomingRacesForMultiRaces$upcoming
 
 endTime <- races_data$anticipatedEndTime$utc[[1]]
 
@@ -27,7 +26,7 @@ ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":49399,"stageId":255952,"jsonpack":false}')
+  ws$send('{"type":"group","eventId":49642,"stageId":256787,"jsonpack":false}')
 })
 
 ws$onMessage(function(event) {
@@ -111,7 +110,7 @@ telemetry <- bind_rows(data_list) %>%
   filter(mean(is.na(distanceToGo)) < 1) %>%
   ungroup()
 
-#write_csv(telemetry, "tour-of-norway-2-2021-velon-telemetry.csv")
+#write_csv(telemetry, "lombardi-2021-velon-telemetry.csv")
 
 #
 #
