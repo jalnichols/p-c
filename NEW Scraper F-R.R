@@ -100,31 +100,37 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018,
                                 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019, 
                                 2020, 2020, 2020, 2020, 2020, 2020, 
-                                2021, 2021, 2021, #2
+                                2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, #2
                                 2017, 2018, 2019, 2020, 2021, #5
                                 2017, 2018, 2019, 2020, 2021, #6
                                 2017, 2018, 2019, 2020, 2021, #3
                                 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, #8
-                                2017, 2018, 2018, 2019, 2020, 2021), #4
+                                2017, 2018, 2018, 2019, 2020, 2021,
+                                2012, 2016, 2021,
+                                2021,2021,2020,2019,2018,2017), #4
                        page_no = c(1,1,1,1,1,1,
                                    1,2,3,4,5, 
                                    1,2,3,4,5,6,7,8,9,10, 
                                    1,2,3,4,5,6,7,8,9,10,
                                    1,2,3,4,5,6,
-                                   1,2,3,
+                                   1,2,3,4,5,6,7,8,
                                    1, 1, 1, 1,1,
                                    1, 1, 1, 1,1,
                                    1, 1, 1, 1,1,
                                    1, 1, 1, 1, 1, 1, 1, 1,1, 
-                                   1, 1, 2, 1, 1,1),
+                                   1, 1, 2, 1, 1,1,
+                                   1,1,1,
+                                   1,2,1,1,1,1),
                        type = c(2,2,2,2,2,2,
                                 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-                                2,2,2,
+                                2,2,2,2,2,2,2,2,
                                 5,5,5,5,5,
                                 6,6,6,6,6,
                                 3,3,3,3,3,
                                 8,8,8,8,8,8,8,8,8,
-                                4,4,4,4,4,4)) %>%
+                                4,4,4,4,4,4,
+                                7,7,7,
+                                9,9,9,9,9,9)) %>%
   
   filter(year == 2021)
 
@@ -159,6 +165,14 @@ for(y in 1:length(scraper_list$year)) {
     filter(!is.na(value)) %>%
     rename(tour = value)
   
+  if(length(img$tour) == 0) {
+    if(scraper_list$type[[y]] == 7) {
+      img <- tibble(tour = "Olympics")
+    } else if (scraper_list$type[[y]] == 9) {
+      img <- tibble(tour = "Continental Champs")
+    } else {}
+  }
+  
   df <- pg %>%
     html_nodes('table') %>%
     html_table(header = TRUE) %>%
@@ -170,7 +184,10 @@ for(y in 1:length(scraper_list$year)) {
     janitor::clean_names() %>%
     select(date, race = name, stages, class = clas, url, tour) %>%
     mutate(year = scraper_list$year[[y]],
-           class = as.character(class))
+           class = as.character(class)) %>%
+    
+    mutate(class = ifelse(class == "JO", "Olympics", 
+                          ifelse(class == "CO", "CC", class)))
   
   result_list[[y]] <- df
   
@@ -187,19 +204,23 @@ for(y in 1:length(scraper_list$year)) {
 #
 
 intermediate_races <- all_races %>%
-  rbind(
-    
-    bind_rows(result_list))
-
-#
-
-all_races <- intermediate_races %>%
-  
   mutate(id = str_replace(url, 'https://www.la-flamme-rouge.eu/maps/races/view/', '')) %>%
   
   separate(id, c("trash", "id"), sep = "/") %>%
   
-  select(-trash)
+  select(-trash) %>%
+  rbind(
+    
+    bind_rows(result_list) %>%
+      mutate(id = str_replace(url, 'https://www.la-flamme-rouge.eu/maps/races/view/', '')) %>%
+      
+      separate(id, c("trash", "id"), sep = "/") %>%
+      
+      select(-trash))
+
+#
+
+all_races <- intermediate_races
 
 # find data we already have
 
@@ -374,6 +395,12 @@ for(y in 1:length(all_stages$race_url)) {
       )
       
     }
+    
+    write_rds(json, path = paste0("C:/Users/Jake/Documents/R Code/p-c/F-R-JSON/", 
+                                  str_replace(all_stages$stage_url[[y]], 'https://www.la-flamme-rouge.eu/maps/loadtrack/', ''),
+                                  "-",
+                                  str_replace(all_stages$race_url[[y]], "https://www.la-flamme-rouge.eu/maps/races/view/2021/", ""),
+                                  ".rds"))
     
     # with the climbs / sprints data
     actual_climbs <- json[[3]]$stageclimbs
