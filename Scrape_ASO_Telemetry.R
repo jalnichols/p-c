@@ -51,7 +51,7 @@ saveRDS(list_jsons, "tdf-stage20-telemetry.rds")
 
 # ANALYSIS
 
-d <- readr::read_rds('tdf-stage12-telemetry.rds')
+d <- readr::read_rds('C:/Users/Jake/Documents/R Code/p-c/Stage Telemetry/tdf-stage12-telemetry.rds')
 
 #
 
@@ -95,6 +95,6 @@ for(x in 1:length(d)) {
 
 all_data <- bind_rows(results_list) %>%
   
-  mutate(actual_time = lubridate::parse_date_time(str_sub(time, 12, 19), orders = c("H", "M", "S")))
+  mutate(actual_time = lubridate::dmy_hms(str_sub(time,1,19)))
            
            
