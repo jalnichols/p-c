@@ -180,6 +180,8 @@ for(t in 1:length(pull_from_schedule)) {
           # if events do qualify, filter to remove cancelled events
           events <- cbind(
             
+            # this generates valid events with winners and dates today or earlier
+            
             page %>%
               html_nodes('table.basic') %>%
               html_table(dec = ",") %>%
@@ -188,6 +190,8 @@ for(t in 1:length(pull_from_schedule)) {
               mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
               mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
               filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))),
+            
+            # this generates URLs of races (all races)
             
             value = cbind(page %>%
                             html_nodes('table.basic') %>%
@@ -199,8 +203,11 @@ for(t in 1:length(pull_from_schedule)) {
                             filter(!str_detect(value, "stage-")) %>%
                             filter(!str_detect(value, "result")) %>%
                             filter(!(str_detect(value, "2020/"))) %>%
-                            unique() %>%
+                            #filter(!(str_detect(value, "startlist/preview"))) %>%
+                            #unique() %>%
                             rename(url = value),
+                          
+                          # this generates a class of 'striked' if the race was cancelled
                           
                           page %>%
                             html_nodes('table.basic') %>%
@@ -208,9 +215,12 @@ for(t in 1:length(pull_from_schedule)) {
                             html_nodes('tr') %>%
                             html_attr(name = "class") %>%
                             enframe(name = NULL)) %>%
+              
+              # this filter removes striked races
               filter(is.na(value)) %>%
+              filter(!url == 'race/ccc-tour-grody-piastowskie/2021/startlist/preview') %>%
               select(-value) %>%
-              .[1:evts,]
+              .[1:evts, ]
             
           ) %>%
             
@@ -548,8 +558,8 @@ dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 
 if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
-    filter(Date >= '2021-08-13') %>% 
-    .[c(60:63, 68:72, 73:74, 79:100, 20:27),]
+    filter(Date >= '2021-10-04') %>% 
+    .[c(4:7, 9:12),]
   
 }
 
@@ -1877,7 +1887,7 @@ if(dl_html == FALSE) {
 
 tictoc::tic()
 
-for(r in 8:length(all_stages$value)) {
+for(r in 1:length(all_stages$value)) {
   
   f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
