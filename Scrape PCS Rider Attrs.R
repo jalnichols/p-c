@@ -1,6 +1,4 @@
 
-
-
 library(tidyverse)
 library(lubridate)
 library(rvest)
@@ -14,29 +12,24 @@ con <- dbConnect(MySQL(),
 
 #
 
-LIMIT = 200
-DATES1 = c(31759, 12408, 1951, 34621, 1951)
-DATES2 = c(43578, 31759, 12408, 1951, 34621)
-PAGES = seq(0, 1000, 200)
-ITERS = length(DATES1) * length(PAGES)
+LIMIT = 100
+DATES1 = c('2021-12-31', "2020-12-31", "2019-12-31", "2018-12-31")
+PAGES = seq(0, 800, LIMIT)
 
-data_list <- vector("list", length(ITERS))
+pull_pages <- expand_grid(LIMIT, DATES1, PAGES)
 
-for(i in 1:ITERS) {
+data_list <- vector("list", length(pull_pages$LIMIT))
 
-  DATE1 = DATES1[[floor((i-1) / 6)+1]]
-  DATE2 = DATES2[[floor((i-1) / 6)+1]]
-  PAGE = PAGES[[(i %% 6)+1]]
+for(i in 1:length(pull_pages$LIMIT)) {
+
+  DATE1 = pull_pages$DATES1[[i]]
+  PAGE = pull_pages$PAGES[[i]]
   
-  pg <- paste0('https://www.procyclingstats.com/rankings.php?id=',
+  pg <- paste0('https://www.procyclingstats.com/rankings.php?date=',
                 DATE1, 
-                '&id=', 
-                DATE2, 
-                '&nation=&team=&page=', 
-                PAGE, 
-                '&prev_rnk_days=1&younger=&older=&limit=', 
-                LIMIT, 
-                '&filter=Filter&morefilters=0') %>%
+                '&nation=&age=&zage=&page=smallerorequal&team=&offset=',
+                PAGE,
+                '&filter=Filter&p=we&s=individual') %>%
     
     read_html() 
   
@@ -69,7 +62,8 @@ for(i in 1:ITERS) {
 #
 
 riders_to_scrape <- bind_rows(data_list) %>%
-  unique()
+  unique() %>%
+  mutate(rider_url = str_replace(rider_url, "https://www.procyclingstats.com", ""))
 
 #
 #
@@ -78,16 +72,34 @@ riders_to_scrape <- bind_rows(data_list) %>%
 #
 
 rider_data_list <- vector("list", length(riders_to_scrape$rider_url))
+sites_list <- vector("list", length(rider_data_list))
 
 for(r in 1:length(riders_to_scrape$rider_url)) {
   
-  pg <- riders_to_scrape$rider_url[[r]] %>%
+  pg <- paste0("https://www.procyclingstats.com/", riders_to_scrape$rider_url[[r]]) %>%
     
     read_html()
   
+  STRAVA_SITE <- pg %>%
+    html_nodes('ul.list') %>%
+    html_nodes('li') %>%
+    html_nodes('a') %>%
+    html_attr(name = "href") %>%
+    enframe(name = NULL) %>%
+    filter(str_detect(value, "strava"))
+  
+  if(nrow(STRAVA_SITE) == 0) {
+    
+    sites_list[[r]] <- tibble(value = "no strava")
+    
+  } else {
+    sites_list[[r]] <- STRAVA_SITE
+    
+  }
+    
   rider_data_list[[r]] <- pg %>%
     
-    html_nodes('div.rdr-info') %>%
+    html_nodes('div.rdr-info-cont') %>%
     html_text()
   
   Sys.sleep(runif(1, 1, 5))
@@ -100,9 +112,23 @@ for(r in 1:length(riders_to_scrape$rider_url)) {
 
 rider_attr_list <- vector("list", length(rider_data_list))
 
+strava_rider_list <- vector("list", length(rider_attr_list))
+
 for(x in 1:length(rider_data_list)) {
   
   stg <- rider_data_list[[x]]
+  
+  if(str_detect(stg, "Passed away on:")) {
+    
+    rider_attr_list[[x]] <- tibble(
+      
+      dob = str_trim(str_sub(stg, str_locate(stg, "Date of birth:")[[1]] + 14, str_locate(stg, "Passed away on:")[[1]] - 1)),
+      weight = str_trim(str_sub(stg, str_locate(stg, "Weight:")[[2]] + 1, str_locate(stg, "Height")[[1]] - 1)),
+      height = str_trim(str_sub(stg, str_locate(stg, "Height:")[[2]] + 1, str_locate(stg, "Height:")[[2]] + 5))
+      
+    )
+    
+  } else {
   
   rider_attr_list[[x]] <- tibble(
     
@@ -112,6 +138,8 @@ for(x in 1:length(rider_data_list)) {
 
   )
   
+  }
+  
   print(nchar(stg))
     
 }
@@ -120,11 +148,19 @@ for(x in 1:length(rider_data_list)) {
 
 rider_attributes <- bind_rows(rider_attr_list) %>%
   
-  cbind(rider = riders_to_scrape %>%
-          select(rider)) %>%
+  cbind(riders_to_scrape) %>%
   
   mutate(weight = as.numeric(str_trim(str_replace(weight, "kg", ""))),
-         height = as.numeric(str_trim(str_replace(height, " m", ""))))
+         height = as.numeric(str_trim(str_replace(height, " m", "")))) %>%
+  mutate(date = lubridate::dmy(dob)) %>%
+  select(-dob)
+
+strava_riders_we <- bind_rows(sites_list) %>%
+  filter(!value == 'https://www.strava.com/athletes/santestebana') %>%
+  
+  cbind(riders_to_scrape) %>%
+  
+  filter(!value == "no strava")
 
 #
 
@@ -136,4 +172,4 @@ con <- dbConnect(MySQL(),
 
 #
 
-dbWriteTable(con, "rider_attributes", rider_attributes)
+dbWriteTable(con, "rider_attributes_we", rider_attributes, append = TRUE, row.names = FALSE)
