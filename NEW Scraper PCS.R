@@ -114,7 +114,11 @@ pull_from_schedule <- c(
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter')
+  'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter',
+  
+  # All National Champs
+  
+  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=NC&filter=Filter')
 
 #
 
@@ -123,13 +127,13 @@ store_from_schedule <- vector("list", length(pull_from_schedule))
 pull_years = 1
 
 current_year = year(today())
-start_year = 2020 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2021 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
 #
 
-for(t in 1:length(pull_from_schedule)) {
+for(t in 43:length(pull_from_schedule)) {
   
   year_list <- vector("list", pull_years)
   
@@ -302,7 +306,8 @@ natl_champs <- c("race/nc-spain",
                  "race/nc-portugal",
                  "race/nc-portugal2",
                  "race/nc-new-zealand",
-                 "race/nc-slovenia")
+                 "race/nc-slovenia",
+                 "race/australian-open-road-championships-itt")
 
 natl_champs <- c(natl_champs, paste0(natl_champs,"-itt"))
 
@@ -326,7 +331,8 @@ store_from_schedule <- store_from_schedule[lengths(store_from_schedule) != 0]
 all_events <- bind_rows(store_from_schedule) %>%
   
   mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
-  mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+  mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2)))),
+         url = as.character(url)) %>%
   
   filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))) %>%
   
@@ -545,7 +551,7 @@ dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE
 #
 #
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
-html_stage_dir <- fs::dir_ls("PCS-HTML/")
+html_stage_dir <- fs::dir_ls("D:/Jake/Documents/PCS-HTML/")
 
 # download new stages (TRUE) or use old HTML (FALSE)
 dl_html <- TRUE
@@ -558,8 +564,8 @@ dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 
 if(dl_html == FALSE) {
   
   all_stages <- dbReadTable(con, "pcs_all_stages") %>%
-    filter(Date >= '2021-10-04') %>% 
-    .[c(4:7, 9:12),]
+    filter(url %in% c("race/uec-road-european-championships-itt/2021",
+                      "race/tour-of-thailand/2021"))
   
 }
 
@@ -577,7 +583,7 @@ tictoc::tic()
 
 for(r in 1:length(all_stages$value)) {
   
-  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+  f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
   # match existence of f_name in stage directory
   if(f_name %in% html_stage_dir | dl_html == TRUE) {
@@ -640,7 +646,7 @@ for(r in 1:length(all_stages$value)) {
     
     # scrape the HTML for the page for multiple use
     
-    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
     if(dl_html == TRUE) {
       
@@ -1589,7 +1595,7 @@ stage_data <- stage_data %>%
 
 # Write the cleaned-up data to database
 
-y21 <- stage_data %>% filter(year == 2021 & rnk == 1)
+y22 <- stage_data %>% filter(year == 2022 & rnk == 1)
 
 #dbSendQuery(con, "DELETE FROM pcs_stage_data")
 
@@ -1655,12 +1661,12 @@ for(r in 1:length(all_races$url)) {
   
   if(all_races$one_day_race[[r]] == 0) {
   
-  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""), "stage-", 
+  f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""), "stage-", 
                    str_trim(str_replace(all_races$stage_name[[r]], "Stage ", "")))
   
   } else {
   
-  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""))
+  f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_races$url[[r]], "race/", ""), "/", ""))
   
   }
   

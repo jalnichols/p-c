@@ -34,7 +34,7 @@ con <- dbConnect(MySQL(),
 scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016, 2017, 2017, 2018, 2018, 2019, 2019, 2020, 2020, 2021, 2021),
                        page_no = c(1,1,1,1,1,1,1,2,1,2,1,2,1,2, 1,2)) %>%
   
-  filter(year == 2021)
+  filter(year == 2020)
 
 result_list <- vector("list", length(scraper_list$year))
 
@@ -132,7 +132,7 @@ scraper_list <- tibble(year = c(2011, 2012, 2013, 2014, 2015, 2016,
                                 7,7,7,
                                 9,9,9,9,9,9)) %>%
   
-  filter(year == 2021)
+  filter(year == 2020)
 
 #
 
@@ -355,7 +355,9 @@ dbWriteTable(con, "fr_stage_info", bind_rows(stages_list) %>% rename(stage_url =
 #
 #
 
-all_stages <- dbReadTable(con, "fr_stage_info")
+all_stages <- dbReadTable(con, "fr_stage_info") %>%
+  
+  filter(year %in% c(2017))
 
 all_stages <- bind_rows(stages_list) %>% rename(stage_url = url)
 
@@ -372,7 +374,7 @@ tictoc::tic()
 
 #
 
-for(y in 1:length(all_stages$race_url)) {
+for(y in 314:length(all_stages$race_url)) {
   
   
   # run through each race in the stages_list (denoted by y)
@@ -396,7 +398,7 @@ for(y in 1:length(all_stages$race_url)) {
       
     }
     
-    write_rds(json, path = paste0("C:/Users/Jake/Documents/R Code/p-c/F-R-JSON/", 
+    write_rds(json, path = paste0("D:/Jake/Documents/F-R-JSON/", 
                                   str_replace(all_stages$stage_url[[y]], 'https://www.la-flamme-rouge.eu/maps/loadtrack/', ''),
                                   "-",
                                   str_replace(all_stages$race_url[[y]], "https://www.la-flamme-rouge.eu/maps/races/view/2021/", ""),
