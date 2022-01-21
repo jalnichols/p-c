@@ -28,7 +28,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
   
   mutate(date = as.Date(date)) %>%
   
-  select(-stage_name, -speed, -gain_3rd, -gain_5th, -gain_10th, -gain_40th,
+  select(-speed, -gain_3rd, -gain_5th, -gain_10th, -gain_40th,
          -time_trial, -gc_winner, -gc_pos, -parcours_value, -stage_type,
          -avg_alt, -missing_profile_data) %>%
   
@@ -38,7 +38,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
            (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (year == 2021 & class != "NC")) %>%
   
-  left_join(read_csv("cobbles.csv")) %>% 
+  left_join(read_csv("cobbles.csv") %>% mutate(stage = as.character(stage))) %>% 
   
   mutate(cobbles = ifelse(is.na(cobbles), 0, cobbles)) %>%
   
@@ -143,103 +143,104 @@ predicting_all <- All_data %>%
   #       (one_day_race * odr_logrk_impact) + 
   #       (pcd_logrk_impact * 15))*-1) / 0.97)+3.9))) %>%
   
-  select(-rand_logrk_impact, -pcd_logrk_impact, -bs_logrk_impact, -odr_logrk_impact) %>%
+  select(-rand_logrk_impact, #-pcd_logrk_impact, -bs_logrk_impact, 
+         -odr_logrk_impact) %>%
   
-  left_join(
-    
-    dbReadTable(con, "lme4_rider_points")  %>%
-      filter(test_or_prod == "prod") %>%
-      select(-test_or_prod) %>%
-      unique() %>%
-      mutate(rider = str_to_title(rider)) %>%
-      mutate(date = as.Date(Date)) %>%
-      select(-Date) %>%
-      
-      mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-                                 ifelse(is.na(bunchsprint_impact), "pcd_added",
-                                        ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-      
-      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-      # we adjust here
-      group_by(date, level_data) %>%
-      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-      ungroup() %>%
-      
-      # this transforms them back to input into the regression equation
-      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-             random_intercept = random_intercept_new * sd(random_intercept)) %>%
-      
-      select(-pcd_impact_new, -random_intercept_new) %>%
-      
-      rename(pcd_points_impact = pcd_impact,
-             bs_points_impact = bunchsprint_impact,
-             rand_points_impact = random_intercept,
-             odr_points_impact = one_day_race) %>%
-      
-      mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
-             bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
-             odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
-      ) %>%
-      
-      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-    
-  ) %>%
-  
-  mutate(pred_points = -0.013 + (rand_points_impact + 
-        (predicted_bs * bs_points_impact) + 
-          (one_day_race * odr_points_impact) + 
-        (pcd_points_impact * pred_climb_difficulty))) %>%
-  
-  select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
-  
-  left_join(
-    
-    dbReadTable(con, "lme4_rider_pointswhenopp")  %>%
-      filter(test_or_prod == "prod") %>%
-      select(-test_or_prod) %>%
-      unique() %>%
-      mutate(rider = str_to_title(rider)) %>%
-      mutate(date = as.Date(Date)) %>%
-      select(-Date) %>%
-      
-      mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-                                 ifelse(is.na(bunchsprint_impact), "pcd_added",
-                                        ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-      
-      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-      # we adjust here
-      group_by(date, level_data) %>%
-      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-      ungroup() %>%
-      
-      # this transforms them back to input into the regression equation
-      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-             random_intercept = random_intercept_new * sd(random_intercept)) %>%
-      
-      select(-pcd_impact_new, -random_intercept_new) %>%
-      
-      rename(pcd_points_impact = pcd_impact,
-             bs_points_impact = bunchsprint_impact,
-             rand_points_impact = random_intercept,
-             odr_points_impact = one_day_race) %>%
-      
-      mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
-             bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
-             odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
-      ) %>%
-      
-      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-    
-  ) %>%
-  
-  mutate(pred_pointswhenopp = -0.013 + (rand_points_impact + 
-                                   (predicted_bs * bs_points_impact) + 
-                                   (one_day_race * odr_points_impact) + 
-                                   (pcd_points_impact * pred_climb_difficulty))) %>%
-  
-  select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
+  # left_join(
+  #   
+  #   dbReadTable(con, "lme4_rider_points")  %>%
+  #     filter(test_or_prod == "prod") %>%
+  #     select(-test_or_prod) %>%
+  #     unique() %>%
+  #     mutate(rider = str_to_title(rider)) %>%
+  #     mutate(date = as.Date(Date)) %>%
+  #     select(-Date) %>%
+  #     
+  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
+  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+  #     
+  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+  #     # we adjust here
+  #     group_by(date, level_data) %>%
+  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+  #     ungroup() %>%
+  #     
+  #     # this transforms them back to input into the regression equation
+  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
+  #     
+  #     select(-pcd_impact_new, -random_intercept_new) %>%
+  #     
+  #     rename(pcd_points_impact = pcd_impact,
+  #            bs_points_impact = bunchsprint_impact,
+  #            rand_points_impact = random_intercept,
+  #            odr_points_impact = one_day_race) %>%
+  #     
+  #     mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
+  #            bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
+  #            odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
+  #     ) %>%
+  #     
+  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+  #   
+  # ) %>%
+  # 
+  # mutate(pred_points = -0.013 + (rand_points_impact + 
+  #       (predicted_bs * bs_points_impact) + 
+  #         (one_day_race * odr_points_impact) + 
+  #       (pcd_points_impact * pred_climb_difficulty))) %>%
+  # 
+  # select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
+  # 
+  # left_join(
+  #   
+  #   dbReadTable(con, "lme4_rider_pointswhenopp")  %>%
+  #     filter(test_or_prod == "prod") %>%
+  #     select(-test_or_prod) %>%
+  #     unique() %>%
+  #     mutate(rider = str_to_title(rider)) %>%
+  #     mutate(date = as.Date(Date)) %>%
+  #     select(-Date) %>%
+  #     
+  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
+  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+  #     
+  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+  #     # we adjust here
+  #     group_by(date, level_data) %>%
+  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+  #     ungroup() %>%
+  #     
+  #     # this transforms them back to input into the regression equation
+  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
+  #     
+  #     select(-pcd_impact_new, -random_intercept_new) %>%
+  #     
+  #     rename(pcd_points_impact = pcd_impact,
+  #            bs_points_impact = bunchsprint_impact,
+  #            rand_points_impact = random_intercept,
+  #            odr_points_impact = one_day_race) %>%
+  #     
+  #     mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
+  #            bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
+  #            odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
+  #     ) %>%
+  #     
+  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+  #   
+  # ) %>%
+  # 
+  # mutate(pred_pointswhenopp = -0.013 + (rand_points_impact + 
+  #                                  (predicted_bs * bs_points_impact) + 
+  #                                  (one_day_race * odr_points_impact) + 
+  #                                  (pcd_points_impact * pred_climb_difficulty))) %>%
+  # 
+  # select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
   
   # left_join(
   #   
@@ -289,58 +290,58 @@ predicting_all <- All_data %>%
   # 
   # select(-rand_time_impact, -odr_time_impact, -bs_time_impact, -pcd_time_impact) %>%
 
-left_join(
-  
-  dbReadTable(con, "lme4_rider_wins")  %>%
-    filter(test_or_prod == "prod") %>%
-    select(-test_or_prod) %>%
-    unique() %>%
-    mutate(rider = str_to_title(rider)) %>%
-    mutate(date = as.Date(Date)) %>%
-    select(-Date) %>%
-    
-    mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-                               ifelse(is.na(bunchsprint_impact), "pcd_added",
-                                      ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-    
-    # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-    # we adjust here
-    group_by(date, level_data) %>%
-    mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-           random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-    ungroup() %>%
-    
-    # this transforms them back to input into the regression equation
-    mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-           random_intercept = random_intercept_new * sd(random_intercept)) %>%
-    
-    select(-pcd_impact_new, -random_intercept_new) %>%
-    
-    rename(pcd_w_impact = pcd_impact,
-           bs_w_impact = bunchsprint_impact,
-           odr_w_impact = one_day_race) %>%
-    
-    mutate(pcd_w_impact = ifelse(is.na(pcd_w_impact), 0, pcd_w_impact),
-           bs_w_impact = ifelse(is.na(bs_w_impact), 0, bs_w_impact),
-           odr_w_impact = ifelse(is.na(odr_w_impact), 0, odr_w_impact)
-    ) %>%
-    
-    filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-  
-) %>%
-  
-  # calculate team leader and success predictions using random effects
-  mutate(win_pred = -6.5 + (random_intercept + 
-                              (pred_climb_difficulty * pcd_w_impact) + 
-                              (one_day_race * odr_w_impact) + 
-                              (predicted_bs * bs_w_impact)),
-         win_pred = exp(win_pred) / (1+exp(win_pred))) %>%
-  
-  select(-random_intercept, -pcd_w_impact, -odr_w_impact, -bs_w_impact) %>%
+# left_join(
+#   
+#   dbReadTable(con, "lme4_rider_wins")  %>%
+#     filter(test_or_prod == "prod") %>%
+#     select(-test_or_prod) %>%
+#     unique() %>%
+#     mutate(rider = str_to_title(rider)) %>%
+#     mutate(date = as.Date(Date)) %>%
+#     select(-Date) %>%
+#     
+#     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+#                                ifelse(is.na(bunchsprint_impact), "pcd_added",
+#                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+#     
+#     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+#     # we adjust here
+#     group_by(date, level_data) %>%
+#     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+#            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+#     ungroup() %>%
+#     
+#     # this transforms them back to input into the regression equation
+#     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
+#            random_intercept = random_intercept_new * sd(random_intercept)) %>%
+#     
+#     select(-pcd_impact_new, -random_intercept_new) %>%
+#     
+#     rename(pcd_w_impact = pcd_impact,
+#            bs_w_impact = bunchsprint_impact,
+#            odr_w_impact = one_day_race) %>%
+#     
+#     mutate(pcd_w_impact = ifelse(is.na(pcd_w_impact), 0, pcd_w_impact),
+#            bs_w_impact = ifelse(is.na(bs_w_impact), 0, bs_w_impact),
+#            odr_w_impact = ifelse(is.na(odr_w_impact), 0, odr_w_impact)
+#     ) %>%
+#     
+#     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+#   
+# ) %>%
+#   
+#   # calculate team leader and success predictions using random effects
+#   mutate(win_pred = -6.5 + (random_intercept + 
+#                               (pred_climb_difficulty * pcd_w_impact) + 
+#                               (one_day_race * odr_w_impact) + 
+#                               (predicted_bs * bs_w_impact)),
+#          win_pred = exp(win_pred) / (1+exp(win_pred))) %>%
+#   
+#   select(-random_intercept, -pcd_w_impact, -odr_w_impact, -bs_w_impact) %>%
   
   left_join(
     
-    dbReadTable(con, "lme4_rider_teamleader_restr")  %>%
+    dbReadTable(con, "lme4_rider_teamleader")  %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
       unique() %>%
@@ -398,12 +399,13 @@ left_join(
 
   unique() %>%
   
-  group_by(stage, race, year, team, level_data) %>%
-  mutate(No1_Team = ifelse(rank(-glmer_pred, ties.method = "min")==1, 1, 0),
-         No1_Team_pwo = ifelse(rank(-pred_pointswhenopp, ties.method = "min")==1, 1, 0)) %>%
-  ungroup() %>%
+  #group_by(stage, race, year, team, level_data) %>%
+  #mutate(No1_Team = ifelse(rank(-glmer_pred, ties.method = "min")==1, 1, 0),
+  #       No1_Team_pwo = ifelse(rank(-pred_pointswhenopp, ties.method = "min")==1, 1, 0)
+  #       ) %>%
+  #ungroup() %>%
   
-  #select(-cobbles_intercept %>%
+  #select(-cobbles_intercept) %>%
   
   mutate(rider_match = str_to_title(rider)) %>%
   
@@ -433,20 +435,20 @@ left_join(
   # give everyone with missing data the median data point
   group_by(stage, race, year, class, level_data) %>%
   mutate(glmer_pred = ifelse(is.na(glmer_pred), median(glmer_pred, na.rm = T), glmer_pred),
-         win_pred = ifelse(is.na(win_pred), median(win_pred, na.rm = T), win_pred),
-         pred_points = ifelse(is.na(pred_points), median(pred_points, na.rm = T), pred_points),
+         #win_pred = ifelse(is.na(win_pred), median(win_pred, na.rm = T), win_pred),
+         #pred_points = ifelse(is.na(pred_points), median(pred_points, na.rm = T), pred_points),
          #pred_timelost = ifelse(is.na(pred_timelost), median(pred_timelost, na.rm = T), pred_timelost),
-         pred_pointswhenopp = ifelse(is.na(pred_pointswhenopp), median(pred_pointswhenopp, na.rm = T), pred_pointswhenopp),
+         #pred_pointswhenopp = ifelse(is.na(pred_pointswhenopp), median(pred_pointswhenopp, na.rm = T), pred_pointswhenopp),
          pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank)) %>%
   ungroup() %>%
   
   # rank each stat within race
   group_by(stage, race, year, class, level_data) %>%
   mutate(rk_teamldr = rank(-glmer_pred, ties.method = "min"),
-         rk_points = rank(-pred_points, ties.method = "min"),
-         rk_wins = rank(desc(win_pred), ties.method = "min"),
+         #rk_points = rank(-pred_points, ties.method = "min"),
+         #rk_wins = rank(desc(win_pred), ties.method = "min"),
          #rk_timelost = rank(pred_timelost, ties.method = "min"),
-         rk_pointswhenopp = rank(-pred_pointswhenopp, ties.method = "min"),
+         #rk_pointswhenopp = rank(-pred_pointswhenopp, ties.method = "min"),
          rk_rank = rank(pred_rank, ties.method = "min")) %>%
   ungroup() %>%
   
@@ -460,7 +462,7 @@ left_join(
   filter(!is.na(level_data)) %>%
   filter(level_data == "bs_added") %>%
   
-  mutate(class = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
+  mutate(class_small = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
                            class %in% c("2.2", "1.2") ~ ".2", 
                            class %in% c("WC", "2.UWT", "1.UWT") ~ "WT", 
                            class %in% c("1.Pro", "1.HC", "2.Pro", "2.HC") ~ ".HC", 
@@ -484,26 +486,55 @@ predicting_all_supp <- cbind(
   mutate(pred_rank = exp(pred_rank))
 
 #
+# cobbles
+#
+
+pred_cobbles <- lme4::lmer(logrnk ~ logpredrnk + (1 + cobbles | rider),
+                           data = predicting_all_supp %>% 
+                             mutate(logrnk = log(rnk),
+                                    logpredrnk = log(pred_rank)) %>%
+                             group_by(rider) %>%
+                             filter(sum(cobbles)>0) %>%
+                             ungroup())
+
+#
+
+summary(pred_cobbles)
+
+random_intercepts_cobbles <- lme4::ranef(pred_cobbles)[[1]] %>% rownames_to_column()
+
+cobbles_predrnk <- predicting_all_supp %>% 
+  filter(cobbles == 1 & year == 2021) %>%
+  mutate(logrnk = log(rnk),
+         logpredrnk = log(pred_rank)) %>%
+  group_by(rider) %>%
+  summarize(logpredrnk = mean(logpredrnk),
+            races = n()) %>%
+  ungroup()
+
+#
 # Recent performances
 #
 
 predicting_all_supp %>%
   
-  filter(date > '2021-01-01' & date < '2021-12-01') %>%
+  filter(date > '2019-01-01' & date < '2021-12-01') %>%
   
+  unique() %>%
   group_by(rider) %>%
-  summarize(exp_points = mean(pred_points, na.rm = T),
-            act_points = mean(points_finish, na.rm = T),
+  summarize(#exp_points = sum(pred_points, na.rm = T),
+            #act_points = sum(points_finish, na.rm = T),
             exp_rank = mean(log(pred_rank), na.rm = T),
             act_rank = mean(log(rnk), na.rm = T),
             error_rank = mean((log(rnk) - log(pred_rank)), na.rm = T),
+            sof_level = mean(sof, na.rm = T),
             races = n()) %>%
   ungroup() %>%
   
   mutate(exp_rank = exp(exp_rank),
          act_rank = exp(act_rank)) %>%
   
-  mutate(ratio = act_points / exp_points,
+  mutate(#ratio = (act_points - exp_points)/races,
          ratio_rk = act_rank / exp_rank) -> recent_performances
 
 #
@@ -1125,3 +1156,112 @@ print(pROC::auc(roc_obj))
 
 pROC::ggroc(roc_obj)+geom_segment(aes(x = 1, y = 0, xend = 0, yend = 1))+
   labs(title = "Predict team leader", subtitle = pROC::auc(roc_obj))
+
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
+race_level_weighted_stats <- predicting_all_supp %>%
+  
+  filter(one_day_race == 1) %>%
+  
+  separate(url, c("j1", "url_race", "j2"), sep = "\\/") %>%
+
+  group_by(race, year, class) %>%
+  mutate(log_actual_rnk = 1 / (log(rnk)+0.5),
+         log_actual_rnk = log_actual_rnk - min(log_actual_rnk, na.rm = T),
+         lar_top10 = ifelse(rnk <= 10, log_actual_rnk, 0)) %>%
+  ungroup() %>%
+  
+  group_by(url_race) %>%
+  summarize(races = n_distinct(race, year),
+            pcd_impact = sum(pcd_logrk_impact * log_actual_rnk, na.rm = T) / sum(log_actual_rnk, na.rm = T),
+            bs_impact = sum(bs_logrk_impact * log_actual_rnk, na.rm = T) / sum(log_actual_rnk, na.rm = T),
+            pcd_impact_t10 = sum(pcd_logrk_impact * lar_top10, na.rm = T) / sum(lar_top10, na.rm = T),
+            bs_impact_t10 = sum(bs_logrk_impact * lar_top10, na.rm = T) / sum(lar_top10, na.rm = T),
+            pcd_impact_field = mean(pcd_logrk_impact, na.rm = T),
+            bs_impact_field = mean(bs_logrk_impact, na.rm = T),
+            sof = mean(sof, na.rm = T)) %>%
+  ungroup()
+
+#
+
+ggplot(race_level_weighted_stats %>% 
+         filter(races >= 4 & sof >= 0.2), 
+       aes(x = bs_impact, y = pcd_impact, label = url_race))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_text()+
+  scale_x_reverse()+
+  scale_y_reverse()
+
+#
+
+latest_modeled_riders <- dbGetQuery(con, "SELECT * FROM lme4_rider_logranks WHERE Date = '2021-10-24'")
+
+latest_modeled_riders %>% 
+  mutate(BS = exp(random_intercept + 4 + (1*pcd_impact)+bunchsprint_impact), 
+         MT = exp(random_intercept + 4 + (15 * pcd_impact)), 
+         CLA = exp(random_intercept + 4 + (4.5 * pcd_impact))) %>% 
+  rowwise() %>% 
+  mutate(best = min(MT, BS, CLA)) %>% 
+  ungroup() %>% 
+  filter(best <= 15) %>% 
+  
+  inner_join(predicting_all_supp %>%
+               filter(year == 2021) %>% 
+               group_by(rider) %>%
+               summarize(sof = mean(sof, na.rm = T),
+                         races =n()) %>%
+               ungroup() %>% 
+               filter(sof > 0.3 & races > 19), by = c("rider")) %>%
+  
+  mutate(pcd_impact = pcd_impact / sd(pcd_impact), 
+         bunchsprint_impact = bunchsprint_impact / sd(bunchsprint_impact)) %>% 
+  
+  ggplot(aes(x = bunchsprint_impact*-1,
+             y = pcd_impact*-1, 
+             label = rider, 
+             color = (rider %in% c("Hayter Ethan", "Pidcock Thomas"))))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept=0)+
+  geom_text()+
+  guides(color = F)+
+  scale_color_manual(values = c("gray50", "black"))+
+  labs(x = "Bunch Sprint Impact", y = "Climbing Impact", title = 'Skill distributions of top riders')
+
+#
+
+who_matches <- race_level_weighted_stats %>%
+  
+  filter(races >= 4) %>%
+  
+  mutate(M = 1) %>%
+  rename(race_pcd = pcd_impact,
+         race_bs = bs_impact) %>%
+  
+  inner_join(latest_modeled_riders %>% mutate(M = 1), by = c("M")) %>%
+  
+  mutate(pcd_gap = (pcd_impact - race_pcd),
+         bs_gap = (bunchsprint_impact - race_bs),
+         pcd_gap = abs(pcd_gap) / sd(pcd_gap, na.rm = T),
+         bs_gap = abs(bs_gap) / sd(bs_gap, na.rm = T),
+         combined = (pcd_gap + bs_gap) / 2 * exp(random_intercept+4.3)) %>%
+  
+  group_by(url_race) %>%
+  mutate(rk = rank(combined, ties.method = "min")) %>%
+  ungroup()
