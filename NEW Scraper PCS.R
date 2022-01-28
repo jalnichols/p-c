@@ -133,7 +133,7 @@ start_year = 2021 # set to 2012 to pull 2013, 2019 to pull 2020
 # pull in each type and then each year
 #
 
-for(t in 43:length(pull_from_schedule)) {
+for(t in 1:length(pull_from_schedule)) {
   
   year_list <- vector("list", pull_years)
   
@@ -557,15 +557,13 @@ html_stage_dir <- fs::dir_ls("D:/Jake/Documents/PCS-HTML/")
 dl_html <- TRUE
 
 # races from this year
-dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 2021 AND rnk = '1'") -> Y21
+dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 2022 AND rnk = '1'") -> Y21
 
 # start scraping process using old data
 
 if(dl_html == FALSE) {
   
-  all_stages <- dbReadTable(con, "pcs_all_stages") %>%
-    filter(url %in% c("race/uec-road-european-championships-itt/2021",
-                      "race/tour-of-thailand/2021"))
+  all_stages <- dbReadTable(con, "pcs_all_stages")
   
 }
 
@@ -1122,7 +1120,7 @@ con <- dbConnect(MySQL(),
                  user='jalnichols',
                  password='braves')
 
-stage_data_raw <- dbReadTable(con, "pcs_stage_raw")
+stage_data_raw <- dbGetQuery(con, "SELECT * FROM pcs_stage_raw WHERE year > 2020")
 
 stage_data_raw$race <- iconv(stage_data_raw$race, from="UTF-8", to = "ASCII//TRANSLIT")
 
@@ -1279,7 +1277,9 @@ stage_data <- stage_data_int %>%
   mutate(tm_pos = rank(rnk, ties.method = "first")) %>%
   ungroup() %>%
   
-  select(-stage_number)
+  select(-stage_number) %>%
+  
+  filter(year > 2021)
 
 #
 
@@ -1597,7 +1597,7 @@ stage_data <- stage_data %>%
 
 y22 <- stage_data %>% filter(year == 2022 & rnk == 1)
 
-#dbSendQuery(con, "DELETE FROM pcs_stage_data")
+#dbSendQuery(con, "DELETE FROM pcs_stage_data WHERE year = 2022")
 
 dbWriteTable(con, "pcs_stage_data", 
              
@@ -1637,6 +1637,9 @@ con <- dbConnect(MySQL(),
 all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
                         FROM pcs_stage_data
                         WHERE year > 2013") %>%
+  
+  mutate(one_day_race = ifelse(url %in% c('race/gp-d-ouverture/2018',
+                                          'race/gp-d-ouverture/2017'), 1, one_day_race)) %>%
   
   arrange(-year) %>%
   filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC", "Olympics")) %>%
