@@ -40,7 +40,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   mutate(pcs = str_to_title(pcs)) %>%
   
   inner_join(dbGetQuery(con, "SELECT * FROM stage_data_perf
-                        WHERE year > 2021") %>%
+                        WHERE year > 2018") %>%
                
                mutate(date = as.Date(date)) %>%
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
@@ -94,7 +94,8 @@ for_creating_segments_from_strava <- telemetry_available %>%
                              '2628945164', '2624417915', '2628945164', '2722684158', '2770112067',
                              '2298569287', '2164552486', '2152995982', '2291747237', '2241381376',
                              '2768142025', '2686351242', '2428741219', '2339987833', '2575788478',
-                             '2297631533')) %>%
+                             '2297631533', '2287342940', '4825833669', '2389816951', '5125549501', 
+                             '2276954758')) %>%
   
   # big challenge is getting the actual length of the race correct??
   mutate(length = speed * (total_seconds/3600)) %>%

@@ -38,7 +38,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   mutate(pcs = str_to_title(pcs)) %>%
   
   inner_join(dbGetQuery(con, "SELECT * FROM stage_data_perf
-                        WHERE year > 2018 AND class = 'NC'") %>%
+                        WHERE year > 2018") %>%
                
                mutate(date = as.Date(date)) %>%
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
@@ -252,7 +252,10 @@ for(i in 1:length(races_to_generate_position_data$race)) {
       anti_join(segments_to_consider, by = c("rowid", "rider")) %>%
       mutate(new_segment_time = new_segment_distance / ((new_segment_speed_kmh*1000/3600))) %>%
       as_tibble() %>%
-      mutate(bad_data = 1),
+      mutate(bad_data = 1,
+             Power = as.numeric(NA),
+             ValidPoints = 0,
+             ValidPower = 0),
     
     segments_to_consider %>%
       select(-rel_speed, -not_bad_data_speed, -not_bad_data_dist, -bad_data, -spd_ratio, -ratio,
