@@ -50,7 +50,14 @@ missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
 
 #
 
-stage_data <- dbReadTable(con, "pcs_stage_data") %>%
+stage_data <- dbGetQuery(con, "SELECT rnk,rider,team,win_seconds,total_seconds,
+length,stage_type,parcours_value,stage,race,
+year,url,class,gain_1st,gain_20th,time_trial,       
+grand_tour,one_day_race,tm_pos,date,gain_gc,
+fr_stage_type,missing_profile_data,act_climb_difficulty,final_20km_vert_gain,
+time_at_1500m,total_vert_gain,summit_finish,avg_alt,final_1km_gradient
+                         FROM pcs_stage_data
+                         WHERE year > 2019") %>%
   
   filter(!url %in% c('race/world-championship-itt/2017',
                      'race/world-championship-itt/2015', 
@@ -144,14 +151,14 @@ replace_missing <- stage_data %>%
   inner_join(missing_strava %>%
                select(stage, race, year, class), by = c("stage", "race", "year", "class")) %>%
   
-  select(-length, -avg_alt, -highest_point, -total_elev_change,
-         -time_at_1500m, -perc_elev_change, -final_20km_vert_gain,
-         -total_vert_gain, -perc_gain_end, -final_1km_elev,
-         -final_1km_gradient, -final_5km_elev, -final_5km_gradient) %>%
+  select(-length, -avg_alt,
+         -time_at_1500m, -final_20km_vert_gain,-final_1km_gradient,
+         -total_vert_gain) %>%
   
   inner_join(missing_strava %>%
-               select(-weighted_altitude, -perc_gain_start, -first_30km_vert_gain,
-                      -final_1km_vertgain, -final_5km_vertgain), by = c("stage", "race", "year", "class")) %>%
+               select(stage, race, year ,class, avg_alt,
+                      time_at_1500m, final_20km_vert_gain,final_1km_gradient,
+                      total_vert_gain, length), by = c("stage", "race", "year", "class")) %>%
   
   mutate(missing_profile_data = 0)
 
@@ -232,6 +239,9 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
   
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
+  
+  filter(Y %in% c(2020, 2021, 2022)) %>%
+  
   separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
   mutate(date = paste0(str_trim(date),", ", Y)) %>% 
   select(-weekday, -drop, -Y) %>% 
@@ -259,10 +269,7 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
                select(rider, date, year, race, class, stage, length, total_vert_gain, act_climb_difficulty,
                       stage_type, fr_stage_type, parcours_value, time_trial, grand_tour, one_day_race,
                       rnk) %>%
-               
-               filter(year %in% c("2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022")) %>%
-               unique() %>%
-               
+              
                mutate(date = as.Date(date)), by = c("date", "pcs" = "rider")) %>% 
   
   # also, many riders include distance outside the TT as part of their strava activity
@@ -351,6 +358,10 @@ choose_rows <- sample(1:nrow(dat), size = nrow(dat)*1)
 trn <- dat[choose_rows, ]
 
 lmer(log_rank ~ (1 | rider) + (1 | class) + Tour + grand_tour, data = trn) -> mixed_effects_tour
+
+#write_rds(mixed_effects_tour, "Stored models/mixed-effects-tour.rds")
+
+mixed_effects_tour <- read_rds("Stored models/mixed-effects-tour.rds")
 
 summary(mixed_effects_tour)
 
@@ -629,9 +640,17 @@ individual_races_sop <- strength_of_peloton %>%
 
 #
 
-dbWriteTable(con, "strength_of_peloton_races", individual_races_sop, row.names = FALSE, overwrite = TRUE)
+dbSendQuery(con, "DELETE FROM strength_of_peloton_races WHERE year >= 2022")
+
+dbWriteTable(con, "strength_of_peloton_races", individual_races_sop %>% filter(year >= 2022), row.names = FALSE, append = TRUE)
 
 #
+
+gc()
+gc()
+gc()
+gc()
+gc()
 
 stage_data <- stage_data %>%
   
@@ -705,7 +724,8 @@ strava_elev_data <- cbind(
   
   pred_strv = predict(
     
-    strava_elev_mod, 
+    #strava_elev_mod, 
+    read_rds("Stored models/strava-elev-mod.rds"),
     stage_level_strava %>% 
       
       filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
@@ -741,9 +761,7 @@ pv_mod <- stage_data %>%
   mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
-  select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-         -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-         -top_variance, -variance, -speed) %>%
+  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
   
   filter(missing_profile_data == 0) %>% 
   filter((pv > 0 & act_climb_difficulty > 0) | 
@@ -760,24 +778,21 @@ pv_data <- cbind(
     mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     
-    select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-           -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-           -top_variance, -variance, -speed) %>%
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
     
     filter(est == 0),
   
   pred_pv = predict(
     
-    pv_mod, 
+    #pv_mod,
+    read_rds("Stored models/pcd-pv-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>%  
       
       mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       
-      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-             -top_variance, -variance, -speed) %>%
+      select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
       
       filter(est == 0)
     
@@ -798,9 +813,7 @@ no_climbs_mod <- stage_data %>%
   mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
-  select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-         -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-         -top_variance, -variance, -speed) %>%
+  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
   
   filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
   
@@ -816,9 +829,7 @@ no_climbs_data <- cbind(
   stage_data %>%
     filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
     
-    select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-           -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-           -top_variance, -variance, -speed) %>%
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
     
     filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
     
@@ -826,13 +837,12 @@ no_climbs_data <- cbind(
   
   pred_no_climbs = predict(
     
-    no_climbs_mod, 
+    #no_climbs_mod, 
+    read_rds("Stored models/pcd-no_climbs-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
       
-      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-             -top_variance, -variance, -speed) %>%
+      select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
       
       filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
       
@@ -855,9 +865,7 @@ icon_mod <- stage_data %>%
   mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
          pv = as.numeric(parcours_value)) %>% 
   
-  select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-         -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-         -top_variance, -variance, -speed) %>%
+  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
   
   filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
   filter(!stage_type == "icon profile p0") %>%
@@ -879,25 +887,22 @@ icon_data <- cbind(
     mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
            pv = as.numeric(parcours_value)) %>% 
     
-    select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-           -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-           -top_variance, -variance, -speed) %>%
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
     
     filter(est == 1 & stage_type != "icon profile p0"),
     #filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1),
   
   pred_icon = predict(
     
-    icon_mod, 
+    #icon_mod, 
+    read_rds("Stored models/pcd-icon-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>% 
       
       mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
              pv = as.numeric(parcours_value)) %>% 
       
-      select(-gain_1st, -gain_3rd, -gain_5th, -gain_10th, -gain_20th, -gain_40th, 
-             -gc_seconds, -total_seconds, -win_seconds, -tm_pos, -rel_speed, 
-             -top_variance, -variance, -speed) %>%
+      select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
       
       filter(est == 1 & stage_type != "icon profile p0") %>%
       #filter(!stage_type == "icon profile p0" & est == 1 & missing_profile_data == 1) %>%
@@ -983,19 +988,6 @@ three_methods <- rbind(
 #
 
 stage_data_with_pcd <- stage_data %>%
-  select(-climbing_final_20km, -final_5km_elev, -final_5km_gradient, -final_1km_elev,
-         -perc_gain_end, -time_at_1500m, -total_elev_change, -highest_point) %>%
-  
-  inner_join(
-    stage_data %>%
-      select(climbing_final_20km, final_5km_elev, final_5km_gradient, final_1km_elev,
-             perc_gain_end, time_at_1500m, total_elev_change, highest_point,
-             rider, stage, year, race, url) %>%
-      group_by(rider, stage, year, race, url) %>%
-      nest() %>%
-      ungroup(), by = c("rider", "stage", "year", "race", "url")
-    
-  ) %>%
   
   left_join(
     
@@ -1166,134 +1158,140 @@ stage_data_with_pcd <- stage_data %>%
 #
 # take in top 200 UWT riders
 
-top_200_WT <- stage_data_with_pcd %>%
-  
-  inner_join(
-    
-    #fields %>% select(stage, race, year, tot),
-    dbReadTable(con, "strength_of_peloton_races") %>%
-      select(stage, race, year, tot = sop, url), by = c("stage", "race", "year", "url")
-    
-  ) %>%
-  
-  #filter(tot > 25) %>%
-  
-  group_by(rider) %>%
-  summarize(count = n()) %>%
-  ungroup() %>%
-  
-  filter(rank(-count, ties.method = 'min') < 201)
+run = 0
 
-# take in all events
-
-perf_by_level_data <- stage_data_with_pcd %>%
+if(run == 1) {
   
-  inner_join(
+  top_200_WT <- stage_data_with_pcd %>%
     
-    #fields %>% select(stage, race, year, tot) %>% filter(year>2016),
-    dbReadTable(con, "strength_of_peloton_races") %>%
-      select(stage, race, year, tot = sop, url) %>%
-      filter(year > 2016), by = c("stage", "race", "year", "url")
+    inner_join(
+      
+      #fields %>% select(stage, race, year, tot),
+      dbReadTable(con, "strength_of_peloton_races") %>%
+        select(stage, race, year, tot = sop, url), by = c("stage", "race", "year", "url")
+      
+    ) %>%
     
-  ) %>%
-  
-  inner_join(
+    #filter(tot > 25) %>%
     
-    top_200_WT %>%
-      select(rider), by = c("rider")
+    group_by(rider) %>%
+    summarize(count = n()) %>%
+    ungroup() %>%
     
-  ) %>%
+    filter(rank(-count, ties.method = 'min') < 201)
   
-  select(race, year, sof = tot, stage, rnk, rider, gain_1st, url) %>%
+  # take in all events
   
-  unique()
-
-# set up model
-
-model_list <- vector("list", 20)
-glmer_list <- vector("list", 20)
-
-for(m in 1:20) {
-  
-  d <- perf_by_level_data %>%
+  perf_by_level_data <- stage_data_with_pcd %>%
     
-    mutate(top = ifelse(rnk < (m + 1), 1, 0))
+    inner_join(
+      
+      #fields %>% select(stage, race, year, tot) %>% filter(year>2016),
+      dbReadTable(con, "strength_of_peloton_races") %>%
+        select(stage, race, year, tot = sop, url) %>%
+        filter(year > 2016), by = c("stage", "race", "year", "url")
+      
+    ) %>%
+    
+    inner_join(
+      
+      top_200_WT %>%
+        select(rider), by = c("rider")
+      
+    ) %>%
+    
+    select(race, year, sof = tot, stage, rnk, rider, gain_1st, url) %>%
+    
+    unique()
   
-  glm <- glm(top ~ sof, data = d, family = binomial(link = "logit"))
+  # set up model
   
-  model_list[[m]] <- cbind(fit = glm$fitted.values, 
-                           glm$data %>% filter(!is.na(rnk))) %>%
-    mutate(thresh = m)
+  model_list <- vector("list", 20)
+  glmer_list <- vector("list", 20)
   
-  #glmer <- lme4::glmer(top ~ (1 | race:year), data = d, family = binomial(link = "logit"))
+  for(m in 1:20) {
+    
+    d <- perf_by_level_data %>%
+      
+      mutate(top = ifelse(rnk < (m + 1), 1, 0))
+    
+    glm <- glm(top ~ sof, data = d, family = binomial(link = "logit"))
+    
+    model_list[[m]] <- cbind(fit = glm$fitted.values, 
+                             glm$data %>% filter(!is.na(rnk))) %>%
+      mutate(thresh = m)
+    
+    #glmer <- lme4::glmer(top ~ (1 | race:year), data = d, family = binomial(link = "logit"))
+    
+    #glmer_list[[m]] <- summary(glmer)$coefficients %>%
+    #  as_tibble()
+    
+  }
   
-  #glmer_list[[m]] <- summary(glmer)$coefficients %>%
-  #  as_tibble()
+  glm_data <- bind_rows(model_list) %>%
+    select(sof, fit, thresh) %>%
+    unique()
+  
+  #
+  
+  ggplot(glm_data, aes(x = sof, y = fit, color = as.factor(thresh)))+
+    geom_vline(xintercept = 0.82)+
+    geom_hline(yintercept = 0.1)+
+    geom_point(size = 1)+
+    geom_label(data = glm_data %>% group_by(thresh) %>% filter(sof == min(sof, na.rm = T)) %>% ungroup(),
+               aes(x = sof, y = fit, label = thresh),
+               size = 4)+
+    #scale_color_manual(values = c("black", "orange"), guide = F)+
+    scale_y_continuous(labels = scales::percent)+
+    guides(color = F)
+  
+  # this threshold is set using the average sof for Liege/Lombardia/Tour de France (240)
+  # this threshold is set using average sof for monuments+TDF (0.82)
+  # and finding where that indicates 8 places
+  
+  limits <- glm_data %>% 
+    filter(sof > 0.7 & sof < 0.8 & thresh == 8) %>%
+    summarize(min(fit),
+              max(fit),
+              median(fit))
+  
+  # this shows the threshold by sof for 10.7% chance (top 12 for average TDF and top 5 for average worst field)
+  
+  filter(glm_data, fit > 0.105 & fit < 0.11) %>% 
+    ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+  
+  # this shows threshold by sof for 5% chance (top 5-6 for average TDF and top 2 for average worst field)
+  
+  filter(glm_data, fit > 0.0475 & fit < 0.0525) %>% 
+    ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+  
+  # this shows threshold by sof for 9% chance (top 10 for average TDF and top 4 for average worst field)
+  
+  filter(glm_data, fit > 0.0875 & fit < 0.0925) %>% 
+    ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
+  
+  # this shows threshold by limits above
+  
+  glm_data %>% filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>% 
+    ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')+
+    geom_vline(xintercept = 0.75)
+  
+  #
+  #
+  # filter to TDF top 8 and scale down or up
+  
+  limits_actual <- glm_data %>%
+    
+    filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>%
+    
+    loess(thresh ~ sof, data = .)
+  
+  # write this limits model which gives # of riders inside success limit as a function of sof on 0 to 1 basis
+  # eg, sof = 0.3 (roughly average) = 2.7 rounded to 3
+  
+  write_rds(limits_actual, "Stored models/sof-limits-mod.rds")
   
 }
-
-glm_data <- bind_rows(model_list) %>%
-  select(sof, fit, thresh) %>%
-  unique()
-
-#
-
-ggplot(glm_data, aes(x = sof, y = fit, color = as.factor(thresh)))+
-  geom_vline(xintercept = 0.82)+
-  geom_hline(yintercept = 0.1)+
-  geom_point(size = 1)+
-  geom_label(data = glm_data %>% group_by(thresh) %>% filter(sof == min(sof, na.rm = T)) %>% ungroup(),
-             aes(x = sof, y = fit, label = thresh),
-             size = 4)+
-  #scale_color_manual(values = c("black", "orange"), guide = F)+
-  scale_y_continuous(labels = scales::percent)+
-  guides(color = F)
-
-# this threshold is set using the average sof for Liege/Lombardia/Tour de France (240)
-# this threshold is set using average sof for monuments+TDF (0.82)
-# and finding where that indicates 8 places
-
-limits <- glm_data %>% 
-  filter(sof > 0.7 & sof < 0.8 & thresh == 8) %>%
-  summarize(min(fit),
-            max(fit),
-            median(fit))
-
-# this shows the threshold by sof for 10.7% chance (top 12 for average TDF and top 5 for average worst field)
-
-filter(glm_data, fit > 0.105 & fit < 0.11) %>% 
-  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
-
-# this shows threshold by sof for 5% chance (top 5-6 for average TDF and top 2 for average worst field)
-
-filter(glm_data, fit > 0.0475 & fit < 0.0525) %>% 
-  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
-
-# this shows threshold by sof for 9% chance (top 10 for average TDF and top 4 for average worst field)
-
-filter(glm_data, fit > 0.0875 & fit < 0.0925) %>% 
-  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')
-
-# this shows threshold by limits above
-
-glm_data %>% filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>% 
-  ggplot(aes(x = sof, y = thresh))+geom_point()+geom_smooth(method = "lm")+geom_smooth(color = 'red')+
-  geom_vline(xintercept = 0.75)
-
-#
-#
-# filter to TDF top 8 and scale down or up
-
-limits_actual <- glm_data %>%
-  
-  filter(fit > (limits[, 3] - 0.003) & fit < (limits[, 3] + 0.003)) %>%
-  
-  loess(thresh ~ sof, data = .)
-
-# write this limits model which gives # of riders inside success limit as a function of sof on 0 to 1 basis
-# eg, sof = 0.3 (roughly average) = 2.7 rounded to 3
-
-write_rds(limits_actual, "sof-limits-mod.rds")
 
 #
 #
@@ -1311,7 +1309,7 @@ stage_data_perf <- stage_data_with_pcd %>%
     
     cbind(
       
-      limit = predict(limits_actual, dbReadTable(con, "strength_of_peloton_races") %>% rename(sof = sop)),
+      limit = predict(read_rds("Stored models/sof-limits-mod.rds"), dbReadTable(con, "strength_of_peloton_races") %>% rename(sof = sop)),
       dbReadTable(con, "strength_of_peloton_races") %>% select(stage, race, year, sof = sop, url)
       
       
@@ -1361,18 +1359,16 @@ stage_data_perf <- stage_data_with_pcd %>%
 #
 #
 
-#dbSendQuery(con, "DELETE FROM stage_data_perf")
+#dbSendQuery(con, "DELETE FROM stage_data_perf WHERE year > 2019")
 
 dbWriteTable(con, "stage_data_perf",
              
              stage_data_perf %>%
-               select(-data) %>%
-               select(-new_st, -position_highest, -last_climb, -act_climb_difficulty,
-                      -raw_climb_difficulty, -number_cat_climbs, -concentration, -cat_climb_length,
-                      -final_1km_gradient, -final_20km_vert_gain, -perc_elev_change,
-                      -gain_back_5, -back_5_seconds, -success_time, -solo, -rel_success,
-                      -summit_finish, -gc_seconds, -rel_speed, -top_variance, -variance, -NEW,
-                      -fr_stage_type, -stage_name) %>% unique() %>% rename(sof_limit = limit),
+               select(-new_st, -act_climb_difficulty,
+                      -final_1km_gradient, -final_20km_vert_gain,
+                      -success_time, -solo, -rel_success,
+                      -summit_finish, -NEW,
+                      -fr_stage_type, -time_at_1500m) %>% unique() %>% rename(sof_limit = limit),
              
              row.names = F,
              append = T)
