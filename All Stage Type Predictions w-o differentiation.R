@@ -51,7 +51,7 @@ All_dates <- dbReadTable(con, "stage_data_perf") %>%
   #         (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
   #         (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
   #         (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
-  filter(year > 2015 & year <= 2021) %>%
+  filter(year > 2015 & year <= 2022) %>%
   filter(date >= '2016-07-01') %>%
   select(date) %>%
   unique() %>%
@@ -94,7 +94,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
            (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
            (sof > 0.1 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (sof > 0.05 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
-           (year == 2021)) %>%
+           (year >= 2021)) %>%
   unique() %>% 
   #mutate(stage = as.character(stage)) %>%
   #left_join(read_csv("cobbles.csv")) %>% 
@@ -107,16 +107,26 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
   mutate(points_finish = (1 / (rnk + 1)) * (sof_limit / 5),
          points_finish = ifelse(rnk <= (sof_limit * 5), points_finish, 0))
 
-#write_csv(All_data, "C:/Users/Jake/Documents/all-stage-type-preds-all-data-AWS.csv")
+#
+#
+#
+#
 
-# per date glmer models using pcd interaction and rider random effects
+KJ_kg_data <- dbGetQuery(con, "SELECT * FROM strava_stage_distance_chunks
+                         WHERE amount = '999999' AND rnk < 200 AND avg_power IS NOT NULL") %>%
+  
+  mutate(KJ = time * avg_power) %>%
+  
+  group_by(stage, race, year) %>%
+  filter(n() >= 15) %>% 
+  summarize(median_KJkg = median(KJ, na.rm = T),
+            distance = median(distance/1000, na.rm = T),
+            hours = median(time/3600, na.rm = T)) %>%
+  ungroup()
 
-#All_dates <- expand_grid(month = c("01","02","03","04","05","06","07","08","09","10"), 
-#                         year = c(2017, 2018, 2019, 2020), day = 1) %>%
-#  
-#  mutate(date = paste0(year,"-",month,"-0", day)) %>%
-#  select(date) %>%
-#  unique()
+All_data1 <- All_data %>%
+  inner_join(KJ_kg_data, by = c("stage", "race", "year")) %>%
+  filter((distance / length) > 0.9 & (distance / length) > 1.1)
 
 # I can generate all of these lme4 predictions
 # and then compare them with what Stan out-puts
@@ -159,7 +169,7 @@ for(b in 1:length(All_dates$date)) {
     mutate(rnk1 = ifelse(rnk >= 200, NA, rnk)) %>%
     
     group_by(stage, race, year, class, date) %>%
-    mutate(rnk = ifelse(rnk==200, max(rnk1)+1, rnk)) %>%
+    mutate(rnk = ifelse(rnk==200, max(rnk1, na.rm = T)+1, rnk)) %>%
     ungroup() %>%
     
     mutate(new_log_rnk = log(rnk) + (-2.14 * (sof-0.5))) %>%
