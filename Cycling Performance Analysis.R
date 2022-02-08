@@ -53,7 +53,7 @@ missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
 stage_data <- dbGetQuery(con, "SELECT rnk,rider,team,win_seconds,total_seconds,
 length,stage_type,parcours_value,stage,race,
 year,url,class,gain_1st,gain_20th,time_trial,       
-grand_tour,one_day_race,tm_pos,date,gain_gc,
+grand_tour,one_day_race,tm_pos,date,gain_gc,speed,
 fr_stage_type,missing_profile_data,act_climb_difficulty,final_20km_vert_gain,
 time_at_1500m,total_vert_gain,summit_finish,avg_alt,final_1km_gradient
                          FROM pcs_stage_data
@@ -1368,7 +1368,8 @@ dbWriteTable(con, "stage_data_perf",
                       -final_1km_gradient, -final_20km_vert_gain,
                       -success_time, -solo, -rel_success,
                       -summit_finish, -NEW,
-                      -fr_stage_type, -time_at_1500m) %>% unique() %>% rename(sof_limit = limit),
+                      -fr_stage_type, -time_at_1500m) %>% unique() %>% rename(sof_limit = limit) %>%
+               filter(year > 2019),
              
              row.names = F,
              append = T)
@@ -1784,9 +1785,16 @@ bs_glm <- glm(bunch_sprint ~ grand_tour +
 
 summary(bs_glm)
 
+# write model and predictions
+
+coef(bs_glm)
+write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
+
+#
+
 bs_glm_pred <- cbind(
   
-  pred = predict(bs_glm, bs_data),
+  pred = predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), bs_data),
   
   bs_data
   
@@ -1795,12 +1803,9 @@ bs_glm_pred <- cbind(
   
   select(stage, race, year, bunch_sprint, predicted_bs = pred)
 
-# write model and predictions
+#dbSendQuery(con, "DELETE FROM predictions_stage_bunchsprint WHERE year > 2019")
 
-coef(bs_glm)
-write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
-
-dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, overwrite = T)
+dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, append = TRUE)
 
 
 
