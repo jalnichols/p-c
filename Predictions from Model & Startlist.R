@@ -13,14 +13,14 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/tour-de-france/2021/startlist/'
+URL <- 'https://www.procyclingstats.com/race/etoile-de-besseges/2022/startlist'
 
-TVG <- 2800 #2800
-KM <- 198 #198
+TVG <- 1850 #2800
+KM <- 145 #198
 UphillFinish = 1
 ST <- "icon profile p3"
-STAGE = 1
-PV = 76 #75
+STAGE = 4
+PV = 108 #75
 
 PCD1 <- predict(read_rds("Stored models/pcd-pv-mod.rds"), tibble(pv = PV))
 PCD2 <- predict(read_rds("Stored models/pcd-icon-mod.rds"), tibble(stage_type = ST, class_level = 4))
@@ -31,15 +31,16 @@ PCD = (PCD1 + PCD2 + PCD3) / 3
 BS <- predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), 
               tibble(pred_climb_difficulty = PCD,
                      finalGT = 0,
-                     grand_tour = 1,
+                     grand_tour = 0,
                      length = KM - 200,
                      cobbles = 0,
                      one_day_race = 0,
-                     perc_thru = STAGE / 21,
+                     perc_thru = STAGE / 5,
                      uphill_finish = UphillFinish,
-                     sq_pcd = PCD ^ 2
+                     sq_pcd = PCD ^ 2,
+                     level = "WT"
                      
-                     ))
+              ))
 
 BS <- exp(BS)/(1+exp(BS))
 
@@ -96,50 +97,6 @@ most_recent_models <- rbind(
              WHERE test_or_prod = 'prod'") %>% mutate(Type = 'LogRanks'),
   
   dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_timelost r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_logranks r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'TimeLost'),
-  
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_pointswhenopp r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_pointswhenopp r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'PointsWhenOpp'),
-  
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_points r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_points r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Points'),
-  
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
-             FROM lme4_rider_wins r
-             JOIN (
-             
-             SELECT max(Date) as Date
-             FROM lme4_rider_wins r
-             WHERE test_or_prod = 'prod'
-             
-             ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Wins'),
-  
-  dbGetQuery(con, "SELECT rider, random_intercept, pcd_impact, r.Date, bunchsprint_impact
              FROM lme4_rider_teamleader r
              JOIN (
              
@@ -187,7 +144,9 @@ models <- riders %>%
   
   group_by(team, Type) %>%
   mutate(adj = ifelse(Type %in% c("Leader"), coef / sum(coef), coef)) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(xRank = ifelse(Type == "LogRanks", exp(coef + log(nrow(riders)/2)), as.numeric(NA)))
 
 #
 #
@@ -222,7 +181,7 @@ ggplot(wide_models,
 all_models <- riders %>%
   
   group_by(team) %>%
-  filter(rank(team, ties.method = "first") <= 8) %>%
+  filter(rank(team, ties.method = "first") <= 9) %>%
   ungroup() %>%
   
   left_join(
@@ -279,12 +238,12 @@ all_models <- riders %>%
   select(rider, team, Type, hills_coef, sprint_coef, climb_coef) %>%
   
   group_by(Type) %>%
-  mutate(hillsrank = rank(hills_coef, ties.method = "min"),
-            sprintrank = rank(sprint_coef, ties.method = "min"),
-            climbrank = rank(climb_coef, ties.method = "min")) %>%
+  mutate(hillsrank = ifelse(Type %in% c("LogRanks"), rank(desc(hills_coef), ties.method = "min"), rank(hills_coef, ties.method = "min")),
+            sprintrank = ifelse(Type %in% c("LogRanks"), rank(desc(sprint_coef), ties.method = "min"), rank(sprint_coef, ties.method = "min")),
+            climbrank = ifelse(Type %in% c("LogRanks"), rank(desc(climb_coef), ties.method = "min"), rank(climb_coef, ties.method = "min"))) %>%
   ungroup() %>%
   
-  filter(Type %in% c("TimeLost"))
+  filter(Type %in% c("TimeLost", "LogRanks"))
 
 #
 #
@@ -292,16 +251,16 @@ all_models <- riders %>%
 
 team_ranks <- all_models %>%
   
-  select(team, hillsrank, climbrank, hills_coef, climb_coef) %>%
-  gather(type, rank, -team) %>%
+  select(team, hillsrank, climbrank, hills_coef, climb_coef, Type) %>%
+  gather(type, rank, -team, -Type) %>%
   
-  group_by(team, type) %>%
+  group_by(team, type, Type) %>%
   mutate(rk = rank(rank, ties.method = "min")) %>%
   ungroup() %>%
   
   mutate(top5 = ifelse(rk <= 5, rank, NA)) %>%
   
-  group_by(team, type) %>%
+  group_by(team, type, Type) %>%
   summarize(harm = sum(1 / rank, na.rm = T),
             best = min(rank, na.rm = T),
             median = median(rank, na.rm = T),
@@ -311,10 +270,9 @@ team_ranks <- all_models %>%
   ungroup() %>%
   
   mutate(harm = round(runners / (harm), 0)) %>%
-  select(-runners) %>%
-  
+
   mutate(stat = ifelse(str_detect(type, "coef"), round(top5 + mean,0)/2, harm)) %>%
-  select(type, stat, team) %>%
+  select(type, Type, stat, team, runners) %>%
   spread(type, stat)
 
 #
