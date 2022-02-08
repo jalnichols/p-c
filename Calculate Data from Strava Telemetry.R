@@ -98,7 +98,7 @@ for_creating_segments_from_strava <- telemetry_available %>%
                              '2276954758')) %>%
   
   # big challenge is getting the actual length of the race correct??
-  mutate(length = speed * (total_seconds/3600)) %>%
+  #mutate(length = speed * (total_seconds/3600)) %>%
   
   group_by(stage, race, year, class, date, win_seconds) %>% 
   mutate(abs_time = abs(race_time - total_seconds),
@@ -894,7 +894,7 @@ pr <- rollingdf %>%
   #filter(class == "2.1" & pred_climb_difficulty <= 4.5) %>%
   #filter(url_race == 'tour-de-france' & pred_climb_difficulty > 4.5) %>%
   
-  filter(class == "NC") %>%
+  filter(year == 2022 & !class == "NC") %>%
   
   filter(rolling_speed %in% c(15,60,300,1200)) %>%
   
@@ -1123,7 +1123,7 @@ chunk_binned <- rollingdf %>%
 
 race_level_power <- rollingdf %>% 
   
-  filter(class == "NC") %>%
+  #filter(class == "NC") %>%
   
   group_by(activity_id, rolling_speed, fbin) %>%
   filter(max(Power, na.rm = T) == Power) %>%
@@ -1149,13 +1149,15 @@ race_level_power <- rollingdf %>%
 
 race_level_power %>% 
   
-  filter(class == 'NC') %>%
+  #filter(class == 'NC') %>%
+  
+  filter(year == 2022) %>%
   
   #filter(url_race %in% c('tour-de-france') & year == 2021 & bunch_sprint == 0) %>% 
   
   #filter(class %in% c("2.1", "2.HC", "2.Pro", "2.UWT", "2.2", "2.Ncup")) %>%
   
-  mutate(InterestingDivideStat = ifelse(pred_climb_difficulty >= 4.5, "Med/High Mtns", "Flats/Hills")) %>%
+  #mutate(InterestingDivideStat = ifelse(pred_climb_difficulty >= 4.5, "Med/High Mtns", "Flats/Hills")) %>%
   
   #mutate(InterestingDivideStat = ifelse(length > 225, "Long", "Shorter")) %>%
   
@@ -1171,7 +1173,7 @@ race_level_power %>%
   
   scale_color_viridis_d(option = 'plasma', name = '% thru bin')+
   
-  facet_wrap(~InterestingDivideStat)+
+  #facet_wrap(~InterestingDivideStat)+
   
   #facet_wrap(~stage)+
   
@@ -1202,12 +1204,17 @@ where_is_rider_peak_power <- rollingdf %>%
   
   mutate(where = (distance_gone/(length*1000))) %>%
   
+  mutate(day = lubridate::yday(date),
+         time_of_season = case_when(day < 80 ~ "early",
+                                    day < 265 ~ "middle",
+                                    TRUE ~ "late")) %>%
+  
   group_by(activity_id) %>%
   filter(n_distinct(rolling_speed) == 13) %>%
   mutate(RelPower = Power / mean(Power, na.rm = T)) %>%
   ungroup() %>%
   
-  group_by(rider, rolling_speed) %>%
+  group_by(rider, rolling_speed, time_of_season) %>%
   summarize(MED = median(where, na.rm = T), 
             WT = mean(class %in% c("1.UWT", "2.UWT"), na.rm = T),
             Q1 = mean(where < 0.25, na.rm = T),
@@ -1246,9 +1253,9 @@ riders_power_curve <- where_is_rider_peak_power %>%
 #
 
 where_is_rider_peak_power %>%
-  filter(races >= 25) %>%
+  filter(races >= 10) %>%
   
-  filter(rider %in% c("Kamna Lennard", "Woods Michael", "Ballerini Davide")) %>%
+  filter(rider %in% c("Buchmann Emanuel")) %>%
   
   ggplot()+
   geom_hline(yintercept = 1)+
@@ -1259,9 +1266,9 @@ where_is_rider_peak_power %>%
               aes(x = rolling_speed, ymin = MN, ymax = MX),
               fill = "black", alpha = 0.2)+
 
-  geom_path(aes(x = rolling_speed, y = RelPower, color = rider),
+  geom_path(aes(x = rolling_speed, y = RelPower, color = time_of_season),
             size=1)+
-  geom_point(aes(x = rolling_speed, y = RelPower, color = rider),
+  geom_point(aes(x = rolling_speed, y = RelPower, color = time_of_season),
             size=2)+
   scale_x_log10(breaks = c(15,30,45,60,90,120,180,300,450,600,900,1200,2400))+
   scale_y_continuous(labels = scales::percent,
