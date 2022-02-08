@@ -44,7 +44,7 @@ con <- dbConnect(MySQL(),
 
 # pull in dates
 
-All_dates <- dbReadTable(con, "stage_data_perf") %>%
+All_dates <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
   #filter(!is.na(bunch_sprint)) %>%
   #filter(!is.na(pred_climb_difficulty)) %>%
   #filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
@@ -64,14 +64,14 @@ All_dates <- dbReadTable(con, "stage_data_perf") %>%
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
   arrange(desc(date)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_wins") %>%
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks") %>%
               mutate(date = as.Date(date, origin = '1970-01-01')), by = c("date"))
 
 #write_csv(All_dates, "C:/Users/Jake/Documents/all-stage-type-preds-dates-AWS.csv")
 
 #
 
-All_data <- dbReadTable(con, "stage_data_perf") %>%
+All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
   
   filter(time_trial == 0) %>%
   filter(!is.na(bunch_sprint)) %>%
@@ -196,7 +196,7 @@ for(b in 1:length(All_dates$date)) {
   
   dz <- All_data %>% filter(between(date, minD + 364, maxD)==TRUE) %>% group_by(rider) %>% filter(n()>9) %>% ungroup()
   
-  skip = FALSE
+  skip = TRUE
   
   if(skip == TRUE) {
     
@@ -239,7 +239,9 @@ for(b in 1:length(All_dates$date)) {
     
     rm(random_effects)
     
-  } else if(skip == FALSE) {
+    #
+    #
+    #
     
     # ################################################
     
@@ -274,6 +276,8 @@ for(b in 1:length(All_dates$date)) {
     dbWriteTable(con, "lme4_rider_teamleader", random_effects, append = TRUE, row.names = FALSE)
     
     rm(random_effects)
+    
+  } else if(skip == FALSE) {
     
   } else {
     
