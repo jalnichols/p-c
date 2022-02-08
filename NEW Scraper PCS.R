@@ -407,6 +407,9 @@ all_events <- all_events %>%
 
 print(new_events)
 
+# write only new ones
+# scrape ones on-going be renamed all_events to take new_events
+
 dbWriteTable(con, "pcs_all_races", all_events, row.names = FALSE, append = TRUE)
 
 all_events <- new_events
@@ -513,7 +516,12 @@ gc_winners <- bind_rows(gc_list) %>%
 
 gc_winners$gc_winner <- iconv(gc_winners$gc_winner, from="UTF-8", to = "ASCII//TRANSLIT")
 
+dbSendQuery(con, sprintf("DELETE FROM pcs_gc_winners
+            WHERE event IN (%s)", toString(paste0("'", gc_winners$event, "'"))))
+
 dbWriteTable(con, "pcs_gc_winners", gc_winners %>% filter(!is.na(gc_winner)), append = TRUE, row.names = FALSE)
+
+print(gc_winners)
 
 #
 #
@@ -543,7 +551,12 @@ all_stages <- all_events %>%
 all_stages$Race <- iconv(all_stages$Race, from="UTF-8", to = "ASCII//TRANSLIT")
 all_stages$Winner <- iconv(all_stages$Winner, from="UTF-8", to = "ASCII//TRANSLIT")
 
+dbSendQuery(con, sprintf("DELETE FROM pcs_all_stages
+            WHERE url IN (%s)", toString(paste0("'", all_stages$url, "'"))))
+
 dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE)
+
+print(all_stages)
 
 #
 #
@@ -557,7 +570,12 @@ html_stage_dir <- fs::dir_ls("D:/Jake/Documents/PCS-HTML/")
 dl_html <- TRUE
 
 # races from this year
-dbGetQuery(con, "SELECT stage, race, year, date FROM pcs_stage_raw WHERE year = 2022 AND rnk = '1'") -> Y21
+dbGetQuery(con, "SELECT stage, race, year, date, url FROM pcs_stage_raw WHERE year = 2022 AND rnk = '1'") -> Y22
+
+all_stages <- all_stages %>%
+  anti_join(Y22, by = c("s" = "stage", "url"))
+
+print(all_stages)
 
 # start scraping process using old data
 
@@ -1597,11 +1615,13 @@ stage_data <- stage_data %>%
 
 y22 <- stage_data %>% filter(year == 2022 & rnk == 1)
 
+print(y22 %>% arrange(desc(date)))
+
 #dbSendQuery(con, "DELETE FROM pcs_stage_data WHERE year = 2022")
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data, 
+             stage_data %>% filter(year >= 2022), 
              
              append = TRUE, row.names = FALSE)
 
@@ -1775,7 +1795,7 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
                         WHERE year > 2019 AND time_trial = 0") %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year == 2021 & class %in% c("2.Pro", "1.Pro"))) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year >= 2021 & class %in% c("2.Pro", "1.Pro"))) %>%
   
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
