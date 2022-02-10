@@ -410,7 +410,9 @@ print(new_events)
 # write only new ones
 # scrape ones on-going be renamed all_events to take new_events
 
-dbWriteTable(con, "pcs_all_races", all_events, row.names = FALSE, append = TRUE)
+dbSendQuery(con, sprintf("DELETE FROM pcs_all_races WHERE url IN (%s)", toString(paste0("'",new_events$url,"'"))))
+
+dbWriteTable(con, "pcs_all_races", new_events, row.names = FALSE, append = TRUE)
 
 all_events <- new_events
 
@@ -1673,6 +1675,8 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
   anti_join(dbGetQuery(con, "SELECT race, year, url FROM pcs_all_startlists"), by = c("race", "year", "url")) %>%
+  
+  filter(stage_name != "Prologue") %>%
   
   mutate(one_day_race = ifelse(stage_name == "Time tri" & class %in% c("WC", "Olympics", "1.1"), 1, one_day_race))
 
