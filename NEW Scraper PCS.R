@@ -193,7 +193,8 @@ for(t in 1:length(pull_from_schedule)) {
               .[, c(1, 3:5)] %>%
               mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
               mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))),
+              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
+              filter(!Race == 'National Championships Colombia U23 - Road Race'),
             
             # this generates URLs of races (all races)
             
@@ -222,6 +223,7 @@ for(t in 1:length(pull_from_schedule)) {
               
               # this filter removes striked races
               filter(is.na(value)) %>%
+              filter(!url == "race/nc-colombia-u23/2022/startlist/preview") %>%
               filter(!url == 'race/ccc-tour-grody-piastowskie/2021/startlist/preview') %>%
               select(-value) %>%
               .[1:evts, ]
@@ -337,6 +339,8 @@ all_events <- bind_rows(store_from_schedule) %>%
   filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd < lubridate::today()))) %>%
   
   filter(!(str_detect(Race, " WE"))) %>%
+  filter(!(str_detect(Race, " WJ"))) %>%
+  filter(!(str_detect(Race, " WU"))) %>%
   filter(!(str_detect(Race, "Women"))) %>%
 
   #mutate(type = str_sub(type, 61, nchar(type)),
@@ -1020,7 +1024,7 @@ test_dl %>% filter(rnk == 1)
 
 game_race_list <- vector("list", 4)
 
-pull_in_game <- c("2021")
+pull_in_game <- c("2022")
 
 for(g in 1:length(pull_in_game)) {
   
