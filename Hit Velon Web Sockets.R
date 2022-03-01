@@ -3,16 +3,18 @@ library(tidyverse)
 library(websocket)
 library(rvest)
 library(jsonlite)
+library(DBI)
+library(RMySQL)
 
 #
-
-Sys.sleep(143000)
 
 races <- jsonlite::fromJSON("https://race.velon.cc/liveUpcomingRacesForMultiRaces")
 
 races_data <- races$liveUpcomingRacesForMultiRaces$upcoming
 
-endTime <- races_data$anticipatedEndTime$utc[[1]]
+endTime <- lubridate::as_datetime(races_data$anticipatedEndTime$utc[[1]])
+
+Sys.sleep(22400)
 
 #
 
@@ -26,7 +28,7 @@ ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":49642,"stageId":256787,"jsonpack":false}')
+  ws$send('{"type":"group","eventId":51587,"stageId":268263,"jsonpack":false}')
 })
 
 ws$onMessage(function(event) {
@@ -54,7 +56,7 @@ ws$onMessage(function(event) {
   
   print(x)
   
-  if(lubridate::now(tzone = "UTC") > lubridate::as_datetime(endTime)) {
+  if(lubridate::now(tzone = "UTC") > lubridate::as_datetime(endTime+3600)) {
     
     ws$close()
     
@@ -110,13 +112,95 @@ telemetry <- bind_rows(data_list) %>%
   filter(mean(is.na(distanceToGo)) < 1) %>%
   ungroup()
 
-#write_csv(telemetry, "lombardi-2021-velon-telemetry.csv")
+#write_csv(telemetry, "D:/Jake/Documents/Velon Telemetry/uae-tour-2022-STAGE7-velon-telemetry.csv")
 
 #
 #
 #
 #
 #
+
+dbDisconnect(con)
+
+con <- dbConnect(MySQL(),
+                 host='localhost',
+                 dbname='cycling',
+                 user='jalnichols',
+                 password='braves')
+
+#
+
+start_list <- DBI::dbGetQuery(con, "SELECT bib, rider, team 
+                         FROM pcs_all_startlists 
+                         WHERE race = 'uae tour' AND year = 2022")
+
+calc_power <- telemetry %>% 
+  filter(distanceToGo > 0) %>% 
+  
+  group_by(bibNumber, final = distanceToGo < 6000, split = ifelse(distanceToGo > 127000 & distanceToGo < 142000, "echelons", "rest")) %>% 
+  summarize(wattskg = mean(wattsPerKg, na.rm = T), 
+            avg_Power = mean(power, na.rm = T), 
+            seqs = n(), 
+            furthest = min(distanceToGo), 
+            shortest = max(distanceToGo),
+            validpower = sum(!is.na(power)),
+            nonzero = sum(power > 0), 
+            start = min(elapsedTime), 
+            end = max(elapsedTime), 
+            MED = median(wattsPerKg, na.rm = T), 
+            time_above_avg = mean(wattsPerKg > wattskg, na.rm = T),
+            Q95 = quantile(wattsPerKg, probs = 0.95, na.rm = T),
+            Q90 = quantile(wattsPerKg, probs = 0.9, na.rm = T),
+            Q10 = quantile(wattsPerKg, probs = 0.1, na.rm = T)) %>%
+  
+  mutate(peaks = Q90 - MED,
+         troughs = MED - Q10,
+         abs_peaks = Q95 - MED) %>%
+  
+  inner_join(start_list, by = c("bibNumber" = "bib"))
+
+#
+
+calc_power %>% 
+  filter(wattskg > 0.1, Q10 > 0, shortest > 141500, furthest < 127500, split == "echelons") %>%
+  
+  ggplot(aes(x = reorder(rider, peaks+troughs), 
+             xend = reorder(rider,peaks+troughs), 
+             y = Q90, 
+             yend = Q10, 
+             color = wattskg))+
+  geom_segment(size=1.5)+
+  labs(x = "", 
+       y = "Watts / KG",
+       title = "difference between 10th & 90th pctile efforts",
+       subtitle = "Jebel Jais full climb")+
+  geom_point(aes(x = reorder(rider,peaks+troughs), y = MED), color = "black", size=2)+
+  coord_flip()+
+  scale_color_viridis_c(guide = F)
+
+#
+
+telemetry %>% 
+  filter(!is.na(power)) %>%
+  filter(!is.na(wattsPerKg)) %>% 
+  filter(power >= 0 & wattsPerKg >= 0) %>% 
+  
+  group_by(bibNumber) %>% 
+  mutate(weight = median(power)/median(wattsPerKg, na.rm  = T)) %>% 
+  ungroup() %>%
+  
+  select(bibNumber, powerThreshold, weight) %>% 
+  
+  group_by(bibNumber, powerThreshold, weight) %>% 
+  count() %>% 
+  ungroup() %>% 
+  
+  group_by(bibNumber, weight) %>% 
+  filter(n == max(n)) %>% 
+  ungroup() %>% 
+  
+  mutate(thresh_wattsk = powerThreshold/weight) -> thresh
+
 #
 #
 #
