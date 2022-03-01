@@ -35,7 +35,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   janitor::clean_names() %>% 
   
   inner_join(dbGetQuery(con, "SELECT rider, date, stage, race, year, class, length, stage_type, missing_profile_data
-                        FROM pcs_stage_data_we") %>%
+                        FROM pcs_stage_data") %>%
               
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
                mutate(rider = str_to_title(rider)) %>%
@@ -58,7 +58,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2022-01-19 10:00:00') %>%
+  filter(birth_time > '2022-02-27 10:00:00') %>%
   
   group_by(stage, race, year, class) %>%
   filter(rank(abs((distance/length)-1), ties.method = 'random') <= 5) %>%
@@ -66,7 +66,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
 
 # prep data
 
-pcs_stage_data <- dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data_we WHERE time_trial = 0") %>%
+pcs_stage_data <- dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
   mutate(rider = str_to_title(rider)) %>%
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
   unique()
@@ -105,15 +105,15 @@ strava_act_data <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 # already written
 
-st_chars <- dbGetQuery(con, "SELECT stage, race, year, class FROM strava_stage_characteristics") %>%
-  unique()
+#st_chars <- dbGetQuery(con, "SELECT stage, race, year, class FROM strava_stage_characteristics") %>%
+#  unique()
 
-st_climbs <- dbGetQuery(con, "SELECT stage, race, year, rider FROM climbs_from_strava_telemetry") %>%
-  unique()
+#st_climbs <- dbGetQuery(con, "SELECT stage, race, year, rider FROM climbs_from_strava_telemetry") %>%
+#  unique()
 
 skip = 0
 
-all_race_activities <- all_race_activities %>% anti_join(st_chars)
+#all_race_activities <- all_race_activities %>% anti_join(st_chars)
 
 #
 #
@@ -121,7 +121,7 @@ all_race_activities <- all_race_activities %>% anti_join(st_chars)
 #
 # DEFINE FUNCTION
 
-extract_telemetry <- function(act_page) {
+extract_telemetry <- function(ACTIVITY) {
   
   data_lists <- read_rds(paste0("D:/Jake/Documents/STRAVA_JSON/strava-activity-id-", ACTIVITY, ".rds"))
   
@@ -133,7 +133,7 @@ extract_telemetry <- function(act_page) {
     distance = data_lists[["distance"]],
     time = data_lists[["time"]],
     #watts = data_lists[["watts_calc"]],
-    activity_id = ACTIVITY
+    activity_id = as.character(ACTIVITY)
     
   ) %>%
     
@@ -388,7 +388,7 @@ extract_telemetry <- function(act_page) {
 
   # write to DB
 
-  dbWriteTable(con, "strava_stage_characteristics_we", stage_characteristics %>% select(-metric), append = T, row.names = F)
+  dbWriteTable(con, "strava_stage_characteristics", stage_characteristics %>% select(-metric), append = T, row.names = F)
   
   #
   #
@@ -601,7 +601,7 @@ extract_telemetry <- function(act_page) {
              power_required = round(power_required, 2),
              power_model_category = round(power_model_category, 1))
     
-    dbWriteTable(con, "climbs_from_strava_telemetry_we", all_2021_koms, append = TRUE, row.names = F)
+    dbWriteTable(con, "climbs_from_strava_telemetry", all_2021_koms, append = TRUE, row.names = F)
     
   }
   
@@ -619,17 +619,9 @@ for(a in 1:length(all_race_activities$activity_id)) {
   
   ACTIVITY <- all_race_activities$activity_id[[a]]
   
-  act_page <- paste0('https://www.strava.com/activities/', 
-                     
-                     ACTIVITY, 
-                     
-                     '/streams?stream_types%5B%5D=time',
-                     #'&stream_types%5B%5D=watts_calc',
-                     '&stream_types%5B%5D=altitude&stream_types%5B%5D=heartrate&stream_types%5B%5D=distance')
-  
   safe_segments <- safely(.f = extract_telemetry, otherwise = print("error"))
   
-  safe_segments(act_page)
+  safe_segments(ACTIVITY)
   
   print(a)
   
