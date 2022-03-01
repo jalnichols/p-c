@@ -40,7 +40,7 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   mutate(pcs = str_to_title(pcs)) %>%
   
   inner_join(dbGetQuery(con, "SELECT * FROM stage_data_perf
-                        WHERE year > 2018") %>%
+                        WHERE year > 2021") %>%
                
                mutate(date = as.Date(date)) %>%
                mutate(date = as.Date(date, origin = '1970-01-01')) %>%
@@ -76,7 +76,19 @@ telemetry_available <- all_race_activities %>%
   
   group_by(stage, race, year, class, date) %>%
   filter(n() >= 15) %>%
-  ungroup()
+  ungroup() %>%
+  
+  mutate(pcs = str_to_title(pcs)) %>%
+  
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
+      filter(!is.na(weight)) %>%
+      group_by(rider) %>%
+      summarize(weight = median(weight)) %>%
+      ungroup(), by = c("pcs" = "rider"))
 
 #
 
@@ -584,6 +596,47 @@ throughout <- stage_distance_chunks_expanded %>%
 #
 #
 
+for_creating_segments_from_strava <- telemetry_available %>%
+  select(-avg_alt, -missing_profile_data, -total_vert_gain, -sof_limit, -success, -leader_rating, -points_finish) %>%
+  filter(rnk < 200) %>% 
+  
+  mutate(race_time = as.numeric(lubridate::hms(avg_elapsed_time)),
+         race_time = ifelse(is.na(race_time), as.numeric(lubridate::ms(avg_elapsed_time)), race_time)) %>%
+  
+  filter(race_time < 40000) %>%
+  
+  filter(!activity_id %in% c("5028077839", "5063406337", "5125903648", "5485415918", "5026068681",
+                             "5062666498", "5489444684", "5026221808", '2628306420', '2189109844',
+                             '2628945164', '2624417915', '2628945164', '2722684158', '2770112067',
+                             '2298569287', '2164552486', '2152995982', '2291747237', '2241381376',
+                             '2768142025', '2686351242', '2428741219', '2339987833', '2575788478',
+                             '2297631533', '2287342940', '4825833669', '2389816951', '5125549501', 
+                             '2276954758')) %>%
+  
+  # big challenge is getting the actual length of the race correct??
+  #mutate(length = speed * (total_seconds/3600)) %>%
+  
+  group_by(stage, race, year, class, date, win_seconds) %>% 
+  mutate(abs_time = abs(race_time - total_seconds),
+         abs_dist = abs(distance - length),
+         pct_time = abs_time/60,
+         pct_dist = abs_dist,
+         m = ((3*pct_time)+pct_dist)/4,
+         hm = 2 / ((1/pct_time)+(1/pct_dist))) %>% 
+  filter(rank(m, ties.method = "first") == 1) %>%
+  ungroup() %>% 
+  
+  select(pcs, distance, race, stage, class, date, year, length, activity_id, stage_type) %>%
+  mutate(creation_type = "TIME") %>%
+  anti_join(
+    inner_join(telemetry_available,
+               dbGetQuery(con, "SELECT DISTINCT activity_id FROM strava_rolling_power_curves_afterwork"), by = c("activity_id")) %>%
+      select(stage, race, year, class, date, length)) %>%
+  
+  arrange(desc(class %in% c("1.UWT", "2.UWT", "WC", "Olympics")), desc(date)) %>%
+  
+  filter(!(stage == 1 & race == 'tour de romandie' & year == 2019)) %>%
+  filter(!(stage == 4 & race == 'voo-tour de wallonie' & year == 2019 ))
 
 # Peak Power Extractor ----------------------------------------------------
 
@@ -641,7 +694,8 @@ for(c in 1:length(for_creating_segments_from_strava$activity_id)) {
   #
   
   bring_in_telem <- telemetry_available %>%
-    filter(race == R & stage == S & year == Y)
+    filter(race == R & stage == S & year == Y) %>%
+    filter(!is.na(weight))
   
   # bring in all telem data
   
@@ -769,15 +823,37 @@ for(c in 1:length(for_creating_segments_from_strava$activity_id)) {
     mutate(distance_left = finish_distance - distance,
            distance_gone = distance - start_distance) %>%
     
-    inner_join(bring_in_telem %>% select(rider=pcs, activity_id, rnk, team, length), by = c("activity_id"))
+    inner_join(bring_in_telem %>% select(rider=pcs, activity_id, rnk, team, length, weight), by = c("activity_id")) %>%
+    
+    select(-lat_delta, -long_delta, -dist_delta, -gradient, -speed,
+           -alt_delta, -coord_delta, -start_lat, -start_long,
+           -end_lat, -end_long, -est_start, -est_finish, 
+           -speed_window, -finish_rowid, -start_rowid,
+           -est_group, -start_distance, -finish_distance, -invalid,
+           -altitude, -distance)
   
   #
+  
+  amt_work <- all_telem_df %>%
+    
+    group_by(activity_id) %>%
+    mutate(m = mean(is.na(watts))) %>%
+    filter(mean(is.na(watts)) < 0.01) %>%
+    filter(!is.na(watts)) %>%
+    mutate(amt_of_work = cumsum(watts * time_delta) / weight / 1000) %>%
+    ungroup()
+  
+  #
+  
+  if(c > 0) {
   
   rolling_speeds <- c(15, 30, 60, 120, 300, 600, 1200, 45, 90, 180, 450, 900, 2400)
 
   for(P in rolling_speeds) {
     
-    rollingdf <- all_telem_df %>% 
+    if(P %in% c(60,300,600,1200)) {
+    
+    initial <- all_telem_df %>% 
       
       filter(!is.na(watts)) %>%
       
@@ -785,21 +861,99 @@ for(c in 1:length(for_creating_segments_from_strava$activity_id)) {
       mutate(time_correct = ((RcppRoll::roll_max(time, n = P, fill = 0, align = "right")-RcppRoll::roll_min(time,n = P, fill = 0, align = "right")) == P-1)) %>%
       mutate(Power = RcppRoll::roll_mean(watts, n = P, fill = NA, align = "right")) %>%
       filter(time_correct == TRUE) %>%
-      ungroup() %>%
-      
-      mutate(fbin = floor((distance_gone / (length*1000)) / 0.2)*0.2,
-             fbin = ifelse(fbin > 0.8, 0.8, fbin)) %>%
-      
-      group_by(activity_id, fbin) %>%
-      filter(rank(desc(Power), ties.method = "first") == 1) %>%
-      ungroup() %>%
-      
-      select(activity_id, latitude, longitude, distance_left, distance_gone, rider, Power, length, fbin) %>%
-      mutate(rolling_speed = P)
+      ungroup()
     
-    dbWriteTable(con, "strava_rolling_power_curves", rollingdf, append = TRUE, row.names = FALSE)
+    #  
+    
+    #rollingdf <- initial %>%
+    #  mutate(fbin = floor((distance_gone / (length*1000)) / 0.2)*0.2,
+    #         fbin = ifelse(fbin > 0.8, 0.8, fbin)) %>%
+    #  
+    #  group_by(activity_id, fbin) %>%
+    #  filter(rank(desc(Power), ties.method = "first") == 1) %>%
+    #  ungroup() %>%
+    #  
+    #  select(activity_id, latitude, longitude, distance_left, distance_gone, rider, Power, length, fbin) %>%
+    #  mutate(rolling_speed = P)
+    
+    #dbWriteTable(con, "strava_rolling_power_curves", rollingdf, append = TRUE, row.names = FALSE)
+    
+    #
+  
+      every_chunk <- initial %>% 
+        
+        group_by(activity_id) %>%
+        mutate(rowid = max(rowid) - rowid) %>% 
+        filter(rowid %% P == 0) %>%
+        ungroup() %>%
+        
+        select(activity_id, latitude, longitude, distance_left, distance_gone, rider, Power, length) %>%
+        
+        mutate(rolling_speed = P)
+      
+      dbWriteTable(con, "strava_all_power_chunks", every_chunk, append = TRUE, row.names = FALSE)
+      
+    }
     
   }
+  
+  }
+  
+  #
+  #
+  #
+  
+  #top_limit <- amt_work %>% group_by(activity_id) %>% summarize(amt_of_work = max(amt_of_work)) %>% ungroup() %>%
+  #  summarize(limit = quantile(amt_of_work, probs = 0.975)) %>% .[[1]]
+  
+  #amount_of_work <- seq(10, top_limit, 10)
+  
+  #
+  
+  #rolling_speeds <- c(15, 30, 60, 120, 300, 600, 1200, 2400)
+  
+  #for(P in rolling_speeds) {
+    
+    #tictoc::tic()
+
+    #rollingdf <- all_telem_df %>% 
+    #  
+    #  filter(!is.na(watts)) %>%
+    #  
+    #  group_by(activity_id) %>%
+    #  mutate(time_correct = ((RcppRoll::roll_max(time, n = P, fill = 0, align = "right")-RcppRoll::roll_min(time,n = P, fill = 0, align = "right")) == P-1)) %>%
+    #  mutate(Power = RcppRoll::roll_mean(watts, n = P, fill = NA, align = "right")) %>%
+    #  filter(time_correct == TRUE) %>%
+    #  ungroup() %>%
+    #  
+    #  inner_join(expand_grid(amt_work,
+    #                         a = amount_of_work) %>%
+    #               filter(amt_of_work > a) %>%
+    #               mutate(time = time + P) %>%
+    #               filter(time >= 0) %>%
+    #               select(time, activity_id, amt_of_work, a_o_w_thresh = a), by = c("activity_id", "time")) %>%
+    # 
+    #  filter(amt_of_work > a_o_w_thresh) %>%
+    #  
+    #  group_by(activity_id, a_o_w_thresh) %>%
+    #  filter(rank(desc(Power), ties.method = "first") == 1) %>%
+    #  ungroup() %>%
+    #  
+    #  select(activity_id, latitude, longitude, distance_left, distance_gone, rider, Power, length,
+    #         work_done = amt_of_work, a_o_w_thresh) %>%
+    #  mutate(rolling_speed = P)
+    
+    #tictoc::toc()
+  
+    #dbWriteTable(con, "strava_rolling_power_curves_afterwork", rollingdf, append = TRUE, row.names = FALSE)
+    
+  #}
+  
+  rm(rollingdf)
+  rm(all_telem_df)
+  rm(data_lists)
+  rm(telem_list)
+  rm(amt_work)
   
   #
   
