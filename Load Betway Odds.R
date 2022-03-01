@@ -15,6 +15,12 @@ con <- dbConnect(MySQL(),
 
 betway <- fs::dir_info("C:/Users/Jake/Documents/R Code/p-c/odds/betway/")
 
+#
+
+dbSendQuery(con, "DELETE FROM betway_cycling_odds")
+
+#
+
 for(f in 1:length(betway$path)) {
   
   page <- jsonlite::fromJSON(betway$path[[f]])
@@ -36,3 +42,7 @@ for(f in 1:length(betway$path)) {
   dbWriteTable(con, "betway_cycling_odds", outcomes, append = TRUE, row.names = FALSE)
   
 }
+
+#
+
+all_odds <- dbReadTable(con, "betway_cycling_odds")
