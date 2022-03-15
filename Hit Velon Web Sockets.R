@@ -12,9 +12,32 @@ races <- jsonlite::fromJSON("https://race.velon.cc/liveUpcomingRacesForMultiRace
 
 races_data <- races$liveUpcomingRacesForMultiRaces$upcoming
 
+startTime <- lubridate::as_datetime(races_data$anticipatedStartTime$utc[[1]])
 endTime <- lubridate::as_datetime(races_data$anticipatedEndTime$utc[[1]])
+stageId <- races_data$stageID[[1]]
+raceId <- races_data$raceId[[1]]
 
-Sys.sleep(22400)
+#
+
+wsSendString = paste0('{"type":"group","eventId":', raceId, ',"stageId":', stageId, ',"jsonpack":false}')
+
+time_until_start = lubridate::as_datetime(startTime) - lubridate::now(tzone = 'UTC')
+
+UUU <- attributes(time_until_start)$units
+
+if(UUU == "hours") {
+  time_until_start <- as.numeric(time_until_start)*3600
+} else if(UUU == "minutes") {
+  time_until_start <- as.numeric(time_until_start)*60
+} else if(UUU == "seconds") {
+  time_until_start <- as.numeric(time_until_start)
+} else {
+  time_until_start = 0
+}
+
+if(time_until_start <= 0) { time_until_start = 0}
+
+Sys.sleep(round(time_until_start,0))
 
 #
 
@@ -28,7 +51,7 @@ ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
 
 ws$onOpen(function(event) {
   
-  ws$send('{"type":"group","eventId":51587,"stageId":268263,"jsonpack":false}')
+  ws$send(wsSendString)
 })
 
 ws$onMessage(function(event) {
@@ -39,24 +62,23 @@ ws$onMessage(function(event) {
   # add json$time, json$stageId, json$eventId
   # store that data
   
-  
   if(x == 0) {
     x <<- x+1
   } else {
-  
-  pre <- event$data
-  
-  json <- pre %>% fromJSON()
-  
-  result_list[[x]] <<- json
-  
-  x <<- x+1
-  
+    
+    pre <- event$data
+    
+    json <- pre %>% fromJSON()
+    
+    result_list[[x]] <<- json
+    
+    x <<- x+1
+    
   }
   
   print(x)
   
-  if(lubridate::now(tzone = "UTC") > lubridate::as_datetime(endTime+3600)) {
+  if(lubridate::now(tzone = "UTC") > lubridate::as_datetime(endTime+1800)) {
     
     ws$close()
     
@@ -112,7 +134,7 @@ telemetry <- bind_rows(data_list) %>%
   filter(mean(is.na(distanceToGo)) < 1) %>%
   ungroup()
 
-#write_csv(telemetry, "D:/Jake/Documents/Velon Telemetry/uae-tour-2022-STAGE7-velon-telemetry.csv")
+#write_csv(telemetry, "D:/Jake/Documents/Velon Telemetry/tirreno-stage7-2022-velon-telemetry.csv")
 
 #
 #
@@ -132,12 +154,13 @@ con <- dbConnect(MySQL(),
 
 start_list <- DBI::dbGetQuery(con, "SELECT bib, rider, team 
                          FROM pcs_all_startlists 
-                         WHERE race = 'uae tour' AND year = 2022")
+                         WHERE race = 'tirreno-adriatico' AND year = 2022")
 
 calc_power <- telemetry %>% 
   filter(distanceToGo > 0) %>% 
   
-  group_by(bibNumber, final = distanceToGo < 6000, split = ifelse(distanceToGo > 127000 & distanceToGo < 142000, "echelons", "rest")) %>% 
+  group_by(bibNumber, split = ifelse(distanceToGo > 31500 & distanceToGo < 36500, "carpegna1", 
+                                     ifelse(distanceToGo > 12500 & distanceToGo < 17500, "carpegna2", "rest"))) %>% 
   summarize(wattskg = mean(wattsPerKg, na.rm = T), 
             avg_Power = mean(power, na.rm = T), 
             seqs = n(), 
@@ -155,7 +178,8 @@ calc_power <- telemetry %>%
   
   mutate(peaks = Q90 - MED,
          troughs = MED - Q10,
-         abs_peaks = Q95 - MED) %>%
+         abs_peaks = Q95 - MED, 
+         dist = shortest-furthest) %>%
   
   inner_join(start_list, by = c("bibNumber" = "bib"))
 
