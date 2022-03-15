@@ -108,25 +108,6 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %
          points_finish = ifelse(rnk <= (sof_limit * 5), points_finish, 0))
 
 #
-#
-#
-#
-
-KJ_kg_data <- dbGetQuery(con, "SELECT * FROM strava_stage_distance_chunks
-                         WHERE amount = '999999' AND rnk < 200 AND avg_power IS NOT NULL") %>%
-  
-  mutate(KJ = time * avg_power) %>%
-  
-  group_by(stage, race, year) %>%
-  filter(n() >= 15) %>% 
-  summarize(median_KJkg = median(KJ, na.rm = T),
-            distance = median(distance/1000, na.rm = T),
-            hours = median(time/3600, na.rm = T)) %>%
-  ungroup()
-
-All_data1 <- All_data %>%
-  inner_join(KJ_kg_data, by = c("stage", "race", "year")) %>%
-  filter((distance / length) > 0.9 & (distance / length) > 1.1)
 
 # I can generate all of these lme4 predictions
 # and then compare them with what Stan out-puts
@@ -134,13 +115,6 @@ All_data1 <- All_data %>%
 # to the mean, so I can just regress the lme4 predictions based on small samples
 # because one iteration of lme4 takes 45 seconds and can be run on AWS
 # while Stan takes 7500 seconds and is trickier to run on AWS
-
-#All_dates <- All_dates %>% 
-  #filter(lubridate::year(date) < 2020) %>% 
-  #anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks WHERE one_day_race IS NOT NULL") %>%
-  #            mutate(date = as.Date(date)), by = c("date"))
-
-#All_dates <- tibble(date = sample(All_dates$date, 50))
 
 #
 
