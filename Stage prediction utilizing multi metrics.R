@@ -464,8 +464,8 @@ predicting_all <- All_data %>%
   mutate(teamldr_within_team = rank(rk_teamldr, ties.method = "min")) %>% 
   ungroup() %>%
   
-  filter(!is.na(level_data)) %>%
-  filter(level_data == "bs_added") %>%
+  #filter(!is.na(level_data)) %>%
+  #filter(level_data == "bs_added") %>%
   
   mutate(class_small = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
                            class %in% c("2.2", "1.2") ~ ".2", 
@@ -496,7 +496,17 @@ predicting_all_supp <- cbind(
   pred_rank = predict(pred_rank_model, predicting_all)) %>%
   
   mutate(pred_rank = exp(pred_rank)) %>%
-  unique()
+  unique() %>%
+  
+  mutate(pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank)) %>%
+  
+  group_by(stage, race, year, class, date) %>%
+  mutate(xrnk = ifelse(rnk == 200, NA, rnk),
+         missrnk = sum(is.na(xrnk)),
+         xrnk = max(xrnk, na.rm = T),
+         rnk = ifelse(rnk == 200, xrnk + (missrnk/2), rnk)) %>%
+  mutate(pred_rank = pred_rank / mean(pred_rank, na.rm = T) * mean(rnk, na.rm = T)) %>%
+  ungroup()
 
 #
 
@@ -543,10 +553,10 @@ cobbles_predrnk <- predicting_all_supp %>%
 
 predicting_all_supp %>%
   
-  filter(date > '2022-01-01' & date < '2022-12-01') %>%
+  filter(date > '2020-07-01' & date < '2022-12-01') %>%
   
   unique() %>%
-  group_by(rider) %>%
+  group_by(rider, bunch_sprint) %>%
   summarize(#exp_points = sum(pred_points, na.rm = T),
             #act_points = sum(points_finish, na.rm = T),
             exp_rank = mean(log(pred_rank), na.rm = T),
@@ -566,6 +576,10 @@ predicting_all_supp %>%
 #
 
 predicting_all_supp %>%
+  
+  group_by(race, stage, year, date, class, class_small, url) %>%
+  mutate(pred_rank = pred_rank / mean(pred_rank) * mean(rnk)) %>%
+  ungroup() %>%
   
   mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA),
          pred_for_winner = ifelse(rnk == 1, pred_rank, NA),
@@ -640,7 +654,10 @@ unique_dates <- predicting_all_supp %>%
   arrange(desc(date)) %>%
   
   anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM performance_last10races_vsmodel") %>%
-              mutate(date = as.Date(date)), by = c("date"))
+              mutate(date = as.Date(date)), by = c("date")) %>%
+  
+  rbind(tibble(date = lubridate::today())) %>%
+  arrange(desc(date))
 
 #
 
@@ -652,14 +669,13 @@ for(i in 1:length(unique_dates$date)) {
   vs_exp1 <- predicting_all_supp %>%
     filter(between(date, MIN, MAX)) %>%
     
-    group_by(rider) %>%
-    filter(rank(desc(date), ties.method = "first") <= 10 | date >= (MAX - 25)) %>%
-    summarize(#exp_points = mean(pred_points, na.rm = T),
-              #act_points = mean(points_finish, na.rm = T),
-              exp_rank = mean(log(pred_rank), na.rm = T),
+    group_by(rider, bunch_sprint) %>%
+    filter(date >= (MAX - 29)) %>%
+    summarize(exp_rank = mean(log(pred_rank), na.rm = T),
               act_rank = mean(log(rnk), na.rm = T),
               error_rank = mean((log(rnk) - log(pred_rank)), na.rm = T),
               days_of_comps = round(mean(as.numeric(MAX - date), na.rm = T),0),
+              sof = mean(sof, na.rm = T),
               races = n()) %>%
     ungroup() %>%
     
@@ -672,7 +688,7 @@ for(i in 1:length(unique_dates$date)) {
     filter(!class %in% c("NC", "WC", 'CC')) %>%
     filter(between(date, MIN, MAX)) %>%
     
-    group_by(rider) %>%
+    group_by(rider, bunch_sprint) %>%
     filter(rank(desc(date), ties.method = "first") <= 5 | date >= (MAX - 14)) %>%
     summarize(exp_leader = mean(shrunk_teamldr, na.rm = T),
               act_leader = mean(team_ldr, na.rm = T)) %>%
@@ -680,7 +696,7 @@ for(i in 1:length(unique_dates$date)) {
   
   vs_exp <- vs_exp1 %>%
     
-    left_join(vs_exp2, by = c("rider"))
+    full_join(vs_exp2, by = c("rider", "bunch_sprint"))
   
   dbWriteTable(con, "performance_last10races_vsmodel", vs_exp, append = TRUE, row.names = F)
   
@@ -700,9 +716,10 @@ predicting_all_with_recent <- predicting_all_supp %>%
   left_join(
     
     dbGetQuery(con, "SELECT rider, date, (act_leader - exp_leader) as rel_leader, 
-    exp_leader, act_leader, exp_rank, act_rank, error_rank, races, days_of_comps
+    exp_leader, act_leader, exp_rank, act_rank, error_rank, races, days_of_comps,
+    bunch_sprint
                FROM performance_last10races_vsmodel") %>%
-      mutate(date = as.Date(date)), by = c('rider', 'date')
+      mutate(date = as.Date(date)), by = c('rider', 'date', 'bunch_sprint')
     
   ) %>%
   
@@ -718,7 +735,7 @@ predicting_all_with_recent <- predicting_all_supp %>%
   mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
   ungroup() %>%
   
-  cbind(pred_break_win = predict(breakaway_glm, predicting_all_supp)) %>%
+  mutate(pred_break_win = predict(read_rds("Stored models/breakaway_glm.rds"), .)) %>%
   
   mutate(pred_break_win = exp(pred_break_win)/(1+exp(pred_break_win)))
   
