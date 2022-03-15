@@ -1888,7 +1888,7 @@ for(r in 1:length(all_races$url)) {
 # Scrape GC rankings ------------------------------------------------------
 
 # pull in directory of HTML downloads (about ~75 stages don't/can't download)
-html_stage_dir <- fs::dir_ls("PCS-HTML/")
+html_stage_dir <- fs::dir_ls("D:/Jake/Documents/PCS-HTML/")
 
 #html_stage_dir <- fs::dir_ls("PCS-HTML-GT/")
 
@@ -1905,7 +1905,7 @@ if(dl_html == FALSE) {
     
     anti_join(dbGetQuery(con, "SELECT DISTINCT stage as s, race as Race, year FROM pcs_stage_by_stage_gc"), by = c("s", "Race", "year")) %>%
     
-    filter(year == 2021)
+    filter(year >= 2021)
   
   all_stages <- all_stages %>%
     mutate(path = paste0("PCS-HTML-GT/", 
@@ -1926,7 +1926,7 @@ tictoc::tic()
 
 for(r in 1:length(all_stages$value)) {
   
-  f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+  f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
   # match existence of f_name in stage directory
   if((f_name %in% html_stage_dir) & (str_sub(all_stages$Class[[r]],1,1)=="2")) {
@@ -1939,7 +1939,7 @@ for(r in 1:length(all_stages$value)) {
     
     # scrape the HTML for the page for multiple use
     
-    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
     page <- read_file(f_name) %>%
       read_html()
@@ -2079,7 +2079,7 @@ for(r in 1:length(all_stages$value)) {
     
     download.file(url, f_name, quiet = TRUE)
     
-    f_name <- paste0("PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    f_name <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
     page <- read_file(f_name) %>%
       read_html()
