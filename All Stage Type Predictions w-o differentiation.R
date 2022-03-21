@@ -73,7 +73,7 @@ All_dates <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") 
 
 All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
   
-  filter(time_trial == 0) %>%
+  filter(time_trial == 0 & team_time_trial == 0) %>%
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%
   

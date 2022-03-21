@@ -852,7 +852,7 @@ for(r in 1:length(all_stages$value)) {
           print("no rider column, possibly a TTT")
           
         } else {
-          
+
         stage <- stage %>%
           
           # this processes time
@@ -1226,7 +1226,8 @@ stage_data <- stage_data_int %>%
   
   mutate(length = ifelse(year == 2013 & race == 'E3 Prijs Vlaanderen - Harelbeke', 206, length)) %>%
   
-  mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)),
+  mutate(rider = ifelse(str_detect(stage_name, "TTT") | str_detect(race, "TTT"), rider, 
+                        str_sub(rider, 1, nchar(rider)-nchar(team))),
          rider = str_to_title(rider)) %>%
   
   mutate(finished = ifelse(rnk %in% c("DNF", "OTL", "DNS", "NQ", "DSQ"), NA, total_seconds)) %>%
@@ -1282,7 +1283,7 @@ stage_data <- stage_data_int %>%
          gain_20th = (total_seconds - x20),
          gain_40th = (total_seconds - x40)) %>%
   
-  filter(!str_detect(stage_name, "TTT")) %>%
+  #filter(!str_detect(stage_name, "TTT")) %>%
   
   select(-t10_time, -x10, -x20, -x40, -top_var, -x3, -x5) %>%
   
@@ -1584,6 +1585,7 @@ stage_data <- stage_data %>%
 stage_data <- stage_data %>%
 
   mutate(time_trial = as.numeric(time_trial),
+         team_time_trial = ifelse(str_detect(stage_name, "TTT") | str_detect(race, "TTT"), 1, 0),
          grand_tour = as.numeric(grand_tour),
          one_day_race = as.numeric(one_day_race),
          missing_profile_data = as.numeric(missing_profile_data)) %>%
@@ -1903,7 +1905,17 @@ if(dl_html == FALSE) {
     
     filter(!(url %in% c("race/60th-tour-de-picardie/2016"))) %>%
     
-    anti_join(dbGetQuery(con, "SELECT DISTINCT stage as s, race as Race, year FROM pcs_stage_by_stage_gc"), by = c("s", "Race", "year")) %>%
+    anti_join(dbGetQuery(con, "SELECT DISTINCT stage as s, race as Race, year, COUNT(*) as N FROM pcs_stage_by_stage_gc
+                         GROUP BY stage, race, year") %>%
+                group_by(Race, year) %>%
+                filter(N > 90 | (N / max(N)) > 0.5) %>%
+                ungroup(), by = c("s", "Race", "year")) %>%
+    
+    filter(Class %in% c("2.2", "2.1", "2.HC", "2.Pro", "2.UWT", "2.Ncup", "2.2U") & year > 2012) %>%
+    
+    inner_join(dbGetQuery(con, "SELECT DISTINCT stage as s, race as Race, year
+                         FROM pcs_stage_raw
+                         WHERE rnk IS NOT NULL"), by = c("s", "Race", "year")) %>%
     
     filter(year >= 2021)
   
@@ -1969,17 +1981,17 @@ for(r in 1:length(all_stages$value)) {
           
           res[[n]] <- df %>%
             rowid_to_column() %>%
+            select(rowid) %>%
             mutate(rows = max(rowid)) %>%
             select(-rowid) %>%
             mutate(n = n) %>%
             select(n, rows) %>%
-            unique()
-          
+            unique() %>%
+            mutate(type = "GC")
         }
       }
       
-      chooser <- bind_rows(res) %>%
-        filter(max(rows)==rows)
+      chooser <- bind_rows(res)
       
       # sometimes if the first stage is a TTT (2014 Vuelta)
       # the stage page won't have GC column so just find the GC page and use that
@@ -2034,12 +2046,23 @@ for(r in 1:length(all_stages$value)) {
         
       } else {
         
+        chooser <- chooser %>%
+          
+          filter(max(rows)==rows)
+        
         # now actually process the stage including getting times correct
         
         stage_GC <- d[[chooser$n[[1]]]] %>%
+          janitor::clean_names()
+        
+        if("timelag" %in% names(stage_GC)) {
+          stage_GC <- stage_GC %>% rename(gc_time = timelag)
+        }
+        
+        stage_GC <- stage_GC %>%
           janitor::clean_names() %>%
           
-          select(gc_rnk = gc, gc_time = timelag, rider, team) %>%
+          select(gc_rnk = gc, gc_time, rider, team) %>%
           
           mutate(stage = s,
                  race = all_stages$Race[[r]],

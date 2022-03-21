@@ -52,7 +52,7 @@ missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
 
 stage_data <- dbGetQuery(con, "SELECT rnk,rider,team,win_seconds,total_seconds,
 length,stage_type,parcours_value,stage,race,
-year,url,class,gain_1st,gain_20th,time_trial,       
+year,url,class,gain_1st,gain_20th,time_trial, team_time_trial,       
 grand_tour,one_day_race,tm_pos,date,gain_gc,speed,
 fr_stage_type,missing_profile_data,act_climb_difficulty,final_20km_vert_gain,
 time_at_1500m,total_vert_gain,summit_finish,avg_alt,final_1km_gradient
@@ -299,11 +299,11 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DAT
 
 relative_strength_of_tours <- stage_data %>%
   
-  filter(year >= 2014) %>%
+  filter(year >= 2014 & team_time_trial == 0) %>%
   
   inner_join(stage_data %>%
                
-               filter(year >= 2014) %>%
+               filter(year >= 2014 & team_time_trial == 0) %>%
                
                filter(!is.na(rider)) %>%
                
@@ -435,7 +435,7 @@ strength_of_peloton <- stage_data %>%
          qual = ranks) %>%
   
   select(stage, race, year, rider, rnk, qual, class, tour = Tour, master_team, url,
-         bunch_sprint, date, time_trial, one_day_race, grand_tour) %>%
+         bunch_sprint, date, time_trial, one_day_race, grand_tour, team_time_trial) %>%
   
   unique() %>%
   
@@ -511,7 +511,7 @@ for(d in 1:length(dates_to_generate_sop$date)) {
     
     strength_of_peloton %>%
       
-      filter(one_day_race == 1) %>%
+      filter(one_day_race == 1 & team_time_trial == 0) %>%
       
       filter(date < MAXD &
                date >= MIND) %>%
@@ -530,7 +530,7 @@ for(d in 1:length(dates_to_generate_sop$date)) {
     
     strength_of_peloton %>%
       
-      filter(one_day_race == 0) %>%
+      filter(one_day_race == 0 & team_time_trial == 0) %>%
       
       filter(date < MAXD &
                date >= MIND) %>%
@@ -599,9 +599,11 @@ tictoc::toc()
 
 individual_races_sop <- strength_of_peloton %>%
   
-  mutate(race_type = ifelse(time_trial == 1, "TT",
+  mutate(race_type = ifelse(time_trial == 1 | team_time_trial == 1, "TT",
                             ifelse(one_day_race == 1, "ODR",
                                    ifelse(bunch_sprint == 1, "BS", "STG")))) %>%
+  
+  filter(!is.na(date)) %>%
   
   group_by(race, class, year) %>%
   mutate(DATE = min(date, na.rm = T)) %>%
@@ -1422,7 +1424,7 @@ bs_data <- stage_data_perf %>%
   mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage) & as.numeric(stage) >= 18, na.rm = T) & grand_tour == 1, 1, 0)) %>%
   ungroup() %>%
   
-  filter(time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
+  filter(time_trial == 0 & team_time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
   mutate(length = length - 200) %>%
 
   filter(!is.na(bunch_sprint)) %>%
