@@ -1377,42 +1377,12 @@ dbWriteTable(con, "stage_data_perf",
              append = T)
 
 #
-#
-#
-
-stage_data_perf <- dbReadTable(con, "stage_data_perf") 
-
-pcs_points <- dbReadTable(con, "pcs_stage_pts")
-
-sdp <- dbGetQuery(con, "SELECT rider, stage, race, year, class, date, length, team, master_team,
-                  rnk, pred_climb_difficulty, bunch_sprint, tm_pos, one_day_race, time_trial, sof,
-                  sof_limit
-                  FROM stage_data_perf
-                  WHERE year >= 2017 & class <> 'JR'") %>%
-  mutate(stage = as.character(stage)) %>%
-  left_join(pcs_points %>% 
-              select(rider, stage, race, year, rnk, class, pcs_pts) %>%
-              mutate(race = str_to_lower(race),
-                     rider = str_to_title(rider)), by = c("rider", "stage", "race", "year", "rnk", "class")) %>%
-  mutate(pcs_pts = ifelse(is.na(pcs_pts), 0, pcs_pts)) %>%
-  
-  group_by(stage, race, year, class, date, length) %>%
-  mutate(pcs_max = max(pcs_pts, na.rm = T)) %>%
-  mutate(pcs_pts = pcs_pts / max(pcs_pts, na.rm = T)) %>%
-  ungroup()
-
-#
-
-dbWriteTable(con, "pcs_pts_riders_season", sdp, overwrite = TRUE, row.names = FALSE)
-
-
-#
 # I define bunch sprint as 1st place getting same time as 25th place
 #
 
 # Bunch Sprint Modelling --------------------------------------------------
 
-library(xgboost)
+#library(xgboost)
 
 bs_data <- stage_data_perf %>%
   
@@ -1460,6 +1430,47 @@ bs_data <- stage_data_perf %>%
                select(stage, race, year, class, final_1km_vertgain, final_5km_vertgain,
                       final_20km_vert_gain, first_30km_vert_gain), by = c("stage", "race", "year", "class"))
 
+# final predictions
+
+bs_glm <- glm(bunch_sprint ~ grand_tour +
+                perc_thru +
+                one_day_race + 
+                sq_pcd + 
+                pred_climb_difficulty + 
+                length + 
+                uphill_finish + 
+                finalGT + 
+                level + 
+                cobbles,
+              family = "binomial",
+              data = bs_data)
+
+summary(bs_glm)
+
+# write model and predictions
+
+coef(bs_glm)
+#write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
+
+#
+
+bs_glm_pred <- cbind(
+  
+  pred = predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), bs_data),
+  
+  bs_data
+  
+)  %>%
+  mutate(pred = exp(pred)/(1+exp(pred))) %>%
+  
+  select(stage, race, year, bunch_sprint, predicted_bs = pred)
+
+#dbSendQuery(con, "DELETE FROM predictions_stage_bunchsprint WHERE year > 2019")
+
+dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, append = TRUE)
+
+#
+#
 #
 
 test_list <- vector("list", 100)
@@ -1602,45 +1613,43 @@ bind_rows(test_list) %>% summarize(mean(bscore), mean(insample))
 
 bind_rows(xgb_list) %>% summarize(mean(bscore), mean(insample))
 
-# final predictions
+#
+#
+#
+#
+#
 
-bs_glm <- glm(bunch_sprint ~ grand_tour +
-                perc_thru +
-                one_day_race + 
-                sq_pcd + 
-                pred_climb_difficulty + 
-                length + 
-                uphill_finish + 
-                finalGT + 
-                level + 
-                cobbles,
-              family = "binomial",
-              data = bs_data)
+# PCS PTS -----------------------------------------------------------------
 
-summary(bs_glm)
 
-# write model and predictions
+#
+#
+#
 
-coef(bs_glm)
-write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
+stage_data_perf <- dbReadTable(con, "stage_data_perf") 
+
+pcs_points <- dbReadTable(con, "pcs_stage_pts")
+
+sdp <- dbGetQuery(con, "SELECT rider, stage, race, year, class, date, length, team, master_team,
+                  rnk, pred_climb_difficulty, bunch_sprint, tm_pos, one_day_race, time_trial, sof,
+                  sof_limit
+                  FROM stage_data_perf
+                  WHERE year >= 2017 & class <> 'JR'") %>%
+  mutate(stage = as.character(stage)) %>%
+  left_join(pcs_points %>% 
+              select(rider, stage, race, year, rnk, class, pcs_pts) %>%
+              mutate(race = str_to_lower(race),
+                     rider = str_to_title(rider)), by = c("rider", "stage", "race", "year", "rnk", "class")) %>%
+  mutate(pcs_pts = ifelse(is.na(pcs_pts), 0, pcs_pts)) %>%
+  
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(pcs_max = max(pcs_pts, na.rm = T)) %>%
+  mutate(pcs_pts = pcs_pts / max(pcs_pts, na.rm = T)) %>%
+  ungroup()
 
 #
 
-bs_glm_pred <- cbind(
-  
-  pred = predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), bs_data),
-  
-  bs_data
-  
-)  %>%
-  mutate(pred = exp(pred)/(1+exp(pred))) %>%
-  
-  select(stage, race, year, bunch_sprint, predicted_bs = pred)
-
-#dbSendQuery(con, "DELETE FROM predictions_stage_bunchsprint WHERE year > 2019")
-
-dbWriteTable(con, "predictions_stage_bunchsprint", bs_glm_pred, row.names = F, append = TRUE)
-
+dbWriteTable(con, "pcs_pts_riders_season", sdp, overwrite = TRUE, row.names = FALSE)
 
 
 
