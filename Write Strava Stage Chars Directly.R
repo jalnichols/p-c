@@ -51,6 +51,10 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   filter((distance / length) > 0.95) %>%
   filter((distance / length) < 1.05) %>%
   
+  group_by(stage, race, year, class) %>%
+  filter(rank(abs((distance/length)-1), ties.method = 'random') <= 5) %>%
+  ungroup() %>%
+  
   inner_join(
     
     fs::dir_info('D:/Jake/Documents/STRAVA_JSON/') %>%
@@ -58,11 +62,8 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
       mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2022-02-27 10:00:00') %>%
-  
-  group_by(stage, race, year, class) %>%
-  filter(rank(abs((distance/length)-1), ties.method = 'random') <= 5) %>%
-  ungroup()
+  filter(birth_time > '2022-03-25 10:00:00')
+
 
 # prep data
 
@@ -200,6 +201,10 @@ extract_telemetry <- function(ACTIVITY) {
     rename(elevations = alt) %>%
     mutate(year = as.numeric(year)) %>%
     rename(distances = dist)
+  
+  if(skip == 1) {
+    
+  } else {
   
   # calc stage chars
 
@@ -390,6 +395,8 @@ extract_telemetry <- function(ACTIVITY) {
 
   dbWriteTable(con, "strava_stage_characteristics", stage_characteristics %>% select(-metric), append = T, row.names = F)
   
+  }
+  
   #
   #
   # extract climbs
@@ -418,16 +425,16 @@ extract_telemetry <- function(ACTIVITY) {
     arrange(rider, year, race, stage, every_km2) %>%
     
     mutate(every_km = floor(every_km2/0.25)/4) %>%
-    mutate(everytenth = floor(every_km2/0.1)/10) %>%
+    #mutate(everytenth = floor(every_km2/0.1)/10) %>%
     
-    mutate(every_km = ifelse(left_km < 3, everytenth, every_km),
+    mutate(every_km = ifelse(left_km < 0, everytenth, every_km),
            gradient = (elevations - lead(elevations)) / ((lead(left_km)-left_km)*1000)) %>%
     
     group_by(every_km, length, year, race, stage, rider) %>%
     summarize(min = min(elevations, na.rm = T),
               max = max(elevations, na.rm = T),
               gradient = mean(gradient, na.rm = T),
-              elevations = mean(elevations, na.rm = T),
+              elevations = max(elevations, na.rm = T),
     ) %>%
     ungroup() %>%
     
@@ -475,15 +482,15 @@ extract_telemetry <- function(ACTIVITY) {
     mutate(change_gradient = ifelse(change_gradient != lag(change_gradient) & change_gradient != lead(change_gradient),
                                     ifelse(lag(change_gradient) == lead(change_gradient), lag(change_gradient), change_gradient), change_gradient)) %>%
     
-    mutate(every_km3 = floor(every_km)) %>%
-    mutate(everytenth = floor(every_km/0.25)/4) %>%
+    #mutate(every_km3 = floor(every_km)) %>%
+    #mutate(everytenth = floor(every_km/0.25)/4) %>%
     
-    mutate(every_km3 = ifelse(every_km < 3, everytenth, every_km3)) %>%
+    #mutate(every_km3 = ifelse(every_km < 3, everytenth, every_km3)) %>%
     
     mutate(segment_distance = every_km - lead(every_km),
            segment_distance = ifelse(is.na(segment_distance), lag(segment_distance), segment_distance)) %>%
     
-    group_by(every_km = every_km3, length, year, race, stage, rider) %>%
+    group_by(every_km, length, year, race, stage, rider) %>%
     summarize(min = min(elevations, na.rm = T),
               max = max(elevations, na.rm = T),
               gradient = sum(gradient * segment_distance, na.rm = T) / sum(segment_distance, na.rm = T),
