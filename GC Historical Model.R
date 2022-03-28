@@ -230,29 +230,64 @@ for(x in 1:length(y)) {
   
   D <- as.Date(y[[x]])
   
-  gc_ratings <- pcs_gc_results %>%
+  # gc_ratings <- pcs_gc_results %>%
+  #   filter(date > (D-1100) & date < D) %>%
+  # 
+  #   mutate(wt = (1 / (as.numeric(D - date) + 365))/0.00273,
+  #          wtd = wt*pnt) %>%
+  # 
+  #   group_by(rider) %>%
+  #   mutate(t7 = ifelse(rank(desc(pnt), ties.method = "first") <= 7, pnt, NA),
+  #          t7_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 7, wtd, NA),
+  #          t3 = ifelse(rank(desc(pnt), ties.method = "first") <= 3, pnt, NA),
+  #          t3_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 3, wtd, NA)) %>%
+  #   ungroup() %>%
+  #   
+  #   group_by(rider) %>%
+  #   summarize(avg = mean(pnt, na.rm = T),
+  #             top7 = mean(t7, na.rm = T),
+  #             top3 = mean(t3, na.rm = T),
+  #             max = mean(max_pnt, na.rm = T),
+  #             wtd = mean(wtd, na.rm = T),
+  #             top7_wtd = mean(t7_wtd, na.rm = T),
+  #             top3_wtd = mean(t3_wtd, na.rm = T),
+  #             races = n()) %>%
+  #   ungroup() %>%
+  #   
+  #   mutate(perc_max = avg/max) %>%
+  #   
+  #   filter(top7 > 0 | max > 0 | wtd > 0 | top7_wtd > 0)
+  
+  gc_ratings_pcd <- pcs_gc_results %>%
     filter(date > (D-1100) & date < D) %>%
-
+    filter(avg_pcd >= 3) %>%
+    
     mutate(wt = (1 / (as.numeric(D - date) + 365))/0.00273,
            wtd = wt*pnt) %>%
     
-    group_by(rider) %>%
-    mutate(t7 = ifelse(rank(desc(pnt), ties.method = "first") <= 7, pnt, NA),
-           t7_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 7, wtd, NA)) %>%
-    ungroup() %>%
+       group_by(rider) %>%
+       mutate(t7 = ifelse(rank(desc(pnt), ties.method = "first") <= 7, pnt, NA),
+              t7_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 7, wtd, NA),
+              t3 = ifelse(rank(desc(pnt), ties.method = "first") <= 3, pnt, NA),
+              t3_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 3, wtd, NA)) %>%
+       ungroup() %>%
     
     group_by(rider) %>%
     summarize(avg = mean(pnt, na.rm = T),
               top7 = mean(t7, na.rm = T),
+              top3 = mean(t3, na.rm = T),
               max = mean(max_pnt, na.rm = T),
               wtd = mean(wtd, na.rm = T),
               top7_wtd = mean(t7_wtd, na.rm = T),
+              top3_wtd = mean(t3_wtd, na.rm = T),
               races = n()) %>%
     ungroup() %>%
     
-    mutate(perc_max = avg/max)
+    mutate(perc_max = avg/max) %>%
+    
+    filter(top7 > 0 | max > 0 | wtd > 0 | top7_wtd > 0)
   
-  store_list[[x]] <- gc_ratings %>%
+  store_list[[x]] <- gc_ratings_pcd %>%
     mutate(D = D)
   
 }
@@ -264,6 +299,12 @@ grand_tour_gc_ratings <- bind_rows(store_list) %>%
   mutate(year = lubridate::year(D)) %>%
   
   filter(!is.na(rider))
+
+#
+#
+#
+
+dbWriteTable(con, "rider_gc_rankings", grand_tour_gc_ratings, overwrite = TRUE, row.names = FALSE)
 
 #
 #
@@ -980,25 +1021,51 @@ joined_with_UCI %>%
 
 predictiveness_gc_rankings <- pcs_gc_results %>%
   
-  select(rider, url, year, date, rnk) %>%
+  select(rider, url, year, date, rnk, avg_pcd, time_trial_kms, total_stages) %>%
   unique() %>%
   
-  inner_join(grand_tour_gc_ratings %>%
-               select(D, rider, top7_wtd, perc_max, races), by = c("date" = "D", "rider")) %>%
+  inner_join(dbGetQuery(con, "SELECT DISTINCT rider, url, team FROM stage_data_perf"), by = c("rider", "url")) %>%
+  
+  left_join(grand_tour_gc_ratings %>%
+               select(D, rider, top7_wtd, top3_wtd, perc_max, races), by = c("date" = "D", "rider")) %>%
+  
+  mutate(top7_wtd = ifelse(is.na(top7_wtd), 0, top7_wtd)) %>%
+  mutate(top3_wtd = ifelse(is.na(top3_wtd), 0, top3_wtd)) %>%
   
   group_by(url, year) %>%
   mutate(behind_best = max(top7_wtd, na.rm = T) - top7_wtd,
-         gc_rnk = rank(desc(top7_wtd), ties.method = "min")) %>%
+         top_wtd = (top3_wtd + top7_wtd)/2,
+         gc_rnk = rank(desc(top_wtd), ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(url, team, year) %>%
+  mutate(tm_rnk = rank(desc(top_wtd), ties.method = "min")) %>%
   ungroup()
 
 #
 
 gc_mod_preds <- predictiveness_gc_rankings %>%
+  # correlation between gc_rnk and rnk is lower for races under 3 avg_pcd
+  filter(avg_pcd >= 3) %>%
   mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>% 
   filter(rnk <= 200 & rnk > 0) %>% 
   mutate(win = ifelse(rnk==1,1,0)) %>% 
   
-  glm(win ~ top7_wtd + log(gc_rnk), data = ., family = "binomial")
+  glm(win ~ top_wtd + log(gc_rnk), data = ., family = "binomial")
+
+#
+
+gc_mod_preds <- predictiveness_gc_rankings %>%
+  filter(avg_pcd >= 3) %>%
+  mutate(rnk = ifelse(is.na(rnk), 200, rnk)) %>% 
+  filter(rnk <= 200 & rnk > 0) %>% 
+  mutate(win = ifelse(rnk==1,1,0)) %>% 
+  
+  glm(win ~ top_wtd + 
+        log(gc_rnk) + 
+        tm_rnk + 
+        top_wtd:avg_pcd +
+        log(gc_rnk):avg_pcd, data = ., family = "binomial")
 
 #
 
@@ -1012,14 +1079,10 @@ applied_predictions <- predictiveness_gc_rankings %>%
          pred = exp(pred)/(1+exp(pred))) %>%
   
   group_by(url, year) %>%
-  mutate(pred = pred - min(pred, na.rm = T)) %>%
+  mutate(pred = pred / sum(pred)) %>%
   ungroup() %>%
   
-  #group_by(url, team, year) %>%
-  #mutate(tmrnk = rank(desc(pred), ties.method = "first"),
-  #       total = sum(pred),
-  #       pred = ifelse(tmrnk <= 2, pred/total, 0)) %>%
-  #ungroup() %>%
+  mutate(pred = ifelse(pred < 0.005, 0, pred)) %>%
   
   group_by(url, year) %>%
   mutate(pred = pred / sum(pred)) %>%
