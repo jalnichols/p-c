@@ -19,7 +19,7 @@ con <- dbConnect(MySQL(),
 
 game_race_list <- vector("list", 7)
 
-pull_in_game <- seq(2016,2022,1)
+pull_in_game <- seq(2022,2022,1)
 
 for(g in 1:length(pull_in_game)) {
   
@@ -69,6 +69,9 @@ all_games <- bind_rows(game_race_list) %>%
 #
 
 each_race <- all_games %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT Race, Year as year, stage as Stage FROM pcs_game_team_picks")) %>%
+  
   group_by(Race, year) %>%
   filter(rank(Url, ties.method = "first") == 1) %>%
   ungroup() %>%
@@ -131,7 +134,9 @@ players_in_game <- bind_rows(list_of_game_picks) %>%
   
   mutate(number_players = ifelse(number_players == "-", 1001, as.numeric(number_players))) %>%
   
-  mutate(more_1000 = ifelse(number_players > 1000, 1, 0))
+  mutate(more_1000 = ifelse(number_players > 1000, 1, 0)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT Race, Year as year, stage as Stage FROM pcs_game_team_picks"))
 
 #
 
@@ -289,6 +294,8 @@ dbGetQuery(con, "SELECT * FROM pcs_game_team_picks") %>%
   
   mutate(pts_of_5 = points / (pickers*5)) %>%
   
+  filter(!is.na(Stage)) %>%
+  
   mutate(race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
          rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) -> rider_point_percentages_df
 
@@ -298,8 +305,7 @@ dbGetQuery(con, "SELECT * FROM pcs_game_team_picks") %>%
 
 picks_aggr <- dbGetQuery(con, "SELECT * FROM pcs_game_picks") %>%
   mutate(url = str_replace(url, "https://www.procyclingstats.com/race/", ""),
-         url = str_replace(url, "/game/most-picked", ""), 
-         picked_rider = str_to_title(picked_rider))
+         url = str_replace(url, "/game/results-vs-picks", ""))
 
 #
 #
@@ -309,6 +315,89 @@ combined_picks <- picks_aggr %>%
   
   select(-race, -year, -stage, -result) %>%
   
-  inner_join(rider_point_percentages_df, by = c("url")) %>%
+  filter(number_picks > 0) %>%
+  
+  left_join(rider_point_percentages_df, by = c("url")) %>%
   filter(str_detect(picked_rider, str_to_title(rider))) %>%
-  filter((number_picks / picks) > 0.90 & (number_picks / picks) < 1.1)
+  filter(str_sub(picked_rider,1,3) == str_sub(str_to_title(rider), 1, 3)) %>%
+  filter((((number_picks / picks) > 0.90 & (number_picks / picks) < 1.1)) |
+           (abs(number_picks - picks) <= 5)) %>%
+  
+  select(-rider, -picks, -points, -race) %>%
+  
+  rbind(
+    
+    picks_aggr %>%
+      
+      select(-race, -year, -stage, -result) %>%
+      
+      filter(number_picks == 0) %>%
+      
+      left_join(rider_point_percentages_df %>%
+                  select(-rider, -picks, -points, -race) %>%
+                  mutate(pts_of_5 = 0) %>%
+                  unique(), by = c("url"))
+    
+  ) %>%
+
+  unique() %>%
+  
+  filter(Year >= 2016) %>%
+  
+  mutate(Race = str_to_lower(Race),
+         Stage = as.character(Stage)) %>%
+  
+  inner_join(
+    dbGetQuery(con, "SELECT DISTINCT stage, race, year, date, pred_climb_difficulty, sof, bunch_sprint, one_day_race
+               FROM stage_data_perf
+               WHERE year >= 2016 AND time_trial = 0"), by = c("Stage" = "stage", "Race" = "race", "Year" = "year")
+  ) %>%
+  mutate(date = as.Date(date))
+
+#
+#
+#
+
+DATES <- dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks
+                    WHERE date > '2016-12-31'") %>%
+  arrange(desc(date)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_pcsgamepicks"))
+
+#
+#
+#
+
+for(p in 1:nrow(DATES)) {
+  
+  ed <- as.Date(DATES$date[[p]])
+  sd <- ed - 365 
+  
+  picks_model <- lme4::lmer(pts_of_5 ~ (1 + pred_climb_difficulty | picked_rider) + 
+                              (0 + bunch_sprint | picked_rider) + 
+                              #(0 + one_day_race | picked_rider) +
+                              sof,
+                            
+                            data = combined_picks %>% 
+                              
+                              filter(between(date, sd, ed)) %>%
+                              
+                              group_by(picked_rider) %>%
+                              filter(n() >= 15) %>% 
+                              ungroup())
+  
+  #
+  
+  # picks_model shows impact of SOF as -0.044 and intercept at 0.035
+  # so average rider in 0.50 race would be 0.012 with 75% of riders with negative intercepts
+  
+  #
+  
+  random_effects <- lme4::ranef(picks_model)[[1]] %>% rownames_to_column() %>% mutate(date = ed-1)
+
+  dbWriteTable(con, "lme4_rider_pcsgamepicks", random_effects, append = TRUE, row.names = FALSE)
+  
+  print(DATES$date[[p]])
+    
+}
+  
