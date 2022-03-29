@@ -383,7 +383,7 @@ gbm_model$best_score
 
 #
 
-write_rds(gbm_model, "Stored models/gc_s_b_s_model.rds", )
+write_rds(gbm_model, "Stored models/gc_s_b_s_model.rds")
 
 #
 
@@ -602,7 +602,7 @@ final_df_to_predict_from <- who_is_still_in_race %>%
 
 gbm_live_predictions <- cbind(
   
-  model_pred = predict(gbm_model, 
+  model_pred = predict(read_rds("Stored models/gc_s_b_s_model.rds"), 
                        as.matrix(final_df_to_predict_from %>%
                                    select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk), reshape=T)),
   
@@ -610,6 +610,224 @@ gbm_live_predictions <- cbind(
   
   select(rider, stage, race, year, url, class, date, total_seconds_back, seconds_behind_contenders, pre_winprob = pred, 
          percent_through, model_winprob = model_pred) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(model_winprob = model_winprob / sum(model_winprob, na.rm = T)) %>%
+  ungroup()
+
+
+# Future GC Win Prob -----------------------------------------------------
+
+library(rvest)
+
+latest_rider_gc_rankings <- dbGetQuery(con, "SELECT r.D, rider, top7_wtd, top3_wtd, perc_max, races
+             FROM rider_gc_rankings r
+             JOIN (
+             
+              SELECT max(D) as D
+              FROM rider_gc_rankings
+             
+             ) x ON r.D = x.D") %>%
+  mutate(D = as.Date(D)) %>%
+  mutate(top7_wtd = ifelse(is.na(top7_wtd), 0, top7_wtd)) %>%
+  mutate(top3_wtd = ifelse(is.na(top3_wtd), 0, top3_wtd),
+         top_wtd = (top3_wtd + top7_wtd)/2)
+
+#
+#
+#
+
+future_gc_races <- dbGetQuery(con, paste0("SELECT url, Class, Race as race, year FROM pcs_all_races
+                           WHERE Winner = '' AND Date > '", lubridate::today(), "'")) %>%
+  filter(str_sub(Class, 1, 1) == "2")
+
+#
+
+startlist_df <- vector("list", nrow(future_gc_races))
+
+for(s in 1:nrow(future_gc_races)) {
+  
+  URL <- paste0('https://www.procyclingstats.com/', future_gc_races$url[[s]], '/startlist')
+  
+  page <- URL %>%
+    read_html() 
+  
+  #
+  
+  startlist <- page %>%
+    html_nodes('ul.startlist_v3') %>%
+    html_nodes('a')
+  
+  riders <- startlist %>%
+    html_nodes('span') %>%
+    html_text() %>%
+    enframe(name = NULL) %>%
+    mutate(value = iconv(value, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+    mutate(value = str_to_title(tolower(value)))
+  
+  teams <- cbind(
+    startlist %>%
+      html_text() %>%
+      enframe(name = NULL),
+    startlist %>%
+      html_attr(name = "href") %>%
+      enframe(name = NULL) %>%
+      rename(url = value)) %>%
+    filter(value != "") %>%
+    mutate(team_2nd = ifelse(str_detect(url, "team"), value, NA)) %>%
+    fill(team_2nd, .direction = "down") %>%
+    mutate(value = iconv(value, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+    mutate(value = str_to_title(tolower(value))) %>%
+    select(-url) %>%
+    rename(team = team_2nd)
+  
+  riders <- cbind(riders %>% rename(rider = value)) %>%
+    inner_join(teams, by = c("rider" = "value"))
+  
+  if(nrow(riders) > 93) {
+  
+  startlist_df[[s]] <- riders %>%
+    mutate(url = future_gc_races$url[[s]])
+  
+  }
+  
+}
+
+#
+
+pre_event_startlist <- bind_rows(startlist_df) %>%
+  inner_join(future_gc_races, by = c("url"))
+
+#
+#
+#
+
+stage_characteristics <- dbGetQuery(con, "SELECT * 
+                                    FROM pcs_stage_characteristics
+                                    WHERE year > 2021") %>%
+  
+  mutate(time_trial_kms = ifelse(time_trial == 1, length, 0),
+         uphill_finish = ifelse(stage_type %in% c("icon profile p3", "icon profile p5"), 1, 0)) %>%
+  
+  mutate(sq_pcd = ifelse(pred_climb_difficulty <= 0, 0, pred_climb_difficulty ^ 2),
+         level = ifelse(class %in% c("UWT", "WT", "1.UWT", "2.UWT"), "WT",
+                        ifelse(class %in% c("Olympics", "WC", 'CC', "NC"), "Championships",
+                               ifelse(class %in% c("2.2U", "2.Ncup", "1.2U", "1.Ncup"), "U23", 
+                                      ifelse(class == "JR", "JR", "Regular")))),
+         cobbles = 0,
+         actual_length = length,
+         length = length - 200) %>%
+  
+  group_by(race, year, url) %>%
+  mutate(finalGT = ifelse(stage == max(stage) & grand_tour == 1, 1, 0),
+         stage_no = rank(stage, ties.method = "first"),
+         perc_thru = stage_no / max(stage_no)) %>%
+  ungroup() %>%
+  
+  mutate(predicted_bs = predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), .),
+         predicted_bs = ifelse(time_trial == 1, NA,
+                               ifelse(str_detect(stage_name, "TTT"), NA, predicted_bs)),
+         predicted_bs = exp(predicted_bs)/(1+exp(predicted_bs))) %>%
+  
+  mutate(GC_stage = ifelse(time_trial == 1 | str_detect(stage_name, "TTT"), 1, 1-predicted_bs),
+         GC_stage = ifelse(is.na(GC_stage), 0, GC_stage)) %>%
+  
+  arrange(date, year, race, stage) %>%
+  
+  group_by(year, race) %>%
+  mutate(GC_done = cumsum(GC_stage),
+         GC_all = sum(GC_stage)) %>%
+  ungroup() %>%
+  
+  mutate(GC_done = ifelse(is.na(GC_done), 0, GC_done),
+         percent_through = (GC_done / GC_all))
+
+#
+
+race_characteristics <- stage_characteristics %>%
+  
+  group_by(race = str_to_lower(race), year, url) %>%
+  summarize(time_trial_kms = sum(time_trial_kms),
+            total_TT = sum(time_trial == 1),
+            avg_pcd = mean(pred_climb_difficulty, na.rm = T),
+            total_stages = n()) %>%
+  ungroup()
+
+#
+#
+#
+
+who_is_still_in_race <- pre_event_startlist %>%
+  
+  mutate(race = str_to_lower(race)) %>%
+  
+  mutate(total_seconds_back = 0) %>%
+  
+  left_join(latest_rider_gc_rankings %>%
+              select(rider, top_wtd), by = c("rider")) %>%
+  
+  mutate(top_wtd = ifelse(is.na(top_wtd), 0, top_wtd)) %>%
+  
+  group_by(race, url, year) %>%
+  mutate(gc_rnk = rank(desc(top_wtd), ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(race, url, team, year) %>%
+  mutate(tm_rnk = rank(desc(top_wtd), ties.method = "min")) %>%
+  ungroup() %>%
+  
+  inner_join(race_characteristics, by = c("race", "year", "url")) %>%
+  
+  mutate(pred = predict(read_rds("Stored models/very-basic-gc-preds-model.rds"), .),
+         pred = exp(pred)/(1+exp(pred))) %>%
+  
+  group_by(race, url, year) %>%
+  mutate(pred = pred / sum(pred)) %>%
+  ungroup() %>%
+  
+  mutate(pred = ifelse(pred < 0.005, 0, pred)) %>%
+  
+  group_by(race, url, year) %>%
+  mutate(pred = pred / sum(pred)) %>%
+  ungroup() %>%
+  
+  group_by(race, year, url) %>%
+  mutate(contender_time = ifelse(pred > 0, total_seconds_back, NA),
+         contender_time = min(contender_time, na.rm = T),
+         seconds_behind_contenders = total_seconds_back - contender_time) %>%
+  ungroup()
+
+#
+
+final_df_to_predict_from <- who_is_still_in_race %>%
+  
+  rename(pre_gc_rnk = gc_rnk) %>%
+  
+  inner_join(stage_characteristics %>%
+               
+               group_by(race, year, url) %>%
+               filter(as.numeric(stage) == min(as.numeric(stage))) %>%
+               ungroup() %>%
+               
+               mutate(race = str_to_lower(race)) %>%
+               mutate(GC_rem = GC_all,
+                      percent_through = 0,
+                      stage = 0) %>%
+               select(race, year, url, stage, class, 
+                      percent_through, GC_rem), by = c("race", "year", "url")) 
+
+#
+
+gbm_future_predictions <- cbind(
+  
+  model_pred = predict(read_rds("Stored models/gc_s_b_s_model.rds"), 
+                       as.matrix(final_df_to_predict_from %>%
+                                   select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk), reshape=T)),
+  
+  final_df_to_predict_from) %>%
+  
+  select(rider, stage, race, year, url, class, total_seconds_back, seconds_behind_contenders, pre_winprob = pred, 
+         percent_through, model_winprob = model_pred, pre_gc_rnk) %>%
   
   group_by(stage, race, year) %>%
   mutate(model_winprob = model_winprob / sum(model_winprob, na.rm = T)) %>%
