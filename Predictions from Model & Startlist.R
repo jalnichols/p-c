@@ -13,34 +13,37 @@ con <- dbConnect(RMySQL::MySQL(),
 
 #
 
-URL <- 'https://www.procyclingstats.com/race/etoile-de-besseges/2022/startlist'
+race_url <- "race/dwars-door-vlaanderen/2022"
+choose_stage = 1
 
-TVG <- 1850 #2800
-KM <- 145 #198
-UphillFinish = 1
-ST <- "icon profile p3"
-STAGE = 4
-PV = 108 #75
+URL <- paste0('https://www.procyclingstats.com/', race_url, '/startlist')
 
-PCD1 <- predict(read_rds("Stored models/pcd-pv-mod.rds"), tibble(pv = PV))
-PCD2 <- predict(read_rds("Stored models/pcd-icon-mod.rds"), tibble(stage_type = ST, class_level = 4))
-PCD3 <- predict(read_rds("Stored models/strava-elev-mod.rds"), tibble(tvg = TVG / KM, strava_elevation = TVG, stage_type = ST))
+#
 
-PCD = (PCD1 + PCD2 + PCD3) / 3
+stage_chars <- dbGetQuery(con, sprintf("SELECT * FROM pcs_stage_characteristics WHERE url = '%s'", race_url))
+
+KM <- stage_chars$distance[[choose_stage]]
+ST <- stage_chars$stage_type[[choose_stage]]
+STAGE = as.numeric(stage_chars$stage_number[[choose_stage]])
+PV = stage_chars$pv[[choose_stage]]
+GT = stage_chars$grand_tour[[choose_stage]]
+level = stage_chars$class[[choose_stage]]
+PCD <- stage_chars$pred_climb_difficulty[[choose_stage]]
+ODR <- stage_chars$one_day_race[[choose_stage]]
 
 BS <- predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), 
               tibble(pred_climb_difficulty = PCD,
-                     finalGT = 0,
-                     grand_tour = 0,
+                     grand_tour = GT,
                      length = KM - 200,
                      cobbles = 0,
-                     one_day_race = 0,
-                     perc_thru = STAGE / 5,
-                     uphill_finish = UphillFinish,
+                     one_day_race = ODR,
+                     perc_thru = STAGE / nrow(stage_chars),
                      sq_pcd = PCD ^ 2,
-                     level = "WT"
+                     level = "Regular"
                      
-              ))
+              ) %>%
+                mutate(finalGT = ifelse(STAGE == 21 & GT == 1, 1, 0),
+                       uphill_finish = ifelse(ST %in% c("icon profile p3", "icon profile p5"),1,0)))
 
 BS <- exp(BS)/(1+exp(BS))
 
@@ -105,7 +108,23 @@ most_recent_models <- rbind(
              WHERE test_or_prod = 'prod'
              
              ) x ON r.Date = x.Date
-             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Leader')
+             WHERE test_or_prod = 'prod'") %>% mutate(Type = 'Leader'),
+  
+  dbGetQuery(con, "SELECT r.*
+             FROM lme4_rider_pcsgamepicks r
+             JOIN (
+             
+             SELECT max(Date) as Date
+             FROM lme4_rider_pcsgamepicks
+             
+             ) x ON r.Date = x.Date") %>% 
+    janitor::clean_names() %>%
+    rename(rider = rowname,
+           random_intercept = intercept,
+           pcd_impact = pred_climb_difficulty,
+           bunchsprint_impact = bunch_sprint,
+           Date = date) %>% 
+    mutate(Type = 'GamePicks')
   
 )
 
@@ -121,7 +140,7 @@ models <- riders %>%
     
   ) %>%
   
-  mutate(coef = ifelse(Type == "Points", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
+  mutate(coef = ifelse(Type == "GamePicks", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) -0.03,
                        ifelse(Type == "PointsWhenOpp", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS) + 0.012,
                               ifelse(Type == "LogRanks",  random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS),
                                      ifelse(Type == "TimeLost", random_intercept + (pcd_impact * PCD) + (bunchsprint_impact * BS),
@@ -131,7 +150,7 @@ models <- riders %>%
          coef = ifelse(Type %in% c("Success", "Leader", "WhenOpp"), coef / (1+coef), coef)) %>%
   
   mutate(coef = ifelse(is.na(coef),
-                       ifelse(Type %in% c("Points", "PointsWhenOpp"), 0.01,
+                       ifelse(Type %in% c("GamePicks", "PointsWhenOpp"), 0,
                               ifelse(Type %in% c("LogRanks", "Wins"), min(coef, na.rm = T),
                                      ifelse(Type == "Leader", 0.02,
                                             ifelse(Type %in% c("Success","WhenOpp"), 0.01,
@@ -146,8 +165,26 @@ models <- riders %>%
   mutate(adj = ifelse(Type %in% c("Leader"), coef / sum(coef), coef)) %>%
   ungroup() %>%
   
-  mutate(xRank = ifelse(Type == "LogRanks", exp(coef + log(nrow(riders)/2)), as.numeric(NA)))
+  mutate(xRank = ifelse(Type != "LogRanks", exp(coef + log(nrow(riders)/2)), as.numeric(NA)))
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 #
 #
 #
