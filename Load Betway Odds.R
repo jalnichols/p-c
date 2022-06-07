@@ -1,19 +1,18 @@
 library(tidyverse)
-library(RMySQL)
-
-#
+library(DBI)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 
-betway <- fs::dir_info("C:/Users/Jake/Documents/R Code/p-c/odds/betway/")
+betway <- fs::dir_info("C:/Users/Jake Nichols/Documents/R Code/p-c/odds/betway/")
 
 #
 
@@ -35,11 +34,28 @@ for(f in 1:length(betway$path)) {
     mutate(EventName = page$Event$EventName,
            Date = page$Event$Date,
            Time = page$Event$Time,
-           DownloadedAt = betway$birth_time[[f]])
+           DownloadedAt = betway$modification_time[[f]])
   
   #
   
-  dbWriteTable(con, "betway_cycling_odds", outcomes, append = TRUE, row.names = FALSE)
+  dbWriteTable(con, 
+               "betway_cycling_odds", 
+               outcomes %>%
+                 rename(id = Id,
+                        isactive = IsActive,
+                        oddsdecimal = OddsDecimal,
+                        eventid = EventId,
+                        marketid = MarketId,
+                        betname = BetName,
+                        title = Title,
+                        eachwayfractionden = EachWayFractionDen,
+                        eachwayposition = EachWayPosition,
+                        eventname = EventName,
+                        date = Date,
+                        time = Time,
+                        downloadedat = DownloadedAt) %>%
+                 mutate(isactive = as.numeric(isactive)), 
+               append = TRUE, row.names = FALSE)
   
 }
 
