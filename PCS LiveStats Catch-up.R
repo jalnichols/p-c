@@ -17,7 +17,7 @@ con <- dbConnect(MySQL(),
 # pull in each race and check for Live Stats
 
 all_2019_races <- dbGetQuery(con, "SELECT DISTINCT race, stage, stage_name, year, Class, url 
-                             FROM pcs_stage_data WHERE year >= 2019 AND
+                             FROM pcs_stage_data WHERE year = 2021 AND
                              Class IN ('2.1', '1.1', '2.HC', '1.HC', '1.UWT', '2.UWT', 'WC', '1.Pro', '2.Pro')") %>%
   mutate(live_stats_url = "") %>%
   
@@ -28,23 +28,23 @@ all_2019_races <- dbGetQuery(con, "SELECT DISTINCT race, stage, stage_name, year
 #
 
 for(r in 1:length(all_2019_races$url)) {
-
-checker <- paste0("PCS-HTML/", str_replace_all(str_replace(all_2019_races$url[[r]], "race/", ""), "/", "")) %>%
   
-  read_html() %>%
-  html_nodes('a') %>%
-  html_text() %>%
-  enframe(name = NULL) %>%
-  filter(str_detect(value, "LiveStats"))
-
-if(length(checker$value)>0) {  
-
-  all_2019_races$live_stats_url[[r]] <- paste0("race/",all_2019_races$url[[r]],"/today/livestats")
-
-  print(all_2019_races$url[[r]])
+  checker <- paste0("D:/Jake/Documents/PCS-HTML/", str_replace_all(str_replace(all_2019_races$url[[r]], "race/", ""), "/", "")) %>%
+    
+    read_html() %>%
+    html_nodes('a') %>%
+    html_text() %>%
+    enframe(name = NULL) %>%
+    filter(str_detect(value, "LiveStats"))
   
-}
-
+  if(length(checker$value)>0) {  
+    
+    all_2019_races$live_stats_url[[r]] <- paste0("race/",all_2019_races$url[[r]],"/today/livestats")
+    
+    print(all_2019_races$url[[r]])
+    
+  }
+  
 }
 
 #

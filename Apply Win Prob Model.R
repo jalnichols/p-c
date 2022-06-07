@@ -15,7 +15,7 @@ con <- dbConnect(MySQL(),
 # read in the field
 #
 
-field <- 'https://www.procyclingstats.com/race/milano-sanremo/2020/startlist/alphabetical-with-filters' %>%
+field <- 'https://www.procyclingstats.com/race/ronde-van-vlaanderen/2021/startlist/alphabetical-with-filters' %>%
   read_html() %>%
   html_nodes('table') %>%
   html_table() %>%
@@ -37,13 +37,13 @@ field <- 'https://www.procyclingstats.com/race/milano-sanremo/2020/startlist/alp
 
 conditions <- field %>%
   
-  mutate(length = 299,
-         pred_climb_difficulty = 3,
-         summit_finish = 0,
+  mutate(length = 264,
+         pred_climb_difficulty = 4,
+         uphill_finish = 0,
          one_day_race = 1,
          grand_tour = 0,
          finalGT = 0,
-         cobbles = 0,
+         cobbles = 1,
          perc_thru = 0
          ) %>%
   
