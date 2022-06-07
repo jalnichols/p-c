@@ -2,13 +2,16 @@
 library(tidyverse)
 library(lubridate)
 library(rvest)
-library(RMySQL)
+library(DBI)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+dbDisconnect(con)
+
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 #
@@ -115,13 +118,20 @@ predictiveness_gc_rankings <- pcs_gc_results %>%
   select(rider, url, race, year, date, rnk, avg_pcd, time_trial_kms, total_stages) %>%
   unique() %>%
   
-  inner_join(dbGetQuery(con, "SELECT DISTINCT rider, url, team FROM stage_data_perf"), by = c("rider", "url")) %>%
+  inner_join(dbGetQuery(con, "SELECT DISTINCT rider, url, team FROM stage_data_perf") %>%
+               mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+               mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)), by = c("rider", "url")) %>%
   
   # NEED: make sure GC historical model has run for all dates
   
-  left_join(dbGetQuery(con, "SELECT D, rider, top7_wtd, top3_wtd, perc_max, races 
+  left_join(dbGetQuery(con, "SELECT date, rider, top7_wtd, top3_wtd, perc_max, races 
                        FROM rider_gc_rankings") %>%
-              mutate(D = as.Date(D)), by = c("date" = "D", "rider")) %>%
+              mutate(date = as.Date(date)), by = c("date", "rider")) %>%
   
   mutate(top7_wtd = ifelse(is.na(top7_wtd), 0, top7_wtd)) %>%
   mutate(top3_wtd = ifelse(is.na(top3_wtd), 0, top3_wtd)) %>%
@@ -179,6 +189,54 @@ applied_predictions <- predictiveness_gc_rankings %>%
 
 # Bring in Stage by Stage GC data -----------------------------------------
 
+gc_stages_rating <- dbGetQuery(con, "SELECT DISTINCT stage, race, year, date, class, time_trial, 
+    team_time_trial, url, pred_climb_difficulty, bunch_sprint
+               FROM stage_data_perf") %>%
+  
+  mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>%
+  
+  group_by(race, year, url) %>%
+  mutate(min = min(as.numeric(str_replace(stage, "b", "")))) %>%
+  ungroup() %>%
+  
+  mutate(stage = ifelse(min == 0, as.character(as.numeric(stage) + 1), stage)) %>%
+  
+  left_join(dbGetQuery(con, "SELECT url, predicted_bs, stage FROM predictions_stage_bunchsprint") %>%
+              mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>%
+              unique(), by = c("stage" = "stage", "url")) %>%
+  
+  mutate(predicted_bs = ifelse(is.na(predicted_bs), 0, predicted_bs)) %>%
+  
+  mutate(GC_stage = ifelse(time_trial == 1 | team_time_trial == 1, 1, 1-predicted_bs),
+         GC_stage = ifelse(is.na(GC_stage), 0, GC_stage)) %>%
+  select(date, stage, race, year, GC_stage, url) %>%
+  unique() %>%
+  arrange(date, year, race, stage) %>%
+  select(-date) %>%
+  group_by(year, race, url) %>%
+  mutate(GC_done = cumsum(GC_stage),
+         GC_all = sum(GC_stage),
+         GC_done = lag(GC_done)) %>%
+  ungroup() %>%
+  mutate(GC_done = ifelse(is.na(GC_done), 0, GC_done),
+         percent_through = (GC_done / GC_all),
+         percent_through = ifelse(GC_all == 0, 1, percent_through))
+
+#
+#
+#
 
 stage_by_stage_GC <- dbReadTable(con, "pcs_stage_by_stage_gc") %>%
 
@@ -208,57 +266,35 @@ stage_by_stage_GC <- dbReadTable(con, "pcs_stage_by_stage_gc") %>%
   
   filter(!is.na(gc_rnk)) %>%
   
-  group_by(race, year) %>%
+  group_by(race, year, url) %>%
   mutate(final = ifelse(max(stage, na.rm = T)==stage, gc_rnk, NA),
          stages_left = max(stage, na.rm = T)-stage) %>%
   ungroup() %>%
   
-  group_by(rider, race, year) %>%
+  group_by(rider, race, year, url) %>%
   mutate(final = mean(final, na.rm = T)) %>%
   ungroup() %>%
   
-  group_by(race, year) %>%
+  group_by(race, year, url) %>%
   mutate(final = ifelse(is.na(final) | final == "NaN", max(final, na.rm = T)+1, final)) %>%
   ungroup() %>%
   
   mutate(race = tolower(race),
          stage = as.character(stage)) %>%  
   
+  mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+  mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>%
+  
+  select(-race) %>%
+  
   left_join(
     
-    # NEED: make sure have full knowledge of remainder of race stages from above
-    
-    dbGetQuery(con, "SELECT DISTINCT stage, race, year, date, class, time_trial, team_time_trial, url, pred_climb_difficulty, bunch_sprint
-               FROM stage_data_perf") %>%
-      
-      group_by(race, year) %>%
-      mutate(min = min(as.numeric(str_replace(stage, "b", "")))) %>%
-      ungroup() %>%
-      
-      mutate(stage = ifelse(min == 0, as.character(as.numeric(stage) + 1), stage)) %>%
-      
-      # NEED: and apply BS model to above data
-      
-      left_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
-                   select(-bunch_sprint) %>%
-                   unique(), by = c("stage" = "stage", "race", "year")) %>%
-      
-      mutate(predicted_bs = ifelse(is.na(predicted_bs), 0, predicted_bs)) %>%
-      
-      mutate(GC_stage = ifelse(time_trial == 1 | team_time_trial == 1, 1, 1-predicted_bs),
-             GC_stage = ifelse(is.na(GC_stage), 0, GC_stage)) %>%
-      select(date, stage, race, year, GC_stage) %>%
-      unique() %>%
-      arrange(date, year, race, stage) %>%
-      select(-date) %>%
-      group_by(year, race) %>%
-      mutate(GC_done = cumsum(GC_stage),
-             GC_all = sum(GC_stage),
-             GC_done = lag(GC_done)) %>%
-      ungroup() %>%
-      mutate(GC_done = ifelse(is.na(GC_done), 0, GC_done),
-             percent_through = (GC_done / GC_all),
-             percent_through = ifelse(GC_all == 0, 1, percent_through)), by = c("stage", "race", "year")
+    gc_stages_rating, by = c("stage", "url", "year")
     
   ) %>%
   
@@ -268,7 +304,7 @@ stage_by_stage_GC <- dbReadTable(con, "pcs_stage_by_stage_gc") %>%
   
   arrange(rider, race, year, as.numeric(stage)) %>%
   
-  group_by(rider, race, year) %>%
+  group_by(rider, race, year, url) %>%
   mutate(total_seconds_back = lag(total_seconds_back),
          total_seconds_back = ifelse(stage == 1, 0, total_seconds_back)) %>%
   ungroup()
@@ -281,26 +317,34 @@ stage_by_stage_GC <- dbReadTable(con, "pcs_stage_by_stage_gc") %>%
 
 who_has_GC_chances <- stage_by_stage_GC %>%
   
-  select(-duplic, -gcn, -old_gc_time, -hours, -minutes, -seconds, -h, -date) %>%
+  select(-duplic, -gcn, -old_gc_time, -hours, -minutes, -seconds, -h, -date, -race, -year, -class) %>%
   
   inner_join(applied_predictions %>%
                
-               filter(avg_pcd >= 3) %>%
+               #filter(avg_pcd >= 3) %>%
                
                arrange(url, !is.na(race)) %>%
                fill(race, .direction = "down") %>%
                select(-date, -team) %>%
                rename(pre_gc_rnk = gc_rnk) %>%
-               filter(!is.na(pred)), by = c("race", "year", "rider")) %>%
+               filter(!is.na(pred)), by = c("rider", "url")) %>%
   
-  left_join(dbGetQuery(con, "SELECT DISTINCT stage, race, year, date, class, time_trial, url
+  left_join(dbGetQuery(con, "SELECT DISTINCT stage, date, class, time_trial, url
                FROM stage_data_perf") %>%
               
-              group_by(race, year) %>%
+              mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>%
+              
+              group_by(url) %>%
               mutate(min = min(as.numeric(str_replace(stage, "b", "")))) %>%
               ungroup() %>%
               
-              mutate(stage = ifelse(min == 0, as.character(as.numeric(stage) + 1), stage)), by = c("stage", "race", "year", "url")) %>%
+              mutate(stage = ifelse(min == 0, as.character(as.numeric(stage) + 1), stage)), by = c("stage", "url")) %>%
   
   group_by(stage, race, year, url) %>%
   mutate(contender_time = ifelse(pred > 0, total_seconds_back, NA),
@@ -309,7 +353,38 @@ who_has_GC_chances <- stage_by_stage_GC %>%
   ungroup() %>%
   
   mutate(GC_rem = (GC_all*(1-percent_through))) %>%
-  unique()
+  unique() %>%
+  
+  left_join(dbGetQuery(con, "SELECT DISTINCT stage, date, url, rider, rnk
+               FROM stage_data_perf
+               WHERE one_day_race = 0") %>%
+              
+              mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2017"), str_replace(url, "/uae-tour/2017", "/abu-dhabi-tour/2017"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2018"), str_replace(url, "/uae-tour/2018", "/abu-dhabi-tour/2018"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>%
+              
+              group_by(url) %>%
+              mutate(min = min(as.numeric(str_replace(stage, "b", "")))) %>%
+              ungroup() %>%
+              
+              mutate(stage = ifelse(min == 0, as.character(as.numeric(stage) + 1), stage)) %>%
+              arrange(date) %>%
+              
+              inner_join(gc_stages_rating %>%
+                           select(stage, url, GC_stage), by = c("stage", "url")) %>%
+              
+              group_by(rider, url) %>%
+              mutate(log_rnk = cumsum(log(rnk) * GC_stage)/cumsum(GC_stage)) %>%
+              ungroup() %>%
+              mutate(stage = as.character(as.numeric(stage) + 1)) %>%
+              
+              select(stage, url, rider, log_rnk), by = c("stage", "url", "rider")) %>%
+  
+  mutate(log_rnk = ifelse(is.na(log_rnk), 4, log_rnk))
 
 # no one has won GC since 2014 if they're more than 150 seconds per GC stage remaining behind
 # best placed contender
@@ -319,99 +394,138 @@ library(xgboost)
 
 #
 
-xgb.train <- xgb.DMatrix(
-  
-  data = as.matrix(who_has_GC_chances %>%
-                     filter(year < 2022) %>%
-                     select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk)),
-  
-  label = who_has_GC_chances %>%
-    filter(year < 2022) %>%
-    select(win) %>%
-    .[[1]]
-  
-)
+distinct_races <- who_has_GC_chances %>%
+  filter(!is.na(GC_rem)) %>%
+  filter(!is.na(seconds_behind_contenders)) %>%
+  filter(!seconds_behind_contenders == -Inf) %>%
+  select(race, year, url, class) %>%
+  unique()
 
-# test
-
-xgb.test <- xgb.DMatrix(
+for(u in 1:nrow(distinct_races)) {
   
-  data = as.matrix(who_has_GC_chances %>%
-                     filter(year >= 2022) %>%
-                     select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk)),
+  xgb.train <- xgb.DMatrix(
+    
+    data = as.matrix(who_has_GC_chances %>%
+                       #anti_join(distinct_races[u,]) %>%
+                       filter(year < 2022) %>%
+                       filter(!is.na(GC_rem)) %>%
+                       filter(!is.na(seconds_behind_contenders)) %>%
+                       filter(!seconds_behind_contenders == -Inf) %>%
+                       select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk, log_rnk)),
+    
+    label = who_has_GC_chances %>%
+      #anti_join(distinct_races[u,]) %>%
+      filter(year < 2022) %>%
+      filter(!is.na(GC_rem)) %>%
+      filter(!is.na(seconds_behind_contenders)) %>%
+      filter(!seconds_behind_contenders == -Inf) %>%
+      select(win) %>%
+      .[[1]]
+    
+  )
   
-  label = who_has_GC_chances %>%
-    filter(year >= 2022) %>%
-    select(win) %>%
-    .[[1]]
+  # test
   
-)
-
-# outline parameters
-
-params <- list(
+  xgb.test <- xgb.DMatrix(
+    
+    data = as.matrix(who_has_GC_chances %>%
+                       #anti_join(distinct_races[u,]) %>%
+                       filter(year >= 2022) %>%
+                       filter(!is.na(GC_rem)) %>%
+                       filter(!is.na(seconds_behind_contenders)) %>%
+                       filter(!seconds_behind_contenders == -Inf) %>%
+                       select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk, log_rnk)),
+    
+    label = who_has_GC_chances %>%
+      #anti_join(distinct_races[u,]) %>%
+      filter(year >= 2022) %>%
+      filter(!is.na(GC_rem)) %>%
+      filter(!is.na(seconds_behind_contenders)) %>%
+      filter(!seconds_behind_contenders == -Inf) %>%
+      select(win) %>%
+      .[[1]]
+    
+  )
   
-  booster = "gbtree",
-  eta = 0.3,
-  max_depth = 3,
-  gamma = 0,
-  subsample = 1,
-  colsample_bytree = 1,
-  tree_method = "hist",
-  objective = "binary:logistic"
+  # outline parameters
   
-)
+  params <- list(
+    
+    booster = "gbtree",
+    eta = 0.3,
+    max_depth = 3,
+    gamma = 0,
+    subsample = 1,
+    colsample_bytree = 1,
+    tree_method = "hist",
+    objective = "binary:logistic"
+    
+  )
+  
+  # run xgboost model
+  
+  gbm_model <- xgb.train(params = params,
+                         data = xgb.train,
+                         nrounds = 1500,
+                         monotone_constraints = c(-1,0,0,1,-1,-1),
+                         early_stopping_rounds = 300,
+                         watchlist = list(val1 = xgb.train,
+                                          val2 = xgb.test),
+                         verbose = 0)
+  
+  #
+  #
+  # xgb Importance
+  
+  xgb.importance(model = gbm_model)
+  
+  gbm_model$best_score
+  
+  #
+  
+  gbm_gcwins_predictions = cbind(
+    
+    model_pred = predict(gbm_model, 
+                         as.matrix(who_has_GC_chances %>%
+                                     #inner_join(distinct_races[u,]) %>%
+                                     filter(!is.na(GC_rem)) %>%
+                                     filter(!is.na(seconds_behind_contenders)) %>%
+                                     filter(!seconds_behind_contenders == -Inf) %>%
+                                     select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk,
+                                            log_rnk), reshape=T)),
+    
+    who_has_GC_chances %>%
+      #inner_join(distinct_races[u,]) %>%
+      filter(!is.na(GC_rem)) %>%
+      filter(!is.na(seconds_behind_contenders)) %>%
+      filter(!seconds_behind_contenders == -Inf)) %>%
+    
+    select(rider, stage, race, year, url, class, date, total_seconds_back, seconds_behind_contenders, pre_winprob = pred, 
+           percent_through, final_gc_rnk = rnk, model_winprob = model_pred, log_rnk) %>%
+    
+    group_by(stage, race, year) %>%
+    mutate(model_winprob = model_winprob / sum(model_winprob, na.rm = T)) %>%
+    
+    arrange(desc(model_winprob), seconds_behind_contenders) %>%
+    
+    mutate(virtual_gc = rank(url, ties.method = 'first')) %>%
+    ungroup()
+  
+  #
+  
+  dbWriteTable(con, "stage_by_stage_gc_winprob", gbm_gcwins_predictions, overwrite = TRUE, row.names = FALSE)
+  
+  print(u)
+  
+}
+  
+#
 
-# run xgboost model
-
-gbm_model <- xgb.train(params = params,
-                       data = xgb.train,
-                       nrounds = 2000,
-                       nthreads = 4,
-                       early_stopping_rounds = 250,
-                       watchlist = list(val1 = xgb.train,
-                                        val2 = xgb.test),
-                       verbose = 1)
+#write_rds(gbm_model, "Stored models/gc_s_b_s_model.rds")
 
 #
 #
-# xgb Importance
-
-xgb.importance(model = gbm_model)
-
-gbm_model$best_score
-
 #
-
-write_rds(gbm_model, "Stored models/gc_s_b_s_model.rds")
-
-#
-
-# NEED: include latest GC standings as the next stage
-
-gbm_gcwins_predictions = cbind(
-  
-  model_pred = predict(gbm_model, 
-                 as.matrix(who_has_GC_chances %>%
-                             select(seconds_behind_contenders, percent_through, GC_rem, pred, pre_gc_rnk), reshape=T)),
-  
-  who_has_GC_chances) %>%
-  
-  select(rider, stage, race, year, url, class, date, total_seconds_back, seconds_behind_contenders, pre_winprob = pred, 
-         percent_through, final_gc_rnk = rnk, model_winprob = model_pred) %>%
-  
-  group_by(stage, race, year) %>%
-  mutate(model_winprob = model_winprob / sum(model_winprob, na.rm = T)) %>%
-  ungroup()
-
-#
-#
-#
-
-dbSendQuery(con, "DELETE FROM stage_by_stage_gc_winprob")
-
-dbWriteTable(con, "stage_by_stage_gc_winprob", gbm_gcwins_predictions, append = TRUE, row.names = FALSE)
-
 #
 #
 #
@@ -428,15 +542,15 @@ dbWriteTable(con, "stage_by_stage_gc_winprob", gbm_gcwins_predictions, append = 
 
 # Ongoing GC Win Prob -----------------------------------------------------
 
-latest_rider_gc_rankings <- dbGetQuery(con, "SELECT r.D, rider, top7_wtd, top3_wtd, perc_max, races
+latest_rider_gc_rankings <- dbGetQuery(con, "SELECT r.date, rider, top7_wtd, top3_wtd, perc_max, races
              FROM rider_gc_rankings r
              JOIN (
              
-              SELECT max(D) as D
+              SELECT max(date) as date
               FROM rider_gc_rankings
              
-             ) x ON r.D = x.D") %>%
-  mutate(D = as.Date(D)) %>%
+             ) x ON r.date = x.date") %>%
+  mutate(date = as.Date(date)) %>%
   mutate(top7_wtd = ifelse(is.na(top7_wtd), 0, top7_wtd)) %>%
   mutate(top3_wtd = ifelse(is.na(top3_wtd), 0, top3_wtd),
          top_wtd = (top3_wtd + top7_wtd)/2)
@@ -450,6 +564,8 @@ latest_stage_by_stage_gc <- dbGetQuery(con, "SELECT * FROM pcs_stage_by_stage_gc
   mutate(race = tolower(race),
          stage = as.character(stage)) %>%
   
+  select(-race, -year) %>%
+  
   inner_join(
     dbGetQuery(con, paste0("SELECT DISTINCT url, stage, race, year 
                            FROM pcs_stage_data WHERE date > '", lubridate::today() - 25, "'")) %>%
@@ -457,7 +573,7 @@ latest_stage_by_stage_gc <- dbGetQuery(con, "SELECT * FROM pcs_stage_by_stage_gc
         dbGetQuery(con, paste0("SELECT url FROM pcs_all_races
                            WHERE Winner = '' AND Date > '", lubridate::today() - 25, "'")), 
         by = c("url")), 
-    by = c("stage", "race", "year")) %>%
+    by = c("stage", "url")) %>%
     
   mutate(rider = str_to_title(tolower(rider)),
          gc_time = str_replace(gc_time, "//+", ""),
@@ -485,7 +601,7 @@ latest_stage_by_stage_gc <- dbGetQuery(con, "SELECT * FROM pcs_stage_by_stage_gc
   
   filter(!is.na(gc_rnk)) %>%
   
-  group_by(race, year) %>%
+  group_by(url) %>%
   filter(max(stage) == stage) %>%
   ungroup()
 
@@ -525,7 +641,7 @@ stage_characteristics <- dbGetQuery(con, "SELECT *
 
   arrange(date, year, race, stage) %>%
   
-  group_by(year, race) %>%
+  group_by(url) %>%
   mutate(GC_done = cumsum(GC_stage),
          GC_all = sum(GC_stage)) %>%
   ungroup() %>%
@@ -536,6 +652,10 @@ stage_characteristics <- dbGetQuery(con, "SELECT *
 #
 
 race_characteristics <- stage_characteristics %>%
+  
+  anti_join(latest_stage_by_stage_gc %>%
+              select(url, stage) %>%
+              unique()) %>%
   
   group_by(race = str_to_lower(race), year, url) %>%
   summarize(time_trial_kms = sum(time_trial_kms),
@@ -814,7 +934,8 @@ final_df_to_predict_from <- who_is_still_in_race %>%
                       percent_through = 0,
                       stage = 0) %>%
                select(race, year, url, stage, class, 
-                      percent_through, GC_rem), by = c("race", "year", "url")) 
+                      percent_through, GC_rem) %>%
+               unique(), by = c("race", "year", "url")) 
 
 #
 
