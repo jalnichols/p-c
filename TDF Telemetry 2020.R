@@ -1,53 +1,70 @@
 library(tidyverse)
 library(DBI)
-library(RMySQL)
 
-Sys.sleep(1000)
+Sys.sleep(0)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 # now kick off everything
 
-telemetry_api <- 'https://racecenter.letour.fr/api/telemetryCompetitor-2021'
+Sys.sleep(0)
 
-#telemetry_api <- 'https://racecenter.criterium-du-dauphine.fr/api/telemetryCompetitor-2021'
+base_url = 'https://racecenter.criterium-du-dauphine.fr/api/'
 
-STAGE <- 21
+#telemetry_api <- 'https://racecenter.lavuelta.es/api/'
+
+#telemetry_api <- 'https://racecenter.letour.fr/api/'
+
+telemetry_api <- paste0(base_url, 'telemetryCompetitor-2022')
+
+STAGE <- 3
 
 step = 1
 
-while(step < 2000) {
+while(step < 3500) {
 
-  json_df <- jsonlite::fromJSON(telemetry_api) %>%
+  json_data <- jsonlite::fromJSON(telemetry_api)
+  
+  json_df <- json_data %>%
     select(-YGPW) %>%
     unnest(cols = c(Riders)) %>%
-    select(-LatLon, -`_origin`)
+    select(-LatLon, -`_origin`) %>%
+    rename(timestamp = TimeStamp, status = Status, bib = Bib, longitude = Longitude, latitude = Latitude,
+           kmtofinish = kmToFinish, winddir = WindDir, degc = degC, kphwind = kphWind, kphavg = kphAvg,
+           riderwinddir = RiderWindDir, course = Course, jersey = Jersey, pos = Pos, gradient = Gradient,
+           sectofirstrider = secToFirstRider, stageid = StageId, racename = RaceName, racestatus = RaceStatus,
+           `_updatedat` = `_updatedAt`) %>%
+    select(-racestatus, -course) %>%
+    mutate(riderwinddir = round(riderwinddir,0))
   
   DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
 
   if(min(json_df$kmToFinish) < 3 & min(json_df$kmToFinish) > 0) {
 
-    Sys.sleep(1)
+    Sys.sleep(8)
 
-    step = step + 0.1
+    step = step + 1
 
   } else {
     
-    Sys.sleep(5)
+    Sys.sleep(8)
     
-    step = step + 0.5
+    step = step + 1
     
    }
   
-  print(min(json_df$kmToFinish))
+  print(min(json_df$kmtofinish))
 
 }
+
+# run lines 4 to 52
 
 #
 
@@ -55,14 +72,16 @@ tictoc::tic()
 
 all_stages <- dbGetQuery(con, "SELECT Bib, Longitude, Latitude, degC, kmToFinish, Gradient,
                          Pos, sectoFirstRider, StageId, RaceName, TimeStamp
-                         FROM telemetry_tdf2020 WHERE RaceName IN ('TDF 2021')") %>% 
+                         FROM telemetry_tdf2020 WHERE RaceName IN ('CDD 2022')") %>% 
   unique()
 
 tictoc::toc()
 
 #
 
-riders <- 'https://racecenter.letour.fr/api/allCompetitors-2021' %>%
+
+
+riders <- paste0(base_url, 'allCompetitors-2021') %>%
   readLines() %>%
   jsonlite::fromJSON() %>%
   select(Bib = bib, firstname, lastname, lastnameshort) %>%
@@ -70,23 +89,31 @@ riders <- 'https://racecenter.letour.fr/api/allCompetitors-2021' %>%
   mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
                                 111, 161, 172, 181), "GC","Helper")) %>%
   
-  rbind('https://racecenter.letour.fr/api/allCompetitors-2020' %>%
+  rbind(paste0(base_url, 'allCompetitors-2020') %>%
           readLines() %>%
           jsonlite::fromJSON() %>%
           select(Bib = bib, firstname, lastname, lastnameshort) %>%
           mutate(RaceName = 'TDF 2020') %>%
           mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
+                                        91, 94, 101, 104, 141, 161, 171), "GC","Helper"))) %>%
+  
+  rbind(paste0(base_url, 'allCompetitors-2022') %>%
+          readLines() %>%
+          jsonlite::fromJSON() %>%
+          select(Bib = bib, firstname, lastname, lastnameshort) %>%
+          mutate(RaceName = 'CDD 2022') %>%
+          mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
                                         91, 94, 101, 104, 141, 161, 171), "GC","Helper")))
 
 #
 
-for(s in 1:21) {
+for(s in 1:2) {
   
-  for(y in c(2020,2021)) {
+  for(y in c(2022)) {
 
-    climbs <- paste0('https://racecenter.letour.fr/api/checkpoint-', y, '-', s) %>%
+    climbs <- paste0(base_url, 'checkpoint-', y, '-', s) %>%
       readLines() %>%
-      rjson::fromJSON() %>%
+      jsonlite::fromJSON() %>%
       .[[1]] %>%
       unlist() %>%
       enframe() %>%
@@ -103,9 +130,9 @@ for(s in 1:21) {
       
       select(rowid, climb_length = length, category = code, climb_gradient = state, summit_altitude = `summit/altitude`, climb_name = `summit/name`)
     
-    lengths <- paste0('https://racecenter.letour.fr/api/checkpoint-', y, '-', s) %>%
+    lengths <- paste0(base_url, 'checkpoint-', y, '-', s) %>%
       readLines() %>%
-      rjson::fromJSON() %>%
+      jsonlite::fromJSON() %>%
       .[[1]] %>%
       unlist() %>%
       enframe() %>%
@@ -142,15 +169,21 @@ for(s in 1:21) {
 #
 #
 
-stages_data <- 'https://racecenter.letour.fr/api/stage-2021' %>%
+stages_data <- paste0(base_url, 'stage-2021') %>%
   jsonlite::fromJSON() %>%
   select(stage, length) %>%
   mutate(year = 2021) %>%
   rbind(
-    'https://racecenter.letour.fr/api/stage-2020' %>%
+    paste0(base_url, 'stage-2020') %>%
       jsonlite::fromJSON() %>%
       select(stage, length) %>%
       mutate(year=2020)
+  ) %>%
+  rbind(
+    paste0(base_url, 'stage-2022') %>%
+      jsonlite::fromJSON() %>%
+      select(stage, length) %>%
+      mutate(year=2022)
   )
 
 #
@@ -159,11 +192,15 @@ stages_data <- 'https://racecenter.letour.fr/api/stage-2021' %>%
 
 all_stages %>%
   
+  rename(Bib = bib, RaceName = racename,
+         kmToFinish = kmtofinish, TimeStamp = timestamp,
+         StageId = stageid) %>%
+  
   inner_join(riders, by = c("Bib", "RaceName")) %>%
   
   filter(kmToFinish > 0) %>% 
   
-  mutate(primoz = ifelse(Bib == "1", kmToFinish, NA)) %>% 
+  mutate(primoz = ifelse(Bib == "41", kmToFinish, NA)) %>% 
   
   group_by(TimeStamp) %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
