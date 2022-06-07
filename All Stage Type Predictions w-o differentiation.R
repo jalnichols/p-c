@@ -1,7 +1,17 @@
 #
 
 library(tidyverse)
-library(RMySQL)
+library(DBI)
+
+dbDisconnect(con)
+
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
+#
 
 # define function to clean extraneous fat from GLM
 
@@ -31,27 +41,19 @@ strip_glm = function(cm) {
 }
 
 #
-
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
-#
 #
 #
 
 # pull in dates
 
-All_dates <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
+All_dates <- dbGetQuery(con, "SELECT DISTINCT date, year FROM stage_data_perf WHERE year > 2014") %>%
   #filter(!is.na(bunch_sprint)) %>%
   #filter(!is.na(pred_climb_difficulty)) %>%
   #filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
   #         (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
   #         (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
   #         (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
-  filter(year > 2015 & year <= 2022) %>%
+  filter(year > 2014 & year <= 2022) %>%
   filter(date >= '2016-07-01') %>%
   select(date) %>%
   unique() %>%
@@ -67,11 +69,12 @@ All_dates <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") 
   anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks") %>%
               mutate(date = as.Date(date, origin = '1970-01-01')), by = c("date"))
 
-#write_csv(All_dates, "C:/Users/Jake/Documents/all-stage-type-preds-dates-AWS.csv")
-
 #
 
-All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %>%
+All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2013") %>%
+  
+  mutate(rider = str_replace_all(rider, "'", " "),
+         rider = str_to_title(rider)) %>%
   
   filter(time_trial == 0 & team_time_trial == 0) %>%
   filter(!is.na(bunch_sprint)) %>%
@@ -91,7 +94,7 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2018") %
          -avg_alt, -missing_profile_data) %>%
   
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
-           (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
+           (class %in% c("2.1", "1.1") & tour == "Europe Tour") | 
            (sof > 0.1 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (sof > 0.05 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (year >= 2021)) %>%
@@ -131,7 +134,7 @@ for(b in 1:length(All_dates$date)) {
     howfar = 0
     
   }
-  
+
   # one day before predicting date and two years back
   maxD <- as.Date(All_dates$date[[b]]) - 1
   minD <- maxD - 730 - howfar
@@ -166,7 +169,9 @@ for(b in 1:length(All_dates$date)) {
     
     mutate(win = ifelse(rnk == 1, 1, 0))
   
-  dy <- All_data %>% filter(between(date, minD - 366, maxD)==TRUE) %>% group_by(rider) %>% filter(n()>9) %>% ungroup()
+  #d_small <- dx %>% filter(between(date, All_dates$date[[b+180]], maxD)==TRUE)
+  
+  #dy <- All_data %>% filter(between(date, minD - 366, maxD)==TRUE) %>% group_by(rider) %>% filter(n()>9) %>% ungroup()
   
   dz <- All_data %>% filter(between(date, minD + 364, maxD)==TRUE) %>% group_by(rider) %>% filter(n()>9) %>% ungroup()
   
@@ -181,9 +186,11 @@ for(b in 1:length(All_dates$date)) {
     tictoc::tic()
     
     mod_logrk <- lme4::lmer(new_log_rnk ~ (1 + pred_climb_difficulty | rider) +
-                              (0 + bunch_sprint | rider),
-                            data = dx,
-                            control = lme4::lmerControl(optimizer = "nloptwrap"))
+                             (0 + bunch_sprint | rider) +
+                             (0 + one_day_race | rider),
+                           data = dx,
+                           control = lme4::lmerControl(optimizer = "nloptwrap"))
+    
     #
     # # Intercept is 0.07 for intercept
     #
@@ -191,16 +198,16 @@ for(b in 1:length(All_dates$date)) {
     tictoc::toc()
     
     random_effects <- lme4::ranef(mod_logrk)[[1]] %>%
-      rownames_to_column() %>%
-      rename(rider = rowname,
-             random_intercept = `(Intercept)`,
-             pcd_impact = pred_climb_difficulty,
-             bunchsprint_impact = bunch_sprint
-      ) %>%
-      #what date are we predicting
-      mutate(Date = as.Date(maxD + 1))  %>%
+     rownames_to_column() %>%
+     rename(rider = rowname,
+            random_intercept = `(Intercept)`,
+            pcd_impact = pred_climb_difficulty,
+            bunchsprint_impact = bunch_sprint
+     ) %>%
+     #what date are we predicting
+     mutate(date = as.Date(maxD + 1))  %>%
       
-      mutate(one_day_race = NA,
+      mutate(#one_day_race = NA,
              test_or_prod = 'prod')
     
     #
@@ -216,8 +223,74 @@ for(b in 1:length(All_dates$date)) {
     #
     #
     #
+    #
     
-    # ################################################
+    weighted_pcd <- dz %>%
+      select(-master_team) %>%
+      left_join(
+        
+        read_csv("master-teams.csv") %>%
+          select(team, year, master_team), by = c("team", "year")
+        
+      ) %>%
+      
+      mutate(master_team = ifelse(is.na(master_team), "X", master_team),
+             master_team = ifelse(team == "BORA - hansgrohe", "BORA", master_team)) %>%
+      filter(!is.na(pred_climb_difficulty)) %>%
+      mutate(weight = 1 / (rnk ^ 1)) %>%
+      
+      mutate(tm_pcd = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
+             tm_sof = ifelse(tm_pos == 1, sof, NA)) %>%
+      
+      group_by(master_team, year) %>%
+      mutate(tm_sof = mean(tm_sof, na.rm = T),
+             tm_pcd = mean(tm_pcd, na.rm = T)) %>%
+      ungroup() %>%
+      
+      mutate(points_finish = (1 / (rnk + 1)) * (sof_limit / 5),
+             points_finish = ifelse(rnk <= sof_limit * 5, points_finish, 0),
+             leader = ifelse(rnk <= 20, tm_pos == 1, 0)) %>%
+      
+      mutate(pointsBS = ifelse(bunch_sprint == 1, points_finish, 0),
+             pointsNOBS = ifelse(bunch_sprint == 0, points_finish, 0)) %>%
+      
+      group_by(rider) %>%
+      summarize(weighted_pcd = sum(pred_climb_difficulty * weight, na.rm = T) / sum(weight, na.rm = T),
+                races = n(),
+                pointsBS = sum(pointsBS, na.rm = T),
+                pointsNOBS = sum(pointsNOBS, na.rm = T),
+                team_pcd = sum(tm_pcd * weight, na.rm = T) / sum(weight, na.rm = T),
+                points = mean(points_finish, na.rm = T),
+                in_final_group = mean(final_group, na.rm = T),
+                one_day_races = sum(one_day_race == 1, na.rm = T),
+                stage_races = sum(one_day_race == 0 & stage == 1, na.rm = T),
+                leader = mean(leader, na.rm = T),
+                rider_sof = mean(sof, na.rm = T),
+                team_sof = mean(tm_sof, na.rm = T)) %>%
+      ungroup() %>%
+      
+      mutate(ODR_tilt = one_day_races / (one_day_races + stage_races),
+             BS_tilt = pointsBS / (pointsBS + pointsNOBS),
+             BS_tilt = ifelse(is.na(BS_tilt), median(BS_tilt, na.rm = T), BS_tilt),
+             rel_sof = rider_sof - team_sof,
+             rel_pcd = weighted_pcd - team_pcd) %>%
+      
+      select(rider, rel_sof, weighted_pcd, bs_tilt = BS_tilt, points, leader, in_final_group, races,
+             odr_tilt = ODR_tilt) %>%
+      
+      mutate(points = log10(points+0.01)) %>%
+      
+      mutate(date = as.Date(maxD + 1))
+    
+    #
+    # ############################################################
+    #
+    
+    dbWriteTable(con, "performance_rider_clustering", weighted_pcd, append = TRUE, row.names = FALSE)
+    
+    #
+    #
+    #
     
     #tictoc::tic()
     
@@ -229,7 +302,7 @@ for(b in 1:length(All_dates$date)) {
                         nAGQ=0,
                         control=lme4::glmerControl(optimizer = "nloptwrap"))
     
-    tictoc::toc()
+    #tictoc::toc()
     
     # summary
     
@@ -241,7 +314,7 @@ for(b in 1:length(All_dates$date)) {
              bunchsprint_impact = bunch_sprint
       ) %>%
       #what date are we predicting
-      mutate(Date = as.Date(maxD + 1)) %>%
+      mutate(date = as.Date(maxD + 1)) %>%
       mutate(one_day_race = NA,
              test_or_prod = 'prod')
     
@@ -250,6 +323,52 @@ for(b in 1:length(All_dates$date)) {
     dbWriteTable(con, "lme4_rider_teamleader", random_effects, append = TRUE, row.names = FALSE)
     
     rm(random_effects)
+    
+    #
+    # # run a lme4 model for rider finish position (logged)
+    #
+    
+    #tictoc::tic()
+    
+    #mod_logrk_small <- lme4::lmer(new_log_rnk ~ (1 + pred_climb_difficulty | rider) +
+    #                          (0 + bunch_sprint | rider),
+    #                        data = d_small %>% group_by(rider) %>% filter(n() > 9) %>% ungroup(),
+    #                        control = lme4::lmerControl(optimizer = "nloptwrap"))
+    #
+    # # Intercept is 0.07 for intercept
+    #
+    
+    #tictoc::toc()
+    
+    #random_effects <- lme4::ranef(mod_logrk_small)[[1]] %>%
+    #  rownames_to_column() %>%
+    #  rename(rider = rowname,
+    #         random_intercept = `(Intercept)`,
+    #         pcd_impact = pred_climb_difficulty,
+    #         bunchsprint_impact = bunch_sprint
+    #  ) %>%
+    #  #what date are we predicting
+    #  mutate(Date = as.Date(maxD + 1))  %>%
+    #  
+    #  mutate(one_day_race = NA,
+    #         test_or_prod = 'prod')
+    
+    #
+    # ################################################
+    #
+    
+    #dbWriteTable(con, "lme4_rider_logranks_small", random_effects, append = TRUE, row.names = FALSE)
+    
+    #print(mod_logrk_small@beta[[1]])
+    
+    #rm(random_effects)
+    
+    #
+    #
+    #
+    
+    # ################################################
+  
     
   } else if(skip == FALSE) {
     
@@ -619,58 +738,6 @@ for(b in 1:length(All_dates$date)) {
     # ############################################################
     #
     
-    weighted_pcd <- dz %>%
-      filter(!is.na(pred_climb_difficulty)) %>%
-      mutate(weight = 1 / (rnk ^ 1)) %>%
-      
-      mutate(tm_pcd = ifelse(tm_pos == 1, pred_climb_difficulty, NA),
-             tm_sof = ifelse(tm_pos == 1, sof, NA)) %>%
-      
-      group_by(master_team, year) %>%
-      mutate(tm_sof = mean(tm_sof, na.rm = T),
-             tm_pcd = mean(tm_pcd, na.rm = T)) %>%
-      ungroup() %>%
-      
-      mutate(points_finish = (1 / (rnk + 1)) * (sof_limit / 5),
-             points_finish = ifelse(rnk <= sof_limit * 5, points_finish, 0),
-             leader = ifelse(rnk <= 20, tm_pos == 1, 0)) %>%
-      
-      mutate(pointsBS = ifelse(bunch_sprint == 1, points_finish, 0),
-             pointsNOBS = ifelse(bunch_sprint == 0, points_finish, 0)) %>%
-      
-      group_by(rider) %>%
-      summarize(weighted_pcd = sum(pred_climb_difficulty * weight, na.rm = T) / sum(weight, na.rm = T),
-                races = n(),
-                pointsBS = sum(pointsBS, na.rm = T),
-                pointsNOBS = sum(pointsNOBS, na.rm = T),
-                team_pcd = sum(tm_pcd * weight, na.rm = T) / sum(weight, na.rm = T),
-                points = mean(points_finish, na.rm = T),
-                in_final_group = mean(final_group, na.rm = T),
-                one_day_races = sum(one_day_race == 1, na.rm = T),
-                stage_races = sum(one_day_race == 0 & stage == 1, na.rm = T),
-                leader = mean(leader, na.rm = T),
-                rider_sof = mean(sof, na.rm = T),
-                team_sof = mean(tm_sof, na.rm = T)) %>%
-      ungroup() %>%
-      
-      mutate(ODR_tilt = one_day_races / (one_day_races + stage_races),
-             BS_tilt = pointsBS / (pointsBS + pointsNOBS),
-             BS_tilt = ifelse(is.na(BS_tilt), median(BS_tilt, na.rm = T), BS_tilt),
-             rel_sof = rider_sof - team_sof,
-             rel_pcd = weighted_pcd - team_pcd) %>%
-      
-      select(rider, rel_sof, weighted_pcd, BS_tilt, points, leader, in_final_group, races) %>%
-      
-      mutate(points = log10(points+0.01)) %>%
-      
-      mutate(Date = as.Date(maxD + 1))
-    
-    #
-    # ############################################################
-    #
-    
-    dbWriteTable(con, "performance_rider_clustering", weighted_pcd, append = TRUE, row.names = FALSE)
-    
     ############################################################
     
     rm(All_riders)
@@ -678,8 +745,8 @@ for(b in 1:length(All_dates$date)) {
   }
   
   rm(dx)
-  rm(dy)
-  rm(dz)
+  #rm(dy)
+  #rm(dz)
   
   print(b)
   
