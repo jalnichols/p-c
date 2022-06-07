@@ -3,33 +3,36 @@ library(tidyverse)
 library(rvest)
 library(DBI)
 
-DBI::dbDisconnect(con)
+dbDisconnect(con)
 
-con <- dbConnect(RMySQL::MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 #
 
-race_url <- "race/dwars-door-vlaanderen/2022"
-choose_stage = 1
+race_url <- "race/giro-d-italia/2022"
+choose_stage = 10
 
 URL <- paste0('https://www.procyclingstats.com/', race_url, '/startlist')
 
 #
 
-stage_chars <- dbGetQuery(con, sprintf("SELECT * FROM pcs_stage_characteristics WHERE url = '%s'", race_url))
+stage_chars <- dbGetQuery(con, sprintf("SELECT * FROM pcs_stage_characteristics WHERE url = '%s'", race_url)) %>%
+  unique() %>%
+  arrange(stage) %>%
+  filter(stage_number == choose_stage)
 
-KM <- stage_chars$distance[[choose_stage]]
-ST <- stage_chars$stage_type[[choose_stage]]
-STAGE = as.numeric(stage_chars$stage_number[[choose_stage]])
-PV = stage_chars$pv[[choose_stage]]
-GT = stage_chars$grand_tour[[choose_stage]]
-level = stage_chars$class[[choose_stage]]
-PCD <- stage_chars$pred_climb_difficulty[[choose_stage]]
-ODR <- stage_chars$one_day_race[[choose_stage]]
+KM <- stage_chars$distance[[1]]
+ST <- stage_chars$stage_type[[1]]
+STAGE = as.numeric(stage_chars$stage_number[[1]])
+PV = stage_chars$pv[[1]]
+GT = stage_chars$grand_tour[[1]]
+level = stage_chars$class[[1]]
+PCD <- stage_chars$pred_climb_difficulty[[1]]
+ODR <- stage_chars$one_day_race[[1]]
 
 BS <- predict(read_rds("Stored models/bunchsprint-glm-mod.rds"), 
               tibble(pred_climb_difficulty = PCD,
@@ -38,10 +41,10 @@ BS <- predict(read_rds("Stored models/bunchsprint-glm-mod.rds"),
                      cobbles = 0,
                      one_day_race = ODR,
                      perc_thru = STAGE / nrow(stage_chars),
-                     sq_pcd = PCD ^ 2,
-                     level = "Regular"
+                     sq_pcd = PCD ^ 2
                      
               ) %>%
+                mutate(level = ifelse(grand_tour == 1 | level %in% c("1.UWT", "2.UWT"), "WT", "Regular")) %>%
                 mutate(finalGT = ifelse(STAGE == 21 & GT == 1, 1, 0),
                        uphill_finish = ifelse(ST %in% c("icon profile p3", "icon profile p5"),1,0)))
 
@@ -82,7 +85,16 @@ teams <- cbind(
   rename(team = team_2nd)
 
 riders <- cbind(riders %>% rename(rider = value)) %>%
-  inner_join(teams, by = c("rider" = "value"))
+  inner_join(teams, by = c("rider" = "value")) %>%
+  mutate(rider = ifelse(rider == "Girmay Biniam", "Girmay Hailu Biniam", rider)) %>%
+  inner_join(
+    
+    dbGetQuery(con, sprintf("SELECT * FROM pcs_stage_by_stage_gc
+               WHERE url = '%s'", race_url)) %>%
+      filter(stage == max(stage)) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
+      select(-team), by = c("rider"))
 
 #
 
@@ -124,9 +136,7 @@ most_recent_models <- rbind(
            pcd_impact = pred_climb_difficulty,
            bunchsprint_impact = bunch_sprint,
            Date = date) %>% 
-    mutate(Type = 'GamePicks')
-  
-)
+    mutate(Type = 'GamePicks'))
 
 #
 #
@@ -165,7 +175,44 @@ models <- riders %>%
   mutate(adj = ifelse(Type %in% c("Leader"), coef / sum(coef), coef)) %>%
   ungroup() %>%
   
-  mutate(xRank = ifelse(Type != "LogRanks", exp(coef + log(nrow(riders)/2)), as.numeric(NA)))
+  mutate(xRank = ifelse(Type == "LogRanks", exp(coef + mean(log(seq(1,nrow(riders),1)))), as.numeric(NA))) %>%
+  
+  group_by(Type) %>%
+  mutate(xRank = xRank / mean(xRank, na.rm = T) * exp(mean(log(seq(1,nrow(riders),1))))) %>%
+  ungroup() %>%
+  
+  mutate(Value = ifelse(Type == "LogRanks", xRank, adj)) %>%
+  
+  select(rider, team, Type, Value, gc_rnk, gc_time) %>%
+  filter(!is.na(Type)) %>%
+  spread(Type, Value)
+
+#
+#
+#
+
+models %>% 
+  # penalize riders close on GC (within 4ish minutes)
+  mutate(LogRanks = ifelse(as.numeric(gc_rnk) <= 27, LogRanks + 15, LogRanks),
+  # penalize riders with GC leaders on their team
+         LogRanks = ifelse(team %in% c("INEOS Grenadiers", "Bahrain - Victorious", 
+                                       "Team BikeExchange - Jayco", "BORA - hansgrohe", 
+                                       "Trek - Segafredo"), LogRanks + 10, LogRanks)) %>%
+  # use dumb formula to generate probabilities of winning
+  mutate(x = (1 / LogRanks)^2,
+         y = x / sum(x, na.rm = T),
+         y = ifelse(y < 0.003, 0, y),
+         y = y / sum(y, na.rm = T)) %>% arrange(desc(y)) -> preds
+
+#
+#
+#
+  
+  mutate(GamePicks = GamePicks - min(GamePicks, na.rm = T)) %>%
+  
+  mutate(Rk_PicksModel = rank(desc(GamePicks), ties.method = "first"),
+         Rk_LogRank = rank(LogRanks, ties.method = "first"),
+         Rk_TmLeader = rank(desc(Leader), ties.method = "first"))
 
 #
 #
