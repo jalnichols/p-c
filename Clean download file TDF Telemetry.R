@@ -6,7 +6,7 @@ library(rjson)
 
 stages <- c("2", "4", "6")
 
-FILES <- fs::dir_info() %>%
+FILES <- fs::dir_info("C:/Users/Jake/Documents/R Code/p-c/Stage Telemetry/") %>%
   filter(str_sub(path, 1, 3) == "tdf") %>%
   filter(str_detect(path, "step"))
 
