@@ -2,21 +2,25 @@
 
 library(tidyverse)
 library(rvest)
-library(RMySQL)
+library(DBI)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
+#
+#
 #
 
 all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
                   FROM strava_activity_data 
                   WHERE Stat IN ('Distance')") %>% 
+  
+  rename(DATE = date, VALUE = value, PCS = pcs, Stat = stat) %>%
   
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
@@ -57,17 +61,18 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   
   inner_join(
     
-    fs::dir_info('D:/Jake/Documents/STRAVA_JSON/') %>%
-      select(path, birth_time) %>%
-      mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
+    fs::dir_info('C:/Users/Jake Nichols/Documents/Old D Drive/STRAVA_JSON/') %>%
+      select(path, modification_time) %>%
+      mutate(activity_id = str_replace(path, 'C:/Users/Jake Nichols/Documents/Old D Drive/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
-  filter(birth_time > '2022-03-25 10:00:00')
+  filter(modification_time > lubridate::today() - 7)
 
 
 # prep data
 
-pcs_stage_data <- dbGetQuery(con, "SELECT date, rider, stage, race, year, class FROM pcs_stage_data WHERE time_trial = 0") %>%
+pcs_stage_data <- dbGetQuery(con, "SELECT date, rider, stage, race, year, class 
+                             FROM pcs_stage_data WHERE time_trial = 0") %>%
   mutate(rider = str_to_title(rider)) %>%
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
   unique()
@@ -94,6 +99,8 @@ strava_act_data <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
                   FROM strava_activity_data 
                   WHERE Stat IN ('Distance')") %>% 
   
+  rename(DATE = date, VALUE = value, PCS = pcs, Stat = stat) %>%
+  
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
   separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
@@ -106,15 +113,12 @@ strava_act_data <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
 
 # already written
 
-#st_chars <- dbGetQuery(con, "SELECT stage, race, year, class FROM strava_stage_characteristics") %>%
-#  unique()
-
-#st_climbs <- dbGetQuery(con, "SELECT stage, race, year, rider FROM climbs_from_strava_telemetry") %>%
-#  unique()
+st_chars <- dbGetQuery(con, "SELECT stage, race, year, class FROM strava_stage_characteristics") %>% unique()
+st_climbs <- dbGetQuery(con, "SELECT stage, race, year, rider FROM climbs_from_strava_telemetry") %>% unique()
 
 skip = 0
 
-#all_race_activities <- all_race_activities %>% anti_join(st_chars)
+all_race_activities <- all_race_activities %>% anti_join(st_chars)
 
 #
 #
@@ -124,7 +128,7 @@ skip = 0
 
 extract_telemetry <- function(ACTIVITY) {
   
-  data_lists <- read_rds(paste0("D:/Jake/Documents/STRAVA_JSON/strava-activity-id-", ACTIVITY, ".rds"))
+  data_lists <- read_rds(paste0("C:/Users/Jake Nichols/Documents/Old D Drive/STRAVA_JSON/strava-activity-id-", ACTIVITY, ".rds"))
   
   # clean this up before writing to DB
   
