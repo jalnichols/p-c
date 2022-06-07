@@ -1,17 +1,15 @@
 
 library(tidyverse)
-library(RMySQL)
-
-#
+library(DBI)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 #
 
 All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-06-30'") %>%
@@ -33,7 +31,7 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-06
          -avg_alt, -missing_profile_data) %>%
   
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
-           (class %in% c("2.1", "1.1") & Tour == "Europe Tour") | 
+           (class %in% c("2.1", "1.1") & tour == "Europe Tour") | 
            (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
            (year == 2021 & class != "NC")) %>%
@@ -58,7 +56,8 @@ predicting_all <- All_data %>%
   mutate(stage_join = as.character(stage)) %>%
   inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
                select(-bunch_sprint) %>%
-               unique(), by = c("stage_join" = "stage", "race", "year")) %>%
+               select(stage, url, predicted_bs) %>%
+               unique(), by = c("stage_join" = "stage", "url")) %>%
   select(-stage_join) %>%
   
   unique() %>%
@@ -75,12 +74,12 @@ predicting_all <- All_data %>%
   left_join(
     
     dbReadTable(con, "lme4_rider_logranks")  %>%
+      filter(!is.na(one_day_race)) %>%
       filter(test_or_prod == "prod") %>%
       select(-test_or_prod) %>%
       unique() %>%
       mutate(rider = str_to_title(rider)) %>%
-      mutate(date = as.Date(Date)) %>%
-      select(-Date) %>%
+      mutate(date = as.Date(date)) %>%
       
       mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
                                  ifelse(is.na(bunchsprint_impact), "pcd_added",
@@ -120,226 +119,9 @@ predicting_all <- All_data %>%
         (one_day_race * odr_logrk_impact) + 
       (pcd_logrk_impact * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
   
-  # mutate(pred_sprint_rank = exp(-0.2 + ((
-  #   ((rand_logrk_impact + 
-  #       (0.9 * bs_logrk_impact) + 
-  #       (one_day_race * odr_logrk_impact) + 
-  #       (pcd_logrk_impact * 1.5))*-1) / 0.97)+3.9))) %>%
-  # 
-  # mutate(pred_classics_rank = exp(-0.2 + ((
-  #   ((rand_logrk_impact + 
-  #       (0.25 * bs_logrk_impact) + 
-  #       (one_day_race * odr_logrk_impact) + 
-  #       (pcd_logrk_impact * 3.5))*-1) / 0.97)+3.9))) %>%
-  # 
-  # mutate(pred_ardennes_rank = exp(-0.2 + ((
-  #   ((rand_logrk_impact + 
-  #       (0.05 * bs_logrk_impact) + 
-  #       (one_day_race * odr_logrk_impact) + 
-  #       (pcd_logrk_impact * 7))*-1) / 0.97)+3.9))) %>%
-  # 
-  # mutate(pred_mountains_rank = exp(-0.2 + ((
-  #   ((rand_logrk_impact + 
-  #       (0.01 * bs_logrk_impact) + 
-  #       (one_day_race * odr_logrk_impact) + 
-  #       (pcd_logrk_impact * 15))*-1) / 0.97)+3.9))) %>%
-  
   select(-rand_logrk_impact, #-pcd_logrk_impact, -bs_logrk_impact, 
          -odr_logrk_impact) %>%
-  
-  # left_join(
-  #   
-  #   dbReadTable(con, "lme4_rider_points")  %>%
-  #     filter(test_or_prod == "prod") %>%
-  #     select(-test_or_prod) %>%
-  #     unique() %>%
-  #     mutate(rider = str_to_title(rider)) %>%
-  #     mutate(date = as.Date(Date)) %>%
-  #     select(-Date) %>%
-  #     
-  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
-  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-  #     
-  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-  #     # we adjust here
-  #     group_by(date, level_data) %>%
-  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-  #     ungroup() %>%
-  #     
-  #     # this transforms them back to input into the regression equation
-  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
-  #     
-  #     select(-pcd_impact_new, -random_intercept_new) %>%
-  #     
-  #     rename(pcd_points_impact = pcd_impact,
-  #            bs_points_impact = bunchsprint_impact,
-  #            rand_points_impact = random_intercept,
-  #            odr_points_impact = one_day_race) %>%
-  #     
-  #     mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
-  #            bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
-  #            odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
-  #     ) %>%
-  #     
-  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-  #   
-  # ) %>%
-  # 
-  # mutate(pred_points = -0.013 + (rand_points_impact + 
-  #       (predicted_bs * bs_points_impact) + 
-  #         (one_day_race * odr_points_impact) + 
-  #       (pcd_points_impact * pred_climb_difficulty))) %>%
-  # 
-  # select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
-  # 
-  # left_join(
-  #   
-  #   dbReadTable(con, "lme4_rider_pointswhenopp")  %>%
-  #     filter(test_or_prod == "prod") %>%
-  #     select(-test_or_prod) %>%
-  #     unique() %>%
-  #     mutate(rider = str_to_title(rider)) %>%
-  #     mutate(date = as.Date(Date)) %>%
-  #     select(-Date) %>%
-  #     
-  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
-  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-  #     
-  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-  #     # we adjust here
-  #     group_by(date, level_data) %>%
-  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-  #     ungroup() %>%
-  #     
-  #     # this transforms them back to input into the regression equation
-  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
-  #     
-  #     select(-pcd_impact_new, -random_intercept_new) %>%
-  #     
-  #     rename(pcd_points_impact = pcd_impact,
-  #            bs_points_impact = bunchsprint_impact,
-  #            rand_points_impact = random_intercept,
-  #            odr_points_impact = one_day_race) %>%
-  #     
-  #     mutate(pcd_points_impact = ifelse(is.na(pcd_points_impact), 0, pcd_points_impact),
-  #            bs_points_impact = ifelse(is.na(bs_points_impact), 0, bs_points_impact),
-  #            odr_points_impact = ifelse(is.na(odr_points_impact), 0, odr_points_impact)
-  #     ) %>%
-  #     
-  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-  #   
-  # ) %>%
-  # 
-  # mutate(pred_pointswhenopp = -0.013 + (rand_points_impact + 
-  #                                  (predicted_bs * bs_points_impact) + 
-  #                                  (one_day_race * odr_points_impact) + 
-  #                                  (pcd_points_impact * pred_climb_difficulty))) %>%
-  # 
-  # select(-rand_points_impact, -pcd_points_impact, -bs_points_impact, -odr_points_impact) %>%
-  
-  # left_join(
-  #   
-  #   dbReadTable(con, "lme4_rider_timelost")  %>%
-  #     filter(test_or_prod == "prod") %>%
-  #     select(-test_or_prod) %>%
-  #     unique() %>%
-  #     mutate(rider = str_to_title(rider)) %>%
-  #     mutate(date = as.Date(Date)) %>%
-  #     select(-Date) %>%
-  #     
-  #     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-  #                                ifelse(is.na(bunchsprint_impact), "pcd_added",
-  #                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-  #     
-  #     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-  #     # we adjust here
-  #     group_by(date, level_data) %>%
-  #     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-  #            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-  #     ungroup() %>%
-  #     
-  #     # this transforms them back to input into the regression equation
-  #     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-  #            random_intercept = random_intercept_new * sd(random_intercept)) %>%
-  #     
-  #     select(-pcd_impact_new, -random_intercept_new) %>%
-  #     
-  #     rename(pcd_time_impact = pcd_impact,
-  #            bs_time_impact = bunchsprint_impact,
-  #            rand_time_impact = random_intercept,
-  #            odr_time_impact = one_day_race) %>%
-  #     
-  #     mutate(pcd_time_impact = ifelse(is.na(pcd_time_impact), 0, pcd_time_impact),
-  #            bs_time_impact = ifelse(is.na(bs_time_impact), 0, bs_time_impact),
-  #            odr_time_impact = ifelse(is.na(odr_time_impact), 0, odr_time_impact)
-  #     ) %>%
-  #     
-  #     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-  #   
-  # ) %>%
-  # 
-  # mutate(pred_timelost = 500 + (rand_time_impact + 
-  #                                         (predicted_bs * bs_time_impact) + 
-  #                                         (one_day_race * odr_time_impact) + 
-  #                                         (pcd_time_impact * pred_climb_difficulty))) %>%
-  # 
-  # select(-rand_time_impact, -odr_time_impact, -bs_time_impact, -pcd_time_impact) %>%
 
-# left_join(
-#   
-#   dbReadTable(con, "lme4_rider_wins")  %>%
-#     filter(test_or_prod == "prod") %>%
-#     select(-test_or_prod) %>%
-#     unique() %>%
-#     mutate(rider = str_to_title(rider)) %>%
-#     mutate(date = as.Date(Date)) %>%
-#     select(-Date) %>%
-#     
-#     mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
-#                                ifelse(is.na(bunchsprint_impact), "pcd_added",
-#                                       ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
-#     
-#     # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
-#     # we adjust here
-#     group_by(date, level_data) %>%
-#     mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
-#            random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
-#     ungroup() %>%
-#     
-#     # this transforms them back to input into the regression equation
-#     mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-#            random_intercept = random_intercept_new * sd(random_intercept)) %>%
-#     
-#     select(-pcd_impact_new, -random_intercept_new) %>%
-#     
-#     rename(pcd_w_impact = pcd_impact,
-#            bs_w_impact = bunchsprint_impact,
-#            odr_w_impact = one_day_race) %>%
-#     
-#     mutate(pcd_w_impact = ifelse(is.na(pcd_w_impact), 0, pcd_w_impact),
-#            bs_w_impact = ifelse(is.na(bs_w_impact), 0, bs_w_impact),
-#            odr_w_impact = ifelse(is.na(odr_w_impact), 0, odr_w_impact)
-#     ) %>%
-#     
-#     filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
-#   
-# ) %>%
-#   
-#   # calculate team leader and success predictions using random effects
-#   mutate(win_pred = -6.5 + (random_intercept + 
-#                               (pred_climb_difficulty * pcd_w_impact) + 
-#                               (one_day_race * odr_w_impact) + 
-#                               (predicted_bs * bs_w_impact)),
-#          win_pred = exp(win_pred) / (1+exp(win_pred))) %>%
-#   
-#   select(-random_intercept, -pcd_w_impact, -odr_w_impact, -bs_w_impact) %>%
-  
   left_join(
     
     dbReadTable(con, "lme4_rider_teamleader")  %>%
@@ -347,8 +129,7 @@ predicting_all <- All_data %>%
       select(-test_or_prod) %>%
       unique() %>%
       mutate(rider = str_to_title(rider)) %>%
-      mutate(date = as.Date(Date)) %>%
-      select(-Date) %>%
+      mutate(date = as.Date(date)) %>%
       
       mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
                                  ifelse(is.na(bunchsprint_impact), "pcd_added",
@@ -595,8 +376,18 @@ predicting_all_supp %>%
             winner_gain_gc = mean(gain_gc_winner, na.rm = T),
             riders = n()) %>% 
   ungroup() %>%
+  
+  mutate(perc_rk_corr = percent_rank(correlation),
+         perc_rk_err = 1-percent_rank(error)) %>%
+  
   separate(url, c("j1", "url_race", "j2"), sep = "\\/") %>%
   select(-j1, -j2) -> race_errors
+
+#
+#
+#
+
+dbWriteTable(con, "race_prediction_errors", race_errors, overwrite = TRUE, row.names = FALSE)
 
 # predict quality of winners
 
