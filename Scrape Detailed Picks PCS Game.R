@@ -3,15 +3,16 @@
 library(tidyverse)
 library(lubridate)
 library(rvest)
-library(RMySQL)
+library(DBI)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 #
@@ -195,8 +196,8 @@ for(g in 1:nrow(scrape_1000)) {
       select(player, view_team, points),
     scrape_1000[g,]) %>%
     select(team = player, view_team, points,
-           url, Race, Year = year, Date, number_players,
-           Stage)
+           url, race = Race, year, date = Date, number_players,
+           stage = Stage)
   
   #
   
@@ -255,8 +256,8 @@ for(g in 1:nrow(scrape_ab_1000)) {
           select(player, view_team, points),
         scrape_ab_1000[g,]) %>%
         select(team = player, view_team, points,
-               url, Race, Year = year, Date, number_players,
-               Stage)
+               url, race = Race, year, date = Date, number_players,
+               stage = Stage)
       
       #
       
@@ -284,19 +285,19 @@ dbGetQuery(con, "SELECT * FROM pcs_game_team_picks") %>%
   separate(value, c("rider", "select_points"), sep = "\\(") %>%
   filter(str_trim(rider) != "") %>%
   
-  group_by(url, Race, Year, Stage) %>%
+  group_by(url, race, year, stage) %>%
   mutate(pickers = n_distinct(team)) %>%
   ungroup() %>%
   
-  group_by(url, Race, Year, Stage, rider = str_trim(rider), pickers) %>%
+  group_by(url, race, year, stage, rider = str_trim(rider), pickers) %>%
   summarize(picks = n(), points = sum(as.numeric(select_points), na.rm = T)) %>%
   ungroup() %>%
   
   mutate(pts_of_5 = points / (pickers*5)) %>%
   
-  filter(!is.na(Stage)) %>%
+  filter(!is.na(stage)) %>%
   
-  mutate(race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
+  mutate(race = iconv(race, from="UTF-8", to = "ASCII//TRANSLIT"),
          rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) -> rider_point_percentages_df
 
 #
@@ -311,7 +312,7 @@ picks_aggr <- dbGetQuery(con, "SELECT * FROM pcs_game_picks") %>%
 #
 #
 
-combined_picks <- picks_aggr %>%
+interim_picks <- picks_aggr %>%
   
   select(-race, -year, -stage, -result) %>%
   
@@ -320,18 +321,25 @@ combined_picks <- picks_aggr %>%
   left_join(rider_point_percentages_df, by = c("url")) %>%
   filter(str_detect(picked_rider, str_to_title(rider))) %>%
   filter(str_sub(picked_rider,1,3) == str_sub(str_to_title(rider), 1, 3)) %>%
-  filter((((number_picks / picks) > 0.90 & (number_picks / picks) < 1.1)) |
+  filter((((number_picks / picks) > 0.80 & (number_picks / picks) < 1.2)) |
            (abs(number_picks - picks) <= 5)) %>%
   
-  select(-rider, -picks, -points, -race) %>%
+  select(-rider, -picks, -points, -race)
+
+#
+
+# this is broken and I'm losing race/date somewhere
+
+combined_picks <- interim_picks %>%
   
   rbind(
     
     picks_aggr %>%
       
-      select(-race, -year, -stage, -result) %>%
+      anti_join(interim_picks %>%
+                  select(rider_url, url, stage)) %>%
       
-      filter(number_picks == 0) %>%
+      select(-race, -year, -stage, -result) %>%
       
       left_join(rider_point_percentages_df %>%
                   select(-rider, -picks, -points, -race) %>%
@@ -342,15 +350,15 @@ combined_picks <- picks_aggr %>%
 
   unique() %>%
   
-  filter(Year >= 2016) %>%
+  filter(year >= 2016) %>%
   
-  mutate(Race = str_to_lower(Race),
-         Stage = as.character(Stage)) %>%
+  mutate(race = str_to_lower(race),
+         stage = as.character(stage)) %>%
   
   inner_join(
     dbGetQuery(con, "SELECT DISTINCT stage, race, year, date, pred_climb_difficulty, sof, bunch_sprint, one_day_race
                FROM stage_data_perf
-               WHERE year >= 2016 AND time_trial = 0"), by = c("Stage" = "stage", "Race" = "race", "Year" = "year")
+               WHERE year >= 2016 AND time_trial = 0"), by = c("stage", "race", "year")
   ) %>%
   mutate(date = as.Date(date))
 
@@ -359,10 +367,14 @@ combined_picks <- picks_aggr %>%
 #
 
 DATES <- dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks
-                    WHERE date > '2016-12-31'") %>%
+                    WHERE date > '2016-01-01'") %>%
   arrange(desc(date)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_pcsgamepicks"))
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_pcsgamepicks") %>%
+              mutate(date = as.Date(date))) %>%
+  
+  arrange(desc(date)) %>%
+  unique()
 
 #
 #
@@ -370,34 +382,66 @@ DATES <- dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks
 
 for(p in 1:nrow(DATES)) {
   
-  ed <- as.Date(DATES$date[[p]])
-  sd <- ed - 365 
+  ed <- as.Date(DATES$date[[p]]) - 1
+  sd <- ed - 366
   
-  picks_model <- lme4::lmer(pts_of_5 ~ (1 + pred_climb_difficulty | picked_rider) + 
-                              (0 + bunch_sprint | picked_rider) + 
-                              #(0 + one_day_race | picked_rider) +
-                              sof,
-                            
-                            data = combined_picks %>% 
-                              
-                              filter(between(date, sd, ed)) %>%
-                              
-                              group_by(picked_rider) %>%
-                              filter(n() >= 15) %>% 
-                              ungroup())
-  
-  #
-  
-  # picks_model shows impact of SOF as -0.044 and intercept at 0.035
-  # so average rider in 0.50 race would be 0.012 with 75% of riders with negative intercepts
-  
-  #
-  
-  random_effects <- lme4::ranef(picks_model)[[1]] %>% rownames_to_column() %>% mutate(date = ed-1)
-
-  dbWriteTable(con, "lme4_rider_pcsgamepicks", random_effects, append = TRUE, row.names = FALSE)
-  
-  print(DATES$date[[p]])
+  if(ed < '2017-01-01') {} else {
     
-}
+    picks_model <- lme4::lmer(pts_of_5 ~ (1 + pred_climb_difficulty | picked_rider) + 
+                                (0 + bunch_sprint | picked_rider) + 
+                                #(0 + one_day_race | picked_rider) +
+                                sof,
+                              
+                              data = combined_picks %>% 
+                                
+                                filter(between(date, sd, ed)) %>%
+                                
+                                group_by(picked_rider) %>%
+                                filter(n() >= 15) %>% 
+                                ungroup())
+    
+    #
+    
+    if(nrow(combined_picks %>% 
+            filter(between(date, as.Date(DATES$date[[p+180]]), ed))) == 0) {} else {
+              
+              combined_picks %>% 
+                filter(between(date, as.Date(DATES$date[[p+180]]), ed)) %>% 
+                
+                group_by(rider = picked_rider, bunch_sprint) %>%
+                summarize(picks = mean(pts_of_5, na.rm = T)) %>%
+                ungroup() %>% 
+                
+                filter(!is.na(bunch_sprint)) %>%
+                
+                spread(bunch_sprint, picks) %>%
+                
+                rename(BS = `1`) %>%
+                mutate(BS = ifelse(is.na(BS), 0, BS),
+                       `0` = ifelse(is.na(`0`), 0, `0`)) %>%
+                
+                mutate(BS_adv = `BS` - `0`) %>%
+                select(-`0`) -> top_sprinters
+              
+              #
+              
+              dbWriteTable(con, "top_sprinters_pcsgamepicks",
+                           top_sprinters %>% mutate(date = ed+1),
+                           append = TRUE, row.names = FALSE)
+              
+              # picks_model shows impact of SOF as -0.044 and intercept at 0.035
+              # so average rider in 0.50 race would be 0.012 with 75% of riders with negative intercepts
+              
+              #
+              
+              random_effects <- lme4::ranef(picks_model)[[1]] %>% rownames_to_column() %>% mutate(date = ed+1)
+              
+              dbWriteTable(con, "lme4_rider_pcsgamepicks", random_effects, append = TRUE, row.names = FALSE)
+              
+              print(DATES$date[[p]])
+              
+            }
+    
+  }
   
+}
