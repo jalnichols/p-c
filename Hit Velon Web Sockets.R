@@ -4,7 +4,15 @@ library(websocket)
 library(rvest)
 library(jsonlite)
 library(DBI)
-library(RMySQL)
+
+dbDisconnect(con)
+
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 
@@ -54,6 +62,32 @@ ws$onOpen(function(event) {
   ws$send(wsSendString)
 })
 
+#ws$onMessage(function(event) {
+  
+  # need to replace \ in JSON
+  # convert from JSON
+  # extract json$groups[[1]][[1]] to get data.frame
+  # add json$time, json$stageId, json$eventId
+  # store that data
+  
+#  if(x == 0) {
+#    x <<- x+1
+#  } else {
+    
+#    pre <- event$data
+    
+#    json <- pre %>% fromJSON()
+    
+#    result_list[[x]] <<- json
+    
+#    x <<- x+1
+    
+#  }
+  
+#  print(x)
+    
+#})
+
 ws$onMessage(function(event) {
   
   # need to replace \ in JSON
@@ -62,31 +96,175 @@ ws$onMessage(function(event) {
   # add json$time, json$stageId, json$eventId
   # store that data
   
-  if(x == 0) {
-    x <<- x+1
+  pre <- event$data
+  
+  json <- pre %>% fromJSON()
+  
+  if(length(json) < 3) {
+    
   } else {
+    
+    race_data <- tibble(eventId = json$eventId,
+                        stageId = json$stageId,
+                        utcTime = json$time$utc,
+                        epochTime = json$time$epochTime)
+    
+    groups_info <- json$groups %>%
+      select(groupId, riders) %>%
+      unnest(cols = c("riders")) %>%
+      
+      cbind(race_data) %>%
+      select(eventId, stageId, epochTime, utcTime, elapsedTime, riderId, groupId, distanceToGo, distance, 
+             latitude, longitude, powerThreshold, bibNumber, speed, riderStatus, riderId, redZone, power, 
+             gradient, cadence, wattsPerKg)
+    
+    dbWriteTable(con, "velon_telemetry", groups_info, append = TRUE, row.names = FALSE)
+    
+    print("wrote data")
+    
+  }
+  
+})
+
+ws$connect()
+
+print(ws$readyState())
+
+later::run_now(timeoutSecs = 10)
+
+# this checks whether connection is open and if so sleeps for 60 seconds before checking again
+
+while(ws$readyState() == 1) {
+  later::run_now(timeoutSecs = 60)
+}
+
+# once connection is not Open anymore, it tries to reconnect and restarts process
+
+if(ws$readyState() != 1) {
+  
+  ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
+                      
+                      headers = list('Sec-WebSocket-Key' = "0JZJhFaiEoCqdzLNBn+uYw=="))
+  
+  ws$onOpen(function(event) {
+    
+    ws$send(wsSendString)
+  })
+  
+  ws$onMessage(function(event) {
+    
+    # need to replace \ in JSON
+    # convert from JSON
+    # extract json$groups[[1]][[1]] to get data.frame
+    # add json$time, json$stageId, json$eventId
+    # store that data
     
     pre <- event$data
     
     json <- pre %>% fromJSON()
     
-    result_list[[x]] <<- json
+    if(length(json) < 3) {
+      
+    } else {
+      
+      race_data <- tibble(eventId = json$eventId,
+                          stageId = json$stageId,
+                          utcTime = json$time$utc,
+                          epochTime = json$time$epochTime)
+      
+      groups_info <- json$groups %>%
+        select(groupId, riders) %>%
+        unnest(cols = c("riders")) %>%
+        
+        cbind(race_data) %>%
+        select(eventId, stageId, epochTime, utcTime, elapsedTime, riderId, groupId, distanceToGo, distance, 
+               latitude, longitude, powerThreshold, bibNumber, speed, riderStatus, riderId, redZone, power, 
+               gradient, cadence, wattsPerKg)
+      
+      dbWriteTable(con, "velon_telemetry", groups_info, append = TRUE, row.names = FALSE)
+      
+      print("wrote data")
+      
+    }
     
-    x <<- x+1
+  })
+  
+  ws$connect()
+  
+  print(ws$readyState())
+  
+  later::run_now(timeoutSecs = 10)
+  
+  while(ws$readyState() == 1) {
+    later::run_now(timeoutSecs = 60)
+  }
+  
+  # and this handles up to two disconnections
+  
+  if(ws$readyState() != 1) {
+    
+    ws <- WebSocket$new("wss://digital.velon.cc/", autoConnect = FALSE,
+                        
+                        headers = list('Sec-WebSocket-Key' = "0JZJhFaiEoCqdzLNBn+uYw=="))
+    
+    ws$onOpen(function(event) {
+      
+      ws$send(wsSendString)
+    })
+    
+    ws$onMessage(function(event) {
+      
+      # need to replace \ in JSON
+      # convert from JSON
+      # extract json$groups[[1]][[1]] to get data.frame
+      # add json$time, json$stageId, json$eventId
+      # store that data
+      
+      pre <- event$data
+      
+      json <- pre %>% fromJSON()
+      
+      if(length(json) < 3) {
+        
+      } else {
+        
+        race_data <- tibble(eventId = json$eventId,
+                            stageId = json$stageId,
+                            utcTime = json$time$utc,
+                            epochTime = json$time$epochTime)
+        
+        groups_info <- json$groups %>%
+          select(groupId, riders) %>%
+          unnest(cols = c("riders")) %>%
+          
+          cbind(race_data) %>%
+          select(eventId, stageId, epochTime, utcTime, elapsedTime, riderId, groupId, distanceToGo, distance, 
+                 latitude, longitude, powerThreshold, bibNumber, speed, riderStatus, riderId, redZone, power, 
+                 gradient, cadence, wattsPerKg)
+        
+        dbWriteTable(con, "velon_telemetry", groups_info, append = TRUE, row.names = FALSE)
+        
+        print("wrote data")
+        
+      }
+      
+    })
+    
+    ws$connect()
+    
+    print(ws$readyState())
+    
+    later::run_now(timeoutSecs = 10)
+    
+    while(ws$readyState() == 1) {
+      later::run_now(timeoutSecs = 60)
+    }
+    
+    print("DISCONNECTED!!")
     
   }
   
-  print(x)
-  
-  if(lubridate::now(tzone = "UTC") > lubridate::as_datetime(endTime+1800)) {
-    
-    ws$close()
-    
-  }
-    
-})
-
-ws$connect()
+}
 
 #
 #
@@ -134,7 +312,7 @@ telemetry <- bind_rows(data_list) %>%
   filter(mean(is.na(distanceToGo)) < 1) %>%
   ungroup()
 
-#write_csv(telemetry, "D:/Jake/Documents/Velon Telemetry/tirreno-stage7-2022-velon-telemetry.csv")
+#write_csv(telemetry, "C:/Users/Jake Nichols/Documents/Old D Drive/Velon Telemetry/giro-ditalia-8-2022-velon-telemetry.csv")
 
 #
 #
@@ -142,46 +320,108 @@ telemetry <- bind_rows(data_list) %>%
 #
 #
 
-dbDisconnect(con)
-
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
-
-#
+telemetry <- dbGetQuery(con, "SELECT * FROM velon_telemetry") %>%
+  filter(stageId == 268408)
 
 start_list <- DBI::dbGetQuery(con, "SELECT bib, rider, team 
                          FROM pcs_all_startlists 
-                         WHERE race = 'tirreno-adriatico' AND year = 2022")
+                         WHERE race LIKE '%italia%' AND year = 2022")
+
+#
+
+telemetry %>%
+  filter(!is.na(distanceToGo)) %>%
+  filter(distanceToGo > 0) %>%
+  
+  inner_join(start_list, by = c("bibNumber" = "bib")) %>%
+  select(distanceToGo, distance, latitude, longitude, 
+         bibNumber, timestamp = epochTime, gradient, eventId, stageId,
+         rider, team) -> positionTelemetry
+
+#
 
 calc_power <- telemetry %>% 
-  filter(distanceToGo > 0) %>% 
+  filter(distanceToGo > 0) %>%
   
-  group_by(bibNumber, split = ifelse(distanceToGo > 31500 & distanceToGo < 36500, "carpegna1", 
-                                     ifelse(distanceToGo > 12500 & distanceToGo < 17500, "carpegna2", "rest"))) %>% 
+  mutate(section = case_when(distanceToGo > 104000 ~ "for breakaway",
+                             distanceToGo > 70000 ~ "bottom superga 1",
+                             distanceToGo > 49000 ~ "top maddelena 1",
+                             distanceToGo > 33500 ~ "bottom superga 2",
+                             distanceToGo > 13500 ~ "top maddelena 2",
+                             TRUE ~ "to finish")) %>%
+  
+  group_by(bibNumber, section) %>% 
   summarize(wattskg = mean(wattsPerKg, na.rm = T), 
-            avg_Power = mean(power, na.rm = T), 
+            #avg_Power = mean(power, na.rm = T), 
             seqs = n(), 
             furthest = min(distanceToGo), 
             shortest = max(distanceToGo),
             validpower = sum(!is.na(power)),
-            nonzero = sum(power > 0), 
+            #nonzero = sum(power > 0), 
             start = min(elapsedTime), 
             end = max(elapsedTime), 
-            MED = median(wattsPerKg, na.rm = T), 
-            time_above_avg = mean(wattsPerKg > wattskg, na.rm = T),
-            Q95 = quantile(wattsPerKg, probs = 0.95, na.rm = T),
-            Q90 = quantile(wattsPerKg, probs = 0.9, na.rm = T),
-            Q10 = quantile(wattsPerKg, probs = 0.1, na.rm = T)) %>%
+            #MED = median(wattsPerKg, na.rm = T), 
+            #time_above_avg = mean(wattsPerKg > wattskg, na.rm = T),
+            #Q95 = quantile(wattsPerKg, probs = 0.95, na.rm = T),
+            #Q90 = quantile(wattsPerKg, probs = 0.9, na.rm = T),
+            #Q10 = quantile(wattsPerKg, probs = 0.1, na.rm = T)
+            ) %>%
   
-  mutate(peaks = Q90 - MED,
-         troughs = MED - Q10,
-         abs_peaks = Q95 - MED, 
-         dist = shortest-furthest) %>%
+  mutate(#peaks = Q90 - MED,
+         #troughs = MED - Q10,
+         #abs_peaks = Q95 - MED, 
+         dist = shortest-furthest,
+         time = end - start,
+         speed = (dist/1000)/(time/3600)) %>%
   
-  inner_join(start_list, by = c("bibNumber" = "bib"))
+  inner_join(start_list, by = c("bibNumber" = "bib")) %>%
+  
+  mutate(groupType = ifelse(bibNumber %in% c(81,109, 14, 86, 51, 92, 17, 173), "break",
+                            ifelse(bibNumber %in% c(1, 41, 191, 125, 211, 66), "final six",
+                                   ifelse(bibNumber %in% c(181, 201, 61, 161, 31, 123,
+                                                           168, 143, 204, 147, 91, 101,
+                                                           71, 64, 67, 4, 43, 46, 213, 6,
+                                                           45), "GC", "others"))))
+
+#
+
+TT_segments <- positionTelemetry %>%
+  mutate(grouping = ifelse(distance < 1000, "first straight",
+                           ifelse(distance < 2400, "four corners",
+                                  ifelse(distance < 3100, "second straight",
+                                         ifelse(distance < 4400, "five corners",
+                                                ifelse(distance < 5200, "third straight",
+                                                       ifelse(distance < 6500, "bridge",
+                                                              ifelse(distance < 7600, "fourth straight",
+                                                                     ifelse(distance < 8000, "before climb",
+                                                                            ifelse(distance < 8900, "climb",
+                                                                                   "finishing stretch"))))))))),
+         type = ifelse(str_detect(grouping, "straight") | grouping == "finishing stretch", "straight",
+                       ifelse(grouping %in% c("bridge", "before climb",
+                                              "four corners", "five corners"), "corners", "climb"))) %>%
+  group_by(rider, stageId, eventId, grouping, bibNumber, team, type) %>%
+  summarize(start_time = min(timestamp, na.rm = T), 
+         end_time = max(timestamp, na.rm = T),
+         start_distance = min(distance),
+         end_distance = max(distance)) %>%
+  ungroup() %>% 
+  
+  mutate(elapsedTime = end_time - start_time,
+         elapsedDistance = end_distance - start_distance,
+         speed = (elapsedDistance / 1000) / (elapsedTime / 3600)) %>%
+  
+  group_by(stageId, eventId, grouping) %>%
+  mutate(speed_rk = rank(desc(speed), ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(rider, stageId, eventId, type, bibNumber, team) %>%
+  summarize(speed = sum(speed * elapsedTime)/ sum(elapsedTime),
+            segments = n()) %>%
+  ungroup() %>%
+  
+  group_by(stageId, eventId, type) %>%
+  mutate(speed_rk = rank(desc(speed), ties.method = "min")) %>%
+  ungroup()
 
 #
 
