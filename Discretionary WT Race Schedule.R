@@ -175,7 +175,7 @@ PCS_PTS_Discipline <- pcs_points %>%
                             "Alpecin Fenix",
                             "Katusha")) %>%
   
-  filter(!class %in% c("NC", "CC", "WC", "2.Ncup", "1.Ncup", "1.2", "2.2", "1.2U", "2.2U")) %>%
+  filter(!class %in% c("NC", "2.Ncup", "1.Ncup", "1.2", "2.2", "1.2U", "2.2U")) %>%
   
   mutate(one_day_race = ifelse(str_sub(class,1,1) == "1",1,0))
 
@@ -220,4 +220,55 @@ perf_by_discipline <- PCS_PTS_Discipline %>%
   
   mutate(PCS_PTS_raceday = PCS_PTS/race_days,
          PCS_PTS_other_raceday = (PCS_PTS_total - PCS_PTS) / (race_days_total - race_days))
+
+#
+#
+#
+
+perf_by_discipline_rider <- PCS_PTS_Discipline %>%
+  
+  #filter(!(master_team == 'Cofidis' & year < 2020)) %>%
+  #filter(!(master_team == 'Israel Startup Nation' & year < 2020)) %>%
+  #filter(!(master_team == 'Alpecin Fenix' & year < 2021)) %>%  
+  #filter(!(master_team == 'Arkea Samsic' & year < 2021)) %>%  
+  #filter(!(master_team == 'Direct Energie' & year < 2021)) %>%  
+  #filter(!(master_team == 'Wanty Gobert' & year < 2021)) %>% 
+  
+  mutate(master_team = case_when(master_team == "Wanty Gobert" ~ "Intermarche Wanty",
+                                 master_team == "Sky" ~ "INEOS",
+                                 master_team == "EF Education First" ~ "EF - Nippo",
+                                 master_team == "Mitchelton Scott" ~ "BikeExchange",
+                                 master_team == "NTT" ~ "Qhubeka",
+                                 master_team == "Bahrain McLaren" ~ "Bahrain",
+                                 master_team == "Sunweb" ~ "Team DSM",
+                                 TRUE ~ master_team)) %>%
+  
+  mutate(race_type = ifelse(bunch_sprint == 1, 
+                            ifelse(one_day_race == 1, "ODR", "BS"),
+                            ifelse(pred_climb_difficulty >= 6, "CLIMB",
+                                   ifelse(one_day_race == 1, "ODR",
+                                          ifelse(time_trial == 1, "TT", "RACE"))))) %>%
+  
+  group_by(rider, race_type) %>%
+  summarize(PCS_PTS = sum(pcs_pts, na.rm = T),
+            race_days = n_distinct(stage, race, year, class)) %>%
+  ungroup() %>%
+  
+  group_by(rider) %>%
+  mutate(PERC_PCS_PTS = PCS_PTS / sum(PCS_PTS),
+         PCS_PTS_total = sum(PCS_PTS),
+         race_days_total = sum(race_days)) %>%
+  ungroup() %>%
+  
+  mutate(PCS_PTS_raceday = PCS_PTS/race_days,
+         perc_racedays = race_days/race_days_total)
+
+#
+
+perf_by_discipline_rider %>%
+  filter(race_type == "ODR" & race_days_total >= 80) %>%
+  
+  ggplot(aes(x = perc_racedays, y = PCS_PTS_raceday, label = rider))+
+  geom_text()+
+  labs(x = "Percentage of racedays in ODR", y = "PCS Pts per raceday", title = "2019-21 PCS Pts per race day in ODR")+scale_x_continuous(labels = scales::percent)
                      
