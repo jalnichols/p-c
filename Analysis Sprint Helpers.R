@@ -108,7 +108,7 @@ win_rate <- who_contributed %>%
 #
 #
 
-top_sprinters <- dbGetQuery(con, "SELECT rider, (random_intercept + bunchsprint_impact) AS prediction, Date
+top_sprinters <- dbGetQuery(con, "SELECT rider, exp(random_intercept + bunchsprint_impact) AS prediction, Date
                              FROM lme4_rider_logranks") %>%
   
   group_by(Date) %>%
