@@ -11,6 +11,8 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = "postgres",
                       password = "braves")
 
+LIMIT_YEAR = 2009
+
 # Bring in and clean data -------------------------------------------------
 
 race_data <- dbReadTable(con, "pcs_all_races") %>%
@@ -51,14 +53,14 @@ missing_strava <- dbReadTable(con, "strava_stage_characteristics") %>%
 
 #
 
-stage_data <- dbGetQuery(con, "SELECT rnk,rider,team,win_seconds,total_seconds,
+stage_data <- dbGetQuery(con, sprintf("SELECT rnk,rider,team,win_seconds,total_seconds,
 length,stage_type,parcours_value,stage,race,
 year,url,class,gain_1st,gain_20th,time_trial, team_time_trial,       
 grand_tour,one_day_race,tm_pos,date,gain_gc,speed,
 fr_stage_type,missing_profile_data,act_climb_difficulty,final_20km_vert_gain,
 time_at_1500m,total_vert_gain,summit_finish,avg_alt,final_1km_gradient
                          FROM pcs_stage_data
-                         WHERE year > 2019") %>%
+                         WHERE year > %s", LIMIT_YEAR)) %>%
   
   filter(!url %in% c('race/world-championship-itt/2017',
                      'race/world-championship-itt/2015', 
@@ -245,7 +247,7 @@ stage_level_strava <- dbGetQuery(con, "SELECT activity_id, pcs as PCS, value as 
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
   
-  filter(Y %in% c(2020, 2021, 2022)) %>%
+  filter(Y > LIMIT_YEAR) %>%
   
   separate(DATE, into = c("weekday", "date", "drop"), sep = ",") %>% 
   mutate(date = paste0(str_trim(date),", ", Y)) %>% 
@@ -364,7 +366,7 @@ trn <- dat[choose_rows, ]
 
 lmer(log_rank ~ (1 | rider) + (1 | class) + Tour + grand_tour, data = trn) -> mixed_effects_tour
 
-#write_rds(mixed_effects_tour, "Stored models/mixed-effects-tour.rds")
+if(LIMIT_YEAR >= 2019) {} else {write_rds(mixed_effects_tour, "Stored models/mixed-effects-tour.rds")}
 
 mixed_effects_tour <- read_rds("Stored models/mixed-effects-tour.rds")
 
@@ -683,33 +685,113 @@ gc()
 # USING STRAVA DATA
 #
 
-strava_elev_mod <- stage_level_strava %>% 
+if(LIMIT_YEAR >= 2019) {} else {
   
-  filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+  strava_elev_mod <- stage_level_strava %>% 
+    
+    filter(time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    
+    filter(rnk != 200) %>%
+    
+    group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
+    filter(n()>2) %>%
+    summarize(strava_elevation = median(elevation,na.rm = T), 
+              strava_distance = median(distance, na.rm = T)) %>%
+    ungroup() %>%
+    
+    mutate(rel_length = length - median(length, na.rm = T)) %>%
+    
+    mutate(tvg = strava_elevation / strava_distance) %>%
+    
+    # adjust tvg to realistic limits (Mt Fuji stage is an issue)
+    filter(tvg > 0) %>%
+    mutate(tvg = ifelse(tvg > 40, 40, tvg)) %>%
+    
+    filter(act_climb_difficulty > 0) %>%
+    mutate(tvg = strava_elevation / strava_distance) %>%
+    
+    lm(act_climb_difficulty ~ tvg + 0 + stage_type + strava_elevation, data = .)
   
-  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
-         pv = as.numeric(parcours_value)) %>% 
+  #
   
-  filter(rnk != 200) %>%
   
-  group_by(stage, race, year, class, total_vert_gain, act_climb_difficulty, length, stage_type) %>% 
-  filter(n()>2) %>%
-  summarize(strava_elevation = median(elevation,na.rm = T), 
-            strava_distance = median(distance, na.rm = T)) %>%
-  ungroup() %>%
+  pv_mod <- stage_data %>% 
+    
+    filter(rnk == 1 & time_trial == FALSE) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
+    
+    filter(missing_profile_data == 0) %>% 
+    filter((pv > 0 & act_climb_difficulty > 0) | 
+             (pv==0 & act_climb_difficulty==0)) %>%
+    
+    lm(act_climb_difficulty ~ pv, data = .)
   
-  mutate(rel_length = length - median(length, na.rm = T)) %>%
+  #
   
-  mutate(tvg = strava_elevation / strava_distance) %>%
+  # for F-R profile data stages we can use stage type + the profile stats (which can be replicated from Strava data for
+  # stages which F-R doesn't have profile data
   
-  # adjust tvg to realistic limits (Mt Fuji stage is an issue)
-  filter(tvg > 0) %>%
-  mutate(tvg = ifelse(tvg > 40, 40, tvg)) %>%
+  no_climbs_mod <- stage_data %>% 
+    
+    filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
+    
+    filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
+    
+    filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
+    filter(!stage_type == "icon profile p0") %>%
+    mutate(tvg = total_vert_gain / length,
+           tvg20 = final_20km_vert_gain / 20) %>%
+    lm(act_climb_difficulty ~ (tvg) + tvg20 + time_at_1500m + fr_stage_type, data = .)
   
-  filter(act_climb_difficulty > 0) %>%
-  mutate(tvg = strava_elevation / strava_distance) %>%
+  # and for stages w/o F-R we can use stage_type to estimate act_climb_difficulty
   
-  lm(act_climb_difficulty ~ tvg + 0 + stage_type + strava_elevation, data = .)
+  icon_mod <- stage_data %>% 
+    
+    filter(rnk == 1 & time_trial == FALSE) %>% 
+    
+    mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
+           pv = as.numeric(parcours_value)) %>% 
+    
+    select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
+    
+    filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
+    filter(!stage_type == "icon profile p0") %>%
+    
+    mutate(class_level = ifelse(class %in% c("WC", "1.UWT", "2.UWT", "WT", "Olympics"), 4,
+                                ifelse(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "CC"), 3,
+                                       ifelse(class %in% c("2.1", "1.1", "NC"), 2, 1)))) %>%
+    
+    lm(act_climb_difficulty ~ stage_type * class_level, data = .)
+  
+  #
+  # write models to folder
+  #
+  
+  coef(icon_mod)
+  write_rds(icon_mod, "Stored models/pcd-icon-mod.rds")
+  
+  coef(strava_elev_mod)
+  write_rds(strava_elev_mod, "Stored models/strava-elev-mod.rds")
+  
+  coef(no_climbs_mod)
+  write_rds(no_climbs_mod, "Stored models/pcd-no_climbs-mod.rds")
+  
+  coef(pv_mod)
+  write_rds(pv_mod, "Stored models/pcd-pv-mod.rds")
+  
+}
 
 #
 
@@ -732,8 +814,7 @@ strava_elev_data <- cbind(
     mutate(tvg = ifelse(tvg > 40, 40, tvg)),
   
   pred_strv = predict(
-    
-    #strava_elev_mod, 
+
     read_rds("Stored models/strava-elev-mod.rds"),
     stage_level_strava %>% 
       
@@ -763,23 +844,6 @@ strava_elev_data <- cbind(
 # data broken out into categorized climbs
 #
 
-pv_mod <- stage_data %>% 
-  
-  filter(rnk == 1 & time_trial == FALSE) %>% 
-  
-  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "" | parcours_value == 0, 1,0), 
-         pv = as.numeric(parcours_value)) %>% 
-  
-  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
-  
-  filter(missing_profile_data == 0) %>% 
-  filter((pv > 0 & act_climb_difficulty > 0) | 
-           (pv==0 & act_climb_difficulty==0)) %>%
-  
-  lm(act_climb_difficulty ~ pv, data = .)
-
-#
-
 pv_data <- cbind(
   stage_data %>%
     filter(rnk == 1 & time_trial == FALSE) %>% 
@@ -793,7 +857,6 @@ pv_data <- cbind(
   
   pred_pv = predict(
     
-    #pv_mod,
     read_rds("Stored models/pcd-pv-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>%  
@@ -812,26 +875,6 @@ pv_data <- cbind(
 
 # act_climb_difficulty = 1 + (0.063 * parcours_value) -- R^2 = 0.81
 
-# for F-R profile data stages we can use stage type + the profile stats (which can be replicated from Strava data for
-# stages which F-R doesn't have profile data
-
-no_climbs_mod <- stage_data %>% 
-  
-  filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
-  
-  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
-         pv = as.numeric(parcours_value)) %>% 
-  
-  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
-  
-  filter(total_vert_gain > 0 & total_vert_gain < 6500) %>%
-  
-  filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
-  filter(!stage_type == "icon profile p0") %>%
-  mutate(tvg = total_vert_gain / length,
-         tvg20 = final_20km_vert_gain / 20) %>%
-  lm(act_climb_difficulty ~ (tvg) + tvg20 + time_at_1500m + fr_stage_type, data = .)
-
 # R^2 = 0.79
 
 no_climbs_data <- cbind(
@@ -846,7 +889,6 @@ no_climbs_data <- cbind(
   
   pred_no_climbs = predict(
     
-    #no_climbs_mod, 
     read_rds("Stored models/pcd-no_climbs-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE & !fr_stage_type %in% c("Individual Time Trial", "Team time trial")) %>% 
@@ -864,26 +906,6 @@ no_climbs_data <- cbind(
   filter(!is.na(pred_no_climbs))
 
 # R^2 = 0.78
-
-# and for stages w/o F-R we can use stage_type to estimate act_climb_difficulty
-
-icon_mod <- stage_data %>% 
-  
-  filter(rnk == 1 & time_trial == FALSE) %>% 
-  
-  mutate(est = ifelse(str_detect(parcours_value, "\\*") | parcours_value == "", 1,0), 
-         pv = as.numeric(parcours_value)) %>% 
-  
-  select(-gain_1st, -gain_20th, -total_seconds, -win_seconds, -tm_pos) %>%
-  
-  filter(missing_profile_data == 0 & act_climb_difficulty > 0) %>%
-  filter(!stage_type == "icon profile p0") %>%
-  
-  mutate(class_level = ifelse(class %in% c("WC", "1.UWT", "2.UWT", "WT", "Olympics"), 4,
-                              ifelse(class %in% c("1.HC", "2.HC", "1.Pro", "2.Pro", "CC"), 3,
-                                     ifelse(class %in% c("2.1", "1.1", "NC"), 2, 1)))) %>%
-  
-  lm(act_climb_difficulty ~ stage_type * class_level, data = .)
 
 # model here is R^2 only 0.62, p1 = 1, p2 = 2, p3 = 3, p4 = 8, p5 = 16
 
@@ -903,7 +925,6 @@ icon_data <- cbind(
   
   pred_icon = predict(
     
-    #icon_mod, 
     read_rds("Stored models/pcd-icon-mod.rds"),
     stage_data %>%
       filter(rnk == 1 & time_trial == FALSE) %>% 
@@ -923,22 +944,6 @@ icon_data <- cbind(
   )) %>%
   
   filter(!is.na(pred_icon))
-
-#
-# write models to folder
-#
-
-# coef(icon_mod)
-# write_rds(icon_mod, "Stored models/pcd-icon-mod.rds")
-
-# coef(strava_elev_mod)
-# write_rds(strava_elev_mod, "Stored models/strava-elev-mod.rds")
-
-# coef(no_climbs_mod)
-# write_rds(no_climbs_mod, "Stored models/pcd-no_climbs-mod.rds")
-
-# coef(pv_mod)
-# write_rds(pv_mod, "Stored models/pcd-pv-mod.rds")
 
 #
 # now combine all four methods together
@@ -1026,150 +1031,11 @@ stage_data_with_pcd <- stage_data %>%
 #
 #
 
-# Set up old SOP calc + Limits calc ---------------------------------------
-
-# 
-# riders_stages <- stage_data %>%
-# 
-#   filter(rnk < 6) %>%
-#   
-#   select(rider1 = rider, stage, race, year) %>%
-#   unique() %>%
-#   
-#   inner_join(
-#     
-#     stage_data %>%
-# 
-#       filter(rnk < 6) %>%   
-#       
-#       select(rider2 = rider, stage, race, year) %>%
-#       unique(), by = c("stage", "race", "year")	
-#     
-#   ) %>%
-#   
-#   filter(!(rider1 == rider2)) %>%
-#   unique()
-# 
-# #
-# #
-# #
-# 
-# matches <- riders_stages %>%
-# 
-#   group_by(rider1, rider2) %>%
-#   summarize(n = n()) %>%
-#   ungroup() %>% 
-#   
-#   filter(n > 3) %>% 
-#   
-#   group_by(rider1) %>%
-#   mutate(n1 = n()) %>%
-#   ungroup() %>%
-#   
-#   group_by(rider2) %>%
-#   mutate(n2 = n()) %>%
-#   ungroup() %>%
-#   
-#   filter(n1 > 3 & n2 > 3) %>%
-#   
-#   select(rider1, rider2, n) %>%
-#   
-#   spread(rider2, n) %>%
-#   
-#   gather(rider2, n, -rider1) %>%
-#   
-#   mutate(n = ifelse(is.na(n), 0, n)) %>%
-#   
-#   spread(rider2, n)
-# 
-# #
-# # PCA
-# #
-# 
-# pxxx <- prcomp(matches[, 2:ncol(matches)], scale = TRUE, center = TRUE)
-# 
-# # two PCs capture 26%
-# 
-# # PC1 is the sprinter vs mountains classifier
-# # PC2 is strength of competition
-# # PC3 is like classics-esque
-# 
-# rxxx <- cbind(
-#   matches %>%
-#     select(rider1),
-#   pxxx$x) %>%
-# 
-#   select(rider1, PC1, PC2, PC3, PC4, PC6) %>%
-#   # the below sets the PC2 of strong to weak riders so that strong is always positive
-#   mutate(AV = ifelse(rider1 == "Valverde Alejandro",
-#                      ifelse(PC2 > 0, 1, -1), NA),
-#          AV = mean(AV, na.rm = T),
-#          PC2 = AV * PC2) %>%
-#   select(-AV)
-# 
-# ggplot(rxxx, aes(x = PC1, y = PC2, label = rider1))+
-#   geom_hline(yintercept = 0)+
-#   geom_vline(xintercept = 0)+
-#   geom_label()+
-#   scale_fill_viridis_c()+
-#   labs(x = "PC1: climber vs sprinter", y = "PC2: strong field vs weak field")
-# 
-# #
-# 
-# riders_top10s <- stage_data %>%
-#   filter(rnk < 11) %>% 
-#   
-#   select(rider, stage, race, year, class, time_trial, one_day_race, grand_tour) %>%
-#   unique() %>%
-#   
-#   inner_join(rxxx %>% 
-#                select(rider = rider1, PC1, PC2, PC3, PC6)) %>%
-#   group_by(stage, race, year, class, time_trial, one_day_race, grand_tour) %>%
-#   summarize(type = sum(PC1, na.rm = T),
-#             sof = sum(PC2, na.rm = T),
-#             tt = sum(PC6, na.rm = T),
-#             classics = sum(PC3, na.rm = T),
-#             n = n()) %>%
-#   ungroup()
-# 
-# #
-# 
-# fields <- stage_data %>%
-#   
-#   select(stage, race, year, rider, class, grand_tour, date, rnk, time_trial) %>%
-#   unique() %>%
-#   
-#   inner_join(rxxx %>% 
-#                select(rider = rider1, PC1, PC2)) %>% 
-#   group_by(race, stage, year) %>% 
-#   filter(rank(rnk, ties.method = "first") < 26) %>%
-#   ungroup() %>%
-#   
-#   group_by(stage, race, year, class, grand_tour, date) %>%
-#   summarize(tot = mean(PC2, na.rm = T), 
-#             n = n()) %>%
-#   ungroup() %>% 
-#   
-#   separate(class, c("type", "class"), sep = ".") %>%
-#   
-#   mutate(class = ifelse(is.na(class), "UWT", class), 
-#          type = ifelse(type == "WT", NA, type)) %>%
-#   
-#   mutate(monument = ifelse(str_detect(race, "sanremo") | 
-#                              str_detect(race, "tour des flandres") | 
-#                              str_detect(race, "roubaix") | 
-#                              str_detect(race, "bastogne") | 
-#                              str_detect(race, "il lombardia"), TRUE, FALSE)) %>%
-#   
-#   mutate(tot = ifelse(n < 25, (tot * n) + (-1.5 * (25- n)), tot * 25))
-
 #
 #
 # take in top 200 UWT riders
 
-run = 0
-
-if(run == 1) {
+if(LIMIT_YEAR >= 2019) {} else {
   
   top_200_WT <- stage_data_with_pcd %>%
     
@@ -1302,13 +1168,7 @@ if(run == 1) {
   
 }
 
-#
-#
-# actual limits
-
-
 # Stage Data Perf ---------------------------------------------------------
-
 
 stage_data_perf <- stage_data_with_pcd %>%
   
@@ -1398,61 +1258,65 @@ dbWriteTable(con, "stage_data_perf",
 
 # Bunch Sprint Modelling --------------------------------------------------
 
-bs_data <- stage_data_perf %>%
+if(LIMIT_YEAR >= 2019) {} else {
   
-  group_by(stage, year, class, race) %>%
-  mutate(within_3_secs = mean(gain_1st <= 3, na.rm = T)) %>%
-  ungroup() %>%
+  bs_data <- stage_data_perf %>%
+    
+    group_by(stage, year, class, race) %>%
+    mutate(within_3_secs = mean(gain_1st <= 3, na.rm = T)) %>%
+    ungroup() %>%
+    
+    group_by(race, year) %>%
+    mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage)) & as.numeric(stage) >= 18 & grand_tour == 1, 1, 0)) %>%
+    ungroup() %>%
+    
+    filter(time_trial == 0 & team_time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
+    mutate(length = length - 200) %>%
+    
+    filter(!is.na(bunch_sprint)) %>%
+    filter(!is.na(pred_climb_difficulty)) %>%
+    
+    mutate(sq_pcd = ifelse(pred_climb_difficulty <= 0, 0, pred_climb_difficulty ^ 2)) %>%
+    
+    mutate(level = ifelse(class %in% c("UWT", "WT", "1.UWT", "2.UWT"), "WT",
+                          ifelse(class %in% c("Olympics", "WC", 'CC', "NC"), "Championships",
+                                 ifelse(class %in% c("2.2U", "2.Ncup", "1.2U", "1.Ncup"), "U23", 
+                                        ifelse(class == "JR", "JR", "Regular")))),
+           WT = ifelse(level == "WT", 1, 0),
+           U23 = ifelse(level == "U23", 1, 0),
+           sof40 = ifelse(sof >= 0.4, 1, 0)) %>%
+    
+    #filter(U23 == 0) %>%
+    
+    mutate(stage_no = as.numeric(stage) - 1) %>%
+    group_by(race, year) %>%
+    mutate(perc_thru = stage_no / max(stage_no)) %>%
+    ungroup() %>%
+    mutate(perc_thru = ifelse(is.na(perc_thru), 0, perc_thru))
   
-  group_by(race, year) %>%
-  mutate(finalGT = ifelse(as.numeric(stage) == max(as.numeric(stage)) & as.numeric(stage) >= 18 & grand_tour == 1, 1, 0)) %>%
-  ungroup() %>%
+  # final predictions
   
-  filter(time_trial == 0 & team_time_trial == 0 & rnk == 1 & !is.na(bunch_sprint)) %>%
-  mutate(length = length - 200) %>%
-
-  filter(!is.na(bunch_sprint)) %>%
-  filter(!is.na(pred_climb_difficulty)) %>%
+  bs_glm <- glm(bunch_sprint ~ grand_tour +
+                  perc_thru +
+                  one_day_race + 
+                  sq_pcd + 
+                  pred_climb_difficulty + 
+                  length + 
+                  uphill_finish + 
+                  finalGT + 
+                  level + 
+                  cobbles,
+                family = "binomial",
+                data = bs_data)
   
-  mutate(sq_pcd = ifelse(pred_climb_difficulty <= 0, 0, pred_climb_difficulty ^ 2)) %>%
+  summary(bs_glm)
   
-  mutate(level = ifelse(class %in% c("UWT", "WT", "1.UWT", "2.UWT"), "WT",
-                        ifelse(class %in% c("Olympics", "WC", 'CC', "NC"), "Championships",
-                               ifelse(class %in% c("2.2U", "2.Ncup", "1.2U", "1.Ncup"), "U23", 
-                                      ifelse(class == "JR", "JR", "Regular")))),
-         WT = ifelse(level == "WT", 1, 0),
-         U23 = ifelse(level == "U23", 1, 0),
-         sof40 = ifelse(sof >= 0.4, 1, 0)) %>%
+  # write model and predictions
   
-  #filter(U23 == 0) %>%
+  coef(bs_glm)
+  write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
   
-  mutate(stage_no = as.numeric(stage) - 1) %>%
-  group_by(race, year) %>%
-  mutate(perc_thru = stage_no / max(stage_no)) %>%
-  ungroup() %>%
-  mutate(perc_thru = ifelse(is.na(perc_thru), 0, perc_thru))
-
-# final predictions
-
-bs_glm <- glm(bunch_sprint ~ grand_tour +
-                perc_thru +
-                one_day_race + 
-                sq_pcd + 
-                pred_climb_difficulty + 
-                length + 
-                uphill_finish + 
-                finalGT + 
-                level + 
-                cobbles,
-              family = "binomial",
-              data = bs_data)
-
-summary(bs_glm)
-
-# write model and predictions
-
-coef(bs_glm)
-#write_rds(bs_glm, "Stored models/bunchsprint-glm-mod.rds")
+}
 
 #
 
