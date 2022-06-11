@@ -138,6 +138,8 @@ start_year = 2021 # set to 2012 to pull 2013, 2019 to pull 2020
 
 for(t in 1:length(pull_from_schedule)) {
   
+  Sys.sleep(2)
+  
   year_list <- vector("list", pull_years)
   
   # pull in each year
@@ -154,7 +156,14 @@ for(t in 1:length(pull_from_schedule)) {
     
     if(year == current_year) {
       
-      page <- url %>%
+      download.file(url = url, destfile = "temp.html", quiet = TRUE)
+      
+      while(file.info("temp.html")$size < 11000) {
+        Sys.sleep(5)
+        download.file(url = url, destfile = "temp.html", quiet = TRUE)
+      }
+      
+      page <- "temp.html" %>%
         read_html()
       
       # bring in all events
@@ -1241,6 +1250,8 @@ for(r in 1:length(all_stages$value)) {
       
       download.file(url, f_name, quiet = TRUE)
       
+      Sys.sleep(7)
+      
     }
     
     page <- read_file(f_name) %>%
@@ -1413,7 +1424,7 @@ for(r in 1:length(all_stages$value)) {
         
         mutate(time_trial = ifelse(stage_name %in% c("Time trial", "Prologue") | str_detect(stage_name, "ITT"), TRUE, FALSE)) %>%
         
-        mutate(grand_tour = ifelse(race %in% c("Tour de France", "Giro d'Italia", 
+        mutate(grand_tour = ifelse(race %in% c("Tour de France", "Giro d'Italia", "Giro d Italia", "Giro dItalia",
                                                "La Vuelta ciclista a Espana", "Vuelta a Espana"), TRUE, FALSE)) %>%
         
         mutate(one_day_race = ifelse(stage_name == "One day race", TRUE, FALSE)) %>%
@@ -1445,7 +1456,7 @@ for(r in 1:length(all_stages$value)) {
       #
       
       dbWriteTable(con, "pcs_stage_characteristics", stage_data_chars, append = TRUE, row.names = FALSE)
-      
+
       print(stage_data_chars)
       
     }
@@ -2067,6 +2078,8 @@ for(r in 1:length(all_races$url)) {
     
     dbWriteTable(con, "pcs_all_startlists", startlist, row.names = FALSE, append = TRUE)
     
+    Sys.sleep(2)
+    
     print(r)
     
   }
@@ -2153,6 +2166,8 @@ for(r in 1:length(all_races$url)) {
     
     print(r)
     
+    Sys.sleep(3)
+    
     print(breaks)
     
   }
@@ -2229,6 +2244,8 @@ for(r in 1:length(all_stages$value)) {
     # scrape the HTML for the page for multiple use
     
     f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    
+    Sys.sleep(3)
     
     page <- read_file(f_name) %>%
       read_html()
@@ -2641,7 +2658,14 @@ for(t in 1:length(pull_from_schedule)) {
     year,
     str_sub(pull_from_schedule[[t]], 52, nchar(pull_from_schedule[[t]])))
   
-  page <- url %>%
+  download.file(url = url, destfile = "temp.html", quiet = TRUE)
+  
+  while(file.info("temp.html")$size < 11000) {
+    Sys.sleep(5)
+    download.file(url = url, destfile = "temp.html", quiet = TRUE)
+  }
+  
+  page <- "temp.html" %>%
     read_html()
   
   # bring in all events
