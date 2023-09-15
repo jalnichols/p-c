@@ -1,15 +1,15 @@
 
 library(tidyverse)
-library(RMySQL)
+library(DBI)
 
+dbDisconnect(con)
 
-DBI::dbDisconnect(con)
-
-con <- dbConnect(RMySQL::MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 
@@ -33,7 +33,7 @@ All_data <- dbReadTable(con, "stage_data_perf") %>%
          -avg_alt, -missing_profile_data) %>%
   
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
-           (class %in% c("2.1", "1.1") & Tour == "Europe Tour")) %>%
+           (class %in% c("2.1", "1.1") & tour == "Europe Tour")) %>%
   unique() %>% 
   
   mutate(final_group = ifelse(bunch_sprint == 1, ifelse(gain_1st <= 5, 1, 0), ifelse(rnk <= 20 | gain_20th == 0, 1, 0))) %>%
@@ -108,24 +108,24 @@ win_rate <- who_contributed %>%
 #
 #
 
-top_sprinters <- dbGetQuery(con, "SELECT rider, exp(random_intercept + bunchsprint_impact) AS prediction, Date
-                             FROM lme4_rider_logranks") %>%
+top_sprinters <- dbGetQuery(con, "SELECT rider, exp(random_intercept + 1.2 + 1) AS prediction, date
+                             FROM lme4_rider_sprintlevel2_logranks") %>%
   
-  group_by(Date) %>%
+  group_by(date) %>%
   mutate(sprint_rank = percent_rank(desc(prediction))) %>%
   ungroup() %>%
   
-  mutate(Date = as.Date(Date)) %>%
+  mutate(date = as.Date(date)) %>%
   
-  filter(Date > '2016-07-02')
+  filter(date >= '2017-04-01')
 
 #
 
 who_races_with_best_sprinters <- who_contributed %>%
   
-  filter(date > '2016-07-01') %>%
-  
-  left_join(top_sprinters, by = c("date" = "Date", "rider")) %>%
+  filter(date >= '2017-04-01') %>%
+   
+  left_join(top_sprinters, by = c("date", "rider")) %>%
   
   mutate(prediction = ifelse(is.na(prediction), median(prediction, na.rm = T), prediction)) %>%
   
@@ -140,7 +140,7 @@ who_races_with_best_sprinters <- who_contributed %>%
 #
 
 who_races_with_best_sprinters %>%
-  filter(date > '2016-07-01') %>%
+  filter(date >= '2017-04-01') %>%
   group_by(rider) %>% 
   summarize(Rel = mean(rel_best*-1, na.rm = T), 
             is_best = mean(best_sprinter == prediction, na.rm = T), 

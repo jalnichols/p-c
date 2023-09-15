@@ -1,7 +1,7 @@
 library(tidyverse)
 library(DBI)
 
-Sys.sleep(0)
+Sys.sleep(36000)
 
 dbDisconnect(con)
 
@@ -14,54 +14,80 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
 
 # now kick off everything
 
-Sys.sleep(0)
-
-base_url = 'https://racecenter.criterium-du-dauphine.fr/api/'
+#base_url = 'https://racecenter.criterium-du-dauphine.fr/api/'
 
 #telemetry_api <- 'https://racecenter.lavuelta.es/api/'
 
 #telemetry_api <- 'https://racecenter.letour.fr/api/'
 
-telemetry_api <- paste0(base_url, 'telemetryCompetitor-2022')
+base_url <- 'https://racecenter.letourfemmes.fr/api/'
 
-STAGE <- 3
+#base_url <- 'https://racecenter.letour.fr/api/'
 
+telemetry_api <- paste0(base_url, 'telemetryCompetitor-2023?xdt=245feyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJrc3AiOiJNMkkxTXpreU1qVmtZVEJqIiwiaWF0IjoxNjg4MTczNTA2fQeXg9hSHo8FbOVm8UVOdweFxzh0ffCPC-iyWd9s0QDsw')
+
+STAGE <- 8
 step = 1
 
-while(step < 3500) {
+cols <- dbListFields(con, "telemetry_tdf2020")
 
+while(step < 6000) {
+  
   json_data <- jsonlite::fromJSON(telemetry_api)
   
-  json_df <- json_data %>%
-    select(-YGPW) %>%
-    unnest(cols = c(Riders)) %>%
-    select(-LatLon, -`_origin`) %>%
-    rename(timestamp = TimeStamp, status = Status, bib = Bib, longitude = Longitude, latitude = Latitude,
-           kmtofinish = kmToFinish, winddir = WindDir, degc = degC, kphwind = kphWind, kphavg = kphAvg,
-           riderwinddir = RiderWindDir, course = Course, jersey = Jersey, pos = Pos, gradient = Gradient,
-           sectofirstrider = secToFirstRider, stageid = StageId, racename = RaceName, racestatus = RaceStatus,
-           `_updatedat` = `_updatedAt`) %>%
-    select(-racestatus, -course) %>%
-    mutate(riderwinddir = round(riderwinddir,0))
-  
-  DBI::dbWriteTable(con, "telemetry_tdf2020", json_df, row.names = F, append = TRUE)
-
-  if(min(json_df$kmToFinish) < 3 & min(json_df$kmToFinish) > 0) {
-
-    Sys.sleep(8)
-
-    step = step + 1
-
+  if(nrow(json_data) == 0) { 
+    print('waiting 60 seconds')
+    Sys.sleep(60)
+  } else if(as.numeric(json_data$StageId) != as.numeric(paste0(STAGE,"00"))) {
+    print('waiting 60 seconds')
+    Sys.sleep(60) 
+  } else if(json_data$RaceStatus == FALSE) {
+    print('waiting 60 seconds')
+    Sys.sleep(60)
+    step = step+25
   } else {
     
-    Sys.sleep(8)
+    json_data <- json_data %>%
+      select(-YGPW) %>%
+      unnest(cols = c(Riders))
     
-    step = step + 1
+    if(nrow(json_data) <= 1) {} else {
+      
+      json_df <- json_data %>%
+        select(-LatLon, -`_origin`) %>%
+        rename(timestamp = TimeStamp, status = Status, bib = Bib, longitude = Longitude, latitude = Latitude,
+               kmtofinish = kmToFinish, winddir = WindDir, degc = degC, kphwind = kphWind, kphavg = kphAvg,
+               riderwinddir = RiderWindDir, course = Course, jersey = Jersey, pos = Pos, gradient = Gradient,
+               sectofirstrider = secToFirstRider, stageid = StageId, racename = RaceName, racestatus = RaceStatus,
+               `_updatedat` = `_updatedAt`) %>%
+        #select(-racestatus, -course) %>%
+        mutate(racestatus = NA, course = NA) %>%
+        mutate(riderwinddir = round(riderwinddir,0))
+      
+      DBI::dbWriteTable(con, "telemetry_tdf2020", json_df %>% select(cols), row.names = F, append = TRUE)
+      
+      print(nrow(json_df))
+      
+    }
     
-   }
+    if(min(json_df$kmToFinish) < 3 & min(json_df$kmToFinish) > 0) {
+      
+      Sys.sleep(1)
+      
+      step = step + 1
+      
+    } else {
+      
+      Sys.sleep(5)
+      
+      step = step + 1
+      
+    }
+    
+    print(min(json_df$kmtofinish))
+    
+  }
   
-  print(min(json_df$kmtofinish))
-
 }
 
 # run lines 4 to 52
@@ -71,95 +97,80 @@ while(step < 3500) {
 tictoc::tic()
 
 all_stages <- dbGetQuery(con, "SELECT Bib, Longitude, Latitude, degC, kmToFinish, Gradient,
-                         Pos, sectoFirstRider, StageId, RaceName, TimeStamp
-                         FROM telemetry_tdf2020 WHERE RaceName IN ('CDD 2022')") %>% 
-  unique()
+                         Pos, sectoFirstRider, StageId, RaceName, TimeStamp, windDir, kphWind
+                         FROM telemetry_tdf2020 WHERE RaceName IN ('TDF 2023') AND stageid IN ('1600')") %>% 
+  unique() %>%
+  
+  mutate(bib = ifelse(bib == 13 & racename == 'TDF 2023', 19, bib))
 
 tictoc::toc()
 
 #
 
-
-
-riders <- paste0(base_url, 'allCompetitors-2021') %>%
+riders <- paste0(base_url, 'allCompetitors-2023') %>%
   readLines() %>%
   jsonlite::fromJSON() %>%
   select(Bib = bib, firstname, lastname, lastnameshort) %>%
-  mutate(RaceName = 'TDF 2021') %>%
-  mutate(GC = ifelse(Bib %in% c(1, 11, 21, 22, 24, 26, 37, 51, 61, 65, 72, 73, 81, 91,
-                                111, 161, 172, 181), "GC","Helper")) %>%
+  mutate(RaceName = 'TDF 2023') %>%
+  filter(!is.na(Bib)) %>%
+  mutate(GC = ifelse(Bib %in% c(1,3,11,19,21,25,27,31,37,41,48,62,65,66,71,81,
+                                83,91,114,121,131,135,141,151,161,171,195,204), "GC",
+                     ifelse(Bib %in% c(211,201,191,181,177,164,148,157,122,
+                                       111,106,86,76,78,64,56,45,18,6,5), "Sprinter", "Helper")))
   
-  rbind(paste0(base_url, 'allCompetitors-2020') %>%
-          readLines() %>%
-          jsonlite::fromJSON() %>%
-          select(Bib = bib, firstname, lastname, lastnameshort) %>%
-          mutate(RaceName = 'TDF 2020') %>%
-          mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
-                                        91, 94, 101, 104, 141, 161, 171), "GC","Helper"))) %>%
-  
-  rbind(paste0(base_url, 'allCompetitors-2022') %>%
-          readLines() %>%
-          jsonlite::fromJSON() %>%
-          select(Bib = bib, firstname, lastname, lastnameshort) %>%
-          mutate(RaceName = 'CDD 2022') %>%
-          mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
-                                        91, 94, 101, 104, 141, 161, 171), "GC","Helper")))
+  # rbind(paste0(base_url, 'allCompetitors-2020') %>%
+  #         readLines() %>%
+  #         jsonlite::fromJSON() %>%
+  #         select(Bib = bib, firstname, lastname, lastnameshort) %>%
+  #         mutate(RaceName = 'TDF 2020') %>%
+  #         mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
+  #                                       91, 94, 101, 104, 141, 161, 171), "GC","Helper"))) %>%
+  # 
+  # rbind(paste0(base_url, 'allCompetitors-2022') %>%
+  #         readLines() %>%
+  #         jsonlite::fromJSON() %>%
+  #         select(Bib = bib, firstname, lastname, lastnameshort) %>%
+  #         mutate(RaceName = 'CDD 2022') %>%
+  #         mutate(GC = ifelse(Bib %in% c(1, 11, 131, 31, 22, 51, 61, 71, 81,
+  #                                       91, 94, 101, 104, 141, 161, 171), "GC","Helper")))
 
 #
 
-for(s in 1:2) {
+for(s in 15:16) {
   
-  for(y in c(2022)) {
-
+  for(y in c(2023)) {
+    
     climbs <- paste0(base_url, 'checkpoint-', y, '-', s) %>%
-      readLines() %>%
+      #readLines() %>%
       jsonlite::fromJSON() %>%
-      .[[1]] %>%
-      unlist() %>%
-      enframe() %>%
-      mutate(dupe = name) %>%
-      separate(dupe, c("rowid", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", 'v11'), sep = "\\.") %>%
-      filter(v1 == 'checkpointSummits')
+      janitor::clean_names()
     
-    if(length(climbs$name) > 0) {
+    cls <- colnames(climbs)
     
-    climbs <- climbs %>%
-      mutate(colname = ifelse(is.na(v3), v2, paste0(v2,"/",v3))) %>%
-      select(colname, value, rowid) %>%
-      spread(colname, value) %>%
+    list_climbs <- vector("list", length(cls)-8)
+    
+    for(x in 1:(length(cls)-8)) {
       
-      select(rowid, climb_length = length, category = code, climb_gradient = state, summit_altitude = `summit/altitude`, climb_name = `summit/name`)
-    
-    lengths <- paste0(base_url, 'checkpoint-', y, '-', s) %>%
-      readLines() %>%
-      jsonlite::fromJSON() %>%
-      .[[1]] %>%
-      unlist() %>%
-      enframe() %>%
-      mutate(dupe = name) %>%
-      separate(dupe, c("rowid", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", 'v11'), sep = "\\.") %>%
-      filter(v1 %in% c("latitude", "longitude", "length")) %>%
-      select(rowid, v1, value) %>%
-      spread(v1, value)
-    
-    merged <- climbs %>%
+      df <- climbs[,x]
       
-      inner_join(lengths %>% mutate(stage_dist = length), by = c("rowid")) %>%
-      select(-rowid) %>%
-      mutate(stage = s,
-             year = y) %>%
-      mutate(climb_length = as.numeric(climb_length),
-             latitude = as.numeric(latitude),
-             longitude = as.numeric(longitude),
-             stage_dist = as.numeric(stage_dist),
-             summit_altitude = as.numeric(summit_altitude),
-             climb_gradient = as.numeric(climb_gradient)/100) %>%
-      select(climb_length, climb_name, climb_gradient, summit_altitude, stage_dist, latitude, longitude,
-             category, stage, year)
-    
-    dbWriteTable(con, "tdf_telemetry_climbs", merged, row.names = F, append = T)
-    
+      if(length(df$checkpointSummits[[1]]) == 0) {} else {
+        list_climbs[[x]] <- df
+      }
     }
+    
+    all <- list_climbs %>%
+      bind_rows() %>%
+      rename(kmThru = length) %>%
+      unnest(cols = "checkpointSummits") %>%
+      mutate(startThru = kmThru - (length/1000)) %>%
+      unnest(cols = "summit") %>%
+      select(stage_dist = kmThru, latitude, longitude, climb_length = length, climb_gradient = state, 
+             climb_name = name, summit_altitude = altitude, category = code) %>%
+      mutate(climb_length = climb_length/1000,
+             stage = s,
+             year = y)
+    
+    dbWriteTable(con, "tdf_telemetry_climbs", all, row.names = F, append = T)
     
   }
   
@@ -169,10 +180,10 @@ for(s in 1:2) {
 #
 #
 
-stages_data <- paste0(base_url, 'stage-2021') %>%
+stages_data <- paste0(base_url, 'stage-2023') %>%
   jsonlite::fromJSON() %>%
   select(stage, length) %>%
-  mutate(year = 2021) %>%
+  mutate(year = 2023)
   rbind(
     paste0(base_url, 'stage-2020') %>%
       jsonlite::fromJSON() %>%
@@ -184,7 +195,14 @@ stages_data <- paste0(base_url, 'stage-2021') %>%
       jsonlite::fromJSON() %>%
       select(stage, length) %>%
       mutate(year=2022)
+  ) %>%
+  rbind(
+    paste0(base_url, 'stage-2021') %>%
+      jsonlite::fromJSON() %>%
+      select(stage, length) %>%
+      mutate(year=2021)
   )
+
 
 #
 #
@@ -200,7 +218,7 @@ all_stages %>%
   
   filter(kmToFinish > 0) %>% 
   
-  mutate(primoz = ifelse(Bib == "41", kmToFinish, NA)) %>% 
+  mutate(primoz = ifelse(Bib == "1", kmToFinish, NA)) %>% 
   
   group_by(TimeStamp) %>%
   mutate(primoz = mean(primoz, na.rm = T)) %>% 
@@ -221,6 +239,118 @@ all_stages %>%
             stages = n_distinct(StageId),
             stamps = n()) %>%
   ungroup()  -> survival_w_roglic
+
+#
+
+all_race_activities <- fs::dir_info("FR-routes/backfill/") %>%
+  mutate(file_type = ifelse(str_detect(path, ".csv"), "csv",
+                            ifelse(str_detect(path, ".rds"), "rds", "unk"))) %>%
+  mutate(id = str_replace(path, ".csv", ""),
+         id = str_replace(id, ".rds", ""),
+         id = str_replace(id, "FR-routes/backfill/fr-", ""),
+         id = str_replace(id, "climbs-", ""),
+         id = str_replace(id, "route-", ""),
+         id = str_replace(id, "cobbles-", "")) %>%
+  select(id, file_type) %>%
+  unique() %>%
+  inner_join(dbGetQuery(con, "SELECT DISTINCT * FROM new_fr_stages") %>%
+               mutate(id = str_replace(url, "https://www.la-flamme-rouge.eu/maps/loadtrack/", "")) %>%
+               select(url, id, length, race, stage) %>%
+               unique())
+
+ID = 506704
+
+FILE <- paste0("FR-routes/backfill/fr-route-", ID, ".csv")
+data_lists <- read_csv(FILE) %>%
+  mutate(maxDist = max(distance),
+         kmToFinish = maxDist - distance)
+
+profile <- ggplot()+
+  geom_line(data = data_lists %>% filter(kmToFinish < 25),
+            aes(x = kmToFinish, y = altitude), color = "black")+
+  scale_x_reverse()+
+  labs(x = "KM left", y = "altitude (m)")
+
+results <- jsonlite::fromJSON("https://racecenter.letour.fr/api/rankingTypeTrial-2023-16?xdt=245feyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJrc3AiOiJPR1ptT1RCbVpXRTBNRFpqIiwiaWF0IjoxNjg2MTczMzQ2fQRU-R0As-APwwA3Q2bua2N1q98SG0tNvQHojKXGOD_oI")
+
+itt_results <- results[[3]][[3]] %>%
+  mutate(time = absolute/1000)
+
+#itt_results <- tibble(bib = c(1,19,11,95,27, 71),
+#                      time = c(14330,14335,14330,14431,14325, 14431))
+
+#rider_perf <- 
+  
+all_stages %>%
+  
+  rename(Bib = bib, RaceName = racename,
+         kmToFinish = kmtofinish, TimeStamp = timestamp,
+         StageId = stageid) %>%
+  
+  inner_join(riders, by = c("Bib", "RaceName")) %>%
+  
+  inner_join(itt_results %>% select(bib, time), by = c("Bib" = "bib")) %>%
+  
+  mutate(lastname = case_when(lastname == "RODRIGUEZ CANO" ~ "RODRIGUEZ",
+                              lastname == "POGAÄŒAR" ~ "POGACAR",
+                              TRUE ~ lastname)) %>%
+  
+  group_by(Bib) %>%
+  mutate(zero = ifelse(kmToFinish == 0, TimeStamp, NA),
+         zero = ifelse(TimeStamp == min(zero, na.rm = T), 1, 0)) %>%
+  ungroup() %>%
+  
+  filter(kmToFinish > 0 | zero == 1) %>% 
+
+  filter(kmToFinish < 50) %>%
+  
+  group_by(Bib) %>%
+  mutate(max_timestamp = max(TimeStamp, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(jonas = ifelse(Bib == "1",  time - (max_timestamp - TimeStamp), NA)) %>% 
+  
+  group_by(x100meterSegment = floor(kmToFinish/0.1)*0.1) %>%
+  mutate(jonas = mean(jonas, na.rm = T)) %>% 
+  ungroup() %>%
+  
+  mutate(rel_rider_time = time - (max_timestamp - TimeStamp)) %>%
+  
+  mutate(gap_to_jonas = jonas - rel_rider_time) %>% 
+  
+  group_by(kmToFinish = floor(kmToFinish/0.5)*0.5, Bib, firstname, lastname, GC) %>%
+  summarize(gap_to_jonas = mean(gap_to_jonas, na.rm = T)) %>%
+  ungroup() %>%
+  
+  filter(!is.nan(gap_to_jonas)) %>%
+  
+  filter(Bib %in% c(1,11,27,71)) %>%
+  
+  ggplot(aes(x = kmToFinish, y = gap_to_jonas, color = paste0(firstname, " ", lastname)))+
+  geom_rect(aes(xmin = 25, xmax = 12, ymin = -150, ymax = 15), fill = "gray80", color = "transparent")+
+  geom_rect(aes(xmin = 12, xmax = 0, ymin = -150, ymax = 15), fill = "gray90", color = "transparent")+
+  #geom_smooth(span = 0.5, se = F)+
+  geom_line()+
+  #geom_path()+
+  geom_point(size=3)+
+  scale_x_reverse()+
+  scale_color_manual(values = c("#C50018", "#37B36C", "gold", "white", "blue", "purple", "#FF00C1"), name = "")+
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 16),
+        axis.text = element_text(size = 16),
+        legend.text = element_text(size = 16)
+        )+
+  labs(x = "KM left", y = "Seconds behind Pogacar",
+       title = "Joux Plane to finish (Stage 14)")+
+  coord_cartesian(ylim = c(-120, 5))+
+  annotate(geom = "label", x = 19, y = -105, label = "climb")+
+  annotate(geom = "label", x = 6, y = -105, label = "downhill")
+
+library(patchwork)
+
+ggp <- rider_perf / profile + 
+  plot_layout(heights = unit(c(5.5, 1), c('in', 'null')))
 
 #
 
@@ -481,7 +611,8 @@ ggsave("top-gc-with-roglic-thru-12.png", height = 6, width = 12)
 #
 #
 
-climbs <- dbGetQuery(con, "SELECT * FROM tdf_telemetry_climbs") %>% 
+climbs <- dbGetQuery(con, "SELECT * FROM tdf_telemetry_climbs") %>%
+  mutate(climb_length = ifelse(year >= 2023, climb_length*1000, climb_length)) %>%
   inner_join(stages_data, by = c('stage', 'year')) %>%
   mutate(StageId = ifelse(nchar(stage)==1, paste0("0", stage, "00"), paste0(stage,"00")),
          RaceName = paste0("TDF ", year)) %>%
@@ -503,6 +634,14 @@ downhills <- read_csv("TDF-telemetry-dh.csv") %>%
 
 climbing <- all_stages %>%
 
+  rename(kmToFinish = kmtofinish,
+         TimeStamp = timestamp,
+         Bib = bib,
+         RaceName = racename,
+         StageId = stageid,
+         Gradient = gradient,
+         degC = degc) %>%
+  
   mutate(within_01 = ifelse(kmToFinish <= 0, TimeStamp, NA)) %>%
   
   group_by(StageId, Bib, RaceName) %>%
@@ -541,7 +680,9 @@ climbing <- all_stages %>%
   mutate(calc_Rel = kph / mean(kph, na.rm = T)) %>%
   ungroup()  %>%
   
-  inner_join(riders, by = c("Bib", "RaceName")) #%>%
+  inner_join(riders, by = c("Bib", "RaceName")) %>%
+  
+  mutate(Climb = iconv(Climb, from="UTF-8", to = "ASCII//TRANSLIT"))
   
   # group_by(StageId) %>%
   # filter((meters / max(meters, na.rm = T) > 0.90)) %>%
@@ -557,6 +698,26 @@ climbing <- all_stages %>%
   # ungroup() %>%
   # 
   # mutate(implied_seconds = max_meters / m_s)
+
+#
+
+climbing_performance <- climbing %>% 
+  filter(Climb %in% c("Cote de Pike", "Cote de Vivero (361 m)", "Jaizkibel (455 m)", "Col de Marie Blanque (1 035 m)")) %>% 
+  
+  group_by(Climb, StageId, RaceName, endKM) %>%
+  mutate(standard_meters = median(meters, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(standard_seconds = standard_meters/m_s) %>%
+  
+  group_by(Bib, firstname, lastname, GC) %>%
+  filter(abs(1-(meters/standard_meters)) < 0.05) %>%
+  summarize(time = sum(standard_seconds, na.rm = T),
+            meters_climbed = sum(standard_meters, na.rm = T),
+            climbs_measured = n()) %>%
+  ungroup() %>%
+  
+  mutate(kph = (meters_climbed/1000)/(time/3600))
 
 #
 
@@ -1491,3 +1652,5 @@ bind_rows(r_list) -> xyz
 #
 #
 #
+
+

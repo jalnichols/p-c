@@ -10,16 +10,21 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = "postgres",
                       password = "braves")
 
-#
+# Most unprocessed files are of label "Margin between Winner and 2nd placed"
 
 betway <- fs::dir_info("C:/Users/Jake Nichols/Documents/R Code/p-c/odds/unibet-odds/") %>%
   
   mutate(file_path = str_replace(path, "C:/Users/Jake Nichols/Documents/R Code/p-c/odds/unibet-odds/", ""),
-         accessed_at = str_replace_all(str_sub(file_path, 12,30), "_", ":"),
+         accessed_at = ifelse(str_detect(file_path, "cyclo"), str_replace_all(str_sub(file_path, 18,36), "_", ":"), str_replace_all(str_sub(file_path, 12,30), "_", ":")),
          accessed_at = lubridate::as_datetime(accessed_at),
          eventId = str_sub(file_path, 1, 10)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT DISTINCT file_path as path FROM unibet_cycling_odds"))
+  anti_join(dbGetQuery(con, "SELECT DISTINCT file_path as path FROM unibet_cycling_odds")) %>%
+  
+  arrange(desc(birth_time)) %>%
+  
+  select(path, birth_time, accessed_at) %>%
+  unique()
 
 #
 
@@ -27,12 +32,11 @@ for(f in 1:length(betway$path)) {
   
   page <- read_rds(betway$path[[f]])
   
-  #
-  
   event_data <- tibble(unibetId = page$events$id,
                        name = page$events$name,
                        start_time = page$events$start, 
-                       accessed_at = betway$accessed_at[[f]][[1]])
+                       accessed_at = betway$accessed_at[[f]][[1]],
+                       race_status = page$events$state)
   
   #
   
@@ -84,10 +88,12 @@ for(f in 1:length(betway$path)) {
         
         dbWriteTable(con, "unibet_cycling_odds", outcomes, append = TRUE, row.names = FALSE)
         
+        print(f)
       }
     }
     
   }
+
 }
 
 #
@@ -95,7 +101,7 @@ for(f in 1:length(betway$path)) {
 all_odds <- dbReadTable(con, "unibet_cycling_odds") %>%
   
   left_join(
-    read_csv("rider-matching-unibet.csv") %>%
+    read_delim("rider-matching-unibet.csv") %>%
       rename(rider = new_label) %>%
       select(rider, riderId), by = c("riderid" = "riderId")
   )
@@ -103,27 +109,54 @@ all_odds <- dbReadTable(con, "unibet_cycling_odds") %>%
 #
 
 matchups <- all_odds %>%
-  filter(betType == "Head to Head") %>%
+  filter(bettype == "Head to Head") %>%
   mutate(accessed_at = lubridate::as_datetime(accessed_at),
          start_time = lubridate::as_datetime(start_time)) %>% 
   
   filter(accessed_at < start_time) %>%
   
-  group_by(marketId, betSpecType, betType, name, rider, riderId) %>% 
+  group_by(marketid, betspectype, bettype, name, rider, riderid) %>% 
   filter(accessed_at == max(accessed_at, na.rm = T)) %>%
   ungroup() %>%
   
-  group_by(marketId, betSpecType, betType, name) %>%
-  mutate(other_riderId = ifelse(riderId == max(riderId), min(riderId), max(riderId))) %>%
+  group_by(marketid, betspectype, bettype, name) %>%
+  mutate(other_riderId = ifelse(riderid == max(riderid), min(riderid), max(riderid))) %>%
   ungroup() %>%
   
   left_join(
-    read_csv("rider-matching-unibet.csv") %>%
+    read_delim("rider-matching-unibet.csv") %>%
       rename(rider = new_label) %>%
       select(other_rider = rider, other_riderId = riderId), by = c("other_riderId")
-  )
+  ) %>%
+  unique()
+ 
+#
+
+library(lme4)
+
+lmer_mod <- matchups %>%
+  mutate(implied = (1/odds)/1.08) %>%
+  filter(!(str_detect(name, "Classification"))) %>%
+  filter(!(str_detect(name, "Time Trial"))) %>%
+  filter(!(str_detect(name, "Specials"))) %>%
+  filter(!(str_detect(name, "Prologue"))) %>%
+  group_by(rider) %>%
+  filter(n() >= 3) %>%
+  ungroup() %>%
+  lmer(implied ~ (1 | other_rider) + (1 | rider),
+       data = .)
   
+ranefs_rider <- ranef(lmer_mod)[[2]] %>% rownames_to_column()
+ranefs_oppts <- ranef(lmer_mod)[[1]] %>% rownames_to_column()
+
+ranefs_combined <- ranefs_rider %>% janitor::clean_names() %>%
+  rbind(ranefs_oppts %>% janitor::clean_names() %>% mutate(intercept = intercept*-1)) %>%
   
+  group_by(rider = rowname) %>%
+  summarize(intercept = mean(intercept)) %>%
+  ungroup()
+
+#
   
 
 all_odds %>% 
@@ -143,29 +176,32 @@ all_odds %>%
 #
 
 all_odds %>% 
-  filter(name == 'Tour of Flanders 2022' & betType == "Winner" & betSpecType == "Winner") %>%
-  
+  filter(name == 'General Classification (Tour de France 2022)' & bettype == "Winner" & betspectype == "Winner") %>%
+
   filter(!is.na(rider)) %>%
+  unique() %>%
   
   group_by(accessed_at) %>% 
   mutate(implied = 1/odds,
-         implied = implied / sum(implied, na.rm = T)) %>% 
+         implied = implied^0.9 / sum(implied^0.9, na.rm = T)) %>% 
   ungroup() %>% 
   
-  filter(rider %in% c("Van Aert Wout", "Asgreen Kasper", "Van Der Poel Mathieu",
-                      "Pedersen Mads", "Pidcock Thomas", "Alaphilippe Julian",
-                      "Pogacar Tadej", "Laporte Christophe", "Benoot Tiesj")) %>%
+  filter(rider %in% c("Roglic Primoz","Mas Enric", "O'connor Ben",
+                      "Pogacar Tadej", "Vlasov Aleksandr", "Thomas Geraint",
+                      "Martinez Daniel Felipe", "Vingegaard Jonas", "Haig Jack",
+                      "Yates Adam", "Quintana Nairo", "Uran Rigoberto",
+                      "Fuglsang Jakob")) %>%
   
   #filter(accessed_at > (lubridate::now() - 86400)) %>%
   
   group_by(rider, 
-           date = as.Date(lubridate::as_datetime(accessed_at))) %>% 
+           date = as.Date(lubridate::as_datetime(accessed_at))) %>%
   summarize(odds = mean(implied)) %>% 
   ungroup() %>% 
   
   ggplot(aes(x = date, y = odds, color = rider))+
   
-  geom_point(size=4, alpha = 0.5)+
+  geom_point(size=2, alpha = 0.5)+
   geom_line()+
   scale_y_continuous(labels = scales::percent)+labs(x = "", y = "implied probability", title = "RVV Odds")
 

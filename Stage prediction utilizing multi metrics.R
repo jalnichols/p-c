@@ -12,11 +12,16 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       password = "braves")
 #
 
-All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-06-30'") %>%
-  
-  filter(time_trial == 0 & team_time_trial == 0) %>%
+All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-01-01'") %>%
+  mutate(rider = str_replace(rider, "'", " "), 
+         rider = str_trim(rider),
+         rider = str_to_title(rider)) %>%
+  mutate(rider = case_when(rider == "Ghirmay Hailu Biniam" ~ "Girmay Biniam",
+                           rider == "Girmay Hailu Biniam" ~ "Girmay Biniam",
+                           TRUE ~ rider)) %>%
+  filter(team_time_trial == 0) %>%
   filter(!is.na(bunch_sprint)) %>%
-  filter(!is.na(pred_climb_difficulty)) %>%
+  filter(!is.na(pred_climb_difficulty) | time_trial == 1) %>%
   
   mutate(points_per_opp = ifelse(tm_pos == 1, points_finish, NA),
          sof_per_opp = ifelse(tm_pos == 1, sof, NA),
@@ -27,16 +32,15 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-06
   mutate(date = as.Date(date)) %>%
   
   select(-speed, -gain_3rd, -gain_5th, -gain_10th, -gain_40th,
-         -time_trial, -gc_winner, -gc_pos, -parcours_value, -stage_type,
+         -gc_winner, -gc_pos, -parcours_value, -stage_type,
          -avg_alt, -missing_profile_data) %>%
   
   filter((class %in% c("2.HC", "2.Pro", "2.UWT", "1.UWT", "1.HC", "1.Pro", "WT", "WC", "CC", "Olympics")) |
            (class %in% c("2.1", "1.1") & tour == "Europe Tour") | 
            (sof > 0.2 & class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
-           (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR")) |
-           (year == 2021 & class != "NC")) %>%
+           (sof > 0.1 & !class %in% c("2.2", "1.2", "2.2U", "1.2U", "2.Ncup", "1.Ncup", "JR"))) %>%
   
-  left_join(read_csv("cobbles.csv") %>% mutate(stage = as.character(stage))) %>% 
+  left_join(read_delim("cobbles.csv") %>% mutate(stage = as.character(stage))) %>% 
   
   mutate(cobbles = ifelse(is.na(cobbles), 0, cobbles)) %>%
   
@@ -46,12 +50,90 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-06
 
 #
 #
+
+predicting_TT <- All_data %>%
+  filter(time_trial == 1) %>%
+  select(-points_per_opp, -sof_per_opp, -pred_climb_diff_opp, -final_group) %>%
+  
+  unique() %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_timetrial") %>%
+      mutate(date = as.Date(date)), by = c("date")
+    
+  ) %>%
+  
+  unique() %>%
+  
+  left_join(
+    
+    dbReadTable(con, "lme4_rider_timetrial")  %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
+      mutate(date = as.Date(date)) %>%
+      
+      rename(pcd_logrk_impact = tvg_impact,
+             rand_logrk_impact = random_intercept) %>%
+      
+      mutate(rand_logrk_impact = rand_logrk_impact + modelintercept,
+             pcd_logrk_impact = ifelse(is.na(pcd_logrk_impact), 0, pcd_logrk_impact)) %>%
+      select(-modelintercept, -test_or_prod) %>%
+      filter(date >= as.Date('2014-01-01')), by = c("rider", "date")
+    
+  ) %>%
+  
+  mutate(pred_rank = exp(rand_logrk_impact + (pcd_logrk_impact * 10))) %>%
+  
+  select(-rand_logrk_impact) %>%
+
+  mutate(rider_match = str_to_title(rider)) %>%
+  
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, date as dob FROM rider_attributes") %>%
+      filter(!is.na(dob)) %>%
+      mutate(rider = str_to_title(rider)) %>%
+      unique() %>%
+      group_by(rider) %>%
+      filter(max(dob) == dob) %>%
+      ungroup(), by = c("rider_match" = "rider")) %>%
+  
+  mutate(age = as.numeric(as.Date(date)-as.Date(dob))/365.25) %>%
+  
+  group_by(stage, race, year) %>%
+  mutate(rel_age = age - mean(age, na.rm = T)) %>%
+  ungroup() %>%
+  
+  select(-age, -rider_match, -dob) %>%
+  mutate(rel_age = ifelse(is.na(rel_age), 0, rel_age)) %>%
+  
+  # give everyone with missing data the median data point
+  group_by(stage, race, year, class) %>%
+  mutate(pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank)) %>%
+  ungroup() %>%
+  
+  # rank each stat within race
+  group_by(stage, race, year, class) %>%
+  mutate(rk_rank = rank(pred_rank, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  mutate(class_small = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
+                                 class %in% c("2.2", "1.2") ~ ".2", 
+                                 class %in% c("WC", "2.UWT", "1.UWT") ~ "WT", 
+                                 class %in% c("1.Pro", "1.HC", "2.Pro", "2.HC") ~ ".HC", 
+                                 TRUE ~ class))
+#
+#
 #
 #
 #
 
 predicting_all <- All_data %>%
   
+  filter(race == "tour de france" & stage == 9) %>%
+  
+  filter(time_trial == 0) %>%
   select(-points_per_opp, -sof_per_opp, -pred_climb_diff_opp, -final_group) %>%
   mutate(stage_join = as.character(stage)) %>%
   inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
@@ -64,26 +146,31 @@ predicting_all <- All_data %>%
   
   inner_join(
     
-    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks WHERE test_or_prod = 'prod'") %>%
+    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks_sq WHERE test_or_prod = 'BS_not_ODR'") %>%
       mutate(date = as.Date(date)), by = c("date")
     
   ) %>%
   
   unique() %>%
   
+  mutate(pred_climb_difficulty = ifelse(pred_climb_difficulty < 0, 0, pred_climb_difficulty ^ 2),
+         one_day_race = ifelse(one_day_race == 1, 1 - predicted_bs, 0)) %>%
+  
   left_join(
     
-    dbReadTable(con, "lme4_rider_logranks")  %>%
+    dbReadTable(con, "lme4_rider_logranks_sq")  %>%
       filter(!is.na(one_day_race)) %>%
-      filter(test_or_prod == "prod") %>%
+      filter(test_or_prod == "BS_not_ODR") %>%
       select(-test_or_prod) %>%
       unique() %>%
       mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(date)) %>%
       
-      mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+      mutate(level_data = ifelse(is.na(sqpcd_impact), "just_rider",
                                  ifelse(is.na(bunchsprint_impact), "pcd_added",
                                         ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+      
+      rename(pcd_impact = sqpcd_impact) %>%
       
       # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
       # we adjust here
@@ -108,7 +195,7 @@ predicting_all <- All_data %>%
              odr_logrk_impact = ifelse(is.na(odr_logrk_impact), 0, odr_logrk_impact)
              ) %>%
       
-      filter(date >= as.Date('2016-07-01')), by = c("rider", "date")
+      filter(date >= as.Date('2014-01-01')), by = c("rider", "date")
     
   ) %>%
   
@@ -121,6 +208,69 @@ predicting_all <- All_data %>%
   
   select(-rand_logrk_impact, #-pcd_logrk_impact, -bs_logrk_impact, 
          -odr_logrk_impact) %>%
+  
+  left_join(dbGetQuery(con, "SELECT * FROM lme4_rider_logranks_sq WHERE date > '2022-01-01'")  %>%
+              filter(!is.na(one_day_race)) %>%
+              filter(test_or_prod == "BS_not_ODR") %>%
+              select(-test_or_prod) %>%
+              unique() %>%
+              mutate(rider = str_to_title(rider)) %>%
+              mutate(date = as.Date(date)) %>%
+              
+              mutate(level_data = ifelse(is.na(sqpcd_impact), "just_rider",
+                                         ifelse(is.na(bunchsprint_impact), "pcd_added",
+                                                ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+              
+              rename(pcd_impact = sqpcd_impact) %>%
+              
+              # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+              # we adjust here
+              group_by(date, level_data) %>%
+              mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
+                     random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+              ungroup() %>%
+              
+              # this transforms them back to input into the regression equation
+              mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+                     random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
+              
+              select(-pcd_impact_new, -random_intercept_new) %>%
+              
+              rename(pcd_logrk_impact = pcd_impact,
+                     bs_logrk_impact = bunchsprint_impact,
+                     rand_logrk_impact = random_intercept,
+                     odr_logrk_impact = one_day_race) %>%
+              
+              mutate(pcd_logrk_impact = ifelse(is.na(pcd_logrk_impact), 0, pcd_logrk_impact),
+                     bs_logrk_impact = ifelse(is.na(bs_logrk_impact), 0, bs_logrk_impact),
+                     odr_logrk_impact = ifelse(is.na(odr_logrk_impact), 0, odr_logrk_impact)
+              ) %>%
+              filter(between(date, All_data$date[[1]] - 60, All_data$date[[1]]-1)) %>%
+              group_by(rider) %>% 
+              filter(n() >= 7) %>% 
+              ungroup() %>% 
+              group_by(rider) %>% 
+              filter(date == min(date) | date == max(date)) %>% 
+              ungroup() %>%
+              group_by(rider) %>%
+              mutate(segment = ifelse(date == min(date), "Start", "End")) %>%
+              ungroup() %>%
+              select(-date, -level_data), by = c("rider")) %>%
+  
+  mutate(pred_rank.y = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (predicted_bs * bs_logrk_impact.y) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact.y * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
+  
+  select(-c(rand_logrk_impact, pcd_logrk_impact.y, bs_logrk_impact.y, odr_logrk_impact)) %>% 
+  rename(pcd_logrk_impact = pcd_logrk_impact.x, bs_logrk_impact = bs_logrk_impact.x) %>% 
+  
+  spread(segment, pred_rank.y) %>%
+  
+  select(-`<NA>`) %>%
+  mutate(slope = (End - Start)/60)
+  
 
   left_join(
     
@@ -129,7 +279,7 @@ predicting_all <- All_data %>%
       select(-test_or_prod) %>%
       unique() %>%
       mutate(rider = str_to_title(rider)) %>%
-      mutate(date = as.Date(date)) %>%
+      mutate(date = as.Date(date)-1) %>%
       
       mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
                                  ifelse(is.na(bunchsprint_impact), "pcd_added",
@@ -138,13 +288,13 @@ predicting_all <- All_data %>%
       # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
       # we adjust here
       group_by(date, level_data) %>%
-      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact),
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
              random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
       ungroup() %>%
       
       # this transforms them back to input into the regression equation
-      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact),
-             random_intercept = random_intercept_new * sd(random_intercept)) %>%
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+             random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
       
       select(-pcd_impact_new, -random_intercept_new) %>%
       
@@ -157,13 +307,15 @@ predicting_all <- All_data %>%
              odr_tmldr_impact = ifelse(is.na(odr_tmldr_impact), 0, odr_tmldr_impact)
       ) %>%
       
-      filter(date >= as.Date('2016-07-01')), by = c("rider", "date", 'level_data')
+      mutate(level_data = "odr_added") %>%
+      
+      filter(date >= as.Date('2014-01-01')), by = c("rider", "date", 'level_data')
     
   ) %>%
   
   # calculate team leader and success predictions using random effects
   mutate(glmer_pred = -3.5 + (random_intercept + 
-                                 (pred_climb_difficulty * pcd_tmldr_impact) + 
+                                 (sqrt(pred_climb_difficulty) * pcd_tmldr_impact) + 
                                  (one_day_race * odr_tmldr_impact) + 
                                  (predicted_bs * bs_tmldr_impact)),
          glmer_pred = exp(glmer_pred) / (1+exp(glmer_pred))) %>%
@@ -252,10 +404,7 @@ predicting_all <- All_data %>%
                            class %in% c("2.2", "1.2") ~ ".2", 
                            class %in% c("WC", "2.UWT", "1.UWT") ~ "WT", 
                            class %in% c("1.Pro", "1.HC", "2.Pro", "2.HC") ~ ".HC", 
-                           TRUE ~ class)) %>%
-  
-  # predicted_bs underestimates true bunch sprints
-  mutate(predicted_bs  = predicted_bs / 0.755 * 0.82)
+                           TRUE ~ class))
 
 #
 # adjust pred_rank for SOF
@@ -274,7 +423,7 @@ predicting_all_supp <- cbind(
   
   predicting_all %>% rename(old_pred_rank = pred_rank),
   
-  pred_rank = predict(pred_rank_model, predicting_all)) %>%
+  pred_rank = predict(read_rds("Stored models/predicting_rank_adjusting_for_Zscores.rds"), predicting_all)) %>%
   
   mutate(pred_rank = exp(pred_rank)) %>%
   unique() %>%
@@ -287,9 +436,14 @@ predicting_all_supp <- cbind(
          xrnk = max(xrnk, na.rm = T),
          rnk = ifelse(rnk == 200, xrnk + (missrnk/2), rnk)) %>%
   mutate(pred_rank = pred_rank / mean(pred_rank, na.rm = T) * mean(rnk, na.rm = T)) %>%
-  ungroup()
+  ungroup() %>% 
+  select(-c(success, points_finish, leader_rating, team_time_trial, pred_climb_diff_succ, 
+            level_data, old_pred_rank, xrnk, missrnk, sof_limit))
 
 #
+
+
+# Write Features About Predictions ----------------------------------------
 
 dbWriteTable(con, 
              "race_predictions", 
@@ -300,6 +454,534 @@ dbWriteTable(con,
                       predicted_bs, pred_rank),
              overwrite = TRUE,
              row.names = FALSE)
+
+
+#
+#
+#
+#
+#
+
+# Basic Win Model ---------------------------------------------------------
+
+library(xgboost)
+
+fullset <- predicting_all_supp %>%
+  filter(class_small %in% c("WT", ".1", ".HC")) %>% 
+  mutate(win = ifelse(rnk == 1, 1, 0)) %>% 
+  
+  group_by(stage, race, year, class, date) %>% 
+  filter(n() >= 75) %>% 
+  mutate(rel_logrank = mean(log(pred_rank)) - log(pred_rank),
+         pred_rank = ifelse(pred_rank < 1.01, 1.01, pred_rank),
+         mult_logrank = mean(log(pred_rank)) / log(pred_rank),
+         ordered = log(rank(pred_rank, ties.method = "min")),
+         pct_rk = percent_rank(pred_rank)) %>%
+  ungroup()
+
+#
+
+xgb.train <- xgb.DMatrix(
+  data = as.matrix(fullset %>%
+                     filter(year != 2022) %>%
+                     select(rel_logrank, mult_logrank, ordered, pct_rk, pred_rank, predicted_bs, pred_climb_difficulty)),
+  label = fullset %>%
+    filter(year != 2022) %>%
+    select(win) %>%
+    .[[1]]
+)
+
+# test
+
+xgb.test <- xgb.DMatrix(
+  data = as.matrix(fullset %>%
+                     filter(year == 2022) %>%
+                     select(rel_logrank, mult_logrank, ordered, pct_rk, pred_rank, predicted_bs, pred_climb_difficulty)),
+  label = fullset %>%
+    filter(year == 2022) %>%
+    select(win) %>%
+    .[[1]]
+)
+
+# outline parameters
+
+params <- list(
+  
+  booster = "gbtree",
+  eta = 0.3,
+  max_depth = 5,
+  gamma = 0,
+  subsample = 1,
+  colsample_bytree = 1,
+  tree_method = "hist",
+  objective = "binary:logistic"
+  
+)
+
+# run xgboost model
+
+gbm_model <- xgb.train(params = params,
+                       data = xgb.train,
+                       nrounds = 10000,
+                       monotone_constraints = c(1,1,-1,-1,-1,0,0),
+                       early_stopping_rounds = 5000,
+                       watchlist = list(val1 = xgb.train,
+                                        val2 = xgb.test),
+                       verbose = 0)
+
+#
+#
+# xgb Importance
+
+xgb.importance(model = gbm_model)
+
+gbm_model$best_score
+
+#
+
+gbm_BS_predictions = cbind(
+  
+  model_pred = predict(gbm_model, 
+                       as.matrix(fullset %>%
+                                   filter(year == 2022) %>%
+                                   select(rel_logrank, mult_logrank, ordered, pct_rk,
+                                          pred_rank, predicted_bs, pred_climb_difficulty), reshape=T)),
+  
+  fullset %>%
+    filter(year == 2022)) %>%
+  
+  mutate(Win_Pred = exp(model_pred) / (1 + exp(model_pred)))
+  
+#
+#
+# Race Pred Errors
+#
+#
+
+race_errors <- predicting_all_supp %>%
+  
+  group_by(race, stage, year, date, class, class_small, url) %>%
+  mutate(pred_rank = pred_rank / mean(pred_rank) * mean(rnk)) %>%
+  ungroup() %>%
+  
+  mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA),
+         pred_for_winner = ifelse(rnk == 1, pred_rank, NA),
+         gain_gc_winner = ifelse(rnk == 1, gain_gc, NA)) %>%
+  
+  group_by(race, stage, year, date, class, class_small, url, pred_climb_difficulty, 
+           bunch_sprint, grand_tour, one_day_race, predicted_bs, uphill_finish) %>% 
+  filter(!is.na(pred_rank)) %>% 
+  summarize(error = mean(abs(log(rnk)-log(pred_rank)), na.rm = T), 
+            correlation = cor(x = log(rnk), y = log(pred_rank), use = 'complete.obs'),
+            top_3 = mean(log(pred_for_top_3), na.rm = T),
+            winner = mean(log(pred_for_winner), na.rm = T),
+            winner_gain_gc = mean(gain_gc_winner, na.rm = T),
+            riders = n()) %>% 
+  ungroup() %>%
+  
+  mutate(perc_rk_corr = percent_rank(correlation),
+         perc_rk_err = 1-percent_rank(error),
+         perc_rk_winner = 1-percent_rank(winner)) %>%
+  
+  separate(url, c("j1", "url_race", "j2"), sep = "\\/") %>%
+  select(-j1, -j2)
+
+#
+
+dbWriteTable(con, "race_prediction_errors", race_errors, overwrite = TRUE, row.names = FALSE)
+
+#
+#
+# Recent Performance
+#
+#
+
+# iterate through a last ten races model for every date
+
+unique_dates <- predicting_all_supp %>%
+  select(date) %>%
+  unique() %>%
+  filter(date > '2016-02-28') %>%
+  arrange(desc(date)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM performance_last10races_vsmodel") %>%
+              mutate(date = as.Date(date)-1), by = c("date")) %>%
+  
+  rbind(tibble(date = lubridate::today())) %>%
+  arrange(desc(date))
+
+#
+
+for(i in 2:length(unique_dates$date)) {
+  
+  MAX = unique_dates$date[[i]]
+  MIN = MAX - 31
+  
+  vs_exp <- predicting_all_supp %>%
+    filter(between(date, MIN, MAX)) %>%
+    
+    mutate(weighting = 1 / pred_rank) %>%
+    
+    group_by(rider) %>%
+    filter(date >= (MAX - 30)) %>%
+    summarize(exp_rank = sum(log(pred_rank) * weighting, na.rm = T) / sum(weighting, na.rm = T),
+              act_rank = sum(log(rnk) * weighting, na.rm = T) / sum(weighting, na.rm = T),
+              error_rank = sum((log(rnk) - log(pred_rank)) * weighting, na.rm = T) / sum(weighting, na.rm = T),
+              sof = mean(sof, na.rm = T),
+              races = n()) %>%
+    ungroup() %>%
+    
+    mutate(ratio_rk = act_rank / exp_rank,
+           exp_rank = exp(exp_rank),
+           act_rank = exp(act_rank)) %>%
+    
+    mutate(date = unique_dates$date[[i]]+1)
+  
+  dbWriteTable(con, "performance_last10races_vsmodel", vs_exp, append = TRUE, row.names = F)
+  
+  print(i)
+  
+}
+
+#
+#
+# Team Fit
+#
+#
+
+MT <- c("Wanty Gobert", "Sunweb", "Trek", "Sky", "UAE Team", "Movistar", "EF Education First",
+        "FDJ", "Mitchelton Scott", "Jumbo Visma", "Israel Startup Nation", "Lotto Soudal", "Cofidis", 
+        "Astana", "Alpecin Fenix", "Arkea Samsic", "Bahrain McLaren", "BORA", "AG2R", "Quick Step")
+
+racing_days <- All_data %>%
+  filter(year == 2022 & master_team %in% MT) %>%
+  select(rider, master_team, date) %>%
+  unique()
+
+racing_races <- All_data %>%
+  filter(year == 2022 & master_team %in% MT) %>%
+  select(rider, url) %>%
+  unique()
+
+unique_races <- All_data %>%
+  filter(year == 2022) %>%
+  group_by(url, race, year, class) %>%
+  summarize(date = min(date)) %>%
+  ungroup()
+
+racing_days <- racing_days %>%
+  inner_join(unique_races) %>%
+  select(rider, master_team, date) %>%
+  unique()
+
+unique_team_races <- All_data %>%
+  filter(year == 2022 & master_team %in% MT) %>%
+  select(master_team, race, year, class, url) %>%
+  unique() %>%
+  inner_join(unique_races)
+
+#
+
+for(x in 1:nrow(unique_races)) {
+  
+  race_info <- unique_races[x,]
+  MIN_DATE = race_info$date - 21
+  MAX_DATE = race_info$date + 21
+  
+  teams_in_race <- unique_team_races %>% inner_join(race_info)
+  
+  riders_in_range <- racing_days %>%
+    filter(between(date, MIN_DATE, MAX_DATE) & master_team %in% teams_in_race$master_team) %>%
+    select(rider, master_team) %>%
+    unique()
+  
+  #
+  
+  Race_Days <- All_data %>%
+    select(-date) %>%
+    inner_join(race_info %>% select(url, date)) %>%
+    filter(time_trial == 0) %>%
+    select(stage, race, year, class, date, url, pred_climb_difficulty, length,
+           total_vert_gain, cobbles, uphill_finish, sof, one_day_race) %>%
+    unique() %>%
+    mutate(stage_join = as.character(stage)) %>%
+    inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
+                 select(-bunch_sprint) %>%
+                 select(stage, url, predicted_bs) %>%
+                 unique(), by = c("stage_join" = "stage", "url")) %>%
+    select(-stage_join) %>%
+    
+    unique() %>%
+    
+    inner_join(
+      
+      dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks_sq WHERE test_or_prod = 'prod'") %>%
+        mutate(date = as.Date(date)-1), by = c("date")
+      
+    ) %>%
+    
+    unique() %>%
+    
+    mutate(pred_climb_difficulty = ifelse(pred_climb_difficulty < 0, 0, pred_climb_difficulty ^ 2))
+  
+  #
+  
+  All_Riders_Predicted <- expand_grid(Race_Days, riders_in_range) %>%
+    
+    left_join(
+      
+      dbGetQuery(con, sprintf("SELECT * FROM lme4_rider_logranks_sq WHERE date > '%s' AND date < '%s'", MIN_DATE, MAX_DATE))  %>%
+        filter(!is.na(one_day_race)) %>%
+        filter(test_or_prod == "prod") %>%
+        select(-test_or_prod) %>%
+        unique() %>%
+        mutate(rider = str_to_title(rider)) %>%
+        mutate(date = as.Date(date)-1) %>%
+        
+        mutate(level_data = ifelse(is.na(sqpcd_impact), "just_rider",
+                                   ifelse(is.na(bunchsprint_impact), "pcd_added",
+                                          ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+        
+        rename(pcd_impact = sqpcd_impact) %>%
+        
+        # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+        # we adjust here
+        group_by(date, level_data) %>%
+        mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
+               random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+        ungroup() %>%
+        
+        # this transforms them back to input into the regression equation
+        mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+               random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
+        
+        select(-pcd_impact_new, -random_intercept_new) %>%
+        
+        rename(pcd_logrk_impact = pcd_impact,
+               bs_logrk_impact = bunchsprint_impact,
+               rand_logrk_impact = random_intercept,
+               odr_logrk_impact = one_day_race) %>%
+        
+        mutate(pcd_logrk_impact = ifelse(is.na(pcd_logrk_impact), 0, pcd_logrk_impact),
+               bs_logrk_impact = ifelse(is.na(bs_logrk_impact), 0, bs_logrk_impact),
+               odr_logrk_impact = ifelse(is.na(odr_logrk_impact), 0, odr_logrk_impact)
+        ) %>%
+        
+        filter(date >= as.Date('2014-01-01')), by = c("rider", "date")
+      
+    ) %>%
+    
+    # 0.97 is SD and 3.9 is Mean -- intercept is -0.6 and sof is 1.15 with an avg of 0.36 so -0.2 is left-over
+    mutate(pred_rank = exp(-0.2 + ((
+      ((rand_logrk_impact + 
+          (predicted_bs * bs_logrk_impact) + 
+          (one_day_race * odr_logrk_impact) + 
+          (pcd_logrk_impact * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
+    
+    select(-rand_logrk_impact,
+           -odr_logrk_impact) %>%
+    
+    mutate(pred_rank = predict(read_rds("Stored models/predicting_rank_adjusting_for_Zscores.rds"), .)) %>%
+    mutate(pred_rank = exp(pred_rank)) %>%
+    unique() %>%
+    
+    mutate(pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank))
+  
+  #
+  
+  OUTPUT <- All_Riders_Predicted %>% 
+    group_by(master_team, rider, race, url) %>%
+    summarize(mean_pred_rank = exp(mean(log(pred_rank))), 
+              pcd_impact = mean(pcd_logrk_impact), 
+              bs_impact = mean(bs_logrk_impact)) %>% 
+    ungroup() %>% 
+    
+    left_join(racing_races %>%
+                mutate(raced = 1), by = c("rider", "url"))
+  
+}
+
+#
+
+
+
+predicting_all <- All_data %>%
+  filter(time_trial == 0) %>%
+  select(-points_per_opp, -sof_per_opp, -pred_climb_diff_opp, -final_group) %>%
+  mutate(stage_join = as.character(stage)) %>%
+  inner_join(dbGetQuery(con, "SELECT * FROM predictions_stage_bunchsprint") %>%
+               select(-bunch_sprint) %>%
+               select(stage, url, predicted_bs) %>%
+               unique(), by = c("stage_join" = "stage", "url")) %>%
+  select(-stage_join) %>%
+  
+  unique() %>%
+  
+  inner_join(
+    
+    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks_sq WHERE test_or_prod = 'prod'") %>%
+      mutate(date = as.Date(date)-1), by = c("date")
+    
+  ) %>%
+  
+  unique() %>%
+  
+  mutate(pred_climb_difficulty = ifelse(pred_climb_difficulty < 0, 0, pred_climb_difficulty ^ 2)) %>%
+  
+  left_join(
+    
+    dbReadTable(con, "lme4_rider_logranks_sq")  %>%
+      filter(!is.na(one_day_race)) %>%
+      filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
+      mutate(date = as.Date(date)-1) %>%
+      
+      mutate(level_data = ifelse(is.na(sqpcd_impact), "just_rider",
+                                 ifelse(is.na(bunchsprint_impact), "pcd_added",
+                                        ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+      
+      rename(pcd_impact = sqpcd_impact) %>%
+      
+      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+      # we adjust here
+      group_by(date, level_data) %>%
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
+             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+      ungroup() %>%
+      
+      # this transforms them back to input into the regression equation
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+             random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
+      
+      select(-pcd_impact_new, -random_intercept_new) %>%
+      
+      rename(pcd_logrk_impact = pcd_impact,
+             bs_logrk_impact = bunchsprint_impact,
+             rand_logrk_impact = random_intercept,
+             odr_logrk_impact = one_day_race) %>%
+      
+      mutate(pcd_logrk_impact = ifelse(is.na(pcd_logrk_impact), 0, pcd_logrk_impact),
+             bs_logrk_impact = ifelse(is.na(bs_logrk_impact), 0, bs_logrk_impact),
+             odr_logrk_impact = ifelse(is.na(odr_logrk_impact), 0, odr_logrk_impact)
+      ) %>%
+      
+      filter(date >= as.Date('2014-01-01')), by = c("rider", "date")
+    
+  ) %>%
+  
+  # 0.97 is SD and 3.9 is Mean -- intercept is -0.6 and sof is 1.15 with an avg of 0.36 so -0.2 is left-over
+  mutate(pred_rank = exp(-0.2 + ((
+    ((rand_logrk_impact + 
+        (predicted_bs * bs_logrk_impact) + 
+        (one_day_race * odr_logrk_impact) + 
+        (pcd_logrk_impact * pred_climb_difficulty))*-1) / 0.97)+3.9))) %>%
+  
+  select(-rand_logrk_impact,
+         -odr_logrk_impact) %>%
+  
+  left_join(
+    
+    dbReadTable(con, "lme4_rider_teamleader")  %>%
+      filter(test_or_prod == "prod") %>%
+      select(-test_or_prod) %>%
+      unique() %>%
+      mutate(rider = str_to_title(rider)) %>%
+      mutate(date = as.Date(date)-1) %>%
+      
+      mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+                                 ifelse(is.na(bunchsprint_impact), "pcd_added",
+                                        ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
+      
+      # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
+      # we adjust here
+      group_by(date, level_data) %>%
+      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
+             random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
+      ungroup() %>%
+      
+      # this transforms them back to input into the regression equation
+      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+             random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
+      
+      select(-pcd_impact_new, -random_intercept_new) %>%
+      
+      rename(pcd_tmldr_impact = pcd_impact,
+             bs_tmldr_impact = bunchsprint_impact,
+             odr_tmldr_impact = one_day_race) %>%
+      
+      mutate(pcd_tmldr_impact = ifelse(is.na(pcd_tmldr_impact), 0, pcd_tmldr_impact),
+             bs_tmldr_impact = ifelse(is.na(bs_tmldr_impact), 0, bs_tmldr_impact),
+             odr_tmldr_impact = ifelse(is.na(odr_tmldr_impact), 0, odr_tmldr_impact)
+      ) %>%
+      
+      mutate(level_data = "odr_added") %>%
+      
+      filter(date >= as.Date('2014-01-01')), by = c("rider", "date", 'level_data')
+    
+  ) %>%
+  
+  # calculate team leader and success predictions using random effects
+  mutate(glmer_pred = -3.5 + (random_intercept + 
+                                (sqrt(pred_climb_difficulty) * pcd_tmldr_impact) + 
+                                (one_day_race * odr_tmldr_impact) + 
+                                (predicted_bs * bs_tmldr_impact)),
+         glmer_pred = exp(glmer_pred) / (1+exp(glmer_pred))) %>%
+  
+  select(-random_intercept, -pcd_tmldr_impact, -odr_tmldr_impact, -bs_tmldr_impact) %>%
+
+  unique() %>%
+
+  # give everyone with missing data the median data point
+  group_by(stage, race, year, class, level_data) %>%
+  mutate(glmer_pred = ifelse(is.na(glmer_pred), median(glmer_pred, na.rm = T), glmer_pred),
+         pred_rank = ifelse(is.na(pred_rank), median(pred_rank, na.rm = T), pred_rank)) %>%
+  ungroup() %>%
+  
+  # rank each stat within race
+  group_by(stage, race, year, class, level_data) %>%
+  mutate(rk_teamldr = rank(-glmer_pred, ties.method = "min"),
+         rk_rank = rank(pred_rank, ties.method = "min")) %>%
+  ungroup() %>%
+  
+  group_by(stage, race, year, team, level_data) %>% 
+  # shrink estimates to account for other riders in team
+  mutate(shrunk_teamldr = glmer_pred/sum(glmer_pred, na.rm = T)) %>% 
+  # rank within team
+  mutate(teamldr_within_team = rank(rk_teamldr, ties.method = "min")) %>% 
+  ungroup() %>%
+
+  mutate(class_small = case_when(class %in% c("2.1", "1.1", "CC") ~ ".1", 
+                                 class %in% c("2.2", "1.2") ~ ".2", 
+                                 class %in% c("WC", "2.UWT", "1.UWT") ~ "WT", 
+                                 class %in% c("1.Pro", "1.HC", "2.Pro", "2.HC") ~ ".HC", 
+                                 TRUE ~ class))
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# Sandbox Section ---------------------------------------------------------
+
+predicting_all_supp %>%
+  inner_join(dbReadTable(con, "race_level_temperature")) %>%
+  group_by(rider) %>% 
+  filter(n() >= 60) %>% 
+  ungroup() %>% 
+  mutate(avg_temperature = avg_temperature - median(avg_temperature, na.rm = T), 
+         rnk = log(rnk), 
+         pred_rank = log(pred_rank)) %>%  
+  lme4::lmer(rnk ~ pred_rank + (1 + avg_temperature | rider), data = .) -> temper_lmer
 
 #
 # cobbles
@@ -334,10 +1016,16 @@ cobbles_predrnk <- predicting_all_supp %>%
 
 predicting_all_supp %>%
   
-  filter(date > '2020-07-01' & date < '2022-12-01') %>%
+  filter(date > '2022-07-30' & date < '2022-09-27') %>%
   
   unique() %>%
-  group_by(rider, bunch_sprint) %>%
+  
+  select(rider, pred_rank, rnk, sof, race, stage, year, class, date, length, url, time_trial) %>%
+  
+  #rbind(predicting_TT %>%  filter(date > '2022-06-30' & date < '2022-12-01') %>%
+  #        select(rider, pred_rank, rnk, sof, race, stage, year, class, date, length, url, time_trial)) %>%
+  
+  group_by(rider) %>%
   summarize(#exp_points = sum(pred_points, na.rm = T),
             #act_points = sum(points_finish, na.rm = T),
             exp_rank = mean(log(pred_rank), na.rm = T),
@@ -348,46 +1036,11 @@ predicting_all_supp %>%
             races = n()) %>%
   ungroup() %>%
   
-  mutate(exp_rank = exp(exp_rank),
-         act_rank = exp(act_rank)) %>%
-  
-  mutate(#ratio = (act_points - exp_points)/races,
-         ratio_rk = act_rank / exp_rank) -> recent_performances
+  mutate(ratio_rk = act_rank / exp_rank,
+         exp_rank = exp(exp_rank),
+         act_rank = exp(act_rank)) -> recent_performances
 
 #
-
-predicting_all_supp %>%
-  
-  group_by(race, stage, year, date, class, class_small, url) %>%
-  mutate(pred_rank = pred_rank / mean(pred_rank) * mean(rnk)) %>%
-  ungroup() %>%
-  
-  mutate(pred_for_top_3 = ifelse(rnk <= 3, pred_rank, NA),
-         pred_for_winner = ifelse(rnk == 1, pred_rank, NA),
-         gain_gc_winner = ifelse(rnk == 1, gain_gc, NA)) %>%
-  
-  group_by(race, stage, year, date, class, class_small, url, pred_climb_difficulty, 
-           bunch_sprint, grand_tour, one_day_race, predicted_bs, uphill_finish) %>% 
-  filter(!is.na(pred_rank)) %>% 
-  summarize(error = mean(abs(log(rnk)-log(pred_rank)), na.rm = T), 
-            correlation = cor(x = log(rnk), y = log(pred_rank), use = 'complete.obs'),
-            top_3 = mean(log(pred_for_top_3), na.rm = T),
-            winner = mean(log(pred_for_winner), na.rm = T),
-            winner_gain_gc = mean(gain_gc_winner, na.rm = T),
-            riders = n()) %>% 
-  ungroup() %>%
-  
-  mutate(perc_rk_corr = percent_rank(correlation),
-         perc_rk_err = 1-percent_rank(error)) %>%
-  
-  separate(url, c("j1", "url_race", "j2"), sep = "\\/") %>%
-  select(-j1, -j2) -> race_errors
-
-#
-#
-#
-
-dbWriteTable(con, "race_prediction_errors", race_errors, overwrite = TRUE, row.names = FALSE)
 
 # predict quality of winners
 
@@ -441,7 +1094,7 @@ write_rds(breakaway_glm, "Stored models/breakaway_glm.rds")
 unique_dates <- predicting_all_supp %>%
   select(date) %>%
   unique() %>%
-  filter(date > '2016-09-01') %>%
+  filter(date > '2019-02-28') %>%
   arrange(desc(date)) %>%
   
   anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM performance_last10races_vsmodel") %>%
@@ -452,42 +1105,30 @@ unique_dates <- predicting_all_supp %>%
 
 #
 
-for(i in 1:length(unique_dates$date)) {
+for(i in 2:length(unique_dates$date)) {
   
   MAX = unique_dates$date[[i]] - 1
   MIN = MAX - 366
 
-  vs_exp1 <- predicting_all_supp %>%
+  vs_exp <- predicting_all_supp %>%
     filter(between(date, MIN, MAX)) %>%
     
-    group_by(rider, bunch_sprint) %>%
+    mutate(weighting = 1 / pred_rank) %>%
+    
+    group_by(rider) %>%
     filter(date >= (MAX - 29)) %>%
-    summarize(exp_rank = mean(log(pred_rank), na.rm = T),
-              act_rank = mean(log(rnk), na.rm = T),
-              error_rank = mean((log(rnk) - log(pred_rank)), na.rm = T),
-              days_of_comps = round(mean(as.numeric(MAX - date), na.rm = T),0),
+    summarize(exp_rank = sum(log(pred_rank) * weighting, na.rm = T) / sum(weighting, na.rm = T),
+              act_rank = sum(log(rnk) * weighting, na.rm = T) / sum(weighting, na.rm = T),
+              error_rank = sum((log(rnk) - log(pred_rank)) * weighting, na.rm = T) / sum(weighting, na.rm = T),
               sof = mean(sof, na.rm = T),
               races = n()) %>%
     ungroup() %>%
     
-    mutate(exp_rank = exp(exp_rank),
+    mutate(ratio_rk = act_rank / exp_rank,
+           exp_rank = exp(exp_rank),
            act_rank = exp(act_rank)) %>%
     
     mutate(date = unique_dates$date[[i]])
-  
-  vs_exp2 <- predicting_all_supp %>%
-    filter(!class %in% c("NC", "WC", 'CC')) %>%
-    filter(between(date, MIN, MAX)) %>%
-    
-    group_by(rider, bunch_sprint) %>%
-    filter(rank(desc(date), ties.method = "first") <= 5 | date >= (MAX - 14)) %>%
-    summarize(exp_leader = mean(shrunk_teamldr, na.rm = T),
-              act_leader = mean(team_ldr, na.rm = T)) %>%
-    ungroup()
-  
-  vs_exp <- vs_exp1 %>%
-    
-    full_join(vs_exp2, by = c("rider", "bunch_sprint"))
   
   dbWriteTable(con, "performance_last10races_vsmodel", vs_exp, append = TRUE, row.names = F)
   
@@ -1367,3 +2008,694 @@ actual_predictions %>%
        y = "Percentage of races")+
   
   scale_y_continuous(labels = scales::percent)
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+predicting_all_supp <- predicting_all_supp %>%
+  
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, date, error_rank, races
+               FROM performance_last10races_vsmodel") %>%
+      mutate(date = as.Date(date)), by = c('rider', 'date')
+    
+  ) %>%
+  
+  mutate(error_rank = ifelse(is.na(error_rank), 0, error_rank),
+         races = ifelse(is.na(races), 0, races)) %>%
+  
+  # center error rank and adjust for <10 races
+  mutate(error_rank = error_rank / (1 / races) * 0.1) %>%
+  
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(error_rank = error_rank - mean(error_rank, na.rm = T)) %>%
+  ungroup() %>%
+  
+  rename(recent_races = races)
+
+# Bring in GC stage by stage win probs
+# set to 0 for ODRs
+
+gc_probabilities <- dbGetQuery(con, "SELECT rider, stage, url, seconds_behind_contenders, total_seconds_back, model_winprob, virtual_gc
+                               FROM stage_by_stage_gc_winprob")
+
+#
+
+predicting_all_supp <- predicting_all_supp %>%
+  
+  left_join(gc_probabilities, by = c("rider", "url", "stage")) %>%
+  
+  mutate(model_winprob = ifelse(one_day_race == 1, 0.01, model_winprob),
+         total_seconds_back = ifelse(one_day_race == 1, 0, total_seconds_back)) %>%
+  
+  filter(!is.na(model_winprob))
+
+# Build Win Model ---------------------------------------------------------
+
+library(xgboost)
+
+xgb.train <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year < 2022) %>%
+                     filter(!class %in% c("NC", "CC", "WC")) %>%
+                     mutate(pred_break = ifelse(one_day_race == 1, 0.01, pred_break)) %>%
+                     select(pred_rank,
+                            model_winprob,
+                            rel_age,
+                            error_rank,
+                            recent_races,
+                            shrunk_teamldr,
+                            total_seconds_back,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all_supp %>%
+    filter(year < 2022) %>%
+    filter(!class %in% c("NC", "CC", "WC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# test
+
+xgb.test <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year >= 2022) %>%
+                     filter(!class %in% c("NC", "CC", "WC")) %>%
+                     mutate(pred_break = ifelse(one_day_race == 1, 0.01, pred_break)) %>%
+                     select(pred_rank,
+                            model_winprob,
+                            rel_age,
+                            error_rank,
+                            recent_races,
+                            shrunk_teamldr,
+                            total_seconds_back,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all_supp %>%
+    filter(year >= 2022) %>%
+    filter(!class %in% c("NC", "CC", "WC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# outline parameters
+
+params <- list(
+  
+  booster = "gbtree",
+  eta = 0.3,
+  max_depth = 8,
+  gamma = 0,
+  subsample = 1,
+  colsample_bytree = 1,
+  tree_method = "hist",
+  objective = "binary:logistic"
+  
+)
+
+# run xgboost model
+
+gbm_model <- xgb.train(params = params,
+                       data = xgb.train,
+                       nrounds = 6000,
+                       monotone_constraints = c(-1, 0, -1, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0),
+                       early_stopping_rounds = 2000,
+                       watchlist = list(val1 = xgb.train,
+                                        val2 = xgb.test),
+                       verbose = 0)
+
+#
+#
+# xgb Importance
+
+xgb.importance(model = gbm_model)
+
+gbm_model$best_score
+
+#
+
+#write_rds(gbm_model, "Stored models/very-basic-logrank-xgboost-win.rds")
+write_rds(gbm_model, "Stored models/more-advanced-logrank-xgboost-win.rds")
+
+#
+
+gbm_predict_WIN = cbind(
+  
+  pred = predict(gbm_model, 
+                 as.matrix(predicting_all_supp %>% 
+                             mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                             
+                             mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                         as.matrix(predicting_all_supp %>%
+                                                                     
+                                                                     group_by(race, year, url) %>%
+                                                                     mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                                     ungroup() %>%
+                                                                     
+                                                                     select(predicted_bs,
+                                                                            grand_tour,
+                                                                            pred_climb_difficulty,
+                                                                            length,
+                                                                            uphill_finish,
+                                                                            perc_thru,
+                                                                            total_vert_gain)))) %>%
+                             
+                             filter(year >= 2022) %>%
+                             filter(!class %in% c("NC", "CC", "WC")) %>%
+                             mutate(pred_break = ifelse(one_day_race == 1, 0.01, pred_break)) %>%
+                             select(pred_rank,
+                                    model_winprob,
+                                    rel_age,
+                                    error_rank,
+                                    recent_races,
+                                    shrunk_teamldr,
+                                    total_seconds_back,
+                                    predicted_bs,
+                                    pred_climb_difficulty,
+                                    sof,
+                                    pred_break,
+                                    one_day_race,
+                                    grand_tour,
+                                    uphill_finish))
+  ),
+  
+  predicting_all_supp %>% 
+    mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+    
+    mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                as.matrix(predicting_all_supp %>%
+                                            
+                                            group_by(race, year, url) %>%
+                                            mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                            ungroup() %>%
+                                            
+                                            select(predicted_bs,
+                                                   grand_tour,
+                                                   pred_climb_difficulty,
+                                                   length,
+                                                   uphill_finish,
+                                                   perc_thru,
+                                                   total_vert_gain)))) %>%
+    
+    filter(year >= 2022) %>%
+    filter(!class %in% c("NC", "CC", "WC")) %>%
+    mutate(pred_break = ifelse(one_day_race == 1, 0.01, pred_break)) %>%
+    select(-c(team, win_seconds, total_seconds, url, grand_tour, tm_pos, gain_gc, total_vert_gain,
+             master_team, tour, cobbles, sof_limit, success, points_finish, leader_rating, 
+             pred_climb_diff_succ, team_ldr, level_data, rk_teamldr, rk_rank, class_small, old_pred_rank, xrnk, missrnk))) %>%
+  
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(pred = pred/sum(pred)) %>%
+  ungroup()
+
+#
+#
+#
+#
+
+# ONE DAY RACE
+
+xgb.train_ODR <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year < 2022 & one_day_race == 1) %>%
+                     filter(!class %in% c("NC")) %>%
+                     select(pred_rank,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all %>%
+    filter(year < 2022 & one_day_race == 1) %>%
+    filter(!class %in% c("NC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# test
+
+xgb.test_ODR <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year >= 2022 & one_day_race == 1) %>%
+                     filter(!class %in% c("NC")) %>%
+                     select(pred_rank,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all %>%
+    filter(year >= 2022 & one_day_race == 1) %>%
+    filter(!class %in% c("NC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# outline parameters
+
+params_ODR <- list(
+  
+  booster = "gbtree",
+  eta = 0.3,
+  max_depth = 5,
+  gamma = 0,
+  subsample = 1,
+  colsample_bytree = 1,
+  tree_method = "hist",
+  objective = "binary:logistic"
+  
+)
+
+# run xgboost model
+
+gbm_model_ODR <- xgb.train(params = params_ODR,
+                       data = xgb.train_ODR,
+                       nrounds = 6000,
+                       monotone_constraints = c(-1, 0, 0, 0, 0, 0, 0, 0),
+                       early_stopping_rounds = 2000,
+                       watchlist = list(val1 = xgb.train_ODR,
+                                        val2 = xgb.test_ODR),
+                       verbose = 0)
+
+#
+#
+# xgb Importance
+
+xgb.importance(model = gbm_model_ODR)
+
+gbm_model_ODR$best_score
+
+#
+
+#write_rds(gbm_model, "Stored models/very-basic-logrank-xgboost-win.rds")
+
+#
+
+gbm_predict_WIN_ODR = cbind(
+  
+  pred = predict(gbm_model_ODR, 
+                 as.matrix(predicting_all_supp %>% 
+                             mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                             
+                             mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                         as.matrix(predicting_all_supp %>%
+                                                                     
+                                                                     group_by(race, year, url) %>%
+                                                                     mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                                     ungroup() %>%
+                                                                     
+                                                                     select(predicted_bs,
+                                                                            grand_tour,
+                                                                            pred_climb_difficulty,
+                                                                            length,
+                                                                            uphill_finish,
+                                                                            perc_thru,
+                                                                            total_vert_gain)))) %>%
+                             
+                             filter(year >= 2022 & one_day_race == 1) %>%
+                             filter(!class %in% c("NC")) %>%
+                             select(pred_rank,
+                                    predicted_bs,
+                                    pred_climb_difficulty,
+                                    sof,
+                                    pred_break,
+                                    one_day_race,
+                                    grand_tour,
+                                    uphill_finish))
+  ),
+  
+  predicting_all_supp %>% 
+    mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+    
+    mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                as.matrix(predicting_all_supp %>%
+                                            
+                                            group_by(race, year, url) %>%
+                                            mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                            ungroup() %>%
+                                            
+                                            select(predicted_bs,
+                                                   grand_tour,
+                                                   pred_climb_difficulty,
+                                                   length,
+                                                   uphill_finish,
+                                                   perc_thru,
+                                                   total_vert_gain)))) %>%
+    
+    filter(year >= 2022 & one_day_race == 1) %>%
+    filter(!class %in% c("NC"))) %>%
+  
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(pred = pred/sum(pred)) %>%
+  ungroup()
+
+
+# NOT OBVIOUS BS
+
+xgb.train_notBS <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year < 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+                     filter(!class %in% c("NC")) %>%
+                     select(pred_rank,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all %>%
+    filter(year < 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+    filter(!class %in% c("NC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# test
+
+xgb.test_notBS <- xgb.DMatrix(
+  
+  data = as.matrix(predicting_all_supp %>% 
+                     mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                     
+                     mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                 as.matrix(predicting_all_supp %>%
+                                                             
+                                                             group_by(race, year, url) %>%
+                                                             mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                             ungroup() %>%
+                                                             
+                                                             select(predicted_bs,
+                                                                    grand_tour,
+                                                                    pred_climb_difficulty,
+                                                                    length,
+                                                                    uphill_finish,
+                                                                    perc_thru,
+                                                                    total_vert_gain)))) %>%
+                     
+                     filter(year >= 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+                     filter(!class %in% c("NC")) %>%
+                     select(pred_rank,
+                            predicted_bs,
+                            pred_climb_difficulty,
+                            sof,
+                            pred_break,
+                            one_day_race,
+                            grand_tour,
+                            uphill_finish)),
+  
+  label = predicting_all %>%
+    filter(year >= 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+    filter(!class %in% c("NC")) %>%
+    mutate(win = rnk == 1) %>%
+    select(win) %>%
+    .[[1]]
+  
+)
+
+# outline parameters
+
+params_notBS <- list(
+  
+  booster = "gbtree",
+  eta = 0.3,
+  max_depth = 5,
+  gamma = 0,
+  subsample = 1,
+  colsample_bytree = 1,
+  tree_method = "hist",
+  objective = "binary:logistic"
+  
+)
+
+# run xgboost model
+
+gbm_model_notBS <- xgb.train(params = params_notBS,
+                           data = xgb.train_notBS,
+                           nrounds = 6000,
+                           monotone_constraints = c(-1, 0, 0, 0, 0, 0, 0, 0),
+                           early_stopping_rounds = 2000,
+                           watchlist = list(val1 = xgb.train_notBS,
+                                            val2 = xgb.test_notBS),
+                           verbose = 0)
+
+#
+#
+# xgb Importance
+
+xgb.importance(model = gbm_model_notBS)
+
+gbm_model_notBS$best_score
+
+#
+
+#write_rds(gbm_model, "Stored models/very-basic-logrank-xgboost-win.rds")
+
+#
+
+gbm_predict_WIN_notBS = cbind(
+  
+  pred = predict(gbm_model_notBS, 
+                 as.matrix(predicting_all_supp %>% 
+                             mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+                             
+                             mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                                         as.matrix(predicting_all_supp %>%
+                                                                     
+                                                                     group_by(race, year, url) %>%
+                                                                     mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                                                     ungroup() %>%
+                                                                     
+                                                                     select(predicted_bs,
+                                                                            grand_tour,
+                                                                            pred_climb_difficulty,
+                                                                            length,
+                                                                            uphill_finish,
+                                                                            perc_thru,
+                                                                            total_vert_gain)))) %>%
+                             
+                             filter(year >= 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+                             filter(!class %in% c("NC")) %>%
+                             select(pred_rank,
+                                    predicted_bs,
+                                    pred_climb_difficulty,
+                                    sof,
+                                    pred_break,
+                                    one_day_race,
+                                    grand_tour,
+                                    uphill_finish))
+  ),
+  
+  predicting_all_supp %>% 
+    mutate(win = ifelse(rnk == 1, 1, 0)) %>%
+    
+    mutate(pred_break = predict(read_rds("Stored models/breakaway-prediction-model.rds"), 
+                                as.matrix(predicting_all_supp %>%
+                                            
+                                            group_by(race, year, url) %>%
+                                            mutate(perc_thru = as.numeric(stage)/max(as.numeric(stage))) %>%
+                                            ungroup() %>%
+                                            
+                                            select(predicted_bs,
+                                                   grand_tour,
+                                                   pred_climb_difficulty,
+                                                   length,
+                                                   uphill_finish,
+                                                   perc_thru,
+                                                   total_vert_gain)))) %>%
+    
+    filter(year >= 2022 & one_day_race == 0 & predicted_bs < 0.7) %>%
+    filter(!class %in% c("NC"))) %>%
+  
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(pred = pred/sum(pred)) %>%
+  ungroup()
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+uphill_finishes <- predicting_all_supp %>%
+  
+  filter(url %in% paste0(c("race/vuelta-a-espana/", "race/giro-d-italia/", "race/tour-de-france/"), year)) %>%
+  filter(uphill_finish == 1)
+
+uphill_finishes %>%
+  filter(rnk == 1) %>%
+  ggplot(aes(x = pred_climb_difficulty))+
+  geom_histogram()+
+  geom_vline(xintercept = 5.4)+
+  labs(x = "Climbing difficulty",
+       y = "Number of stages",
+       title = "Grand Tour uphill finish stages")
+
+similar_to_tomorrow <- uphill_finishes %>%
+  
+  filter(race == "tour de france" & 
+           ((year == 2016 & stage == 2) |
+              (year == 2017 & stage == 3) |
+              (year == 2018 & stage %in% c(5,6)) |
+              (year == 2019 & stage == 3) |
+              (year == 2021 & stage %in% c(1,2))))
+
+similar_to_tomorrow %>% 
+  group_by(race, stage, year) %>%
+  mutate(pctrk_pcd = percent_rank(pcd_logrk_impact), 
+         pctrk_bs = percent_rank(bs_logrk_impact), 
+         sd_pcd = (pcd_logrk_impact - mean(pcd_logrk_impact)) / sd(pcd_logrk_impact), 
+         sd_bs = (bs_logrk_impact - mean(bs_logrk_impact)) / sd(bs_logrk_impact)) %>% 
+  ungroup() %>% 
+  
+  group_by(rnk == 1, rnk <= 5, rnk <= 10, rnk <= 25, rnk <= 50) %>%
+  summarize(pcd_logrk_impact = mean(sd_pcd), 
+            bs_logrk_impact = mean(sd_bs), 
+            pred = exp(mean(log(pred_rank))), 
+            actual = exp(mean(log(rnk))), 
+            riders = n()) %>%
+  ungroup() %>%
+  cbind(tibble(grouping = c("Rest of peloton", "finish 26-50", "finish 11-25", "finish 6-10", "finish 2-5", "wins"))) %>% 
+  
+  select(grouping, pcd_logrk_impact, bs_logrk_impact, pred)

@@ -417,7 +417,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   mutate(date = lubridate::mdy(date)) %>% 
   unique() %>% 
   spread(Stat, VALUE) %>% 
-  filter(!is.na(`Weighted Avg Power`)) %>% 
+  #filter(!is.na(`Weighted Avg Power`)) %>% 
   janitor::clean_names() %>% 
   
   group_by(date) %>% 
@@ -454,20 +454,22 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   mutate(wattskg = weighted_avg_power / weight) %>% 
   
   # these average about 4.07 with 0.44 SD such that 99.8% of data should fall between 2.75 and 5.39
-  mutate(M = mean(wattskg, na.rm = T), 
-         S = sd(wattskg, na.rm = T)) %>% 
+  #mutate(M = mean(wattskg, na.rm = T), 
+  #       S = sd(wattskg, na.rm = T)) %>% 
 
-  filter(abs((wattskg - M) / S) < 3 | is.na(weight)) %>%
+  #filter(abs((wattskg - M) / S) < 3 | is.na(weight)) %>%
   
-  group_by(rider = pcs) %>% 
-  mutate(rel = weighted_avg_power / mean(weighted_avg_power, na.rm = T)) %>% 
-  ungroup() %>%
+  #group_by(rider = pcs) %>% 
+  #mutate(rel = weighted_avg_power / mean(weighted_avg_power, na.rm = T)) %>% 
+  #ungroup() %>%
   
   mutate(rel_temp = abs(((temperature - 32) * 0.5556) - 11)) %>%
   
-  group_by(stage, race, year, rider, date) %>%
-  filter(rank(-rel, ties.method = "min") == 1) %>%
-  ungroup()
+  #group_by(stage, race, year, rider, date) %>%
+  #filter(rank(-weighted_avg_power, ties.method = "min") == 1) %>%
+  #ungroup() %>%
+  
+  unique()
 
 #
 # breakaways
@@ -507,6 +509,30 @@ stage_level_power %>%
   filter(n >= 5) %>% 
   
   arrange(-relative) -> stage_level_rel_power
+
+#
+#
+#
+
+stage_level_power %>%
+  
+  mutate(t25_power = ifelse(rnk <= 25, wattskg, NA),
+         t25_time = ifelse(rnk <= 25, gain_1st, NA),
+         not_power = ifelse(rnk > 25, wattskg, NA),
+         not_time = ifelse(rnk > 25, gain_1st, NA)) %>%
+  
+  group_by(stage, race, year, date, time_trial, length, pred_climb_difficulty, class) %>% 
+  summarize(power = mean(wattskg, na.rm = T), 
+            top25_p = mean(t25_power, na.rm = T), 
+            not_p = mean(not_power, na.rm = T),
+            top25_t = mean(t25_time, na.rm = T),
+            not_t = mean(not_time, na.rm = T),
+            temp = mean(temperature, na.rm = T),
+            n = n()) %>% 
+  ungroup() %>%
+  
+  mutate(power_diff = (top25_p / not_p) - 1,
+         time_diff = (top25_t - not_t) - 1) -> stage_power_averages
 
 #
 # impact of rnk, DNF, and specific race on rel power
@@ -899,7 +925,7 @@ segment_data_races <- stage_level_power %>%
   mutate(rel_power = Power / mean(Power, na.rm = T)) %>% 
   ungroup() %>%
   
-  select(-gain_1st, -gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
+  select(-gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, -uphill_finish, 
          -sof_limit, -success, -points_finish, -cobbles, -M, -S, -VerticalGain, -VAM, -HR, -Tour,
          -gc_winner, -time_trial, -stage_name) %>%
   
@@ -931,14 +957,16 @@ segment_data_races <- stage_level_power %>%
 
 manually_marked_climbs <- segment_data_races %>%
   
+  select(-segment_id) %>%
+  
   inner_join(read_csv("strava_climbs_segments_manual.csv") %>%
                filter(Valid == 1) %>%
                mutate(AtKM = ifelse(AtKM > length, length, AtKM)) %>%
                select(-length), by = c("stage", 'race', "year", "Segment", "Type")) %>%
   
-  group_by(stage, race, year, pcs) %>%
-  filter(n()>1) %>% 
-  ungroup() %>%
+  #group_by(stage, race, year, pcs) %>%
+  #filter(n()>1) %>% 
+  #ungroup() %>%
   
   group_by(stage, race, year, Segment) %>%
   mutate(watts_adj = watts_adj / mean(watts_adj, na.rm = T)) %>%
@@ -958,9 +986,9 @@ manually_marked_climbs <- segment_data_races %>%
 #
 
 # grand tours increase power output by 0.1
-# one day races increas by 0.1
+# one day races increase by 0.1
 # stage 20 will have 0.1 less power than stage 10 and 0.15 less than stage 5
-# races with lots of prior climbing (16 pcd) will have 0.4 less watts per KG
+# races with lots of prior climbing (10 pcd) will have 0.4 less watts per KG than stages with no prior climbing
 # Sprinter, Domestique, and Sprint train types have 0.25 less than Climbers
 # Puncheurs/Mtn helpers have 0.12 less than Climbers
 # Gradient is the main determinant of climb difficulty with climbs of 9% requiring 0.3 more watts/kG than 5% climbs
@@ -977,7 +1005,7 @@ manually_marked_climbs <- segment_data_races %>%
 
 summary(
   
-  lm(
+  stats::lm(
     
     wkg ~ 
         log(tm_pos+1) + 
@@ -995,7 +1023,9 @@ summary(
     data = cbind(
       
       manually_marked_climbs %>%
-        filter(perc_thru > 0.95) %>%
+        group_by(stage, race, year) %>%
+        filter(perc_thru > 0.94 | rank(-AtKM, ties.method = "min") == 1) %>%
+        ungroup() %>%
         mutate(wkg = (Power/weight)) %>% 
         select(-Valid, -Type, -Time) %>% 
         filter(wkg > 2.5) %>% 
@@ -1003,19 +1033,29 @@ summary(
       
       clpcd = predict(read_rds('model-climb-difficulty.rds'), 
                       manually_marked_climbs %>% 
-                        filter(perc_thru > 0.95) %>% 
+                        group_by(stage, race, year) %>%
+                        filter(perc_thru > 0.94 | rank(-AtKM, ties.method = "min") == 1) %>%
+                        ungroup() %>%
                         mutate(wkg = (Power/weight)) %>%
                         select(-Valid, -Type, -Time) %>%
                         filter(wkg > 2.5) %>%
                         unique() %>% 
                         mutate(alt = 0, 
                                vam_poly = (Distance * (Gradient^2))))) %>%
-      mutate(prior_pcd = pred_climb_difficulty - clpcd)))
+      mutate(prior_pcd = pred_climb_difficulty - clpcd) %>%
+      mutate(prior_pcd = ifelse(stage == 4 & race == "tour de suisse" & year == 2017, 6,
+                                ifelse(stage == 7 & race == "tour de suisse" & year == 2017, 2,
+                                       ifelse(stage == 2 & race == "tour of the alps" & year == 2018, 8,
+                                              ifelse(prior_pcd < 0, 0, prior_pcd)))))))
 
 
 #
 
 manually_marked_climbs %>%
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
 
   group_by(rnk = ifelse(rnk <= 20, "top20",
                         ifelse(rnk <= 50, "top50",
@@ -1028,6 +1068,10 @@ manually_marked_climbs %>%
 # model with percent thru stage, final group presence, finish position
 
 summary(manually_marked_climbs %>%
+          
+          group_by(stage, race, year, pcs) %>%
+          filter(n()>1) %>% 
+          ungroup() %>%
           
           lm(watts_adj ~ log(rnk+1) * perc_thru + perc_break*perc_thru, data = .))
 
@@ -1045,6 +1089,7 @@ avg_power <- segment_data_races %>%
   group_by(stage, race, year, pcs) %>%
   filter(n()>1) %>% 
   ungroup() %>%
+  
   summarize(M = mean(watts_adj, na.rm = T)) %>%
   .[[1]]
 
@@ -1062,6 +1107,11 @@ ggplot(progress_thru_stage, aes(x = f+0.1, y = M * avg_power, color = as.factor(
 #
 
 manually_marked_climbs %>% 
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
+  
   group_by(stage, race, year, Segment, perc_thru, Gradient, Distance) %>% 
   summarize(x85th_percentile = quantile(watts_adj, probs = 0.85, na.rm = T), 
             x50th_percentile = median(watts_adj, na.rm = T), 
@@ -1075,6 +1125,9 @@ manually_marked_climbs %>%
 mod_power_chars <- lm(Watts_kg_adj ~ Gradient * Distance + perc_thru * log(rnk + 1), 
                       
                       data = manually_marked_climbs %>%
+                        group_by(stage, race, year, pcs) %>%
+                        filter(n()>1) %>% 
+                        ungroup() %>%
                         mutate(Watts_kg_adj = (Power/weight) / rel_peloton))
 
 summary(mod_power_chars)
@@ -1099,6 +1152,10 @@ bands_of_perf %>%
 #
 
 manually_marked_climbs %>% 
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
 
   group_by(stage, race, year, Segment, perc_thru, Gradient, Distance, type) %>% 
   summarize(Average_Power = mean(watts_adj, na.rm = T)) %>% 
@@ -1136,6 +1193,10 @@ avg_power <- segment_data_races %>%
   .[[1]]
 
 manually_marked_climbs %>% 
+  
+  group_by(stage, race, year, pcs) %>%
+  filter(n()>1) %>% 
+  ungroup() %>%
   
   mutate(fin_pos = ifelse(rnk <= 10, "top_10",
                           ifelse(rnk <= 25, "top_25",
@@ -1837,7 +1898,7 @@ all_segment_data <- stage_level_power %>%
   ) %>%
   
   group_by(Segment, stage, race, year) %>%
-  filter(n_distinct(activity_id) >= 6) %>%
+  filter(n_distinct(activity_id) >= 4) %>%
   ungroup() %>%
   
   select(stage, race, year, date, class, one_day_race, grand_tour, time_trial, length,
@@ -1855,7 +1916,7 @@ just_climbs <- all_segment_data %>%
               unique(), by = c("stage", "race", "year")) %>%
   
   group_by(stage, race, year) %>%
-  filter(Distance > (max(Distance, na.rm = T) * 0.2) | Distance > 3) %>%
+  filter(Distance > (max(Distance, na.rm = T) * 0.2) | Distance > 2) %>%
   ungroup() %>%
   
   select(stage, race, year, length, Type, Gradient, Distance, Segment)

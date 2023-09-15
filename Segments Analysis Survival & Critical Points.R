@@ -15,7 +15,7 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
 #####
 ##### Bring in data
 
-all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2020") %>%
+all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 2015") %>%
   
   mutate(date = as.Date(date),
          stage = as.character(stage)) %>%
@@ -23,27 +23,59 @@ all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 20
   left_join(
     
     dbGetQuery(con, "SELECT rider, bib, race, year FROM pcs_all_startlists") %>%
-      unique(), by = c("rider", "year", "race") 
-    
-  ) %>%
+      unique(), by = c("rider", "year", "race"))
+
+#
+
+breakaway_riders <- dbReadTable(con, "pcs_km_breakaway_1") %>%
   
-  left_join(
-    
-    dbGetQuery(con, "SELECT rider, km_before_peloton as km_break, race, year, stage FROM pcs_km_breakaway") %>%
-      mutate(rider = str_to_title(rider)) %>%
-      filter(km_break <= 300), by = c("rider", "year", "race", "stage") 
-    
-  ) %>%
+  mutate(rider = str_to_title(rider)) %>%
   
   group_by(race, stage, year) %>%
-  mutate(valid_data = ifelse(max(!is.na(km_break))==1, 1, 0)) %>%
+  mutate(average = mean(km_before_peloton)) %>%
   ungroup() %>%
   
-  mutate(km_break = ifelse(is.na(km_break),
-                           ifelse(valid_data == 1, 0, NA), km_break),
-         perc_break = km_break / length) %>%
+  mutate(breakaway_rider = ifelse(km_before_peloton > 40, 1, 0)) %>%
   
-  select(-valid_data)
+  mutate(url = str_replace(url, "/race", "race")) %>% 
+  
+  select(-race, -average, -km_in_first_group, -km_before_peloton) %>%
+  
+  rbind(read_delim("breakaway-riders-2019.csv",
+                   col_types = "cccc") %>%
+          rename(url = `...4`) %>%
+          fill(url, .direction = "down") %>%
+          
+          mutate(year = ifelse(is.na(race), "", str_sub(race, nchar(race)-3, nchar(race))),
+                 year = ifelse(year == "", str_sub(url, nchar(url)-3, nchar(url)), year)) %>%
+          
+          fill(race, .direction = "down") %>%
+          fill(year, .direction = "down") %>%
+          fill(stage, .direction = "down") %>%
+          
+          left_join(dbGetQuery(con, "SELECT rider, COUNT(*) as N FROM pcs_stage_data WHERE year >= 2018
+                       GROUP BY rider")) %>%
+          select(-race, -n) %>%
+          mutate(breakaway_rider = 1)) %>%
+  
+  inner_join(dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE date > '2016-01-01'") %>%
+               
+               filter(time_trial == 0 & team_time_trial == 0) %>%
+               filter(!is.na(bunch_sprint)) %>%
+               filter(!is.na(pred_climb_difficulty)) %>%
+               
+               mutate(team_ldr = ifelse(tm_pos == 1, 1, 0)) %>%
+               
+               mutate(date = as.Date(date)) %>%
+               
+               select(-speed, -gain_3rd, -gain_5th, -gain_10th, -gain_40th,
+                      -time_trial, -gc_winner, -gc_pos, -parcours_value, -stage_type,
+                      -avg_alt, -missing_profile_data) %>%
+               select(stage, url, rider, rnk, class, race) %>%
+               mutate(rider = str_replace(rider, "O C", "Oc"), 
+                      rider = str_replace(rider, "O B", "Ob"), 
+                      rider = str_replace(rider, "D H", "Dh"))) %>%
+  unique()
 
 #
 #
@@ -52,8 +84,9 @@ all_stage_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf WHERE year > 20
 stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
                   FROM strava_activity_data 
                   WHERE Stat IN ('Weighted Avg Power', 'Distance', 'AvgSpeed', 'AvgPower', 'AvgTemperature',
-                                'AvgHeart Rate')") %>% 
-  
+                                'AvgHeart Rate', 'MaxHeartRate')") %>% 
+  mutate(pcs = ifelse(pcs %in% c("Oconnor Ben", "OConnor Ben"), "O'connor Ben",
+                      ifelse(pcs %in% c("Obrien Kelland", "OBrien Kelland"), "O'brien Kelland", pcs))) %>%
   rename(PCS = pcs, VALUE = value, Stat = stat, DATE = date) %>%
   
   # I would like to bring in weight here so when I cut-off too low watts below it is watts/kg
@@ -81,8 +114,9 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
          VALUE = str_replace(VALUE, "mi", ""), 
          VALUE = str_replace(VALUE, "W", ""),
          VALUE = str_replace(VALUE, "bpm", ""),
+         VALUE = str_replace(VALUE, "℉", ""),
          VALUE = ifelse(Stat == "AvgTemperature",
-                        str_sub(VALUE, 1, nchar(VALUE)-8), VALUE),
+                        ifelse(nchar(VALUE) > 4, str_sub(VALUE, 1, nchar(VALUE)-8), VALUE), VALUE),
          VALUE = as.numeric(VALUE)) %>% 
   
   mutate(date = lubridate::mdy(date)) %>% 
@@ -102,7 +136,7 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   
   mutate(distance = distance * 1.609) %>% 
   filter((distance / length) > 0.5) %>%
-  filter((distance / length) < 1.2) %>%
+  filter((distance / length) < 2) %>%
   filter((time_trial == 1 & (distance / length) > 0.8) | time_trial == 0) %>%
   
   select(-win_seconds,
@@ -121,10 +155,117 @@ stage_level_power <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE
   
   group_by(stage, race, year, class, length, date) %>%
   mutate(avg_temperature = median(avg_temperature, na.rm = TRUE)) %>%
-  ungroup()  %>%
+  ungroup() %>%
   
-  #filter(uphill_finish == 1 & pred_climb_difficulty >= 8)
-  filter(race == "giro d'italia" & year == 2022)
+  left_join(breakaway_riders %>% select(-race, -year), by = c("url", "stage", "rider", "class", "rnk")) %>%
+  
+  mutate(diff = abs(1 - (distance / length))) %>%
+  
+  group_by(url, stage, length, date) %>%
+  mutate(closest = rank(diff, ties.method = "first")) %>% 
+  ungroup() %>%
+  
+  group_by(pcs) %>% 
+  mutate(rel_HR = avg_heart_rate / mean(avg_heart_rate, na.rm = T)) %>%
+  ungroup()
+
+#
+
+dbWriteTable(con, "race_level_temperature",
+             stage_level_power %>%
+               group_by(stage, race, year, class, date, length, url) %>%
+               summarize(temperature = mean(avg_temperature, na.rm = T)) %>%
+               ungroup(),
+             overwrite = TRUE,
+             row.names = FALSE)
+
+#
+#
+#
+#
+
+relative_power <- stage_level_power %>%
+  
+  select(-c(bib, success, sof_limit, points_finish, cobbles)) %>%
+  
+  group_by(rider, year) %>%
+  filter(!is.na(weighted_avg_power)) %>%
+  filter(n() >= 25) %>%
+  mutate(weighted_avg_powerTT = ifelse(time_trial == 0 & team_time_trial == 0, weighted_avg_power, NA),
+         weighted_avg_powerTT = max(weighted_avg_powerTT, na.rm = T),
+         relative_power = weighted_avg_power / weighted_avg_powerTT) %>%
+  ungroup()
+
+relative_power %>%
+  mutate(scale_to_300_max = relative_power * 300 / weight) %>%
+  filter(race == "tour de france" & time_trial == 0 & stage != 21) %>%
+  
+  group_by(rider, year) %>%
+  summarize(KJ_kg = mean(scale_to_300_max * total_seconds / 1000, na.rm = T), 
+            stages = n()) -> xyz
+
+#
+
+by_race <- relative_power %>%
+  group_by(url, date, race, stage, year, class, time_trial, team_time_trial) %>%
+  summarize(median = median(relative_power, na.rm = T),
+            mean = mean(relative_power, na.rm = T),
+            weighted = mean(weighted_avg_power, na.rm = T),
+            kilojoules = mean(avg_power * total_seconds, na.rm = T) / 1000,
+            above90 = mean(relative_power > 0.9, na.rm = T),
+            above95 = mean(relative_power > 0.95, na.rm = T),
+            max = mean(relative_power == 1, na.rm = T),
+            riders = n()) %>%
+  ungroup()
+
+by_rider <- relative_power %>%
+  filter(str_detect(url, "tour-de-france")) %>% 
+  filter(time_trial == 0 & team_time_trial == 0) %>%
+  group_by(rider, url, year) %>%
+  summarize(median = median(relative_power, na.rm = T),
+            mean = mean(relative_power, na.rm = T),
+            weighted = mean(weighted_avg_power/weight, na.rm = T),
+            kilojoules = mean(avg_power * total_seconds, na.rm = T) / 1000 / mean(weight, na.rm = T),
+            above90 = mean(relative_power > 0.9, na.rm = T),
+            above95 = mean(relative_power > 0.95, na.rm = T),
+            max = mean(relative_power == 1, na.rm = T),
+            riders = n()) %>%
+  ungroup()
+
+#
+
+library(gt)
+
+diff <- by_race %>%
+  filter(str_detect(url, "tour-de-france")) %>% 
+  filter(stage %in% c(1,2,3,4,5,6,7,8,9,10) & time_trial == 0 & team_time_trial == 0) %>% 
+  group_by(url) %>%
+  filter(rank(as.numeric(stage), ties.method = "first") <= 9) %>%
+  ungroup() %>%
+  
+  group_by(year) %>%
+  summarize(median = mean(median),
+            weighted = mean(weighted),
+            kilojoules = sum(kilojoules),
+            stage = paste0(min(as.numeric(stage)),"-",max(as.numeric(stage)))) %>%
+  ungroup() %>%
+  
+  select(Year = year, Stages = stage, `% of Max Effort` = median, `Normalized Power` = weighted, `Kilojoules` = kilojoules) %>%
+  
+  gt() %>%
+  tab_header(
+    title = 'Tour de France First Nine Road Stages Difficulty',
+    subtitle = 'in Strava era (2016-23)'
+  ) %>%
+  fmt_percent(
+    columns = c(`% of Max Effort`),
+    decimals = 0
+  ) %>%
+  fmt_integer(
+    columns = c(`Normalized Power`, `Kilojoules`)
+  )
+
+gtsave(data = diff, 'tdf-stage-9-difficulty.png', expand = 20)
 
 #
 #
@@ -174,6 +315,13 @@ residuals <- cbind(stage_level_power %>%
 
 segment_data_races <- stage_level_power %>%
   
+  filter(url %in% c(
+    paste0("race/paris-roubaix/", seq(2017,2023,1)),
+    paste0("race/ronde-van-vlaanderen/", seq(2017,2023,1)),
+    paste0("race/liege-bastogne-liege/", seq(2017,2023,1)),
+    paste0("race/strade-bianche/", seq(2017,2023,1))
+    )) %>%
+
   inner_join(
     
     dbGetQuery(con, "SELECT rowname, Segment,
@@ -181,28 +329,39 @@ segment_data_races <- stage_level_power %>%
                Gradient, 
                Speed,
                Power, 
+               HR,
                Type,
                activity_id
                FROM strava_segment_data") %>%
       rename(Distance = distance,
              Gradient = gradient,
              Power = power,
+             HR = hr,
              Speed = speed,
              Type = type,
-             Segment = segment), by = c("activity_id")
-    
-  ) %>%
+             Segment = segment), by = c("activity_id")) %>%
   
   select(-gain_3rd, -gain_5th, -gc_pos, -gain_gc, -missing_profile_data, 
          -sof_limit, -success, -points_finish, -cobbles,
          -gc_winner, -bib,
          -pcs, -master_team, -avg_alt,
-         -total_vert_gain, -cobbles, -km_break,
-         -perc_break, -speed) %>%
+         -total_vert_gain, -speed) %>%
   
   mutate(rowname = as.numeric(rowname)) %>% 
   
   mutate(time = Distance / Speed * 3600)
+
+#
+
+segment_data_races %>% 
+  filter(url == "race/trofeo-alcudia/2022" & Segment == "ColldesaBatalla(fromCaimari)") %>% 
+  mutate(wattskg = Power/weight) %>% 
+  
+  group_by(rnk <= 46, rnk == 200) %>%
+  summarize(median(wattskg, na.rm = T), 
+            median(Power, na.rm = T),
+            n = n()) %>%
+  ungroup()
 
 #
 
@@ -213,9 +372,9 @@ segments_position <- dbGetQuery(con, "SELECT * FROM strava_segments_position") %
   ungroup() %>%
   
   inner_join(stage_level_power %>%
-               select(activity_id, stage, race, year, class, date, length), by = c("activity_id")) %>%
+               select(activity_id, url, stage, race, year, class, date, length), by = c("activity_id")) %>%
   
-  select(Segment, OrderInRace, stage, race, year, class, date, length, Distance, Gradient, perc_thru, km_thru,
+  select(Segment, OrderInRace, url, stage, race, year, class, date, length, Distance, Gradient, perc_thru, km_thru,
          activity_distance)
   
 #
@@ -240,6 +399,113 @@ segments_to_be_analyzed <- segment_data_races %>%
                          km_thru = mean(km_thru, na.rm = T)) %>%
                ungroup(), by = c("Segment", "OrderInRace", "stage", "race", "year", "class", "date",
                                  "length", "Distance", "Gradient"))
+
+#
+
+segments_to_be_analyzed %>%
+  filter(url == "race/strade-bianche/2023") %>% 
+  filter(rnk <= 5 & rnk >= 3) %>% 
+  
+  group_by(Segment, OrderInRace, km_thru, Distance, Gradient) %>% 
+  mutate(rel_time = mean(time, na.rm = T) - time, comps = n()) %>% 
+  ungroup() %>% 
+  
+  mutate(secs_per_KM = rel_time / Distance) %>% 
+  select(-c(HR, Power, activity_distance, perc_thru, Type)) -> RelSegments
+
+RelSegments %>%
+  filter(rnk == 3) %>% 
+  
+  ggplot()+
+  geom_rect(aes(xmin = km_thru, xmax = km_thru - Distance, ymin = Gradient-0.01, ymax = Gradient+0.01,
+                fill = rel_time/Distance))+
+  
+  labs(x = "km thru", y = 'Gradient', title = 'Pidcock at Strade')+
+  
+  scale_fill_gradientn(colors = c("dark red", "red", "white", "#43E75F", "#00A51C", "#007313"),
+                        name = "time vs contenders")
+
+#
+#
+#
+
+SB_history <- segments_to_be_analyzed %>%
+  filter(race == "strade bianche") %>%
+  filter(rnk <= 25) %>%
+  
+  group_by(Segment, OrderInRace, km_thru, Distance, Gradient) %>% 
+  mutate(rel_time = mean(time, na.rm = T) - time, comps = n()) %>% 
+  ungroup() %>% 
+  
+  mutate(secs_per_KM = rel_time / Distance) %>% 
+  select(-c(HR, Power, activity_distance, perc_thru, Type))
+  
+SB_history %>% 
+  filter(Segment %in% c("StradeBianche/L'Eroica-MonteSanteMarie", "StradeBianche-CollePinzuto", "tolfecompleto", 
+                        "StradeBianche:Fontebranda-SanCaterina", "SLITASANMARTINOINGRANIA", "StradeBianche-Monteaperti",
+                        "StradeBianche/L'Eroica-PieveaSalti", "EroicaMontalcino96km1°ristoro->2°ristoro",
+                        "CastelnuovotoDelPiero")) -> top_sectors
+
+top_sectors %>%
+
+  group_by(url, Segment) %>%
+  summarize(km_thru = mean(km_thru, na.rm = T), 
+            time = mean(time, na.rm = T), 
+            files = n()) %>%
+  ungroup() -> SB_top
+
+#
+
+
+#
+
+where_are_peak_efforts_segments <- segments_position %>% 
+  filter(url == "race/trofeo-alcudia/2022") %>% 
+  group_by(url, stage, Segment, Distance, Gradient) %>% 
+  mutate(unique_acts = n_distinct(activity_distance), 
+         km_thru = median(km_thru, na.rm = T)) %>% 
+  ungroup() %>% 
+  
+  expand_grid(dbGetQuery(con, "SELECT * FROM peak_power_locations WHERE rolling_speed IN (30,120,300,600,1200,2400)") %>% 
+                filter(url_race == "trofeo-alcudia") %>% 
+                select(rolling_speed, finish_group, q20, q80, distance_gone, start_distance, avgrnk, n) %>%
+                mutate(start_distance = start_distance/1000)) %>% 
+  filter(distance_gone <= km_thru + Distance & distance_gone >= km_thru)
+
+#
+
+SB_history <- segments_to_be_analyzed %>%
+  filter(str_detect(race, "ronde van vlaanderen")) %>%
+  filter(rnk <= 25) %>%
+  
+  group_by(Segment, OrderInRace, km_thru, Distance, Gradient) %>% 
+  mutate(rel_time = mean(time, na.rm = T) - time, comps = n()) %>% 
+  ungroup() %>% 
+  
+  mutate(secs_per_KM = rel_time / Distance) %>% 
+  select(-c(HR, Power, activity_distance, perc_thru, Type))
+
+SB_history %>% 
+  filter(Segment %in% c("OudeKwaremont+Paterberg", "Kruisberg-Hotondberg", 
+                        "Taaienberg", "SteenbeekdriesWall*-flandreslove.com", "koppenbergfullclimb",
+                        "AanloopKortekeer", "KanariebergFlandersHill", "KOMWolvenberg2014",
+                        "finishrvv240km")) -> top_sectors
+
+top_sectors %>%
+  
+  group_by(url, Segment, OrderInRace) %>%
+  summarize(km_thru = mean(km_thru, na.rm = T), 
+            time = mean(time, na.rm = T), 
+            files = n()) %>%
+  ungroup() -> SB_top
+
+#
+
+# PARIS ROUBAIX
+
+segments_to_be_analyzed %>%  mutate(PAVE = ifelse(str_detect(str_to_lower(Segment), "pav") & !str_detect(Segment, "entresecteur"), 1, 0)) %>% filter(Distance < 10 & Distance > 0.4) %>% group_by(Distance, Gradient, OrderInRace, Segment, stage, race, year, date) %>% mutate(perc_thru = mean(perc_thru), rel_time = time / median(time)) %>% ungroup() %>% filter(rel_time > 0.5 & rel_time < 2) %>% mutate(year = as.character(year)) %>% mgcv::gam(Speed ~ Gradient + s(perc_thru, k = 6) + PAVE + year + log(rnk), data = .) -> GAM_MOD
+
+segments_to_be_analyzed %>% mutate(PAVE = ifelse(str_detect(str_to_lower(Segment), "pav") & !str_detect(Segment, "entresecteur"), 1, 0)) %>% filter(Distance < 10 & Distance > 0.4) %>% group_by(Distance, Gradient, OrderInRace, Segment, stage, race, year, date) %>% mutate(perc_thru = mean(perc_thru), rel_time = time / median(time)) %>% ungroup() %>% filter(rel_time > 0.5 & rel_time < 2) %>% mutate(year = as.character(year)) %>% mutate(pred = mgcv::predict.gam(GAM_MOD, .)) %>% group_by(Segment) %>% summarize(perc_thru = mean(perc_thru), pred = median(pred), actual = median(Speed)) %>% ungroup() %>% mutate(rel = actual / pred) -> SEGMENTS
 
 #
 
@@ -301,13 +567,10 @@ final_climbs <- segments_to_be_analyzed %>%
   
   filter(Gradient > 0.03 & Distance > 2 & year >= 2020) %>%
   
-  mutate(endKM = km_thru + Distance) %>%
+  mutate(endKM = km_thru + Distance,
+         VM = Distance * Gradient * 1000) %>%
   
   filter((endKM / activity_distance) > 0.99) %>%
-  
-  group_by(stage, race, year, class, date, length, rider) %>%
-  filter(Distance == max(Distance, na.rm = T)) %>%
-  ungroup() %>%
   
   group_by(Segment, stage, race, year, class, date, length) %>%
   mutate(n = n()) %>%
@@ -320,25 +583,66 @@ final_climbs <- segments_to_be_analyzed %>%
   
   mutate(race = ifelse(race == "giro d italia", "giro ditalia", race)) %>%
   
+  group_by(stage, race, year, class, date, length) %>%
+  mutate(maxVM = max(VM, na.rm = T),
+         maxDist = max(Distance, na.rm = T)) %>%
+  ungroup() %>%
+  
+  mutate(percVM = VM / maxVM,
+         percDist = Distance / maxDist,
+         otherVM = maxVM - VM,
+         otherDist = maxDist - Distance,
+         otherGradient= otherVM / otherDist) 
+
+#
+
+final_climbs %>% 
+  group_by(stage,race,year,class,date,length,Segment, Distance, Gradient, VM, OrderInRace, 
+           perc_thru, maxDist, maxVM, percDist, percVM, otherGradient, otherVM) %>% 
+  count() %>% 
+  ungroup() %>% 
+  
+  group_by(stage,race,year,class,date,length) %>% 
+  mutate(otherGradient = ifelse(is.nan(otherGradient), Gradient, otherGradient)) %>% 
+  mutate(minDist = min(Distance),
+         minVM = min(VM)) %>%
+  mutate(rkD = ifelse(Distance == maxDist, 1, 
+                      ifelse(Distance == minDist, 0, 
+                             ((Distance-minDist)/(maxDist-minDist)))),
+         rkVM = ifelse(VM == maxVM, 1, 
+                       ifelse(Distance == minVM, 0, 
+                              ((VM-minVM)/(maxVM-minVM)))),
+         rkOth = percent_rank(-1 * otherGradient),
+         rkRatio = percent_rank(percVM/percDist),
+         rkRatio = (rkRatio+rkOth)/2) %>%
+  mutate(n = n()) %>%
+  rowwise() %>%
+  mutate(Overall = (rkRatio+rkD+rkVM)/3) %>%
+  ungroup() %>%
+  group_by(stage,race,year,class,date,length) %>%
+  filter(max(Overall, na.rm = T)==Overall | n == 1) %>%
+  ungroup()  -> best_segment_to_use
+
+#
+
+final_climb_model <- final_climbs %>%
+
+  inner_join(best_segment_to_use %>%
+               select(Segment, Distance, Gradient, OrderInRace, stage, race, year, class, date, length)) %>%
+  
   left_join(breakaway_riders %>%
               select(rider, race, year, stage, class, breakaway_rider)) %>%
   
   mutate(breakaway_rider = ifelse(is.na(breakaway_rider), 0, breakaway_rider)) %>%
   
-  filter((year >= 2021 & class %in% c("2.UWT", "2.Pro")) |
-           (class %in% c("2.UWT")))
-
-#
-  
-final_climbs %>%
   group_by(stage, race, year, class, date, length) %>% 
   filter(max(breakaway_rider) > 0) %>%
   ungroup() %>% 
   
-  group_by(stage, race, year, class, date, length, breakaway_rider) %>% 
-  summarize(best = min(time, na.rm = T), 
-            finpos = min(rnk)) %>%
-  ungroup() -> FC  
+  lm(Speed ~ Distance * Gradient + log(rnk) + avg_temperature + pred_climb_difficulty + breakaway_rider,
+     data = .)
+  
+summary(final_climb_model)
 
 #
 

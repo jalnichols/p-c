@@ -1,23 +1,25 @@
 
 library(tidyverse)
-library(rvest)
-library(RMySQL)
+library(DBI)
 
 dbDisconnect(con)
 
-con <- dbConnect(MySQL(),
-                 host='localhost',
-                 dbname='cycling',
-                 user='jalnichols',
-                 password='braves')
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
 
 #
 # Bring in Strava Activities
 #
 
-all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DATE 
+all_race_activities <- dbGetQuery(con, "SELECT activity_id, pcs, value, stat, date 
                   FROM strava_activity_data 
                   WHERE Stat IN ('Distance')") %>% 
+  
+  rename(DATE = date, VALUE = value, STAT = stat, PCS = pcs) %>%
   
   # clean up the dates
   mutate(Y = str_sub(DATE, nchar(DATE)-3, nchar(DATE))) %>% 
@@ -27,12 +29,12 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   
   # clean up the stat values
   mutate(VALUE = str_replace(VALUE, "mi", ""), 
-         VALUE = str_replace(VALUE, "W", ""), 
          VALUE = as.numeric(VALUE)) %>% 
   
   mutate(date = lubridate::mdy(date)) %>% 
   unique() %>% 
-  spread(Stat, VALUE) %>% 
+  mutate(Distance = VALUE) %>%
+  select(-STAT) %>%
   janitor::clean_names() %>%
   
   mutate(pcs = str_to_title(pcs)) %>%
@@ -51,8 +53,8 @@ all_race_activities <- dbGetQuery(con, "SELECT activity_id, PCS, VALUE, Stat, DA
   # so maybe accept any riders +/- 10 km? or maybe we just can't get accurate TT data
   
   mutate(distance = distance * 1.609) %>% 
-  filter((distance / length) > 0.90) %>%
-  filter((distance / length) < 1.10) %>%
+  filter((distance / length) > 0.80) %>%
+  filter((distance / length) < 1.20) %>%
   
   filter(time_trial == 0)
 
@@ -64,9 +66,9 @@ telemetry_available <- all_race_activities %>%
   
   inner_join(
     
-    fs::dir_info('D:/Jake/Documents/STRAVA_JSON/') %>%
+    fs::dir_info('C:/Users/Jake Nichols/Documents/Old D Drive/STRAVA_JSON/') %>%
       select(path, birth_time) %>%
-      mutate(activity_id = str_replace(path, 'D:/Jake/Documents/STRAVA_JSON/strava-activity-id-', ''),
+      mutate(activity_id = str_replace(path, 'C:/Users/Jake Nichols/Documents/Old D Drive/STRAVA_JSON/strava-activity-id-', ''),
              activity_id = str_replace(activity_id, ".rds", "")), by = c("activity_id")) %>%
   
   group_by(stage, race, year, class, date) %>%
@@ -77,11 +79,12 @@ telemetry_available <- all_race_activities %>%
 # Join with Segments calculated from those power files
 #
 
-all_new_segments_across_riders <- dbReadTable(con, "strava_new_segment_creation_interim") %>% 
+all_new_segments_across_riders <- dbGetQuery(con, "SELECT * FROM strava_250m_segment_creation
+                                             WHERE year = '2022'") %>% 
   filter(creation_type == "TIME") %>%
   select(-creation_type) %>%
   
-  inner_join(telemetry_available %>% select(activity_id, rider=pcs, total_seconds) %>% unique()) %>% 
+  inner_join(telemetry_available %>% select(activity_id, rider=pcs, total_seconds, rnk) %>% unique()) %>% 
   
   filter(segment_distance > 0) %>%
   
@@ -93,10 +96,11 @@ all_new_segments_across_riders <- dbReadTable(con, "strava_new_segment_creation_
   ungroup() %>%
   
   mutate(ratio = (median_distance/segment_distance),
-         spd_ratio = segment_time / median_time) %>%
+         spd_ratio = segment_speed_kmh / ((median_distance/1000) / (median_time/3600))) %>%
   
-  mutate(bad_data = ifelse((median_distance >= 1500 & (ratio > 1.1 | ratio < 0.9)) |
-                             (median_distance < 1500 & (ratio > 1.2 | ratio < 0.8)), 1, 0)) %>%
+  # in research, anything outside of 60% to 150% in spd ratio is probably either a crash, technical problem, or a data error
+  
+  mutate(bad_data = ifelse((median_distance < 1500 & (ratio > 1.2 | ratio < 0.8)), 1, 0)) %>%
   
   group_by(stage, race, year, class, rowid, date) %>%
   mutate(not_bad_data_speed = ifelse(bad_data == 1, NA, segment_speed_kmh),
@@ -124,8 +128,12 @@ all_new_segments_across_riders <- dbReadTable(con, "strava_new_segment_creation_
 
 races_to_generate_position_data <- all_new_segments_across_riders %>%
   
+  group_by(activity_id) %>%
+  filter(max(bad_data) == 0) %>%
+  ungroup() %>%
+  
   anti_join(dbGetQuery(con, "SELECT DISTINCT stage, race, year, class, date 
-                       FROM strava_position_in_race") %>%
+                       FROM strava_position_in_race_250") %>%
               mutate(stage = as.character(stage))) %>%
   
   select(rider, race, stage, year, class, date) %>%
@@ -151,7 +159,10 @@ for(i in 1:length(races_to_generate_position_data$race)) {
   #
   
   segments_to_consider <- all_new_segments_across_riders %>%
-    filter(race == R & year == Y & stage == S)
+    filter(race == R & year == Y & stage == S) %>%
+    group_by(activity_id) %>%
+    filter(max(bad_data) == 0) %>%
+    ungroup()
   
   #
   
@@ -177,7 +188,7 @@ for(i in 1:length(races_to_generate_position_data$race)) {
       select(-rel_speed, -not_bad_data_speed, -not_bad_data_dist, -bad_data, -spd_ratio, -ratio,
              -median_gradient, -median_speed, -median_time, -median_distance, -should_be_distance,
              -position_distance, -segment_speed_kmh, -segment_time, -segment_distance,
-             -segment_time)) %>%
+             -segment_time, -ValidPoints, -ValidPower, -Power, -total_seconds)) %>%
     
     arrange(start_prior) %>%
     
@@ -202,11 +213,12 @@ for(i in 1:length(races_to_generate_position_data$race)) {
     mutate(position_at_time = rank(behind_median, ties.method = "min")) %>%
     ungroup()
   
-  dbWriteTable(con, "strava_position_in_race", summed_time %>%
+  dbWriteTable(con, "strava_position_in_race_250m", summed_time %>%
                  
-                 select(Segment, Gradient = segment_gradient, Distance = new_segment_distance, 
+                 select(Segment, Gradient = segment_gradient, Distance = new_segment_distance,
                         race, stage, year, class, date, low_end = start_prior, high_end = end_next,
-                        rider, activity_id, time = new_segment_time, best_time, median_time, behind_median, vs_median), 
+                        rider, activity_id, time = new_segment_time, best_time, median_time, behind_median, vs_median,
+                        bad_data), 
                row.names = F, append = TRUE)
   
   print(i)
@@ -231,8 +243,12 @@ for(i in 1:length(races_to_generate_position_data$race)) {
   #
   
   segments_to_consider <- all_new_segments_across_riders %>%
-    filter(race == R & year == Y & stage == S)
-  
+    filter(race == R & year == Y & stage == S) %>%
+    filter(!(rider %in% c("Geschke Simon"))) %>%
+    mutate(segs = max(rowid)) %>%
+    group_by(activity_id) %>%
+    filter(max(bad_data) == 0 & max(rowid) == segs & max(rowid) == n()) %>%
+    ungroup()
   #
   
   summed_time <- rbind(
@@ -304,3 +320,88 @@ for(i in 1:length(races_to_generate_position_data$race)) {
   print(i)
   
 }
+
+#
+#
+#
+#
+#
+#
+#
+
+breakaway_riders <- dbReadTable(con, "pcs_km_breakaway") %>%
+  
+  mutate(rider = str_to_title(rider)) %>%
+  
+  group_by(race, stage, year) %>%
+  mutate(average = mean(km_before_peloton)) %>%
+  ungroup() %>%
+  
+  mutate(breakaway_rider = ifelse(km_before_peloton > 40, 1, 0)) %>%
+  
+  mutate(url = str_replace(url, "/race", "race")) %>% 
+  
+  inner_join(all_race_activities %>%
+               select(stage, url, rider = pcs, rnk, class, activity_id) %>%
+               mutate(rider = str_replace(rider, "O C", "Oc"), 
+                      rider = str_replace(rider, "O B", "Ob"), 
+                      rider = str_replace(rider, "D H", "Dh")))
+
+#
+
+tdf13 <- all_new_segments_across_riders %>%
+  
+  filter(race == "giro d'italia" & year == 2022 & stage == 16) %>%
+  
+  left_join(breakaway_riders %>% select(activity_id, breakaway_rider), by = c("activity_id")) %>%
+  
+  mutate(breakaway_rider = ifelse(is.na(breakaway_rider), 0, breakaway_rider)) %>%
+  mutate(rider = str_to_title(rider)) %>%
+  
+  left_join(
+    
+    dbGetQuery(con, "SELECT rider, weight FROM rider_attributes") %>%
+      
+      mutate(rider = str_to_title(rider)) %>%
+      filter(!is.na(weight)) %>%
+      group_by(rider) %>%
+      summarize(weight = median(weight)) %>%
+      ungroup(), by = c("rider"))
+
+#
+
+tdf13 %>%
+  filter(segment_distance > 200) %>%
+  filter(end_next > 2.000 & end_next < 195.000) %>%
+  filter(ValidPower == ValidPoints) %>%
+  
+  group_by(rowid, start_prior, end_next, breakaway_rider) %>%
+  summarize(wattskg = mean(Power / weight, na.rm = T)) %>%
+  ungroup() %>%
+
+  ggplot(aes(x = start_prior, y = as.factor(breakaway_rider), fill = wattskg, color = wattskg))+
+  geom_tile()+
+  scale_fill_gradientn(colors = c("black", "gray30", "gray60", "gray90", "white",
+                                  "yellow", "gold", "orange", "#FF5733", "red", "dark red", "#4A0D00"), name = "Watts/KG")+
+  scale_color_gradientn(colors = c("black", "gray30", "gray60", "gray90", "white",
+                                   "yellow", "gold", "orange", "#FF5733", "red", "dark red", "#4A0D00"), name = "Watts/KG")+
+  labs(x = "KM",
+       y = "Breakaway Rider?")
+
+# 
+ 
+tdf13 %>%
+  filter(segment_distance > 200) %>%
+  filter(end_next > 2.000 & end_next < 300.000) %>%
+  filter(ValidPower == ValidPoints) %>%
+  
+  group_by(rowid, start_prior, end_next, category = ifelse(breakaway_rider == 1, "Break", ifelse(rnk <= 20, "Top 20", ifelse(rnk >= 80, "Broomwagon", "Peloton")))) %>%
+  summarize(spd = mean(segment_speed_kmh - median_speed, na.rm = T)) %>%
+  ungroup() %>%
+  
+  ggplot(aes(x = start_prior, y = category, fill = spd))+
+  geom_tile()+
+  geom_vline(xintercept = c(40,60,115,130,167,172,182,196))+
+  scale_fill_gradient2(low = "blue", mid = "white", high = "orange", name = "Rel Spd", midpoint = 0)+
+  labs(x = "KM",
+       y = "")

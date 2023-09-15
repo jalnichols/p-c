@@ -15,7 +15,7 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
 
 months_to_pull <- expand_grid(months = c(paste0("0", seq(1,9,1)), "10", "11", "12"),
                               years = seq(2014,2022,1)) %>%
-  filter(!(years == 2022 & as.numeric(months) >= 6))
+  filter((years == 2022 & as.numeric(months) >= 6))
 
 #
 
@@ -51,6 +51,7 @@ for(m in 1:nrow(months_to_pull)) {
 #
 
 cn_races <- dbReadTable(con, "cyclingnews_races") %>%
+  filter(years == 2022 & months %in% c("6", "7", "8")) %>%
   filter(!str_detect(race, "Cyclo-cross")) %>%
   filter(!str_detect(race, "MTB")) %>%
   filter(!str_detect(race, "Ladies")) %>%
@@ -204,7 +205,7 @@ for(s in 1:nrow(cn_stages)) {
 #
 
 cn_paras <- dbGetQuery(con, "SELECT * FROM cyclingnews_paras") %>% 
-  inner_join(cn_stages %>% select(stage_url, year) %>% filter(year == 2018)) %>%
+  inner_join(cn_stages %>% select(stage_url, year) %>% filter(year == 2022)) %>%
   
   separate(stage_url, c("j0", "j1", "j2", "j3", "race", "stage", "j4"), sep = "/") %>%
   select(-c("j1","j2","j3","j4","j0"))

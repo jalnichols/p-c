@@ -1,19 +1,41 @@
 
 library(tidyverse)
 library(rvest)
+library(DBI)
+
+dbDisconnect(con)
+
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      port = 5432,
+                      host = 'localhost',
+                      dbname = "cycling",
+                      user = "postgres",
+                      password = "braves")
+
+urls <- c()
 
 #
 
-scraped_list19 <- vector("list",20)
+scraped_list19 <- vector("list",30)
 
-for(x in 1:18) {
+#xs = seq(0,2500,100)
+
+for(x in 1:30) {
   
-  url <- paste0('https://www.procyclingstats.com/rankings.php?id=49002&nation=&team=&page=', 
-  (x-1)*200, 
-  '&prev_id=prev&younger=&older=&limit=200&filter=Filter&morefilters=1')
+  #url <- paste0('https://www.procyclingstats.com/rankings.php?nation=&age=&zage=&page=smallerorequal&team=&offset=',
+  #(x-1)*200,
+  #'&teamlevel=&filter=Filter')
   
-  url <- paste0('https://www.procyclingstats.com/rankings.php?date=2021-06-14&nation=&age=&zage=&page=smallerorequal&team=&offset=',
-                (x-1)*100, '&filter=Filter')
+  url = paste0("https://www.procyclingstats.com/rankings.php?date=",
+               "2020-12-31",
+               "&nation=&age=&zage=&page=smallerorequal&team=&offset=",
+               (x-1)*100, "&filter=Filter&p=me&s=season-individual")
+  
+  # url <- paste0('https://www.procyclingstats.com/rankings.php?date=2021-06-14&nation=&age=&zage=&page=smallerorequal&team=&offset=',
+  #               (x-1)*100, '&filter=Filter')
+  # 
+  #url <- paste0('https://www.procyclingstats.com/rankings.php?nation=&age=26&zage=&page=largerorequal&team=&offset=',
+  #              xs[[x]], '&teamlevel=&filter=Filter')
   
   page <- url %>%
     read_html()
@@ -46,7 +68,9 @@ for(x in 1:18) {
 #
 
 riders19 <- bind_rows(scraped_list19) %>%
-  mutate(rider = str_trim(rider))
+  mutate(rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+  mutate(rider = str_to_title(str_trim(rider)))
+  
 
 #
 #
@@ -289,6 +313,14 @@ riders_to_scrape <- rbind(riders19 %>% rowid_to_column(),
   
   anti_join(dbReadTable(con, "rider_attributes") %>%
               filter(!is.na(weight)), by = c("rider_url"))
+
+#
+
+riders_to_scrape <- riders_2023 %>%
+  filter(is.na(age)) %>%
+  
+  anti_join(dbReadTable(con, "rider_attributes") %>%
+              filter(!is.na(date)), by = c("rider_url"))
   
 #
 #
@@ -296,13 +328,18 @@ riders_to_scrape <- rbind(riders19 %>% rowid_to_column(),
 #
 #
 
-rider_data_list <- vector("list", length(riders_to_scrape$rider_url))
+riders_to_scrape <- dbGetQuery(con, "SELECT DISTINCT rider_url FROM rider_attributes") %>%
+  filter(!is.na(rider_url))
+
+riders_to_scrape <- dbGetQuery(con, "SELECT DISTINCT rider_url FROM pcs_season_team WHERE season = 2023") %>%
+  filter(!is.na(rider_url)) %>%
+  anti_join(dbGetQuery(con, "SELECT DISTINCT rider_url FROM rider_attributes_new"))
+
+missing_list <- vector("list", 6000)
 
 for(r in 1:length(riders_to_scrape$rider_url)) {
   
   if(r < 1) {
-    
-    
   } else {
   
   pg <- paste0("https://www.procyclingstats.com/", riders_to_scrape$rider_url[[r]]) %>%
@@ -314,28 +351,50 @@ for(r in 1:length(riders_to_scrape$rider_url)) {
     html_nodes('div.rdr-info-cont') %>%
     html_text()
   
-   rid_dat <- tibble(
+  if(length(stg) == 0) {
+    missing_list[[r]] = riders_to_scrape$rider_url[[r]]
+  } else {
     
-    dob = str_trim(str_sub(stg, str_locate(stg, "Date of birth:")[[1]] + 14, str_locate(stg, "Nationality")[[1]] - 5)),
-    weight = str_trim(str_sub(stg, str_locate(stg, "Weight:")[[2]] + 1, str_locate(stg, "Height")[[1]] - 1)),
-    height = str_trim(str_sub(stg, str_locate(stg, "Height:")[[2]] + 1, str_locate(stg, "Height:")[[2]] + 5))
+    rid_dat <- tibble(
+      dob = str_trim(str_sub(stg, str_locate(stg, "Date of birth:")[[1]] + 14, str_locate(stg, "Nationality")[[1]] - 5)),
+      weight = str_trim(str_sub(stg, str_locate(stg, "Weight:")[[2]] + 1, str_locate(stg, "Height")[[1]] - 1)),
+      height = str_trim(str_sub(stg, str_locate(stg, "Height:")[[2]] + 1, str_locate(stg, "Height:")[[2]] + 5))
+    ) %>%
+      filter(dob != "" | !is.na(weight) | !is.na(height))
     
-  ) %>%
-    
-    mutate(rider = riders_to_scrape$rider[[r]],
-           rider_url = riders_to_scrape$rider_url[[r]])
-   
-  rider_data_list[[r]] <- rid_dat
-  
-  if(!is.na(rid_dat$weight)) {
-    
-    #dbSendQuery(con, paste0("DELETE FROM rider_attributes WHERE rider = '", riders_to_scrape$rider[[r]], "'"))
-    
+    if(nrow(rid_dat) == 0) {
+      missing_list[[r]] = riders_to_scrape$rider_url[[r]]
+    } else {
+      
+      rid_dat <- rid_dat %>%
+        
+        mutate(rider = pg %>% html_nodes(xpath = "/html/body/div[1]/div[1]/div[2]/div[1]/h1") %>% html_text(),
+               rider_url = riders_to_scrape$rider_url[[r]],
+               updated = lubridate::today()) %>%
+        mutate(weight = as.numeric(str_trim(str_replace(weight, "kg", ""))),
+               height = as.numeric(str_trim(str_replace(height, " m", "")))) %>%
+        separate(dob, c("day", "month", "year"), sep = " ") %>%
+        mutate(year = str_replace(year, "Passed", "")) %>%
+        inner_join(tibble(month = c("January","February","March","April","May","June",
+                                    "July","August","September","October","November","December"),
+                          m = c("01","02","03","04","05","06","07","08","09","10","11","12")), by = c("month")) %>%
+        mutate(day = ifelse(nchar(day)==3, paste0("0",str_sub(day,1,1)), str_sub(day,1,2))) %>%
+        mutate(date = as.Date(paste0(year, "-", m, "-", day))) %>%
+        select(-month, -day, -year, -m) %>%
+        
+        separate(rider, c("first", "last"), sep = "  ") %>%
+        mutate(rider = paste0(last, " ", first),
+               rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"),
+               last = iconv(last, from="UTF-8", to = "ASCII//TRANSLIT"),
+               first = iconv(first, from="UTF-8", to = "ASCII//TRANSLIT"))
+      
+      dbWriteTable(con, "rider_attributes_new", rid_dat, append = TRUE, row.names = FALSE)
+      
+      
+    }
   }
   
-  #Sys.sleep(runif(1, 10, 30))
-  
-  Sys.sleep(1)
+  Sys.sleep(runif(1, 2, 6))
   
   }
   
@@ -589,5 +648,56 @@ for(r in 1:length(valid_weight_now$PCS)) {
   }
   
 
+  
+}
+
+
+#
+#
+#
+#
+
+riders_to_scrape <- read_csv("MW.csv")
+
+safe_weight = function(url) {
+  
+  remDr$navigate(url)
+  
+  Sys.sleep(9)
+  
+  JSON_xpath <- '/html/body/pre'
+  
+  json_data <- remDr$findElement(using = 'xpath', JSON_xpath)
+  
+  data_lists <- json_data$getElementText() %>%
+    .[[1]] %>%
+    jsonlite::fromJSON()
+  
+}
+
+#
+
+for(x in 12:nrow(riders_to_scrape)) {
+  
+  url <- paste0("https://www.strava.com/activities/", riders_to_scrape$activity_id[[x]], "/power_data")
+  
+  safely_weight <- safely(.f = safe_weight, otherwise = NULL)
+  
+  data_lists <- safely_weight(url)
+  
+  if(is.null(data_lists$result)) {
+    print("failed")
+  } else {
+    
+    df <- tibble(activity_id = riders_to_scrape$activity_id[[x]],
+                 rider = riders_to_scrape$PCS[[x]],
+                 athlete_ftp = data_lists$result$athlete_ftp,
+                 weight = data_lists$result$athlete_weight)
+    
+    dbWriteTable(con, "weight_from_strava", df, append = TRUE, row.names = FALSE)
+    
+    print(df) 
+  
+  }
   
 }
