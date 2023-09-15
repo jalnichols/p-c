@@ -349,6 +349,8 @@ criterium-du-dauphine-2019;1;Naesen Oliver;race/dauphine/2019
 ;;Verona Carlos;
 ;;Reichenbach Sebastien;
 ;;Bernard Julien;
+;;Haig Jack;
+;;Politt Nils;
 tour-de-suisse-2019;2;Mannion Gavin;race/tour-de-suisse/2019
 ;;Imhof Claudio;
 ;;Grellier Fabien;
@@ -362,7 +364,7 @@ tour-de-suisse-2019;2;Mannion Gavin;race/tour-de-suisse/2019
 ;;Friesecke Gian;
 ;;Van Der Hoorn Taco;
 ;5;Lindeman Bert-Jan;
-;;Kung Stefun;
+;;Kung Stefan;
 ;;Mohoric Matej;
 ;;Grellier Fabien;
 ;6;Friesecke Gian;
@@ -374,7 +376,7 @@ tour-de-suisse-2019;2;Mannion Gavin;race/tour-de-suisse/2019
 ;;Tolhoek Antwan;
 ;;Stannard Robert;
 ;;Trentin Matteo;
-;;DeWulf Stan;
+;;Dewulf Stan;
 ;;Van Der Sande Tosh;
 ;;Oss Daniel;
 ;;Paret-Peintre Aurelien;
@@ -427,7 +429,7 @@ tour-of-the-basque-country-2019;2;Bernard Julien;race/itzulia-basque-country/201
 ;;De Marchi Alessandro;
 ;;Molard Rudy;
 volta-ciclista-a-catalunya-2019;1;De Gendt Thomas;race/volta-a-catalunya/2019
-;;Mate Luis;
+;;Mate Luis Angel;
 ;;Gougeard Alexis;
 ;;Madrazo Angel;
 ;;Cuadros Alvaro;
@@ -582,6 +584,7 @@ giro-ditalia-2019;2;Ciccone Giulio;race/giro-d-italia/2019
 ;;Madouas Valentin;
 ;;Oomen Sam;
 ;;Antunes Amaro;
+;;Conci Nicola;
 ;7;Formolo Davide;
 ;;Bilbao Pello;
 ;;Rojas Jose Joaquin;
@@ -720,6 +723,7 @@ giro-ditalia-2019;2;Ciccone Giulio;race/giro-d-italia/2019
 ;;Bidard Francois;
 ;;Senni Manuel;
 ;;Serry Pieter;
+;;Carboni Giovanni;
 ;20;Masnada Fausto;
 ;;Bilbao Pello;
 ;;Amador Andrey;
@@ -936,7 +940,7 @@ volta-ao-algarve-em-bicicleta-2019;1;Paulinho Pedro;race/volta-ao-algarve/2019
 ;;Schillinger Andreas;
 ;;Koch Jonas;
 ;;De Buyst Jasper;
-;;Van Bilsen Kenneth;
+;;Vanbilsen Kenneth;
 ;;Wurtz Schmidt Mads;
 ;;Pedersen Mads;
 ;;Frison Frederik;
@@ -1078,7 +1082,7 @@ vuelta-a-burgos-2019;1;Ezquerra Jesus;race/vuelta-a-burgos/2019
 ;;Turgis Jimmy;
 ;;Puppio Antonio;
 ;;Azurmendi Ibai;
-;;Etxebarria Asier;
+;;Etxeberria Asier;
 ;;Renard Alexis;
 ;5;Arcas Jorge;
 ;;Riabushenko Alexandr;
@@ -1107,7 +1111,7 @@ presidential-cycling-tour-of-turkey-2019;1;Bizhigitov Zhandos;race/tour-of-turke
 ;;De Rossi Lucas;
 ;;Bertazzo Liam;
 ;;Oronte Emerson;
-;;Willems Theo;
+;;Willems Thimo;
 ;;Mestre Ricardo;
 ;;Dogan Halil;
 ;3;Langelotti Victor;
@@ -1118,7 +1122,7 @@ presidential-cycling-tour-of-turkey-2019;1;Bizhigitov Zhandos;race/tour-of-turke
 ;;Samli Feritcan;
 ;4;De Rossi Lucas;
 ;;Moreira Mauricio;
-;;Willems Theo;
+;;Willems Thimo;
 ;;Barrenetxea Ander;
 ;;Samli Feritcan;
 ;5;Kluge Roger;
@@ -1127,7 +1131,7 @@ presidential-cycling-tour-of-turkey-2019;1;Bizhigitov Zhandos;race/tour-of-turke
 ;6;Fortunato Lorenzo;
 ;;Yoshida Hayato;
 ;;Oronte Emerson;
-;;Willems Theo;
+;;Willems Thimo;
 ;;Moreira Mauricio;
 ;;Akdilek Ahmet;
 le-tour-de-langkawi-2019;1;Davids Brendon;race/tour-de-langkawi/2019
@@ -1222,16 +1226,16 @@ arctic-race-of-norway-2019;2;Resell Erik Nordsater;race/arctic-race-of-norway/20
 ;;Blikra Erlend;
 ;;Van Poppel Danny;
 ;;Sbaragli Kristian;
-;;Willems Theo;
+;;Willems Thimo;
 ;4;Slagter Tom-Jelte;
-;;Hvideberg Jonas;
+;;Hvideberg Jonas Iversby;
 ;;Eenkhoorn Pascal;
 ;;Vangstad Andreas;
 ;;Van Asbroeck Tom;
 adriatica-ionica-race-2019;1;Moreira Mauricio;race/adriatica-ionica-race/2019
 ;;Niv Guy;
 ;;Van Empel Etienne;
-;;Willems Theo;
+;;Willems Thimo;
 ;;Poli Umberto;
 uae-tour-2019;2;Brand Samuel;race/uae-tour/2019
 ;;Planet Charles;
@@ -1338,7 +1342,7 @@ tour-of-oman-2019;1;Guerin Alexis;race/tour-of-oman/2019
 ;;Livyns Arjen;
 ;;Viejo Daniel;
 ;;Allegaert Piet;
-;;Lammertink Maurts;
+;;Lammertink Maurits;
 ;;Bonifazio Niccolo;
 ;4;Atapuma Darwin;
 ;;Gaudin Damien;
@@ -1405,7 +1409,7 @@ tour-of-britain-2019;1;Townsend Rory;race/tour-of-britain/2019
 ;8;Holmes Matthew;
 ;;Vinjebo Emil;
 ;;Cullaigh Gabriel;
-tour-du-haut-var-2019;1;Touze Damien;race/tour-des-alpes-maritimes-et-du-var/2019
+tour-du-haut-var-2019;1;Touze Damien;race/tour-du-haut-var/2019
 ;;Burgaudeau Mathieu;
 ;;Bernard Julien;
 ;2;Antomarchi Julien;
@@ -1444,7 +1448,7 @@ tour-de-pologne-2019;1;Planet Charles;race/tour-de-pologne/2019
 ;;Pauwels Serge;
 ;;Geschke Simon;
 ;;Marczynski Tomasz;
-;;Le Turner Mathias;
+;;Le Turnier Mathias;
 ;;Rovny Ivan;
 ;;Kudus Merhawi;
 ;;Hagen Carl Fredrik;
@@ -1642,6 +1646,7 @@ vuelta-a-espana-2019;2;Armee Sander;race/vuelta-a-espana/2019
 ;;Conti Valerio;
 ;;Lastra Jonathan;
 ;;Barcelo Fernando;
+;;Bizkarra Mikel;
 ;17;Knox James;
 ;;Gilbert Philippe;
 ;;Cavagna Remi;
@@ -1841,7 +1846,7 @@ la-route-d-occitanie-la-depeche-du-midi-2020;1;Calmejane Lilian;race/la-route-d-
 ;;Van Der Lijke Nick;
 ;;Masnada Fausto;
 ;;Zimmermann Georg;
-tour-des-alpes-maritimes-et-du-var-2020;1;Perez Anthony;race/tour-des-alpes-maritimes-et-du-var/2020
+tour-des-alpes-maritimes-et-du-var-2020;1;Perez Anthony;race/tour-du-haut-var/2020
 ;;Turgis Anthony;
 ;;Janse Van Rensburg Reinardt;
 ;;Ellsay Nigel;
@@ -1862,7 +1867,7 @@ tour-des-alpes-maritimes-et-du-var-2020;1;Perez Anthony;race/tour-des-alpes-mari
 ;;Molly Kenny;
 tour-de-la-provence-2020;1;Jacobs Johan;race/tour-cycliste-international-la-provence/2020
 ;;Louvet Louis;
-;;Quarterman Charles;
+;;Quarterman Charlie;
 ;;Combaud Romain;
 ;2;Barthe Cyril;
 ;;Koch Jonas;
@@ -2118,7 +2123,7 @@ tour-des-alpes-maritimes-et-du-var-2021;1;Vergaerde Otto;race/tour-des-alpes-mar
 ;;Cabedo Oscar;
 ;;Leveau Jeremy;
 ;2;Houle Hugo;
-;;Girmay Biniam Hailu;
+;;Girmay Binian;
 ;;Berthet Clement;
 ;;De La Parte Victor;
 ;;Mifsud Andrea;
@@ -2184,7 +2189,7 @@ etoile-de-besseges-tour-du-gard-2022;1;De Vylder Lindsay;race/etoile-de-besseges
 ;4;Gougeard Alexis;
 ;;Maurelet Flavien;
 ;;Leroux Samuel;
-;;Zimmerman Georg;
+;;Zimmermann Georg;
 ;;Suter Joel;
 ;;Morin Emmanuel;
 ;;Raugel Antoine;
@@ -2210,7 +2215,7 @@ settimana-internazionale-coppi-e-bartali-2021;2;Dina Marton;race/settimana-inter
 ;;Canaveral Jonatan;
 ;;Osorio Alejandro;
 ;;Nibali Antonio;
-;;Sepulvada Eduardo;
+;;Sepulveda Eduardo;
 ;;Niv Guy;
 ;;Scaroni Cristian;
 ;5;Swift Ben;
@@ -2448,6 +2453,9 @@ gran-camino-2022;1;Barrenetxea Jon;race/gran-camino/2022
 ;;Silva Joaquim;
 ;;Goncalves Jose;
 ;;Angulo Antonio;
+;;Azurmendi Ibai;
+;;Angulo Antonio;
+;;Moreno Adria;
 settimana-internazionale-coppi-e-bartali-2022;1;Paquot Tom;race/settimana-internazionale-coppi-e-bartali/2022
 ;;Pellaud Simon;
 ;;Bortoluzzi Giovanni;
@@ -2531,7 +2539,7 @@ La-route-d-occitanie-la-depeche-du-midi-2021;1;Cuadros Alvaro;race/la-route-d-oc
 ;2;Van Engelen Adne;
 ;;Madrazo Angel;
 ;;Leroux Samuel;
-;;Van Niekirk Morne;
+;;Van Niekerk Morne;
 ;;Retailleau Valentin;
 ;4;Cort Magnus;
 ;;Brambilla Gianluca;
@@ -2624,7 +2632,7 @@ tour-of-norway-2021;1;Sessler Nicolas;race/tour-of-norway/2021
 ;;Mertens Julian;
 ;;Jensen Frederik Irgens;
 ;;Charmig Anthon;
-;2;Hjemsaeter Olav;
+;2;Hjemsater Olav;
 ;;Kjeldsen Christian Spang;
 ;;Charmig Anthon;
 ;;Schandorff Iwersen Emil;
@@ -2633,7 +2641,7 @@ tour-of-norway-2021;1;Sessler Nicolas;race/tour-of-norway/2021
 ;;Fouche James;
 ;;Grignard Sebastien;
 ;;Rahbek Mads;
-;4;Hjemsaeter Olav;
+;4;Hjemsater Olav;
 ;;Kjeldsen Christian Spang;
 ;;Nyborg Broge Nils Lau;
 ;;Lewis Gruffud;
@@ -2884,7 +2892,7 @@ tour-de-france-2018;1;Ledanois Kevin;race/tour-de-france/2018
 ;;Barguil Warren;
 ;;Chavanel Sylvain;
 ;;Izagirre Gorka;
-;;VIchot Arthur;
+;;Vichot Arthur;
 ;;Amador Andrey;
 ;;Mollema Bauke;
 ;;Slagter Tom-Jelte;
@@ -3059,7 +3067,7 @@ tour-de-france-2018;1;Ledanois Kevin;race/tour-de-france/2018
 ;;Budzinski Tomasz;
 ;;Sunderland Dylan;
 ;;Petrelli Gabriele;
-;5;Heming Mika;race/romanian-cycling-tour/2021
+NA;5;Heming Mika;race/romanian-cycling-tour/2021
 ;;Marcu Adi Narcus;
 ;;Carstensen Lucas;
 ;;Guardini Andrea;
@@ -3102,7 +3110,7 @@ tour-de-france-2018;1;Ledanois Kevin;race/tour-de-france/2018
 ;;Bennassar Joan;
 ;;Gallo Andrea;
 ;;Hoole Daan;
-;;Paties Eric;
+;;Paties Montagner Eric;
 ;;Ferri Edoardo;
 ;;Healy Ben;
 ;;Menegotto Jacopo;
@@ -3152,7 +3160,7 @@ tour-de-france-2018;1;Ledanois Kevin;race/tour-de-france/2018
 ;;Pena Jesus David;
 ;;Frigo Marco;
 ;;Drizners Jarrad;
-;;Paties Eric;
+;;Paties Montagner Eric;
 ;;Belloni Manuel;
 ;;Charmig Anthon;
 ;5;Healy Ben;
@@ -3184,7 +3192,7 @@ tour-de-france-2018;1;Ledanois Kevin;race/tour-de-france/2018
 ;;Sogaard Kasper Viberg;
 ;4;Paterski Maciej;race/tour-de-hongrie/2021
 ;;Kurek Adrian;
-;;Rikunov Piotr;
+;;Rikunov Petr;
 ;;De Wilde Gilles;
 ;5;Warlop Jordi;
 ;;Grabis Mateusz;
@@ -3327,7 +3335,7 @@ giro-ditalia-2018;2;Ballerini Davide;race/giro-d-italia/2018
 ;;Kuznetsov Viacheslav;
 ;;Marcato Marco;
 ;;Morkov Michael;
-;;Pfingsten Chistoph;
+;;Pfingsten Christoph;
 ;;Schachmann Maximilian;
 ;;Plaza Ruben;
 ;;Turrin Alex;
@@ -3349,9 +3357,9 @@ giro-ditalia-2018;2;Ballerini Davide;race/giro-d-italia/2018
 ;;Mohoric Matej;
 ;;Visconti Giovanni;
 ;;Conti Valerio;
-;;Gro?schartner Felix;
+;;Gro?Schartner Felix;
 ;;Gesink Robert;
-;;Kreuziger Romain;
+;;Kreuziger Roman;
 ;;Brambilla Gianluca;
 ;;Bouwman Koen;
 ;;Frapporti Marco;
@@ -3378,7 +3386,7 @@ criterium-du-dauphine-2018;1;Edet Nicolas;race/dauphine/2018
 ;;Craddock Lawson;
 ;2;Duchesne Antoine;
 ;;Perichon Pierre-Luc;
-;;Stalonov Nikita;
+;;Stalnov Nikita;
 ;;Backaert Frederik;
 ;4;Eiking Odd Christian;
 ;;Boasson Hagen Edvald;
@@ -3560,11 +3568,11 @@ volta-ciclista-a-catalunya-2018;1;Bohli Tom;race/volta-a-catalunya/2018
 ;;Turek Daniel;
 ;;Ezquerra Jesus;
 ;;Molina Antonio;
-;;Grivko Andriy;
+;;Grivko Andrey;
 ;2;Merino Igor;
 ;;Molina Antonio;
 ;;Bizkarra Mikel;
-;;Grivko Andriy;
+;;Grivko Andrey;
 ;3;De Gendt Thomas;
 ;;Mas Lluis;
 ;;Chevrier Clement;
@@ -3634,17 +3642,17 @@ paris-nice-2018;1;Roelandts Jurgen;race/paris-nice/2018
 ;;Pantano Jarlinson;
 ;;Moinard Amael;
 ;;Herrada Jesus;
-tirreno-adriatico-2018;2;Foliforov Alexander;
+tirreno-adriatico-2018;2;Foliforov Alexander;race/tirreno-adriatico/2018
 ;;Sagiv Guy;
 ;;Bagioli Nicola;
-;;Mosca Jacopa;
+;;Mosca Jacopo;
 ;3;Bagioli Nicola;
 ;;Van Winden Dennis;
-;;Mosca Jacopa;
+;;Mosca Jacopo;
 ;;Hatsuyama Sho;
 ;;Kurianov Stepan;
 ;4;Bagioli Nicola;
-;;Mosca Jacopa;
+;;Mosca Jacopo;
 ;;Neilands Krists;
 ;;Vlasov Aleksandr;
 ;;Pedersen Mads;
@@ -3654,7 +3662,7 @@ tirreno-adriatico-2018;2;Foliforov Alexander;
 ;;Koren Kristijan;
 ;;Morabito Steve;
 ;;Boev Igor;
-;6;Mosca Jacopa;
+;6;Mosca Jacopo;
 ;;Burghardt Marcus;
 ;;Neilands Krists;
 ;;Nych Artem;
@@ -3663,7 +3671,7 @@ tour-de-romandie-2018;1;Gougeard Alexis;race/tour-de-romandie/2018
 ;;Duchesne Antoine;
 ;;Minnaard Marco;
 ;;Mertz Remy;
-;2;Grivko Andriy;
+;2;Grivko Andrey;
 ;;Fabbro Matteo;
 ;;Brown Nathan;
 ;;Campenaerts Victor;
@@ -3691,7 +3699,7 @@ tour-of-the-alps-2018;1;Berhane Natnael;race/tour-of-the-alps/2018
 ;2;Jauregui Quentin;
 ;;Rabitsch Stephen;
 ;;Goldstein Omer;
-;;Mosca Jacopa;
+;;Mosca Jacopo;
 ;;Frapporti Marco;
 ;;Rodriguez Oscar;
 ;3;Montaguti Matteo;
@@ -3706,7 +3714,7 @@ tour-of-the-alps-2018;1;Berhane Natnael;race/tour-of-the-alps/2018
 ;;Bizkarra Mikel;
 ;;Durasek Kristijan;
 ;;Padun Mark;
-;;Gro?schartner Felix;
+;;Gro?Schartner Felix;
 ;5;Bidard Francois;
 ;;Bagioli Nicola;
 ;;Gavazzi Francesco;
@@ -3911,7 +3919,7 @@ NA;2;Torres Pablo;race/vuelta-a-espana/2018
 ;;Van Baarle Dylan;
 ;;Teuns Dylan;
 ;;Geniez Alexandre;
-;;Ghebregzabhier Amanuel;
+;;Ghebreigzabhier Amanuel;
 ;;Machado Tiago;
 ;;Brambilla Gianluca;
 ;;Torres Pablo;
@@ -3982,7 +3990,7 @@ NA;2;Torres Pablo;race/vuelta-a-espana/2018
 ;;Fraile Omar;
 ;;Postlberger Lukas;
 ;;Amador Andrey;
-;;Ghebregzabhier Amanuel;
+;;Ghebreigzabhier Amanuel;
 ;;Castroviejo Jonathan;
 ;;Hindley Jai;
 ;;Rodriguez Cristian;
@@ -3994,6 +4002,7 @@ NA;2;Torres Pablo;race/vuelta-a-espana/2018
 ;;Kudus Merhawi;
 ;;Conti Valerio;
 ;;Mendes Jose;
+;;Teuns Dylan;
 ;18;Wallays Jelle;
 ;;Bol Jetse;
 ;;Bystrom Sven Erik;
@@ -4011,7 +4020,7 @@ NA;2;Torres Pablo;race/vuelta-a-espana/2018
 ;;Fraile Omar;
 ;;Roche Nicolas;
 ;;Majka Rafal;
-;;Ghebregzabhier Amanuel;
+;;Ghebreigzabhier Amanuel;
 ;;Herrada Jose;
 ;;Woods Michael;
 ;;Anacona Winner;
@@ -4038,13 +4047,13 @@ NA;1;Clarke Will;race/tour-down-under/2018
 ;;Bowden Scott;
 ;3;Bowden Scott;
 ;;Dlamini Nic;
-;4;Dempster Zakkari;
+;4;Dempster Zak;
 ;;Porter Alexander;
 ;5;De Gendt Thomas;
 ;;Bowden Scott;
 ;;Wurtz Schmidt Mads;
 ;;Dlamini Nic;
-;;Dempster Zakkari;
+;;Dempster Zak;
 ;;Beppu Fumiyuki;
 ;;Bico Nuno;
 ;6;O'connor Ben;
@@ -4052,7 +4061,7 @@ NA;1;Clarke Will;race/tour-down-under/2018
 NA;1;Boaro Manuele;race/benelux-tour/2018
 ;;Van Den Berg Julius;
 ;;De Bondt Dries;
-;;Peyskens Dmitri;
+;;Peyskens Dimitri;
 ;;Sprengers Thomas;
 ;;Reinders Elmar;
 ;3;Mohoric Matej;
@@ -4275,7 +4284,7 @@ volta-ao-algarve-em-bicicleta-2018;1;Almeida Nuno;race/volta-ao-algarve/2018
 ;;Martingil Cesar;
 ;;Toffali Nicola;
 ;;Veloso Gustavo Cesar;
-tour-of-utah-2018;1;Huffman Evan;
+tour-of-utah-2018;1;Huffman Evan;race/tour-of-utah/2018
 ;;Olivier Daan;
 ;;Simpson George;
 ;;Mawditt Lionel;
@@ -4328,7 +4337,7 @@ tour-of-utah-2018;1;Huffman Evan;
 ;;Jean Emile;
 ;;Easter Griffin;
 ;;Baca Tony;
-;;Conti Niccola;
+;;Conti Nicola;
 ;;Cima Damiano;
 vuelta-a-burgos-2018;1;Garcia Ricardo;race/vuelta-a-burgos/2018
 ;;Lunke Sindre;
@@ -4364,7 +4373,7 @@ vuelta-a-burgos-2018;1;Garcia Ricardo;race/vuelta-a-burgos/2018
 ;;Torres Pablo;
 ;;Rojas Jose Joaquin;
 ;;Bagioli Nicola;
-presidential-cycling-tour-of-turkey-2018;1;Samli Feritcan;
+presidential-cycling-tour-of-turkey-2018;1;Samli Feritcan;race/tour-of-turkey/2018
 ;;Van Rooy Kenneth;
 ;;Txoperena Benat;
 ;;Barrenetxea Ander;
@@ -4394,7 +4403,7 @@ presidential-cycling-tour-of-turkey-2018;1;Samli Feritcan;
 ;;Atalay Muhammed;
 ;;Masson Christophe;
 ;;Cieslik Pavel;
-adriatica-ionica-race-2018;2;Montoya Javier;
+adriatica-ionica-race-2018;2;Montoya Javier;race/adriatica-ionica-race/2018
 ;;Logica Enrico;
 ;;Draperi Matteo;
 ;3;Pedretti Giovanni;
@@ -4418,7 +4427,7 @@ adriatica-ionica-race-2018;2;Montoya Javier;
 ;;Atapuma Darwin;
 ;;Orsini Umberto;
 ;;Florez Miguel Eduardo;
-arctic-race-of-norway-2018;1;Caruso Damiano;
+arctic-race-of-norway-2018;1;Caruso Damiano;race/arctic-race-of-norway/2018
 ;;Roche Nicolas;
 ;;Machado Tiago;
 ;;Lammertink Maurits;
@@ -4469,3 +4478,3941 @@ arctic-race-of-norway-2018;1;Caruso Damiano;
 ;;Lemoine Cyril;
 ;;Van Hecke Preben;
 ;;Machado Tiago;
+NA;18;Swift Ben;race/giro-d-italia/2020
+;;O'connor Ben;
+;;Felline Fabio;
+;;De Gendt Thomas;
+;;Tonelli Alessandro;
+;;Navarro Daniel;
+;;Cataldo Dario;
+;;Rossetto Stephane;
+;;Ganna Filippo;
+;;Carretero Hector;
+NA;1;Cabedo Oscar;race/la-route-d-occitanie/2022
+;;Mol Wesley;
+;;Goubert Jean;
+;;Danes Leo;
+;2;Terpstra Niki;
+;3;Bonifazio Niccolo;
+;;Van Niekerk Morne;
+;;Hivert Jonathan;
+;4;Terpstra Niki;
+;;Healy Ben;
+;;NURLYKHASSYM Nurbergen;
+;;Touze Damien;
+;;Urruty Maxime;
+NA;1;Quinn Sean;race/circuit-sarthe/2022
+;;Kamp Alexander;
+;;Gougeard Alexis;
+;;Guegan Mael;
+;;Vauquelin Kevin;
+;;Plapp Luke;
+;;Ganna Filippo;
+;;Cosnefroy Benoit;
+;;Zingle Axel;
+;;Pinot Thibaut;
+;;Pedersen Mads;
+;2;Bais Mattia;
+;;Tizza Marco;
+;;Urruty Maxime;
+;;Rolland Pierre;
+;;Guernalec Thibault;
+;;Guegan Mael;
+;3;Ourselin Paul;
+;;Hurel Tony;
+;;Ponomar Andrii;
+;;Pichon Laurent;
+;;Steinhauser Georg;
+;;Vermeulen Emil;
+NA;2;Cote Pier-Andre;race/vuelta-a-castilla-y-leon/2022
+;;Munoz Daniel;
+;;Viegas Daniel;
+;;Gonzalez David;
+;;Mclay Daniel;
+;;Lopez-Cozar Juan Antonio;
+NA;1;Wellens Tim;race/tour-de-l-ain/2022
+;;Bissegger Stefan;
+;;Lebeau Mattis;
+;2;Hurel Tony;
+;;Richard Louis;
+;;Eriksson Jacob;
+;;Peter Jannis;
+;3;Pedrero Antonio;
+;;Moniquet Sylvain;
+;;Alaphilippe Julian;
+NA;1;Molly Kenny;race/tour-du-limousin/2022
+;;Beltran Joel Nicolau;
+;;Paret-Peintre Valentin;
+;;Gougeard Alexis;
+;;Carisey Clement;
+;3;Claeys Dimitri;
+;;Geniets Kevin;
+;;Madouas Valentin;
+;;Rota Lorenzo;
+;;Cardis Romain;
+;;Carisey Clement;
+;;Gougeard Alexis;
+;2;Urruty Maxime;
+;;Guegan Mael;
+;4;Rossetto Stephane;
+;;Amezqueta Julen;
+;;Carisey Clement;
+;;Ladagnous Matthieu;
+;;Delettre Alexandre;
+;;Dewulf Stan;
+;;Barguil Warren;
+;;Rivi Samuele;
+;;Morin Emmanuel;
+;;Boileau Alan;
+;;Ourselin Paul;
+;;Serrano Gonzalo;
+;;Covi Alessandro;
+;;Paasschens Mathijs;
+NA;1;Liepins Emils;race/tour-du-poitou-charentes-et-de-la-vienne/2022
+;;Laurance Axel;
+;;Grellier Fabien;
+;;Jegat Jordan;
+;;Delacroix Tristan;
+;;Martin Sergio Roman;
+;2;Danes Leo;
+;;Dversnes Fredrik;
+;;Mifsud Andrea;
+;3;Cepeda Jefferson Alveiro;
+;;Van Hoecke Gijs;
+;;Van Empel Etienne;
+;;Urruty Maxime;
+;5;Guegan Mael;
+;;Fetter Erik;
+;;Gudmestad Tord;
+;;Zoccarato Samuele;
+;;Murguialday Jokin;
+;;Cherel Mikael;
+NA;1;Herregodts Rune;race/sazka-tour/2022
+;;Kaspar Jan;
+;;Tartalon Alexander;
+;;Kukrle Michael;
+;;Meens Johan;
+;4;Kukrle Michael;
+;;Guerin Alexis;
+;3;Barta Jan;
+;;Otruba Jakub;
+;;Appel Stijn;
+;;Paasschens Mathijs;
+;;Urianstad Martin;
+;;Boven Lars;
+;;Theiler Ole;
+;;Turek Daniel;
+;;Wandahl Frederik;
+;;Kaspar Jan;
+;;Fortin Filippo;
+;;Braet Vitto;
+;;Mertz Remy;
+;;Molly Kenny;
+;;Tizza Marco;
+;2;Karsten Moritz;
+;;Van Dijke Tim;
+;;Double Paul;
+;;Koren Kristijan;
+NA;1;Bosch Manuel;race/sibiu-cycling-tour/2022
+;;Tracz Szymon;
+;;Meiler Lukas;
+;;Neumann Dominik;
+;;Sessler Nicolas;
+;2;Luncan Serban;
+;;Lutter Eric;
+;;Schunk Conor;
+;;Klabouch Petr;
+;;Herben Luuk;
+;;Gandin Stefano;
+;;Vaidian Iustin-Ioan;
+;3b;Gandin Stefano;
+;;Kukrle Michael;
+;;Weulink Meindert;
+;;Meiler Lukas;
+;;Loderer Timon;
+;;Sessler Nicolas;
+;;Raileanu Cristian;
+NA;1;Siskevicius Evaldas;race/tour-des-alpes-maritimes-et-du-var/2022
+;;Guegan Mael;
+;;Delacroix Tristan;
+;;Van Niekerk Morne;
+;2;Askey Lewis;
+;;Calmejane Lilian;
+;;Rutsch Jonas;
+;;Urruty Maxime;
+;;Couanon Jonathan;
+;3;Jarnet Maxime;
+;;Perez Anthony;
+;;Storer Michael;
+;;Pinot Thibaut;
+;;Livyns Arjen;
+;;Calmejane Lilian;
+;;Cherel Mikael;
+;;Hellemose Asbjorn;
+;;Combaud Romain;
+;;Sleen Torjus;
+;;Owsian Lukasz;
+;;Gautier Cyril;
+;;Vuillermoz Alexis;
+;;Adria Roger;
+;;Donovan Mark;
+NA;1;Canton Isaac;race/vuelta-asturias/2022
+;;Canellas Xavier;
+;;Goikoetxea Peio;
+;;Contte Tomas;
+;;Garcia Jose Maria;
+;2;Juaristi Txomin;
+;;Ries Michel;
+;;Ourselin Paul;
+;;Fancellu Alessandro;
+;;Repa Vojtech;
+;;Aular Orluis;
+;;Ezquerra Jesus;
+;;Rangel Costa Vinicius;
+;3;Madrazo Angel;
+;;Canellas Xavier;
+;;Ezquerra Jesus;
+;;Ruiz Ibon;
+;;Iribar Unai;
+NA;1;Cardis Romain;race/tour-du-limousin/2021
+;;Antomarchi Julien;
+;;Alonso Mikel;
+;2;Hailemichael Mulu Kinfe;
+;;Maurelet Flavien;
+;;Savini Daniel;
+;;Florez Miguel Eduardo;
+;;Iribar Unai;
+;3;Wackermann Luka;
+;;Stojnic Veljko;
+;;Vakoc Petr;
+;;Geschke Simon;
+;;Velasco Simone;
+;;Gabburo Davide;
+;;Rolland Pierre;
+;;Cuadrado Unai;
+;;Angulo Antonio;
+;;Diaz Jose Manuel;
+;4;Cardis Romain;
+;;Dauschy Guillaume;
+;;Geschke Simon;
+;;Guglielmi Simon;
+;;Fernandez Delio;
+;;Peyskens Dimitri;
+;;Duval Julien;
+;;Marengo Umberto;
+;;Orrico Davide;
+;;Etxeberria Asier;
+;;Jousseaume Alan;
+;;Hardy Romain;
+;;Coquard Bryan;
+;;Bais Davide;
+;1;Viel Mattia;race/tour-du-poitou-charentes-et-de-la-vienne/2021
+;;Skivild Robin;
+;;Denis Thomas;
+;2;Pichon Laurent;
+;;Zoccarato Samuele;
+;;Rivi Samuele;
+;3;Zoccarato Samuele;
+;;Ravanelli Simone;
+;;Gougeard Alexis;
+;5;Ravanelli Simone;
+;;Duval Julien;
+;;Nych Artem;
+;;Carpenter Robin;
+;;Maitre Florian;
+;;Carisey Clement;
+;;Trarieux Julien;
+;;Ruiz Ibon;
+NA;1;Boguslawski Marceli;race/tour-of-croatia/2021
+;;Miholjevic Fran;
+;;Franczak Pawel;
+;;Viel Mattia;
+;;Oelke Tim;
+;2;Kaczmarek Jakub;
+;;Franczak Pawel;
+;;Rober Dominik;
+;;Novikov Savva;
+;;Castrillo Jaime;
+;;Huys Laurens;
+;;Murn Bostjan;
+;6;Bosch Manuel;
+;;Ritzinger Felix;
+;;Kuen Maximilian;
+;;Hocevar Kristjan;
+;;Grabis Mateusz;
+;;Budzinski Tomasz;
+;;Molly Kenny;
+;;Lazkano Oier;
+;4;Rekita Szymon;
+;;Boguslawski Marceli;
+;;Buratti Niccolo;
+;;Lindner Tom;
+;;Meo Felix;
+;;Ritzinger Felix;
+;3;Barrenetxea Jon;
+;;De Cassan Davide;
+;;Jageler Robert;
+;;Stachowiak Adam;
+;;Azparren Xabier Mikel;
+;5;Pernsteiner Hermann;
+;;Lazkano Oier;
+NA;3;Camargo Diego Andres;race/gran-camino/2022
+;;Canal Carlos;
+;;Fuentes Angel;
+;;Bol Jetse;
+;;Geschke Simon;
+;;Fernandez Delio;
+;2;Angulo Antonio;
+;;Cabedo Oscar;
+;;Garcia Guillermo;
+;;Brandao Joni;
+;;Bassett Stephen;
+;;Barrenetxea Jon;
+NA;1;Valls Miguel;race/vuelta-a-castilla-y-leon/2022
+;;Aristi Mikel;
+;;Madrazo Angel;
+NA;3;Madrazo Angel;race/vuelta-asturias/2021
+;;Mate Luis Angel;
+;;Delettre Alexandre;
+;;Oliveira Nelson;
+;;Doubey Fabien;
+;2;Aular Orluis;
+;;Viegas Daniel;
+;;Pelegri Oscar;
+;;De Rossi Lucas;
+;;Madrazo Angel;
+;;Cuadrado Unai;
+;;Burgaudeau Mathieu;
+;;Ruiz Ibon;
+;;Oyola Robigzon Leandro;
+;;Fedeli Alessandro;
+;;Okamika Ander;
+;1;Viegas Daniel;
+;;Gutierrez Jose Manuel;
+NA;5;Brogi Adriano;race/settimana-ciclistica-italiana/2021
+;;Di Benedetto Stefano;
+;;Azurmendi Ibai;
+;;De Rossi Lucas;
+;;Pirazzi Stefano;
+;4;Siskevicius Evaldas;
+;;Verwilst Aaron;
+;;Abrahamsen Jonas;
+;;Colombo Raul;
+;;Florez Miguel Eduardo;
+;2;Dima Emil;
+;;Herregodts Rune;
+;;Grmay Tsgabu;
+;;Pichon Laurent;
+;;Pellaud Simon;
+;1;Siskevicius Evaldas;
+;;Burchio Federico;
+;;Simion Paolo;
+;;Azurmendi Ibai;
+;;Barbier Rudy;
+;;Abrahamsen Jonas;
+;;Herregodts Rune;
+;;Pellaud Simon;
+;;Wackermann Luka;
+NA;1;Stosz Patryk;race/tour-de-hongrie/2021
+;;Van Den Bossche Fabio;
+;;Sevilla Diego Pablo;
+;3;Paterski Maciej;
+;;Stosz Patryk;
+;;Martin Sergio Roman;
+;;Lozano David;
+;;Szollosi Ferenc;
+;;Banaszek Norbert;
+;;Jarc Aljaz;
+NA;2;Cieslik Pawel;race/romanian-cycling-tour/2021
+;;Paterski Maciej;
+;;Kaczmarek Jakub;
+;;Banaszek Alan;
+;;Wolf Justin;
+NA;4;Stojnic Veljko;race/sazka-tour/2021
+;;Turek Daniel;
+;;Cieslik Pawel;
+;;Van Den Dool Jens;
+;;Bauer Jack;
+;;Bakelants Jan;
+;3;Neumann Dominik;
+;;Herregodts Rune;
+;;Appel Stijn;
+;;Grabis Mateusz;
+;;Stark Immanuel;
+;2;Per David;
+;;Stojnic Veljko;
+;;Janiszewski Sylwester;
+;;Lindner Tom;
+;;Huppertz Joshua;
+;;Kukrle Michael;
+;;Otruba Jakub;
+;1;Huppertz Joshua;
+;;Andersen Idar;
+;;Lindner Tom;
+;;Papierski Damian;
+;;Koster Adne;
+NA;4;Reynders Jens;race/tour-de-wallonie/2020
+;;Thwaites Scott;
+;;Stybar Zdenek;
+;;Dewulf Stan;
+;;Paquot Tom;
+;;Taminiaux Lionel;
+;;Kron Andreas;
+;3;Sieberg Marcel;
+;;Canal Carlos;
+;;Golas Michal;
+;;Van Staeyen Michael;
+;;Goeman Andreas;
+;2;Fouche James;
+;;Marchand Gianni;
+;;De Bondt Dries;
+;;Aerts Toon;
+;;De Winter Ludwig;
+;;Wirtgen Tom;
+;1;De Bondt Dries;
+;;Van Den Brande Julien;
+;;Duval Julien;
+;;Reynders Jens;
+;;Paquot Tom;
+NA;2;Bernas Pawel;race/sibiu-cycling-tour/2020
+;;Dima Emil;
+;;Budzinski Tomasz;
+;;Weulink Meindert;
+;;Dementyev Yehor;
+NA;2;Reyes Aldemar;race/colombia-21/2020
+;;Guama Byron;
+;;Jeannes Matthieu;
+;;Montenegro Jorge;
+;;Munoz Edison;
+;;Paredes Anderson Timoteo;
+;;Rangel Costa Vinicius;
+;;Sanchez Brayan;
+;;Urianstad Martin;
+;;Velardez Leandro;
+;3;Sevilla Oscar;
+;;Henao Sebastian;
+;;Pellaud Simon;
+;;Baron Felix Alejandro;
+;4;Pellaud Simon;
+;;Van Empel Etienne;
+;;Yustre Kristian;
+;;Mendoza Omar;
+;;Castano Sebastian;
+;;Moro Lauro;
+;5;Duarte Fabio;
+;;Chalapud Robinson;
+;;Quiroz Oscar Adalberto;
+;;Suarez Juan Pablo;
+;;Pedraza Walter Fernando;
+;;Maestri Mirco;
+;;Guama Byron;
+;;Pellaud Simon;
+;6;Van Empel Etienne;
+;;Joyce Colin;
+;;Baron Felix Alejandro;
+;;Duarte Fabio;
+;;Suarez Juan Pablo;
+;;Colon Johan Antonio;
+;;Munoz Edison;
+;;Castano Sebastian;
+;;Guama Byron;
+;;Hodeg Alvaro Jose;
+;;Jorgenson Matteo;
+;;Marengo Umberto;
+NA;1;Meurisse Xandro;race/vuelta-ciclista-a-la-region-de-murcia/2020
+;;De Vos Adam;
+;;Cerny Josef;
+;;Guernalec Thibault;
+;;Kamna Lennard;
+;;Stalnov Nikita;
+;;Cepeda Jefferson Alveiro;
+;;Garcia Sergio;
+;;Carretero Hector;
+;;Soto Antonio Jesus;
+NA;7;Brown Nathan;race/vuelta-ciclista-a-la-provincia-de-san-juan/2020
+;;Joyce Colin;
+;;Garosio Andrea;
+;;Marchesini Riccardo;
+;;Monte Francisco;
+;;Curuchet Juan Ignacio;
+;;Rodriguez Leonard;
+;;Lucero Daniel;
+;6;Maestri Mirco;
+;;Fraysse Agustin;
+;;Rosas Laureano;
+;;Di Renzo Andrea;
+;5;Soto Nelson Andres;
+;;Nazaret Magno;
+;;Atencio Gerardo;
+;2;Ballarin Iker;
+;;Carpenter Robin;
+;;Ruiz Hugo;
+;;Ruiz Robinson;
+;;Navarro Royner;
+;;Jurado Christopher;
+;;Montes Francisco;
+;;Velardez Leandro;
+;;Juarez Daniel;
+NA;1;Van Poucke Aaron;race/trofeo-cala-millor/2020
+;;Sevilla Diego Pablo;
+;;Mertz Remy;
+;;Imhof Claudio;
+NA;1;Sevilla Diego Pablo;race/deia-trophy/2020
+;;Calle Juan Fernando;
+;;Politt Nils;
+;;Canton Isaac;
+;;Luscher Damian;
+;;Bou Joan;
+;;Scott Robert;
+NA;1;Bleier Baptiste;race/gp-d-ouverture/2020
+;;Leroux Samuel;
+;;De Vylder Lindsay;
+;;Wirtgen Luc;
+;;Marquez Marti;
+;;De Rossi Lucas;
+NA;1;Imhof Claudio;race/trofeo-andratx-mirador-d-es-colomer/2020
+;;Villella Davide;
+;;Wurtz Schmidt Mads;
+NA;1;Mas Lluis;race/trofeo-palma/2020
+;;Cuadros Alvaro;
+;;Van Goethem Brian;
+NA;4;Le Bon Johan;race/tour-de-langkawi/2020
+;;Lecroq Jeremy;
+;;Gautier Cyril;
+;;Field Rylee;
+;;Van Der Merwe Juan-Pierre;
+;;Battistella Samuele;
+;;Carbel Michael;
+;;Venchiarutti Nicola;
+;;Jones Taj;
+;;Rajovic Dusan;
+;;Ferrari Fabricio;
+;;Eyob Metkel;
+;;Boardman Samuel;
+;;Mohd Zariff Muhammad Nur Aiman;
+NA;1;Bou Joan;race/clasica-de-almeria/2020
+;;Martin Sergio Roman;
+;;Villella Davide;
+;;Viegas Daniel;
+;;Quaade Rasmus;
+NA;1;Cavagna Remi;race/les-boucles-du-dus-ardeche/2020
+;;Lafay Victor;
+;;Siskevicius Evaldas;
+;;King Ben;
+;;Irizar Julen;
+NA;1;Cote Pier-Andre;race/la-drome-classic/2020
+;;Bonnamour Franck;
+;;Irizar Julen;
+NA;1;Bjerg Mikkel;race/kuurne-brussel-kuurne/2020
+;;Houle Hugo;
+;;Abrahamsen Jonas;
+;;Vallee Boris;
+;;Jans Roy;
+NA;1;Irizar Julen;race/circuito-de-getxo/2020
+;;Madrazo Angel;
+;;Pacioni Luca;
+;;Taminiaux Lionel;
+;;Carvalho Antonio;
+;;Cobo Ivan;
+;;Verza Riccardo;
+;;Lazkano Oier;
+NA;1;Riesebeek Oscar;race/gran-trittico-lombardo/2020
+;;Kuzmin Anton;
+;;Radice Raffaele;
+;;Hermans Quinten;
+;;Baldaccini Davide;
+NA;1;Askey Lewis;race/mont-ventoux-denivele-challenge/2020
+;;Scott Jacob;
+;;Osorio Juan Felipe;
+;;Monaco Alessandro;
+;;Urbano Carmelo;
+;;Goncalves Jose;
+;;Gaillard Marlon;
+;;Bravo Garikoitz;
+NA;1;Rosskopf Joey;race/gran-piemonte/2020
+;;Wasleben Philipp;
+;;Honore Mikkel Frolich;
+;;Scotson Callum;
+NA;1;Visconti Giovanni;race/giro-dell-emilia/2020
+;;Wyss Danilo;
+;;Wasleben Philipp;
+;;Senni Manuel;
+;;Dopchie Felix;
+;;Puccioni Dario;
+;;Garosio Andrea;
+;;Quiroz Oscar Adalberto;
+NA;1;Chevrier Clement;race/brabantse-pijl/2020
+;;Sagan Juraj;
+;;Storer Michael;
+;;Skjelmose Jensen Mattias;
+;;Sprengers Thomas;
+;;Peron Andrea;
+NA;1;Siskevicius Evaldas;race/paris-tours/2020
+;;Reinders Elmar;
+;;Martin Sergio Roman;
+;;Aristi Mikel;
+;;Rikunov Petr;
+;;Vermeulen Emiel;
+NA;1;Mate Luis Angel;race/clasica-de-almeria/2021
+;;Molenaar Alex;
+;;Bais Davide;
+;;Ghys Robbe;
+;;Lazcano Oier;
+;;Ghebreigzabhier Amanuel;
+NA;1;Lietaar Eliot;race/gp-d-ouverture/2021
+;;Barrenetxea Jon;
+;;Reynders Jens;
+;;Repa Vojtech;
+;;Van Niekerk Morne;
+;;Molly Kenny;
+NA;1;Bais Mattia;race/trofeo-laigueglia/2021
+;;Edet Nicolas;
+;;Hollmann Juri;
+;;Vacek Mathias;
+;;Stojnic Veljko;
+;;Hailemichael Mulu Kinke;
+;;Archibald John;
+;;Persico Davide;
+;;Stalnov Nikita;
+;;Cuadrado Unai;
+;;Iacchi Alessandro;
+NA;1;De Ketele Kenny;race/gp-samyn/2021
+;;Van Schip Jan-Willem;
+;;Rosskopf Joey;
+;;Leijnse Enzo;
+NA;1;Leroux Samuel;race/la-drome-classic/2021
+;;Piallot Yoann;
+;;Paasschens Mathijs;
+;;Muller Reto;
+NA;1;Aular Orluis;race/les-boucles-du-dus-ardeche/2020
+;;Paillot Yoann;
+;;Berthet Clement;
+;;Delacroix Theo;
+;;Grellier Fabien;
+;;Ferron Valentin;
+;;Balfour Stuart;
+;;Fernandez Delio;
+;;Oliveira Rui;
+NA;1;De Winter Ludwig;race/kuurne-brussel-kuurne/2021
+;;Zakharov Artyom;
+;;Paquot Tom;
+;;Hvideberg Jonas Iversby;
+;;Bodnar Maciej;
+;;Gamper Patrick;
+NA;1;Bodnar Maciej;race/gp-industria-artigianato/2021
+;;Draghi Guido;
+;;Balestra Lorenzo;
+NA;1;Jullien Anthony;race/nokere-koers/2021
+;;Grignard Sebastien;
+;;Ferasse Thibault;
+;;Zoccarato Samuele;
+;;Robeet Ludovic;
+;;Van Poucke Aaron;
+;;Vanhoof Ward;
+;;Gaudin Damien;
+NA;1;Brunel Alexys;race/cholet-pays-de-loire/2021
+;;Carisey Clement;
+;;Prodhomme Nicolas;
+;;Balfour Stuart;
+;;Voisard Yannis;
+;;Gougeard Alexis;
+NA;1;Albanese Vincenzo;race/gp-miguel-indurain/2021
+;;Carvalho Antonio;
+;;Oronte Emerson;
+;;Irisarri Jon;
+;;Aristi Mikel;
+;;Madrazo Angel;
+NA;1;Van Melsen Kevin;race/brabantse-pijl/2021
+;;Van Moer Brent;
+;;Meeus Jordi;
+;;Morin Emmanuel;
+;;Leknessund Andreas;
+;;Robeet Ludovic;
+;;Mertens Julian;
+;;Coquard Bryan;
+;;Skaarseth Anders;
+NA;1;Barrenetxea Jon;race/trofeo-alcudia/2021
+;;Murphy Kyle;
+;;Rosskopf Joey;
+;;Ballesteros Miguel Angel;
+;;Maas Jan;
+;;Soto Antonio Jesus;
+NA;1;Boileau Alan;race/trofeo-andratx-mirador-d-es-colomer/2021
+;;Wurtz Schmidt Mads;
+;;Sunderland Dylan;
+NA;1;Boileau Alan;race/deia-trophy/2021
+;;Miltiadis Andreas;
+;;Sanchez Pelayo;
+;;Iturria Mikel;
+;;Osorio Alejandro;
+;;Bystrom Sven Erik;
+;;Reutimann Mathias;
+NA;1;Guerin Alexis;race/gp-du-canton-d-argovie/2021
+;;Luscher Damian;
+;;Vitzthum Simon;
+NA;1;Bobbo Riccardo;race/giro-ciclistico-d-italia/2021
+;;Garrison Michael;
+;;Ferri Edoardo;
+;;Consolaro Christopher;
+;;Carollo Francesco;
+;;Cantoni Andrea;
+;2;Sens Connor;
+;;Peshi Lorenzo;
+;;Masotto Leandro;
+;;Nencini Tommaso;
+;3;Iribar Unai;
+;;Cervellera Andrea;
+;;Tarozzi Manuele;
+;;Mifsud Andrea;
+;;Bauce Davide;
+;;Colnaghi Luca;
+;;Belleri Michael;
+;;Bonelli Alessio;
+;;Rigollet Laurent;
+;6;Petrelli Gabriele;
+;;Verre Alessandro;
+;;Van Der Beken Aaron;
+;;Turner Ben;
+;;Belloni Manuel;
+;;Charmig Anthon;
+;;Pena Jesus David;
+;;Frigo Marco;
+;;Cantoni Andrea;
+;;Ansaloni Emanuele;
+;;Van Den Berg Marijn;
+;7;Petrelli Gabriele;
+;;Benedetti Gabriele;
+;;Masotto Leandro;
+;;Santamorita Alessandro;
+;;Guzzo Federico;
+;8;Thompson Reuben;
+;;Gaffuri Mattia;
+;;Hellemose Asbjorn;
+;;Santamorita Alessandro;
+;;Skivild Robin Juel;
+;;Belleri Michael;
+;;Johannessen Anders Halland;
+;;El Gouzi Omar;
+;;Sandri Edoardo;
+;;Mulubrhan Henok;
+;;Krijnsen Jelte;
+;;Wood Harrison;
+;;Frigo Marco;
+;;Di Benedetto Stefano;
+;;Zambanini Edoardo;
+;;Galimberti Francesco;
+;;Ciuccarelli Riccardo;
+;;Tarozzi Manuele;
+;;Iribar Unai;
+;;Petrelli Gabriele;
+;;Healy Ben;
+;;Turner Ben;
+;;Nieri Alessio;
+;;Ginestra Lorenzo;
+;;Voisard Yannis;
+;;Lolli Marco;
+;;Etxeberria Asier;
+;;Mifsud Andrea;
+;;Agostini Nicholas;
+;;Porta Gabriele;
+;;Pena Jesus David;
+;;Rojas Brandon;
+;;Garzon Marlos David;
+;;Huera Richard;
+;10;Carboni Matteo;
+;;Sandri Edoardo;
+;;Bennassar Joan;
+;;Gallo Andrea;
+;;Hoole Daan;
+;;Paties Montagner Eric;
+;;Rigollet Laurent;
+;;Spinelli Nicholas;
+;;Ferri Edoardo;
+NA;1;Maurelet Flavien;race/mont-ventoux-denivele-challenge/2021
+;;Pacher Quentin;
+;;Hardy Romain;
+;;Fernandez Delio;
+;;Adria Roger;
+;;Duchesne Antoine;
+;;Cort Nielsen Magnus;
+NA;1;Vallee Boris;race/paris-camembert/2021
+;;Morice Julien;
+;;Van Breussegem Elias;
+;;Ferasse Thibault;
+;;Rolland Pierre;
+NA;1;Guasco Mattia;race/giro-del-appennino/2021
+;;Di Renzo Andrea;
+;;Sevilla Diego Pablo;
+;;Guernalec Thibault;
+;;Salvietti Niccolo;
+NA;1;Albanese Vincenzo;race/circuito-de-getxo/2021
+;;Benedetti Cesare;
+;;Cousin Jerome;
+;;Boudat Thomas;
+;;Quintana Dayer;
+;;Norsgaard Mathias;
+;;Nibali Antonio;
+;;Mohoric Matej;
+;;Mas Lluis;
+;;Louvel Matis;
+;;Soto Antonio Jesus;
+;;Trentin Matteo;
+NA;1;Tosin Ricardo;race/gp-citta-di-peccioli/2021
+;;Magli Filippo;
+;;Fedeli Alessandro;
+;;Whelan James;
+;;Swift Ben;
+NA;1;Nesi Nicolas;race/giro-di-toscana/2021
+;;Martinelli Edoardo;
+;;Frapporti Marco;
+;;Ferron Valentin;
+;;Madrazo Angel;
+;;Bais Davide;
+NA;1;Tesson Jason;race/gp-de-denain/2021
+;;Urruty Maxime;
+;;Kowalski Dylan;
+;;De Vos Adam;
+;;Carisey Clement;
+NA;1;Carretero Hector;race/trofeo-matteotti/2021
+;;Trentin Matteo;
+;;Covi Alessandro;
+;;Restrepo Jhonatan;
+;;Ferron Valentin;
+;;Govekar Matevz;
+;;Villella Davide;
+;;Battistella Samuele;
+;;Zoccarato Samuele;
+NA;1;Dapporto Davide;race/memorial-marco-pantani/2021
+;;Bais Mattia;
+;;Bais Davide;
+;;Hernaiz Vicente;
+;;Angulo Antonio;
+;;Sanchez Pelayo;
+;;Doubey Fabien;
+;;Schneiter Joab;
+NA;1;Soler Marc;race/gran-piemonte/2021
+;;Frapporti Marco;
+;;Boaro Manuele;
+;;Moniquet Sylvain;
+;;Skjelmose Jensen Mattias;
+NA;1;Bou Joan;race/milano-torino/2021
+;;Vermaerke Kevin;
+;;Orrico Davide;
+;;Lazkano Oier;
+;;Zanotti Juri;
+NA;1;Pogacar Tadej;race/tre-valli-varesine/2021
+;;Uran Rigoberto;
+;;Formolo Davide;
+;;Oliveira Nelson;
+;;Rota Lorenzo;
+;;Holmes Matthew;
+;;Wellens Tim;
+;;Fetter Erik;
+NA;1;Robeet Ludovic;race/binckbank-tour/2020
+;;Willems Thimo;
+;;Jansen Amund Grondahl;
+;;Petit Adrien;
+;3;Ligthart Pim;
+;;Riesebeek Oscar;
+;;Van Rooy Kenneth;
+;;Rickaert Jonas;
+;;Petit Adrien;
+;5;De Bondt Dries;
+;;Van Goethem Brian;
+;;Lindeman Bert-Jan;
+;;Knees Christian;
+;;Duval Julien;
+;;Tiller Rasmus;
+;;Koch Jonas;
+;;Planckaert Baptiste;
+NA;1;Zurlo Matteo;race/veneto-classic/2022
+;;Tosin Ricardo;
+;;Belleri Michael;
+;;Abrahamsen Jonas;
+;;Brun Nils;
+NA;1;Robeet Ludovic;race/giro-del-veneto/2022
+;;Pietrobon Andrea;
+;;Vercher Matteo;
+;;Zurlo Matteo;
+NA;1;Kluge Roger;race/memorial-rik-van-steenbergen/2022
+;;Vanhoof Ward;
+;;Joyce Colin;
+;;Daemen Stijn;
+;;De Lange Thijs;
+;;Van Der Meer Nick;
+;;Grigard Sebastien;
+NA;1;Vergaerde Otto;race/paris-bourges/2022
+;;Couanon Jonathan;
+;;Bissegger Stefan;
+NA;1;Delaplace Anthony;race/tour-de-vendee/2022
+;;Denis Thomas;
+NA;1;Marsman Tim;race/famenne-ardenne-classic/2022
+;;Stewart Mark;
+;;Zijlaard Maikel;
+;;Hecht Gage;
+;;Teggart Matthew;
+;;Vinjebo Emil;
+NA;1;Meens Johan;race/coppa-agostoni/2022
+;;Sevilla Diego Pablo;
+;;Foldager Anders;
+;;Belleri Michael;
+NA;1;Carisey Clement;race/paris-chauny-classique/2022
+;;Debaele Jorre;
+;;Robeet Ludovic;
+;;Herregodts Rune;
+NA;1;Reynders Jens;race/omloop-van-het-houtland-lichtervelde/2022
+;;Skaarseth Iver;
+;;Marchand Gianni;
+;;Mainguenaud Tom;
+;;Leroux Samuel;
+NA;1;Abrahamsen Jonas;race/gooikse-pijl/2022
+;;Bassett Stephen;
+;;Marchand Gianni;
+;;De Pestel Sander;
+;;Tulner Rens;
+NA;1;Delacroix Theo;race/gp-d-isbergues/2022
+;;Leveau Jeremy;
+;;Delbove Joris;
+;;Hoelgaard Markus;
+;;Gautier Cyril;
+;;Voisard Yannis;
+;;Leroux Samuel;
+NA;1;Leclainche Gwen;race/kampioenschap-van-vlaanderen/2022
+;;Jacobs Johan;
+;;Van Der Meer Nick;
+;;Van De Wynkele Lorenz;
+;;Vangheluwe Warre;
+NA;1;Hoeks Daan;race/giro-di-toscana/2022
+;;Maestri Mirco;
+;;Rodriguez Cristian;
+;;Faresin Edoardo;
+;;Guerra Andrea;
+;;Ravanelli Simone;
+NA;1;Danes Leo;race/tour-du-doubs/2022
+;;Leroux Samuel;
+;;Tendon Arnaud;
+;;Teutenberg Tim Torn;
+;;Willems Jago;
+NA;1;Carpenter Robin;race/druivenkoers-overijse/2022
+;;Bonneu Kamiel;
+;;Ourselin Paul;
+;;Paasschens Mathijs;
+;;Dissel Bram;
+NA;1;Fouche James;race/gp-stad-zottegem/2022
+;;Marsman Tim;
+;;De Jong Timo;
+;;Scott Robert;
+NA;1;Bloem Joren;race/schaal-schels/2022
+;;Siemons Stijn;
+;;Verheyen Maarten;
+;;Coleman Zak;
+;;Gate Aaron;
+;;Carpenter Robin;
+;;De Jong Timo;
+NA;1;Martin Guillaume;race/la-poly-normande/2022
+;;Turgis Anthony;
+;;Tizza Marco;
+;;Venturini Clement;
+;;Rota Lorenzo;
+;;Louvel Matis;
+;;Gougeard Alexis;
+;;Bonnamour Franck;
+;;Joalland Yael;
+NA;1;Postlberger Lukas;race/uec-road-european-championships/2022
+;;Dillier Silvan;
+;;Nuha Blerton;
+;;Velia Olsian;
+;;Januskevicius Mantas;
+NA;1;Livyns Arjen;race/gp-jef-scherens/2022
+;;De Jong Timo;
+;;De Lange Thijs;
+;;Goeman Andreas;
+;;Scott Jacob;
+;;Van Moer Brent;
+;;Van Rooy Kenneth;
+;;Scott Robert;
+;;Desal Ceriel;
+NA;1;Van Empel Etienne;race/circuito-de-getxo/2022
+;;Alba Juan Diego;
+;;Etxeberria Asier;
+;;Madrazo Angel;
+;;Rosskopf Joey;
+;;Gil Javier;
+;;Guerrero Juan Esteban;
+;;Torres Edwin;
+;;Martin Alex;
+NA;1;Cataford Alexander;race/prueba-villafranca/2022
+;;Irizar Julen;
+;;Jurado Marcos;
+;;Torres Edwin;
+;;Martin David;
+NA;1;Riabushenko Alexandr;race/mont-ventoux-denivele-challenge/2022
+;;Calmejane Lilian;
+;;Koretzky Viktor;
+;;Jousseaume Alan;
+;;Debeaumarche Nicolas;
+NA;1;Reynders Jens;race/circuit-des-xi-villes/2022
+;;Blouwe Louis;
+;;Vanoverschelde Kobe;
+;;Wood Reece;
+NA;1;Pellaud Simon;race/gp-du-canton-d-argovie/2022
+;;Imhof Claudio;
+;;De Gendt Thomas;
+NA;1;Schuermans Jens;race/ronde-van-limburg/2022
+;;Vandevelde Yentl;
+;;Ferasse Thibault;
+;;Lemmens Sander;
+;;Blouwe Louis;
+NA;1;Onley Oscar;race/heist-op-den-berg/2022
+;;Lagree Adrien;
+;;Ballerstedt Maurice;
+;;Verhofstadt Thibau;
+;;Perry Benjamin;
+;;Debaele Jorre;
+NA;1;Wright Paul;race/giro-del-appennino/2022
+;;Meiler Lukas;
+;;Monaco Alessandro;
+;;Petrelli Gabriele;
+;;Tsarenko Kyrylo;
+;;Baldaccini Davide;
+NA;1;Ferron Valentin;race/mercan-tour-classic-alpes-maritimes/2022
+;;Warbasse Larry;
+;;Delacroix Theo;
+;;Schonberger Sebastian;
+;;Verre Alessandro;
+NA;1;Heidemann Miguel;race/grote-prijs-marcel-kint/2022
+;;Van Rooy Kenneth;
+;;Hulgaard Morten;
+;;Trezise Declan;
+;;Fouche James;
+;;Knolle Jon;
+;;Kroonen Max;
+NA;1;Deweirdt Siebe;race/circuit-de-wallonie/2022
+;;Caethoven Kenneth;
+;;Mudgway Luke;
+;;Lindeman Bert-Jan;
+;;Koszela Daniel;
+NA;1;Politt Nils;race/rund-um-koln/2022
+;;Van Poppel Danny;
+;;Philipsen Jasper;
+;;Groenewegen Dylan;
+;;Arndt Nikias;
+;;Bennett Sam;
+;;Bohli Tom;
+;;Hofstetter Hugo;
+;;Bittner Pavel;
+;;Mullen Ryan;
+;;Pedersen Casper;
+;;Huppertz Joshua;
+;;Lindner Tom;
+;;Knolle Jon;
+;;Benz Pirmin;
+;;Heidemann Miguel;
+;;Owsian Lukasz;
+;;Koch Jonas;
+;;Ballerstedt Maurice;
+NA;1;Relaes Jacob;race/antwerp-port-epic/2022
+;;Franck Eamon Lucas;
+;;Burger Sven;
+;;Sexton Tom;
+;;Siemons Stijn;
+;;Van Sintmaartensdijk Roel;
+;;Menten Milan;
+;;Reynders Jens;
+NA;1;Hurel Tony;race/tour-du-finistere/2022
+;;Dauschy Guillaume;
+;;Denis Thomas;
+;;Goikoetxea Peio;
+;;Richard Louis;
+NA;1;Rolland Pierre;race/tour-du-jura-cycliste/2022
+;;Heidemann Miguel;
+NA;1;Doubey Fabien;race/classic-grand-besancon-doubs/2022
+;;Rossetto Stephane;
+;;Bouet Maxime;
+;;Holmes Matthew;
+;;Delgado Miguel;
+;;Lagree Adrien;
+NA;1;Dversnes Fredrik;race/paris-camembert/2022
+;;Goubert Jean;
+;;Lagree Adrien;
+;;Siskevicius Evaldas;
+;;Reynders Jens;
+NA;1;Reinders Elmar;race/volta-limburg-classic/2022
+;;Peters Arne;
+;;Appel Stijn;
+;;Onley Oscar;
+;;Van Sintmaartensdijk Roel;
+;;Chevalier Maxime;
+NA;1;Aparicio Mario;race/route-adelie-de-vitre/2022
+;;Angulo Antonio;
+;;Mariault Axel;
+NA;1;Heidemann Miguel;race/la-roue-tourangelle/2022
+;;Debeaumarche Nicolas;
+;;Trastour Loris;
+;;Jegat Jordan;
+;;Abrahamsen Jonas;
+NA;1;Merchan Didier;race/per-sempre-alfredo/2022
+;;Milesi Lorenzo;
+;;Burchio Federico;
+NA;1;Edet Nicolas;race/classic-loire-atlantique/2022
+;;Gautier Cyril;
+;;Rossetto Stephane;
+;;Hennequin Paul;
+;;Latour Pierre;
+NA;1;Schouten Jasper;race/ronde-van-drenthe/2022
+;;Ottema Rick;
+;;Burger Sven;
+NA;1;Joseph Thomas;race/grote-prijs-jean-pierre-monsere/2022
+;;Ghys Robbe;
+;;Knolle Jon;
+;;Orins Robin;
+;;Scott Robert;
+;;Hvideberg Jonas Iversby;
+NA;1;Zukowsky Nickolas;race/gp-samyn/2022
+;;Welsford Sam;
+;;Saver Kasper;
+;;Leroux Samuel;
+;;Lemmens Sander;
+;;Boons Jente;
+NA;1;Arrieta Igor;race/clasica-jaen-paraiso-interior/2022
+;;Haga Chad;
+;;Garcia Raul;
+;;Berckmoes Jenno;
+NA;1;Azparren Xabier Mikel;race/vuelta-ciclista-a-la-region-de-murcia/2022
+;;Etxeberria Asier;
+;;Palzer Anton;
+;1;Herregodts Rune;race/ronde-van-drenthe/2021
+;;Keup Pierre-Pascal;
+;;Janssen Adriaan;
+;1;Dewulf Stan;race/boucles-de-l-aulne/2021
+;;Ferron Valentin;
+;;Guglielmi Simon;
+;;Perichon Pierre-Luc;
+;1;Toto Paolo;race/veneto-classic/2021
+;;Burchio Federico;
+;;Pajek Luka;
+;;Rikunov Petr;
+;;Visintainer Lorenzo;
+;;Zurlo Matteo;
+;1;Bais Mattia;race/giro-del-veneto/2021
+;;Garavaglia Giacomo;
+;;Bevilacqua Simone;
+;;Pajek Luka;
+;;Salvietti Niccolo;
+;;Zurlo Matteo;
+;;Baseggio Matteo;
+;;Grendene Marco;
+;1;De Tier Floris;race/coppa-agostoni/2021
+;;Champion Thomas;
+;;Fortunato Lorenzo;
+;;Fiorelli Filippo;
+;;Bevilacqua Simone;
+;;Burchio Federico;
+;;Carollo Francesco;
+;1;Mol Wesley;race/tour-de-vendee/2021
+;;Balmer Alexandre;
+;;De Vreese Laurens;
+;;Haas Nathan;
+;1;Gallopin Tony;race/paris-bourges/2021
+;;Carisey Clement;
+;;Leveau Jeremy;
+;;Bassett Stephen;
+;;Ruiz Ibon;
+;1;Perez Anthony;race/classic-loire-atlantique/2021
+;;Carpenter Robin;
+;;Bakelants Jan;
+;;Manzin Lorrenzo;
+;;Delaplace Anthony;
+;;Boudat Thomas;
+;;Ludvigsson Tobias;
+;;Calmejane Lilian;
+;1;Zukowsky Nickolas;race/route-adelie-de-vitre/2021
+;;Ferron Valentin;
+;;Nortoft Morten;
+;1;De Ketele Kenny;race/gooikse-pijl/2021
+;;De Lange Thijs;
+;;Koller Loland Sakaris;
+;;Van Schip Jan-Willem;
+;;Tullett Daniel;
+;;Drege Andre;
+;;Marchand Gianni;
+;1;Van Schip Jan-Willem;race/kampioenschap-van-vlaanderen/2021
+;;Van Kessel Corne;
+;;Paulus Milan;
+;;Tabellion Valentin;
+;;Jenner Samuel;
+;;Batt Ethan;
+;;Bassett Stephen;
+;1;Vanhoucke Harm;race/uec-road-european-championships/2021
+;;Bonnamour Franck;
+;;Paret-Peintre Aurelien;
+;;Soto Antonio Jesus;
+;1;Rolland Pierre;race/tour-du-jura-cycliste/2021
+;;Geniez Alexandre;
+;;Stussi Colin;
+;;Guerin Alexis;
+;;Fernandez Cruz Delio;
+;;Molly Kenny;
+;;Di Renzo Andrea;
+;1;Bevilacqua Mattia;race/classic-grand-besancon-doubs/2021
+;;Corkery Dillon;
+;;Guillonnet Adrien;
+;;Gaillard Marlon;
+;;Blanc Arthur;
+;;Meens Johan;
+;;Acosta Thomas;
+;1;Skaarseth Anders;race/grote-prijs-marcel-kint/2021
+;;Marchand Gianni;
+;;Ottema Rick;
+;;Walker Max;
+;;Van Der Meer Nick;
+;1;Van Belle Loe;race/gp-stad-zottegem/2021
+;;Van Der Meer Nick;
+;;Mijnsbergen Thomas;
+;;Colman Alex;
+;;Stockman Michael;
+;;Dressler Luca;
+;1;Peyskens Dimitri;race/gp-jef-scherens/2021
+;;Reynders Jens;
+;;Bouwmans Dylan;
+;;Paulus Milan;
+;1;Perez Anthony;race/la-poly-normande/2021
+;;Cosnefroy Benoit;
+;;Godon Dorian;
+;;Delettre Alexandre;
+;;Madouas Valentin;
+;;Hardy Romain;
+;1;Riesebeek Oscar;race/heist-op-den-berg/2021
+;;Flynn Sean;
+;;Tabellion Valentin;
+;;Lunder Eirik;
+;;Mein Thomas;
+;1;Welten Bram;race/vuelta-a-castilla-y-leon/2021
+;;Lopez-Cozar Juan Antonio;
+;;Louvel Matis;
+;;Cote Pier-Andre;
+;;Zukowsky Nickolas;
+;;Armstrong Thomas;
+;;Moreira Mauricio;
+;;Boucek Jakub;
+;;Jorgenson Matteo;
+;1;Orts Felipe;race/prueba-villafranca/2021
+;;Lazkano Oier;
+;;Dina Marton;
+;;Azurmendi Ibai;
+;;Canellas Xavier;
+;1;Reinders Elmar;race/circuit-des-xi-villes/2021
+;;Loohuis Lars;
+;;Burger Sven;
+;;Colman Alex;
+;;Fouche James;
+;;Denis Thomas;
+;;Vandepitte Nathan;
+;1;Van Moer Brent;race/ronde-van-limburg/2021
+;;Beullens Cedric;
+;;Burger Sven;
+;1;Sheffield Magnus;race/vuelta-ciclista-a-la-region-de-murcia/2021
+;;Soto Antonio Jesus;
+;;Brussenskiy Gleb;
+;;Vacek Mathias;
+;;Ezquerra Jesus;
+;1;Dal-Cin Matteo;race/tour-du-finistere/2021
+;;Gelders Gil;
+;;Louvet Louis;
+;;Marchand Gianni;
+;;Leroux Samuel;
+;1;Maas Jan;race/16th-challenge-volta-a-mallorca/2021
+;;Barrenetxea Jon;
+;;Rosskopf Joey;
+;;Murphy Kyle;
+;;Ballesteros Miguel Angel;
+;;Soto Antonio Jesus;
+;1;Coolen Yves;race/circuit-de-wallonie/2021
+;;Delacroix Theo;
+;;Germani Lorenzo;
+;;Taminiaux Lionel;
+;;De Poorter Maxime;
+;1;Gibbons Ryan;race/trofeo-ses-salines-llucmajor/2021
+;;Delaplace Anthony;
+;;Bravo Garikoitz;
+;1;Kowalski Dylan;race/la-roue-tourangelle/2021
+;;Urianstad Martin;
+;;Schir Thery;
+;;Ferron Valentin;
+;;Fedeli Alessandro;
+;1;Waersted Syver;race/grote-prijs-jean-pierre-monsere/2021
+;;Carisey Clement;
+;;Museeuw Stefano;
+;;Eyskens Jeroen;
+;;Tullett Daniel;
+;;Askey Lewis;
+;;Ottema Rick;
+;;Van Tricht Stan;
+;;Knolle Jon;
+;1;Aular Orluis;race/les-boucles-du-dus-ardeche/2021
+;;Ferron Valentin;
+;;Balfour Stuart;
+;;Oliveira Rui;
+;1;Cavendish Mark;race/scheldeprijs/2020
+;;Havik Piotr;
+;;Schar Michael;
+;;Askey Lewis;
+;;Gruzdev Dmitriy;
+;;Wirtgen Luc;
+;;Juul-Jensen Christopher;
+;;Mccabe Travis;
+;1;Van Schip Jan-Willem;race/paris-chauny-classique/2020
+;;Jauregui Quentin;
+;;Paasschens Mathijs;
+;;De Decker Alfdan;
+;;Naberman Tim;
+;;Marchand Gianni;
+;1;Venner Quentin;race/paris-camembert/2020
+;;Pelikan Janos;
+;;Zukowsky Nickolas;
+;1;Havik Piotr;race/gooikse-pijl/2020
+;;Van Dalen Jason;
+;;Rex Laurenz;
+;;Willems Thimo;
+;;Spengler Mario;
+;1;Doubey Fabien;race/giro-del-appennino/2020
+;;Arashiro Yukiya;
+;;Belleri Michael;
+;;Aguirre Hernan;
+;;Mora Sebastian;
+;;Fernandez Ruben;
+;;Hailemichael Mulu;
+;1;Vermeersch Florian;race/gp-citta-di-peccioli/2020
+;;Arashiro Yukiya;
+;;Konychev Alexander;
+;;Rovny Ivan;
+;;Hailemichael Mulu;
+;;Radice Raffaele;
+;1;Carpenter Robin;race/antwerp-port-epic/2020
+;;Quarterman Charlie;
+;;Riesebeek Oscar;
+;;Taminiaux Lionel;
+;;Morice Julien;
+;;Kongstad Tobias Morch;
+;;Gaudin Damien;
+;;Bouts Jordy;
+;;Mengoulas Alex;
+;;Markl Niklas;
+;;Naberman Tim;
+;1;Evans Alexander;race/memorial-marco-pantani/2020
+;;Molly Kenny;
+;;Rota Lorenzo;
+;;Bais Mattia;
+;;Tonelli Alessandro;
+;1;Van Schip Jan-Willem;race/brussels-cycling-classic/2020
+;;Duval Julien;
+;;Sutterlin Jasha;
+;;Vliegen Loic;
+;;Beullens Cedric;
+;;Van Den Brande Julien;
+;1;Vanbilsen Kenneth;race/druivenkoers-overijse/2020
+;;Teugels Lennert;
+;;Van Uden Casper;
+;;Abraham Gebru Daniel;
+;;De Rossi Lucas;
+;1;Rajovic Dusan;race/uec-road-european-championships/2020
+;;Bernas Pawel;
+;;Miltiadis Andreas;
+;;Dima Emil;
+;1;Guernalec Thibault;race/dwars-door-het-hageland/2020
+;;Appel Stijn;
+;;Daemen Stijn;
+;;De Bock Stijn;
+;;De Wilde Gilles;
+;;Salmon Martin;
+;1;Tonelli Alessandro;race/milano-torino/2020
+;;Villella Davide;
+;;Rivi Samuele;
+;;Garosio Andrea;
+;;Boaro Manuele;
+;;Van Hoecke Gijs;
+;1;Wolf Justin;race/grote-prijs-jean-pierre-monsere/2020
+;;Taminiaux Lionel;
+;;Van Den Dool Jens;
+;1;Di Sante Antonio;race/trofeo-laigueglia/2020
+;;Baseggio Matteo;
+;1;Cuadros Alvaro;race/16th-challenge-volta-a-mallorca/2020
+;;Mas Lluis;
+;;Van Goethem Brian;
+;1;Havik Piotr;race/memorial-rik-van-steenbergen/2019
+;;Vermeltfoort Coen;
+;;Riesebeek Oscar;
+;;Boucher David;
+;;Janssens Jimmy;
+;;De Bondt Dries;
+;;Walsleben Philipp;
+;1;Paasschens Mathijs;race/paris-tours/2019
+;;Stokbro Andreas;
+;;De Vos Adam;
+;;Hurel Tony;
+;;Dernies Tom;
+;;Leroux Samuel;
+;1;Van Sintmaartensdijk Daan;race/tacx-pro-classic/2019
+;;Rudys Paul;
+;;De Lange Thijs;
+;;Lewis Adam;
+;1;Masnada Fausto;race/il-lombardia/2019
+;;Skujins Toms;
+;;Barbin Enrico;
+;;Cavagna Remi;
+;;Benedetti Cesare;
+;;Marcato Marco;
+;;Rikunov Petr;
+;;Ballerini Davide;
+;1;Rozsa Balazs;race/paris-bourges/2019
+;;Willems Thimo;
+;;Doring Jonas;
+;;Dernies Tom;
+;1;Gesbert Elie;race/gran-piemonte/2019
+;;Battaglin Enrico;
+;;Barbero Carlos;
+;;Rossetto Stephane;
+;;Bais Mattia;
+;;Romano Francesco;
+;1;Cavagna Remi;race/milano-torino/2019
+;;Savini Daniel;
+;;Rosskopf Joey;
+;;Bou Joan;
+;;Dalla Valle Nicolas;
+;1;Dunne Connor;race/memorial-frank-vandenbroucke/2019
+;;Hansen Lasse Norman;
+;;Politt Nils;
+;;Marchand Gianni;
+;1;Gogl Michael;race/tre-valli-varesine/2019
+;;Marengo Umberto;
+;;Agnoli Valerio;
+;;Herrada Jose;
+;;Ballerini Davide;
+;;Frapporti Mattia;
+;1;Venturini Clement;race/tour-de-vendee/2019
+;;Nauleau Bryan;
+;;Fine Eddy;
+;;Gouault Pierre;
+;;De Rossi Lucas;
+;;Maldonado Anthony;
+;;Cam Maxime;
+;1;Dewulf Stan;race/famenne-ardenne-classic/2019
+;;Van Der Poel Mathieu;
+;;Taaramae Rein;
+;;Koch Jonas;
+;;Rekita Szymon;
+;1;Kuriyanov Stepan;race/gp-bruno-beghelli/2019
+;;Fiaschi Tommaso;
+;;Dima Emil;
+;1;Mosca Jacopo;race/giro-dell-emilia/2019
+;;Ballerini Davide;
+;;Orsini Umberto;
+;1;Van Goethem Brian;race/munsterland-giro/2019
+;;Lammertink Maurits;
+;;Hollmann Juri;
+;;Claus Marc;
+;;Kulbe Lars;
+;1;Ciccone Giulio;race/japan-cup/2019
+;;Canola Marco;
+;;Bouwman Koen;
+;;Mancebo Francisco;
+;;Whelan James;
+;;Caruso Damiano;
+;;Stannard Robert;
+;;Filosi Iuri;
+;1;Carapaz Richard;race/world-championship/2019
+;;Koch Jonas;
+;;Polanc Jan;
+;;Cort Magnus;
+;;Vakoc Petr;
+;;Houle Hugo;
+;;Howes Alex;
+;;Bodnar Maciej;
+;;Dillier Silvan;
+;;Roglic Primoz;
+;;Quintana Nairo;
+;1;Reinders Elmar;race/gp-d-isbergues/2019
+;;Leroux Samuel;
+;;Delacroix Theo;
+;;Guichard Michael;
+;;Gougeard Alexis;
+;;Gouault Pierre;
+;1;Marchand Gianni;race/gooikse-pijl/2019
+;;Hjemsater Olav;
+;;Skaarseth Iver;
+;;Bax Sjoerd;
+;;Feeley Daire;
+;;Paton Alex;
+;;Seye Guillaume;
+;;Baugnies Jerome;
+;1;Amador Andrey;race/trofeo-matteotti/2019
+;;Savini Daniel;
+;;Doubey Fabien;
+;1;Bouwmans Dylan;race/gp-impanis-van-petegem/2019
+;;Schar Michael;
+;;Verwilst Aaron;
+;;Roinas Fritjof;
+;;Van Breusegem Elias;
+;1;Rosa Diego;race/memorial-marco-pantani/2019
+;;Consonni Simone;
+;;Bais Mattia;
+;;Pacher Quentin;
+;;Sicard Romain;
+;;Martin Guillaume;
+;;Le Roux Romain;
+;;Bonifazio Leonardo;
+;1;Koch Jonas;race/kampioenschap-van-vlaanderen/2019
+;;Sefa Ylber;
+;;Seye Guillaume;
+;1;Evans Alexander;race/gp-de-wallonie/2019
+;;Van Den Brande Julien;
+;;Planckaert Baptiste;
+;;Denz Nico;
+;;Wirtgen Tom;
+;1;Bizhigitov Zhandos;race/giro-di-toscana/2019
+;;Guerin Alexis;
+;;Zana Filippo;
+;;Pellaud Simon;
+;;Zardini Edoardo;
+;1;Leroux Samuel;race/tour-du-doubs/2019
+;;Luscher Damian;
+;;O'mahony Daragh;
+;;Rekita Szymon;
+;;Sergis Kaspar;
+;;Van Hecke Preben;
+;1;Anderson Ryan;race/gp-montreal/2019
+;;Zukowsky Nickolas;
+;;Dal-Cin Matteo;
+;;Chretien Charles-Etienne;
+;;Sagiv Guy;
+;1;Mas Lluis;race/gp-quebec/2019
+;;Bernard Julien;
+;;Sagiv Guy;
+;;Burtink Evan;
+;;Mannion Gavin;
+;1;Cosnefroy Benoit;race/gp-de-fourmies/2019
+;;Journiaux Axel;
+;;Molly Kenny;
+;;Sergis Kaspar;
+;;Maurelet Flavien;
+;;Guerin Alexis;
+;;Leroux Samuel;
+;;Planet Charles;
+;1;Boeckmans Kris;race/antwerp-port-epic/2019
+;;Van Schip Jan-Willem;
+;;Boucher David;
+;;Groves Kaden;
+;;Van Der Poel David;
+;;Salmon Martin;
+;;Beullens Cedric;
+;1;Gautier Cyril;race/brussels-cycling-classic/2019
+;;Carisey Clement;
+;;Rikunov Petr;
+;;Riesebeek Oscar;
+;;Van Empel Etienne;
+;;Taminiaux Lionel;
+;1;Perez Anthony;race/bretagne-classic/2019
+;;Sicard Romain;
+;;Combaud Romain;
+;;Le Bon Johan;
+;1;Salmon Martin;race/omloop-mandel-leie-schelde-meulebeke/2019
+;;Goeman Jonas;
+;;Townsend Rory;
+;1;Townsend Rory;race/druivenkoers-overijse/2019
+;;Perry Benjamin;
+;;Tulik Angelo;
+;;Allegaert Piet;
+;;Pellaud Simon;
+;1;Van Hoecke Gijs;race/cyclassics-hamburg/2019
+;;Frame Alex;
+;;Boev Igor;
+;;Goncalves Jose;
+;1;Boivin Guillaume;race/schaal-schels/2019
+;;Van Asbroeck Tom;
+;1;De Kleijn Arvid;race/veenendaal-veenendaal/2019
+;;Wippert Wouter;
+;;Dempster Zak;
+;;Jensen August;
+;;Paton Alex;
+;;Sinschek Nils;
+;;Russo Clement;
+;;Havik Piotr;
+;;Budding Martin;
+;;Peters Arne;
+;;Burger Sven;
+;;Janssen Adriaan;
+;;Pluto Martins;
+;;Van Der Lijke Nick;
+;;Riesebeek Oscar;
+;1;Nommela Aksel;race/gp-stad-zottegem/2019
+;;Raim Mihkel;
+;;Stallaert Joeri;
+;;Russo Clement;
+;;Dempster Zak;
+;;Havik Piotr;
+;;Vermeersch Gianni;
+;;Backaert Frederik;
+;;Van Gestel Dries;
+;;Greipel Andre;
+;;Noppe Christophe;
+;;Jarrier Benoit;
+;1;Janssens Jimmy;race/slag-om-norg/2019
+;;De Vos Adam;
+;1;Mezgec Luka;race/uec-road-european-championships/2019
+;;Baska Erik;
+;;Asgreen Kasper;
+;;Lawless Chris;
+;;Lampaert Yves;
+;;Langeveld Sebastian;
+;;Selig Rudiger;
+;;Ackermann Pascal;
+;;Viviani Elia;
+;;Trentin Matteo;
+;;Consonni Simone;
+;;Cimolai Davide;
+;;Senechal Florian;
+;1;Dowsett Alex;race/ride-london-classic/2019
+;;Dewulf Stan;
+;;Eenkhoorn Pascal;
+;1;Irizar Markel;race/san-sebastian/2019
+;;Cerny Josef;
+;;Bouwman Koen;
+;;Gro?schartner Felix;
+;;Lemoine Cyril;
+;;Bole Grega;
+;;Madrazo Angel;
+;;Barcelo Fernando;
+;;Irisarri Jon;
+;1;Cubero Jorge;race/circuito-de-getxo/2019
+;;De Rossi Lucas;
+;;Stephens Austin;
+;;Aranburu Jokin;
+;1;Leroux Samuel;race/gp-cerami/2019
+;;Kulset Kristian;
+;;Magennis Liam;
+;1;Mcgeough Cormac;race/halle-ingooigem/2019
+;;Marchand Gianni;
+;;Van Breusegem Elias;
+;;Joseph Thomas;
+;;Lewis Adam;
+;1;Janssens Jimmy;race/circuit-des-xi-villes/2019
+;;Declercq Benjamin;
+;;Taminiaux Lionel;
+;;De Rooze Niels;
+;;Buugter Luuc;
+;;Hoeyberghs Daan;
+;1;Meeus Jordi;race/heist-op-den-berg/2019
+;;Stevens Timothy;
+;;Verboom Minne;
+;;Townsend Rory;
+;;Janssens Jimmy;
+;;Seye Guillaume;
+;1;Feillu Brice;race/mont-ventoux-denivele-challenge/2019
+;;Rochas Remy;
+;;Tulik Angelo;
+;;Gonzalez Mario;
+;;Aranburu Alex;
+;1;Maestri Mirco;race/gp-lugano/2019
+;;Zardini Edoardo;
+;;Canola Marco;
+;;Cataford Alexander;
+;1;Pfingsten Christoph;race/rund-um-koln/2019
+;;Politt Nils;
+;;Haas Nathan;
+;;Sprengers Thomas;
+;;Nommela Aksel;
+;;Bennett Sam;
+;;Dowsett Alex;
+;;Declercq Benjamin;
+;;Schillinger Andreas;
+;;Carisey Clement;
+;;Planckaert Baptiste;
+;;Taminiaux Lionel;
+;;Rutsch Jonas;
+;;Perry Benjamin;
+;1;Doubey Fabien;race/gp-de-plumelec/2019
+;;Cam Maxime;
+;;Leveau Jeremy;
+;1;De Witte Matthias;race/circuit-de-wallonie/2019
+;;Steels Stijn;
+;;Robeet Ludovic;
+;;Petit Adrien;
+;;Mottier Justin;
+;1;Coolen Yves;race/grote-prijs-marcel-kint/2019
+;;Stevens Timothy;
+;;Timmermans Justin;
+;;Kron Andreas;
+;;Davies Louis;
+;1;Pedersen Casper;race/Eschborn-Frankfurt/2019
+;;Zakharov Artyom;
+;;Schonberger Sebastian;
+;;Van Gompel Mathias;
+;;Shalunov Evgeny;
+;;Peyskens Dimitri;
+;;Offredo Yoann;
+;1;Bernard Julien;race/liege-bastogne-liege/2019
+;;Maison Jeremy;
+;;Ludvigsson Tobias;
+;;Pasqualon Andrea;
+;;Paasschens Mathijs;
+;;Deltombe Kevin;
+;;Calmejane Lilian;
+;;Molly Kenny;
+;1;Van Rooy Kenneth;race/la-fleche-wallone/2019
+;;Bouwman Koen;
+;;Carpenter Robin;
+;;Rosskopf Joey;
+;;Wirtgen Tom;
+;1;Paton Alex;race/tro-bro-leon/2019
+;;El Fares Julien;
+;;Rodriguez Sergio;
+;;Vinjebo Emil;
+;1;Van Der Lijke Nick;race/amstel-gold-race/2019
+;;Minnaard Marco;
+;;Verwilst Aaron;
+;;Sprengers Thomas;
+;;Van Asbroeck Tom;
+;;Baugnies Jerome;
+;;Schar Michael;
+;;Bernard Julien;
+;;Bole Grega;
+;;Meisen Marcel;
+;;Simon Paolo;
+;1;Livyns Arjen;race/brabantse-pijl/2019
+;;De Bondt Dries;
+;;Backaert Frederik;
+;;Bongiorno Francesco;
+;;Peron Andrea;
+;;Planckaert Edward;
+;;Robeet Ludovic;
+;1;Cam Maxime;race/paris-camembert/2019
+;;Ermenault Corentin;
+;1;Van Steuyen Michael;race/paris-roubaix/2019
+;;Boeckmans Kris;
+;;Vanbilsen Kenneth;
+;;Gougeard Alexis;
+;;Backaert Frederik;
+;;Gaudin Damien;
+;;Schar Michael;
+;;Arcas Jorge;
+;;Frison Frederik;
+;1;Aranburu Alex;race/klasika-primavera/2019
+;;Lopez-Cozar Juan Antonio;
+;;Fernandes Jose;
+;;Suaza Bernardo;
+;;Garcia Jhojan;
+;;Azurmendi Ibai;
+;;Viegas Daniel;
+;;Amador Andrey;
+;1;Wirtgen Tom;race/scheldeprijs/2019
+;;Vanbilsen Kenneth;
+;;Van Goethem Brian;
+;;De Bondt Dries;
+;1;Carpenter Robin;race/la-roue-tourangelle/2019
+;;Taminiaux Lionel;
+;1;Touze Damien;race/ronde-van-vlaanderen/2019
+;;Asselman Jasper;
+;;Van Rooy Kenneth;
+;;Houle Hugo;
+;1;Rodriguez Sergio;race/gp-miguel-indurain/2019
+;;Gonzalez David;
+;;Chetout Loic;
+;1;Ista Kevyn;race/volta-limburg-classic/2019
+;;Christensen Ryan;
+;;Lukkedal Oivind;
+;;Buugter Luuc;
+;;Sinschek Nils;
+;;Deprez Tuur;
+;1;Leveau Jeremy;race/route-adelie-de-vitre/2019
+;;Molly Kenny;
+;;Vaubourzeix Thomas;
+;;Spreafico Matteo;
+;1;Koch Jonas;race/dwars-door-vlaanderen/2019
+;;Oliveira Nelson;
+;;Sinkeldam Ramon;
+;;Bizhigitov Zhandos;
+;;Hepburn Michael;
+;;Boeckmans Kris;
+;;Raim Mihkel;
+;;Postlberger Lukas;
+;1;Cote Pier-Andre;race/cholet-pays-de-loire/2019
+;;Teugels Lennert;
+;;Bregnhoj Mathias;
+;;Townsend Rory;
+;;Antomarchi Julien;
+;1;Townsend Rory;race/classic-loire-atlantique/2019
+;;Marchand Gianni;
+;;Leroux Samuel;
+;;Guerin Alexis;
+;1;Taminiaux Lionel;race/e3-harelbeke/2019
+;;Castrillo Jaime;
+;;Hirschi Marc;
+;;Nommela Aksel;
+;;Sprengers Thomas;
+;;Steels Stijn;
+;;Raim Mihkel;
+;;De Winter Ludwig;
+;1;Janssens Jimmy;race/driedaagse-vd-panne/2019
+;;Leysen Senne;
+;;Dewulf Stan;
+;;Garel Adrien;
+;;Sutterlin Jasha;
+;;Paasschens Mathijs;
+;1;Hansen Lasse Norman;race/gp-de-denain/2019
+;;Wirtgen Tom;
+;;Jauregui Quentin;
+;;Guernalec Thibault;
+;;Daniel Maxime;
+;;Touze Damien;
+;;Burgaudeau Mathieu;
+;;Kasperkiewicz Przemyslaw;
+;;De Backer Bert;
+;;Allegaert Piet;
+;;Steels Stijn;
+;;Raim Mihkel;
+;;Boivin Guillaume;
+;;Pichot Alexander;
+;1;Planet Charles;race/milano-sanremo/2019
+;;Peron Andrea;
+;;Hentala Joonas;
+;;Poli Umberto;
+;;Sagiv Guy;
+;;Tonelli Alessandro;
+;;Raggio Luca;
+;;Maestri Mirco;
+;;Schonberger Sebastian;
+;;Masnada Fausto;
+;1;Vendrame Andrea;race/bredene-koksijde-classic/2019
+;;Timmermans Justin;
+;;Morice Julien;
+;;Peyskens Dimitri;
+;;Dieleman Michiel;
+;;Norsgaard Mathias;
+;1;Boucher David;race/nokere-koers/2019
+;;Viel Mattia;
+;;Vergaerde Otto;
+;;Journiaux Axel;
+;;Offredo Yoann;
+;1;Morata Sebastian;race/gp-industria-artigianato/2019
+;;Peron Andrea;
+;;Delco Lorenzo;
+;;Puccioni Dario;
+;;Onesti Emanuele;
+;;Mozzato Luca;
+;1;Geniez Alexandre;race/strade-bianche/2019
+;;Vincent Leo;
+;;Rosa Diego;
+;;Denz Nico;
+;1;Ligthart Pim;race/kuurne-brussel-kuurne/2019
+;;Cort Magnus;
+;;Naesen Lawrence;
+;;Turgis Jimmy;
+;;De Winter Ludwig;
+;;Kirsch Alex;
+;;Jarrier Benoit;
+;1;Robeet Ludovic;race/la-drome-classic/2019
+;;Leveau Jeremy;
+;;Paillot Yoann;
+;;Degand Thomas;
+;1;Devriendt Tom;race/omloop-het-nieuwsblad/2019
+;;Howes Alex;
+;;Wirtgen Tom;
+;;Jans Roy;
+;1;Feillu Brice;race/les-boucles-du-dus-ardeche/2019
+;;Siskevicius Evaldas;
+;;Ellsay Nigel;
+;;Marengo Umberto;
+;;Cuadros Alvaro;
+;1;Timmermans Justin;race/clasica-de-almeria/2019
+;;Bol Jetse;
+;;Verona Carlos;
+;;Lopez-Cozar Juan Antonio;
+;;Oronte Emerson;
+;;Journiaux Axel;
+;;Rikunov Petr;
+;1;Aaen Jonas;race/trofeo-laigueglia/2019
+;;Piccot Michael;
+;;Masotto Giulio;
+;;Ferrari Andrea;
+;;Kobernyak Evgeny;
+;;Burchio Federico;
+;;Amadio Emanuele;
+;1;Combaud Romain;race/gp-d-ouverture/2019
+;;Turgis Anthony;
+;;Van Niekerk Morne;
+;;Antomarchi Julien;
+;1;Verwilst Aaron;race/16th-challenge-volta-a-mallorca/2019
+;;Britton Rob;
+;;Celano Danilo;
+;;Downey Mark;
+;1;Moreira Mauricio;race/deia-trophy/2019
+;;Gonzalez Salas Mario;
+;1;Skujins Toms;race/trofeo-andratx-mirador-d-es-colomer/2019
+;;Edet Nicolas;
+;;Goikoetxea Peio;
+;;Pelegri Oscar;
+;1;Soto Antonio Jesus;race/trofeo-cala-millor/2019
+;;Hennessy Jacob;
+;;Iversen Rasmus Byriel;
+;1;De Vreese Laurens;race/great-ocean-race/2019
+;;Elliot Nathan;
+;;Turnbull Carter;
+;6;Cataford Alexander;race/tour-of-croatia/2022
+;;Mosca Jacopo;
+;;Van Der Tuuk Danny;
+;;Roosen Timo;
+;;Martin Alex;
+;5;Guerin Alexis;race/tour-of-croatia/2022
+;;Swirbul Keegan;
+;;Maestri Mirco;
+;4;Kepplinger Rainer;race/tour-of-croatia/2022
+;;Pawlak Tobiasz;
+;;Sanchez Eugenio;
+;;Stari Linus;
+;;Skok Anze;
+;;Hocevar Kristjan;
+;3;Pawlak Tobiasz;race/tour-of-croatia/2022
+;;Finkst Tilen;
+;;Tarozzi Manuele;
+;;Karic Vedad;
+;;Reutimann Mathias;
+;1;Rolland Pierre;race/tour-of-croatia/2022
+;;Rivi Samuele;
+;;Molly Kenny;
+;;Reutimann Mathias;
+;;Budzinski Marcin;
+;;Spoljar Jaka;
+;;Hribar Jernej;
+;2;Pawlak Tobiasz;race/tour-of-croatia/2022
+;;Jaime Alex;
+;;Potocki Viktor;
+;;Horvat Ziga;
+;;Meiler Lukas;
+;4;Debiasi Andrea;race/okolo-slovenska/2022
+;;Haest Jasper;
+;;Schulting Peter;
+;;Belleri Michael;
+;;Budzinski Marcin;
+;;Cepeda Jefferson;
+;;Rovder Pavol;
+;3;Hofstede Lennard;race/okolo-slovenska/2022
+;;Goldstein Edo;
+;;Stachowiak Adam;
+;;Banaszek Norbert;
+;;Sevilla Diego Pablo;
+;;Belleri Michael;
+;;Ciuccarelli Ricardo;
+;;Syritsa Gleb;
+;;Cepeda Jefferson;
+;;Chretien Charles-Etienne;
+;;Kubis Lukas;
+;;Hocevar Kristjan;
+;2;Heming Mika;race/okolo-slovenska/2022
+;;Meo Felix James;
+;;Barta Jan;
+;1;Haest Jasper;
+;;Sevilla Diego Pablo;
+;;Budzinski Marcin;
+;;Cemazar Nik;
+;;Olivo Bryan;
+;;Stocek Matus;
+;5;Gate Aaron;race/romanian-cycling-tour/2022
+;;Crista Daniel;
+;3;Appel Stijn;race/romanian-cycling-tour/2022
+;;Clarke Jonathan;
+;4;Hansen Adam;race/romanian-cycling-tour/2022
+;;Decker Enzo;
+;;Babor Daniel;
+;;Stewart Mark;
+;;Banaszek Alan;
+;;Mcgeough Cormac;
+;;Plebani Davide;
+;1;Mcgeough Cormac;race/romanian-cycling-tour/2022
+;;Plamondon Robin;
+;2;Reyes Yeison;race/romanian-cycling-tour/2022
+;;Schuran Michal;
+;;Malnasi Attila;
+;;Gagne Julien;
+;5;Boaro Manuele;race/adriatica-ionica-race/2022
+;;Fancellu Alessandro;
+;;Martin Alex;
+;;Sevilla Diego Pablo;
+;;Garcia Raul;
+;;Lopez Diego;
+;;Miquel Pau;
+;;Iturria Mikel;
+;;Scaroni Christian;
+;;Stojnic Valjko;
+;;Wright Paul;
+;;Zardini Edoardo;
+;;Abreha Negasi Haylu;
+;4;Garcia Raul;race/adriatica-ionica-race/2022
+;;Dima Emil;
+;;Ridolfo Filippo;
+;;Iacchi Alessandro;
+;;Gandin Stefano;
+;;Masotto Giulio;
+;;Bevilacqua Simone;
+;;Nibali Antonio;
+;;Bou Joan;
+;;Carboni Giovanni;
+;;Lucca Riccardo;
+;3;Fancellu Alessandro;race/adriatica-ionica-race/2022
+;;Bizkarra Mikel;
+;;Monaco Alessandro;
+;2;Umba Santiago;race/adriatica-ionica-race/2022
+;;Sanchez Eugenio;
+;;Lozano David;
+;;Zurlo Matteo;
+;1;Donega Matteo;race/adriatica-ionica-race/2022
+;;Brogi Adriano;
+;;Burchio Federico;
+;;Zurlo Matteo;
+;4;Perez Anthony;race/circuit-sarthe/2022
+;;Pluimers Rick;
+;;Ferron Valentin;
+;;Janssens Jimmy;
+;;Boudat Thomas;
+;;Carisey Clement;
+;;Debeaumarche Nicolas;
+;;Healy Ben;
+;;Vanhoof Ward;
+;;Boven Lars;
+;;Stannard Robert;
+;;Thwaites Scott;
+3;3;Gravalos Arturo;race/settimana-ciclistica-italiana/2021
+;;Azurmendi Ibai;
+;;Boev Igor;
+;;Beullens Cedric;
+;;Wright Paul;
+;4;Turek Daniel;race/czech-cycling-tour/2021
+;;Bakelants Jan;
+;;Van Den Dool Jens;
+;;Cieslik Pawel;
+;;Bauer Jack;
+;;Stojnic Valjko;
+;3;Appel Stijn;race/czech-cycling-tour/2021
+;;Herregodts Rune;
+;;Stark Immanuel;
+;;Lucca Riccardo;
+;;Grabis Mateusz;
+;;Neumann Dominik;
+;2;Stojnic Valjko;race/czech-cycling-tour/2021
+;;Per David;
+;;Hvideberg Jonas Iversby;
+;;Andersen Idar;
+;1;Hippertz Joshua;race/czech-cycling-tour/2021
+;;Andersen Idar;
+;;Lindner Tom;
+;;Papierski Damian;
+;;Koster Adne;
+;7;Verona Carlos;race/binckbank-tour/2021
+;;Riesebeek Oscar;
+;;Tusveld Martijn;
+;;Pedersen Mads;
+;;De Vreese Laurens;
+;;Van Hoecke Gijs;
+;;Jungels Bob;
+;5;Leysen Senne;race/binckbank-tour/2021
+;;Sprengers Thomas;
+;;Planckaert Baptiste;
+;;Hofland Moreno;
+;;Verona Carlos;
+;;Curvers Roy;
+;;Schar Michael;
+;;Van Poppel Boy;
+;;Scotson Miles;
+;;Sutterlin Jasha;
+;;Stannard Robert;
+;;Smit Willie;
+;;Riesebeek Oscar;
+;4;Keisse Iljo;race/binckbank-tour/2021
+;;Dewulf Stan;
+;3;De Vreese Laurens;race/binckbank-tour/2021
+;;Kuznetsov Viacheslav;
+;;Van Schip Jan-Willem;
+;;Verwilst Aaron;
+;2;Stannard Robert;race/binckbank-tour/2021
+;;Cerny Josef;
+;;Asselman Jesper;
+;;Sprengers Thomas;
+;;Gaudin Damien;
+;;Planckaert Baptiste;
+;1;Planckaert Baptiste;race/binckbank-tour/2021
+;;Verwilst Aaron;
+;;Bak Lars Ytting;
+;;Wisniowski Lukasz;
+;9;Van Belle Loe;race/tour-de-l-avenir/2022
+;;Leijnse Enzo;
+;;Segaert Alec;
+;;Wilksch Hannes;
+;;Milesi Lorenzo;
+;;Svestad-Bardseng Embret;
+;;Costiou Ewen;
+;8;Brun Nils;race/tour-de-l-avenir/2022
+;;Vadic Baptiste;
+;;Le Berre Mathis;
+;;Giddings Joshua;
+;7;Levy William Blume;race/tour-de-l-avenir/2022
+;;Changizi Sebastian Kolze;
+;;Le Berre Mathis;
+;;Harvey Dean;
+;;Leijnse Enzo;
+;;Donze Robin;
+;;Warenskjold Soren;
+;6;Fancellu Alessandro;race/tour-de-l-avenir/2022
+;;Le Berre Mathis;
+;;Levy William Blume;
+;;Dalby Simon;
+;;Brussenskiy Gleb;
+;;Van Belle Loe;
+;4;Pereira Marques Rafael;race/tour-de-l-avenir/2022
+;;Schellenberg Thomas;
+;;Schmidbauer Maximilian;
+;3;Nurlykhassam Nurbergen;race/tour-de-l-avenir/2022
+;;Zangerle Emanuel;
+;;Weiss Fabian;
+;;Peyrot Jorge;
+;2;Rafferty Darren;race/tour-de-l-avenir/2022
+;;Stehli Felix;
+;;Miles Carson;
+;1;Dapporto Davide;race/tour-de-l-avenir/2022
+;;Brevort Carl-Frederik;
+;;Luhrs Luis-Joe;
+;;Wenzel Mats;
+;1;Juarez Daniel;race/vuelta-ciclista-a-la-provincia-de-san-juan/2020
+;;Di Renzo Andrea;
+;;Rangel Vinicius;
+;;Bais Mattia;
+;;Zaccanti Filippo;
+;;Ballarin Iker;
+;;Paredes Cesar;
+;2;Van Melsen Kevin;race/tour-de-saudi-arabia/2020
+;;Nicolau Joel;
+;;Fuentes Angel;
+;;Holler Nikodemus;
+;1;Chretien Charles-Etienne;race/herald-sun-tour/2020
+;;Coyle Jesse;
+;;Thomas Ryan;
+;;Hill Benjamin;
+;;Murtagh Conor;
+;1;De Vylder Lindsay;race/etoile-de-besseges/2020
+;;Aurignac Samy;
+;;Ruiz Ibon;
+;2;Hill Benjamin;race/herald-sun-tour/2020
+;;Lyons Angus;
+;3;Holler Nikodemus;race/tour-de-saudi-arabia/2020
+;;Kangangi Suleiman;
+;;Ellsay Nigel;
+;;Suter Joel;
+;;Batmunkh Maral-Erdene;
+;2;Beppu Fumiyuki;race/etoile-de-besseges/2020
+;;Ghys Robbe;
+;;Richardson Alexander;
+;;Van Niekerk Morne;
+;;Marquez Marti;
+;3;Chretien Charles-Etienne;race/herald-sun-tour/2020
+;;Boivin Guillaume;
+;;Hill Benjamin;
+;;Turnbull Carter;
+;;Rice Michael;
+;;Whelan James;
+;;Oram James;
+;;Stites Typer;
+;1;Fedorov Yevgeniy;race/tour-de-langkawi/2020
+;;Boonratanathanakorn Turakit;
+;4;Paasschens Mathijs;race/tour-de-saudi-arabia/2020
+;;Tipper Jacob;
+;;Zukowsky Nickolas;
+;;Kangangi Suleiman;
+;;Nicolau Joel;
+;;Fuentes Angel;
+;3;Ghys Robbe;race/etoile-de-besseges/2020
+;;Zimmermann Georg;
+;;De Bondt Dries;
+;;Marquez Marti;
+;4;Rutsch Jonas;race/herald-sun-tour/2020
+;;Toovery Ayden;
+;;Hill Benjamin;
+;;Perry Benjamin;
+;;Batt Ethan;
+;;Murtagh Conor;
+;;Rice Michael;
+;;Williams David;
+;2;Viel Mattia;race/tour-de-langkawi/2020
+;;Field Rylee;
+;;Zariff Mohd;
+;;Lange Colby;
+;;Iacchi Alessandro;
+;5;Ellsay Nigel;race/tour-de-saudi-arabia/2020
+;;Irisarri Jon;
+;;Jones Richard;
+;;Madrazo Angel;
+;4;Claeys Dimitri;race/etoile-de-besseges/2020
+;;Malecki Kamil;
+;;O'connor Ben;
+;;Cam Maxime;
+;;Taminiaux Lionel;
+;;Touze Damien;
+;;Goncalves Jose;
+;8;Gautier Cyril;race/tour-de-langkawi/2020
+;;De Rossi Lucas;
+;;Cahyadi Aiman;
+;;Nakamura Kaito;
+;;Sirironnachai Sarawut;
+;7;Mcgeough Cormac;race/tour-de-langkawi/2020
+;;Haikan Danieal;
+;;Van Dam Ben;
+;;Ito Masakazu;
+;;Kookhyun Kim;
+;6;Meijers Jeroen;race/tour-de-langkawi/2020
+;;Rolland Pierre;
+;;Van Dam Ben;
+;;Boonratanathanakorn Turakit;
+;5;Suzuki Yuzuru;race/tour-de-langkawi/2020
+;;Ross Kent;
+;;Le Bon Johan;
+;;Bevilacqua Mattia;
+;;Mazuki Nur Amirul Fakhruddin;
+;;Zulkifi Nik Mohamad Azman;
+;4;Gautier Cyril;race/tour-de-langkawi/2020
+;;Le Bon Johan;
+;;Lecroq Jeremy;
+;;Battistella Samuele;
+;;Carbel Michael;
+;;Field Rylee;
+;;Van Der Merwe Jean-Pierre;
+;;Rajovic Dusan;
+;;Eyob Metkel;
+;;Boardman Samuel;
+;;Ferrari Fabricio;
+;;Jones Taj;
+;;Venchiarutti Nicola;
+;;Mohd Zariff Muhammad Nur Aiman;
+;3;Le Bon Johan;race/tour-de-langkawi/2020
+;;Field Rylee;
+;;Van Aert Bernard;
+;;Pelucchi Matteo;
+;;Donohue Alistair;
+;;Bouglas Georgios;
+;;Mohd Zariff Muhammad Nur Aiman;
+;5;Gallopin Tony;race/tour-de-luxembourg/2020
+;;Naesen Lawrence;
+;;Cavendish Mark;
+;;Scotson Miles;
+;;Sunderland Dylan;
+;;Planckaert Baptiste;
+;;Meurisse Xandro;
+;;Pichon Laurent;
+;;Siskevicius Evaldas;
+;;Eriksson Lucas;
+;;Shaw James;
+;;Irisarri Jon;
+;3;Mullen Ryan;race/tour-de-luxembourg/2020
+;;Albanese Vincenzo;
+;;Bizhigitov Zhandos;
+;;Hindsgaul Madsen Jacob;
+;;Planckaert Baptiste;
+;2;Vliegen Loic;race/tour-de-luxembourg/2020
+;;Wirtgen Tom;
+;1;Gallopin Tony;race/tour-de-luxembourg/2020
+;;Martin Sergio Roman;
+;;Zingle Axel;
+;;Bonnamour Franck;
+;;Meiler Lukas;
+;4;Buitrago Santiago;race/settimana-internazionale-coppi-e-bartali/2020
+;;O'connor Ben;
+;;Ravasi Edward;
+;;Bakelants Jan;
+;;Fernandez Delio;
+;;Riesebeek Oscar;
+;3;O'connor Ben;race/settimana-internazionale-coppi-e-bartali/2020
+;;Arcas Jorge;
+;;Davies Scott;
+;;Amezqueta Julen;
+;;Petilli Simone;
+;2;Ballerstedt Maurice;race/settimana-internazionale-coppi-e-bartali/2020
+;;Marengo Umberto;
+;;Ezquerra Jesus;
+;;Di Sante Antonio;
+;;Irisarri Jon;
+;1a;Jacobs Johan;race/settimana-internazionale-coppi-e-bartali/2020
+;4;Harper Chris;race/tour-de-hongrie/2020
+;;Sevilla Diego Pablo;
+;;Osorio Alejandro;
+;;Pelikan Janos;
+;;Rozsa Balazs;
+;5;Thalmann Roland;race/tour-de-hongrie/2020
+;3;Hofstede Lennard;race/tour-de-hongrie/2020
+;;Kulset Kristian;
+;;Planckaert Emiel;
+;2;De Wilde Gilles;race/tour-de-hongrie/2020
+;;Sano Simone;
+;;Szatmary Andras;
+;;Gravalos Arturo;
+;;Sweeck Diether;
+;;Horvat Ziga;
+;4;Keisse Iljo;race/tour-du-poitou-charentes-et-de-la-vienne/2020
+;;Van Keirsbulck Guillaume;
+;;Gaudin Damien;
+;;Leveau Jeremy;
+;;Tanfield Harry;
+;3a;Irisarri Jon;race/tour-du-poitou-charentes-et-de-la-vienne/2020
+;;Armee Sander;
+;;Vanhoucke Harm;
+;;Sellier Simon;
+;2;Gaudin Damien;race/tour-du-poitou-charentes-et-de-la-vienne/2020
+;;Gougeard Alexis;
+;;De Vreese Laurens;
+;1;Rosskopf Joey;race/tour-du-poitou-charentes-et-de-la-vienne/2020
+;;Dillier Silvan;
+;;Bizhigitov Zhandos;
+;;Van Niekerk Morne;
+;;Page Hugo;
+;;Vanhoucke Harm;
+;;Saez Hector;
+;;Lopez Diego;
+;4;Ferron Valentin;race/tour-du-limousin/2020
+;;Gougeard Alexis;
+;;Hurel Tony;
+;;Bidard Francois;
+;;Goikoetxea Peio;
+;3;Van Poppel Danny;race/tour-du-limousin/2020
+;;Delaplace Anthony;
+;;Fernandez Delio;
+;;Salmon Martin;
+;;Ruiz Ibon;
+;2;Combaud Romain;race/tour-du-limousin/2020
+;;Rex Laurenz;
+;;Chernetski Sergei;
+;;Pichon Laurent;
+;;Aranburu Jokin;
+;;Guillonnet Adrien;
+;1;Hurel Tony;race/tour-du-limousin/2020
+;;Petelin Jan;
+;;Brand Sam;
+;;Le Gac Olivier;
+;;Ballarin Iker;
+;;Fernandez Delio;
+;;Suter Joel;
+;;Osorio Alejandro;
+;4;Janssens Jimmy;race/czech-cycling-tour/2020
+;;Zoidl Ricardo;
+;;Gall Felix;
+;3;Boven Lars;race/czech-cycling-tour/2020
+;;Zijlaard Maikel;
+;;Repa Vojtech;
+;;Willems Thimo;
+;2;Fabbro Matteo;race/czech-cycling-tour/2020
+;;Bouwman Koen;
+;;Achterberg Yannik;
+;1;Slik Ivar;race/sibiu-cycling-tour/2020
+;;Thiebaud Valere;
+;;Ferronato Filippo;
+;;Meucci Andrea;
+;;Bernas Pawel;
+;;Sykala Wojchiech;
+;3b;Weulink Meindert;race/sibiu-cycling-tour/2020
+;;Pietrobon Andrea;
+;;Thiebaud Valere;
+;4;Goeman Jonas;race/tour-of-antalya/2020
+;;Madsen Martin Toft;
+;;Tennant Andrew;
+;;Van Rooy Kenneth;
+;;De Poorter Maxime;
+;;Buts Vitaliy;
+;;Wirtgen Luc;
+;3;De Poorter Maxime;race/tour-of-antalya/2020
+;;Sobal Yauhen;
+;;Filutas Viktor;
+;;Pluto Martins;
+;2;Per David;race/tour-of-antalya/2020
+;;Gamper Mario;
+;;Relaes Jacob;
+;;Haller Patrick;
+;1;Buts Vitaliy;race/tour-of-antalya/2020
+;;Paterson Aden;
+;5;Wirtgen Tom;race/tour-of-austria/2019
+;;Feillu Bryce;
+;;Gamper Mario;
+;;Bajc Andi;
+;;Achterberg Yannik;
+;;Podlaski Michal;
+;3;Zimmermann Georg;race/tour-of-austria/2019
+;;Bongiorno Manuel;
+;;De Rossi Lucas;
+;;Guernalec Thibault;
+;3;Sicard Romain;race/tour-de-l-ain/2019
+;;Fernandez Delio;
+;;Feillu Bryce;
+;;Meurisse Xandro;
+;;Pacher Quentin;
+;;Haller Patrick;
+;2;Gougeard Alexis;race/tour-de-l-ain/2019
+;;Politt Nils;
+;;Tulik Angelo;
+;;Naberman Tim;
+;;Kuriyanov Stepan;
+;;Imhof Claudio;
+;1;Brussenskiy Gleb;race/tour-de-l-ain/2019
+;;Pellaud Simon;
+;;Naberman Tim;
+;3;Rolland Pierre;race/la-route-d-occitanie/2019
+;;Henao Sebastien;
+;;Peters Nans;
+;;Aguirre Hernan;
+;;Rossetto Stephane;
+;;Dupont Timothy;
+;2;Carisey Clement;race/la-route-d-occitanie/2019
+;;Le Cunff Kevin;
+;;Tulik Angelo;
+;;Chetout Loic;
+;1;Reinders Elmar;race/ster-elektro-tour/2019
+;;Van Sintmaartensdijk Daan;
+;;Krul Stef;
+;;Van Den Brande Julien;
+;1;Holler Nikodemus;race/la-route-d-occitanie/2019
+;;Turek Daniel;
+;;Delage Mickael;
+;;Chetout Loic;
+;4;Tulik Angelo;race/la-route-d-occitanie/2019
+;;Pacher Quentin;
+;;Gouault Pierre;
+;;Mate Luis Angel;
+;4;Bol Cees;race/ster-elektro-tour/2019
+;;Doets Marco;
+;;Reinders Elmar;
+;4;Hill Benjamin;race/tour-of-slovenia/2019
+;;Montaguti Matteo;
+;;Kierner Florian;
+;;Schmidt Fabien;
+;;Mezgec Luka;
+;3;Fortunato Lorenzo;race/tour-of-slovenia/2019
+;;Maronese Marco;
+;;Hill Benjamin;
+;;Per David;
+;2;Korosec Rok;race/tour-of-slovenia/2019
+;;Fortunato Lorenzo;
+;;Per David;
+;1;Planet Charles;race/tour-of-slovenia/2019
+;;Horvat Ziga;
+;;Marengo Umberto;
+;;Kasperkiewicz Przemyslaw;
+;6;Paredes William;race/colombia-21/2019
+;;Avila Edwin;
+;;Ochoa Diego;
+;;Cano Ardila Alex;
+;4;Lopez Miguel Angel;race/colombia-21/2019
+;;Rubiano Miguel;
+;;Arango Juan Esteban;
+;;Montana Freddy;
+;;Jaramillo Daniel;
+;;Guama Byron;
+;3;Duarte Fabio;race/colombia-21/2019
+;;Castro Jose;
+;;Ramirez Brayan;
+;;Cuesta Steven;
+;;Angarita Marvin;
+;;Munoz William;
+;2;Pellaud Simon;race/colombia-21/2019
+;;Sevilla Oscar;
+;;Hernandez Jose Tito;
+;;Chavez German Enrique;
+;;Cuesta Steven;
+;;Laverde Luis Felipe;
+;2;Timmermans Justin;race/vuelta-ciclista-a-la-region-de-murcia/2019
+;;Devriendt Tom;
+;;Kennaugh Peter;
+;1;De Witte Mathias;race/vuelta-ciclista-a-la-region-de-murcia/2019
+;;Bico Nuno;
+;;Quemeneur Perrig;
+;;Cuadrado Unai;
+;;Nekrasov Denis;
+;;Carpenter Robin;
+;;Canton Isaac;
+;5;Visconti Giovanii;race/settimana-internazionale-coppi-e-bartali/2019
+;;Quiroz Oscar;
+;;Piccot Michel;
+;;Covi Alessandro;
+;;Barbin Enrico;
+;;Gavazzi Francesco;
+;4;Robeet Ludovic;race/settimana-internazionale-coppi-e-bartali/2019
+;;Guernalec Thibault;
+;;Morton Lachlan;
+;;Mosca Jacopo;
+;;Bjerg Mikkel;
+;;Stosz Patrik;
+;;Di Sante Antonio;
+;;Sterbini Simone;
+;3;Barbin Enrico;race/settimana-internazionale-coppi-e-bartali/2019
+;;Bou Joan;
+;;Duranti Jalel;
+;;Elissonde Kenny;
+;;Eriksson Lucas;
+;;Ficara Pierpaolo;
+;;Osorio Alejandro;
+;2;Mosca Jacopo;race/settimana-internazionale-coppi-e-bartali/2019
+;;Evtushenko Alexander;
+;;Molly Kenny;
+;;Russo Clement;
+;;Visconti Giovanii;
+;;Ocampo Victor;
+;1;Crista Daniel;race/settimana-internazionale-coppi-e-bartali/2019
+;4;Romano Francesco;race/giro-di-sicilia/2019
+;;Montaguti Matteo;
+;;Quiroz Oscar;
+;;Martinelli Ivan;
+;;Rybalkin Aleksey;
+;;Avila Edwin;
+;;Canton Isaac;
+;;Gabburo Davide;
+;;Quintana Dayer;
+;3;Maronese Marco;race/giro-di-sicilia/2019
+;;Munoz William;
+;;Burchio Federico;
+;;Sterbini Simone;
+;;Salvietti Niccolo;
+;;Duranti Jalel;
+;2;Kron Andreas;race/giro-di-sicilia/2019
+;;Puccioni Dario;
+;;Toniatti Andrea;
+;;Sevilla Diego Pablo;
+;;Luksevics Viesturs;
+;1;Hagen Krister;race/giro-di-sicilia/2019
+;;Munoz William;
+;;Puccioni Dario;
+;;Baldaccini Davide;
+;;Canton Isaac;
+;;Crista Daniel;
+;3;Quiroz Oscar;race/vuelta-asturias/2019
+;;Gonzalez Mario;
+;;Nunes Hugo;
+;;Fernandez Jose;
+;;Irisarri Jon;
+;2;Mancebo Francisco;race/vuelta-asturias/2019
+;;Turek Daniel;
+;;Nicolau Joel;
+;;Soto Antonio Jesus;
+;1;Turek Daniel;race/vuelta-asturias/2019
+;;Mancebo Francisco;
+;3;Madrazo Angel;race/vuelta-a-castilla-y-leon/2019
+;;Rodriguez Sergio;
+;;Guerin Alexis;
+;;Campos Francisco;
+;;Aranburu Jokin;
+;;Silva Rafael;
+;2;Mancebo Francisco;race/vuelta-a-castilla-y-leon/2019
+;;Bol Jetse;
+;;Boivin Guillaume;
+;;Ochoa Diego;
+;1;Mendoza Omar;race/vuelta-a-castilla-y-leon/2019
+;;Toribio Jose;
+;;Silva Bruno;
+;;Trueba Alvaro;
+;;Sureda Jaume;
+;6;Reinders Elmar;race/4-jours-de-dunkerque/2019
+;;Frison Fredrik;
+;;Touze Damien;
+;;Hoelgaard Daniel;
+;;Kasperkiewicz Przemyslaw;
+;;Raim Mihkel;
+;5;Hansen Lasse Norman;race/4-jours-de-dunkerque/2019
+;;Hurel Tony;
+;;Taminiaux Lionel;
+;;Trarieux Julien;
+;4;Taminiaux Lionel;race/4-jours-de-dunkerque/2019
+;;Berrade Urko;
+;;Carisey Clement;
+;3;Turgis Anthony;race/4-jours-de-dunkerque/2019
+;;Keukeleire Jens;
+;;De Bondt Dries;
+;;Reinders Elmar;
+;2;Hansen Lasse Norman;race/4-jours-de-dunkerque/2019
+;;Cardis Romain;
+;;Vermeulen Emiel;
+;;Kasperkiewicz Przemyslaw;
+;1;Leroux Samiel;race/4-jours-de-dunkerque/2019
+;;Devriendt Tom;
+;;Reinders Elmar;
+;;Baldo Nicolas;
+;2;Mancebo Francisco;race/vuelta-international-a-la-cominudad-de-madrid/2019
+;;Toribio Jose;
+;;Cubero Jorge;
+;6;Bouwmans Dylan;race/tour-of-croatia/2019
+;;Krul Stef;
+;;Fedeli Alessandro;
+;;Gamper Florian;
+;;Kierner Florian;
+;;Gamper Patrick;
+;;Lehner Daniel;
+;;Groselj Matic;
+;4;Maestri Mirco;race/tour-of-croatia/2019
+;;Cataford Alexander;
+;;Rivi Samuele;
+;;Krizek Matthias;
+;;Mandrysch John;
+;3;Wildauer Markus;race/tour-of-croatia/2019
+;;Rabitsch Stephan;
+;;Hill Benjamin;
+;;Van Den Berg Lars;
+;;Hrinkow Dominik;
+;;Jageler Robert;
+;2;Hill Benjamin;race/tour-of-croatia/2019
+;;Lehner Daniel;
+;;Wildauer Markus;
+;;Van Den Dool Jens;
+;;Hrinkow Dominik;
+;1;Guerin Alexis;race/tour-of-croatia/2019
+;;Kierner Florian;
+;;Nolde Tobias;
+;5;Neilands Krists;race/tour-of-denmark/2019
+;;Salmon Martin;
+;;Orsini Umberto;
+;;Poli Umberto;
+;;Rahbek Mads;
+;;Mortensen Martin;
+;;Wurtz Schmidt Mads;
+;4;Maestri Mirco;race/tour-of-denmark/2019
+;;Brandle Matthias;
+;;Traen Torstein;
+;;Toudal Emil;
+;;Roinas Fritjof;
+;;Jensen Frederik;
+;1;Vangstad Andreas;race/tour-of-denmark/2019
+;;Brown Jonathan;
+;;Skot-Hansen Aksel;
+;;Rahbek Mads;
+;;Simion Paolo;
+;;Weemaes Sasha;
+;;Rodriques Joao;
+;1;Baldo Nicolas;race/tour-du-limousin/2019
+;;Delaplace Anthony;
+;;Minnaard Marco;
+;;El Fares Julien;
+;2;Carboni Giovanni;race/tour-du-limousin/2019
+;;Van Niekerk Morne;
+;;Dernies Tom;
+;4;El Fares Julien;race/tour-du-limousin/2019
+;;Martin Sergio;
+;;Van Niekerk Morne;
+;4;Diaz Jose Manuel;race/czech-cycling-tour/2019
+;;Steimle Jannik;
+;;Groselj Ziga;
+;;Cieslik Pawel;
+;3;Van Der Tuuk Danny;race/czech-cycling-tour/2019
+;;Budyak Anatoliy;
+;;Schellling Patrick;
+;;Konwa Piotr;
+;;Stosz Patrik;
+;2;Krul Wessel;race/czech-cycling-tour/2019
+;;Paterski Maciej;
+;;Tracz Szymon;
+;;Holter Adne;
+;4;Badillatti Matteo;race/adriatica-ionica-race/2019
+;;Nicolau Joel;
+;;Willems Thimo;
+;;Anacona Winner;
+;3;Masnada Fausto;
+;;Van Empel Etienne;
+;;Planet Charles;
+;;Van Ginneken Sjoerd;
+;;Canellas Xavier;
+;5;Pacher Quentin;race/tour-de-wallonie/2019
+;;Taminiaux Lionel;
+;;Petit Adrien;
+;;Carisey Clement;
+;;Reinders Elmar;
+;3;Navarro Dani;race/tour-de-wallonie/2019
+;;De Bondt Dries;
+;;Van Rooy Kenneth;
+;;Rolland Pierre;
+;;Claeys Dimitri;
+;;Ligthart Pim;
+;2;Capiot Amaury;race/tour-de-wallonie/2019
+;;Boom Lars;
+;;Wirtgen Tom;
+;;Van Kessel Corne;
+;;Vermeulen Emiel;
+;;Brochner Nicolai;
+;6;Wynants Maarten;race/tour-of-norway/2019
+;;Reinders Elmar;
+;;Hagen Carl Fredrik;
+;;Evenepoel Remco;
+;5;Reinders Elmar;race/tour-of-norway/2019
+;;Van Asbroeck Tom;
+;;Van Der Hoorn Taco;
+;;Bizhigitov Zhandos;
+;;Resell Erik Nordsater;
+;4;Affini Edoardo;race/tour-of-norway/2019
+;;Armee Sander;
+;;Quaade Rasmus;
+;;Scully Tom;
+;;Turek Daniel;
+;;Skaarseth Anders;
+;3;Stalnov Nikita;race/tour-of-norway/2019
+;;Sotberg Andre;
+;;Vangstad Andreas;
+;2;Van Der Hoorn Taco;race/tour-of-norway/2019
+;;Bonnamour Franck;
+;;Evensen Henrik;
+;;Lunder Erik;
+;;Hoelgaard Markus;
+;;Reinders Elmar;
+;;Goldstein Omer;
+;1;Reinders Elmar;race/tour-of-norway/2019
+;;Roinas Fritjof;
+;;Eriksson Jacob;
+;;Traaen Torstein;
+;1;Van Schip Jan-Willem;race/tour-of-belgium/2019
+;;Debruyne Glenn;
+;;Dernies Tom;
+;;Boucher David;
+;;Sprengers Thomas;
+;5;Bizhigitov Zhandos;race/tour-of-belgium/2019
+;;Clarke Will;
+;;Van Asbroeck Tom;
+;;Liepins Emils;
+;;Van Melsen Kevin;
+;;Van Hoecke Gijs;
+;4;Kron Andreas;race/tour-of-belgium/2019
+;;Hermans Quinten;
+;;Marchand Gianni;
+;;Lemoine Cyril;
+;;Turgis Anthony;
+;2;Jans Roy;race/tour-of-belgium/2019
+;;Molly Kenny;
+;;Leroux Samiel;
+;;Hermans Quinten;
+;;Peeters Yannick;
+;;Beppu Fumiyuki;
+;4;Petit Adrien;race/tour-de-luxembourg/2019
+;;Fernandez Delio;
+;;Rodriguez Sergio;
+;;Robeet Ludovic;
+;;Van Ginneken Sjoerd;
+;;Tonelli Alessandro;
+;;Walsleben Philipp;
+;;Joyce Colin;
+;2;Gouault Pierre;race/boucles-de-la-mayenne/2019
+;;Reutimann Matthias;
+;;Le Cunff Kevin;
+;;Quemeneur Perrig;
+;;Schmidt Fabian;
+;;Naberman Tim;
+;3;Carpenter Robin;race/tour-de-luxembourg/2019
+;;Tonelli Alessandro;
+;;De Bondt Dries;
+;;Finetto Mauro;
+;2;Mol Wesley;race/tour-de-luxembourg/2019
+;;Knaup Tobias;
+;;Gesner Konrad;
+;1;Madrazo Angel;race/boucles-de-la-mayenne/2019
+;;Udondo Gotzon;
+;;Schmidt Fabian;
+;;Naberman Tim;
+;1;Alarcon Raul;race/tour-de-luxembourg/2019
+;;Carpenter Robin;
+;;Rekita Szymon;
+;;Vliegen Loic;
+;3;Puccioni Dario;race/sibiu-cycling-tour/2019
+;;Groselj Ziga;
+;;Kukrle Michael;
+;;Celano Danilo;
+;;Suter Joel;
+;;Martinelli Ivan;
+;;Van Der Veekens Mel;
+;2;Onesti Emanuele;race/sibiu-cycling-tour/2019
+;;Guller Timo;
+;;Bozic Jon;
+;;Raffaele Angelo;
+;;Amiri Alexander;
+;1;Sergis Kaspars;race/gp-internacional-beiras-e-serra-da-estrela/2019
+;;Ait El Abdia Anass;
+;;Mudgway Luke;
+;4;Combaud Romain;race/circuit-sarthe/2019
+;;Baldo Nicolas;
+;;Delaplace Anthony;
+;;Deltombe Kevin;
+;;Osorio Juan Felipe;
+;;Thomas Benjamin;
+;;Walsleben Philipp;
+;2;De Winter Ludwig;race/circuit-sarthe/2019
+;;Verwilst Aaron;
+;;Livyns Arjen;
+;;Van Niekerk Morne;
+;3;Van Hecke Preben;race/circuit-sarthe/2019
+;;Carisey Clement;
+;;Moreira Mauricio;
+;1;Combaud Romain;race/circuit-sarthe/2019
+;;Baldo Nicolas;
+;;Goldstein Roy;
+;;Ochoa Diego;
+;7;Diaz Daniel;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Amezqueta Julen;
+;;Duarte Fabio;
+;;Barbero Carlos;
+;;Aguirre Sergio;
+;5;Howson Damien;race/herald-sun-tour/2019
+;;Whelan James;
+;;Mullen Ryan;
+;6;Quintana Dayer;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Diaz Daniel;
+;;Zamora Daniel;
+;;Tivani German;
+;;Rodriguez Leonardo;
+;;Juarez Gabriel;
+;;Lucero Daniel;
+;4;Van Baarle Dylan;race/herald-sun-tour/2019
+;;Knees Christian;
+;;Rowe Luke;
+;;Clarke Will;
+;;Donohue Alistair;
+;;Elliot Nathan;
+;;Mccormick Hayden;
+;;Schultz Nick;
+;5;Stocek Matus;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Dotti Ottavio;
+;;Tiller Rasmus;
+;;Soto Nelson;
+;;Richeze Adrian;
+;;Tivani Gerardo;
+;;Lucero Iginio;
+;;Martinez Jose;
+;;Navarette Maxi;
+;3;Doull Owain;race/herald-sun-tour/2019
+;;Rowe Luke;
+;;Clarke Will;
+;;Elliot Nathan;
+;;Van Der Ploeg Neil;
+;;White Liam;
+;;Murtagh Conor;
+;;Mudgway Luke;
+;;Cavanagh Ryan;
+;2;White Liam;race/herald-sun-tour/2019
+;;Monk Cyrus;
+;;Archbold Shane;
+;;Michelin-Beard Karl;
+;;Coates Thomas;
+;;White Nick;
+;4;Zamora Daniel;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Paredes Cesar;
+;;Cattapan Facundo;
+;;Paredes Ricardo;
+;;Navarro Royner;
+;;Mendez Robert;
+;1;Knees Christian;race/herald-sun-tour/2019
+;;Scully Tom;
+;;Toovey Ayden;
+;2;Bravo Edison;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Alvarez Miguel;
+;;Schreurs Hamish;
+;;Gohr Andre Eduardo;
+;1;Zamora Daniel;race/vuelta-ciclista-a-la-provincia-de-san-juan/2019
+;;Contreras Emiliano;
+;;Gordillo Pedro;
+;;Tivani Gerardo;
+;;Lucero Hector;
+;;Arroyo Victor;
+;;Ferreira Alessandro;
+;;Mendez Robert;
+;4;Biermans Jenthe;race/deutschland-tour/2019
+;;Cort Magnus;
+;;Asgreen Kasper;
+;;Pedersen Mads;
+;;Peters Nans;
+;;Gradek Kamil;
+;;Shalunov Evgeny;
+;3;Alaphilippe Julian;race/deutschland-tour/2019
+;;Pedersen Mads;
+;;Heming Mika;
+;1;Holler Nikodemus;race/deutschland-tour/2019
+;;Bernard Julien;
+;;Huppertz Joshua;
+;;Boev Igor;
+;5;Duval Julien;race/tour-du-poitou-charentes-et-de-la-vienne/2019
+;;Gaudin Damien;
+;;Molly Kenny;
+;;Van Niekerk Morne;
+;3;Duval Julien;race/tour-du-poitou-charentes-et-de-la-vienne/2019
+;;Rota Lorenzo;
+;;Lopez-Cozar Juan Antonio;
+;2;Viel Mattia;race/tour-du-poitou-charentes-et-de-la-vienne/2019
+;;Navardauskas Ramunas;
+;;Riou Alan;
+;;Nicolau Joel;
+;1;Minnaard Marco;race/tour-du-poitou-charentes-et-de-la-vienne/2019
+;;Molly Kenny;
+;;Bravo Garikoitz;
+;5;Davids Brendon;race/herald-sun-tour/2020
+;;Vine Jay;
+;;Tsubaki Hiroshi;
+;;Whelan James;
+;;Cataford Alexander;
+;1;Postlberger Lukas;race/e3-harelbeke/2022
+;;Wallays Jelle;
+;;Oss Daniel;
+;;Van Moer Brent;
+;;Paasschens Mathijs;
+;;Mullen Ryan;
+;;Hansen Lasse Norman;
+;1;Milan Jonathan;race/e3-harelbeke/2021
+;;Brunel Alexys;
+;;Jacobs Johan;
+;;Tiller Rasmus;
+;;Van Den Berg Julius;
+;;De Vylder Lindsay;
+;;Van Der Hoorn Taco;
+;;Haller Marco;
+;;Mas Lluis;
+;;Wallays Jelle;
+;;Terpstra Niki;
+;;Greipel Andre;
+;1;Leysen Senne;race/omloop-het-nieuwsblad/2020
+;;Paasschens Mathijs;
+;;Mas Lluis;
+;;Jorgenson Matteo;
+;;Boaro Manuele;
+;1;Arroyave Daniel;race/gent-wevelgem/2021
+;;Fedorov Yevgeniy;
+;;Rex Laurenz;
+;;Bissegger Stefan;
+;;Noppe Christophe;
+;1;O'brien Kelland;race/dwars-door-vlaanderen/2022
+;;Politt Nils;
+;;Jacobs Johan;
+;;Verwilst Aaron;
+;;Paasschens Mathijs;
+;1;Van Poucke Aaron;race/brabantse-pijl/2022
+;;Robeet Ludovic;
+;;Okamika Ander;
+;1;Gelders Gil;race/trofeo-laigueglia/2022
+;;Tosin Ricardo;
+;;Cortese Jacopo;
+;;Carollo Francesco;
+;;Roda Lorenzo;
+;1;Herregodts Rune;race/munsterland-giro/2021
+;;Janssen Adriaan;
+;;Walsleben Philipp;
+;;Tarlton Alexander;
+;;De Jong Timo;
+;;Gessner Jakob;
+;;Gatheman Albert;
+;1;Peyskens Dimitri;race/brussels-cycling-classic/2021
+;;De Vylder Lindsay;
+;;Traaen Torstein;
+;;Van Empel Etienne;
+;;Hesters Jules;
+;;Scott Robert;
+;;Marchand Gianni;
+;1;Hulgaard Morten;race/dwars-door-het-hageland/2021
+;;Van Poucke Aaron;
+;;Noppe Christophe;
+;;Ferasse Thibault;
+;;Van Schip Jan-Willem;
+;;Van Der Hoorn Taco;
+;;Vermeltfoort Coen;
+;;Gaudin Damien;
+;1;Brenner Marco;race/strade-bianche/2022
+;;Calmejane Lilian;
+;;Van Der Hoorn Taco;
+;;Zoccarato Samuele;
+;;Heinschke Leon;
+;;Zardini Edoardo;
+;;Bevilacqua Simone;
+;;Martinelli Davide;
+;;Garcia Sergio;
+;6;Van Der Sande Tosh;race/tour-of-guangxi/2018
+;;Wang Meiyin;
+;;Van Hooydonck Nathan;
+;;Armirail Bruno;
+;;Goncalves Jose;
+;;Hofstede Lennard;
+;5;Dillier Silvan;race/tour-of-guangxi/2018
+;;Eenkhoorn Pascal;
+;;Martin Tony;
+;;Mullen Ryan;
+;4;Eenkhoorn Pascal;race/tour-of-guangxi/2018
+;;Kung Stefan;
+;3;Boaro Manuele;race/tour-of-guangxi/2018
+;;Doull Owain;
+;;Van Hooydonck Nathan;
+;;Sutterlin Jasha;
+;2;Cavagna Remi;race/tour-of-guangxi/2018
+;;Grivko Andriy;
+;;Feng Chung Kai;
+;;Dowsett Alex;
+;;Mirza Yousif;
+;1;Mirza Yousif;race/tour-of-guangxi/2018
+;;Sivakov Pavel;
+;;Thompson Jay-Robert;
+;;Grivko Andriy;
+;;Haller Marco;
+;;Dillier Silvan;
+;1;Ballerini Davide;race/il-lombardia/2018
+;;Bonnamour Franck;
+;;Marcato Marco;
+;;Storer Michael;
+;;Restrepo Jonathan;
+;;Senechal Florian;
+;;Orsini Umberto;
+;;Tonelli Alessandro;
+;1;Bouwmans Dylan;race/tacx-pro-classic/2018
+;;Verboom Minne;
+;;Franck Eamon Lucas;
+;;Oostra Folkert;
+;1;Rosskopf Joey;race/gran-piemonte/2018
+;;Ganna Filippo;
+;;Honore Mikkel Frolich;
+;;Sobrero Matteo;
+;2;Balkan Onur;race/tour-of-turkey/2018
+;;Sprengers Thomas;
+;;Gutierrez Orjuela;
+;;Zabala Josu;
+;1;De Gendt Thomas;race/milano-torino/2018
+;;Orsini Umberto;
+;;Neilands Krists;
+;;Smit Willie;
+;1;Storer Michael;race/tre-valli-varesine/2018
+;;Tonelli Alessandro;
+;;Zardini Edoardo;
+;;Toto Paolo;
+;;Bono Matteo;
+;1;Txoperena Benat;race/tour-of-turkey/2018
+;;Barrenetxea Ander;
+;;Van Rooy Kenneth;
+;;Samli Ferit;
+;;Sessler Nicolas;
+;1;Chavanel Sylvain;race/paris-tours/2018
+;;Van Goethem Brian;
+;;Guernalec Thibault;
+;;Vermeulen Emiel;
+;;De Bondt Dries;
+;;Eisel Bernard;
+;1;Raggio Luca;race/gp-bruno-beghelli/2018
+;;Hermans Ben;
+;;Mas Lluis;
+;;Kulikovskiy Alexandr;
+;;Salvador Enrico;
+;;Mazzucco Fabio;
+;;Berardinetti Marco;
+;;Dima Emil;
+;;Puccioni Dario;
+;1;Orsini Umberto;race/giro-dell-emilia/2018
+;;Power Robert;
+;;Swift Ben;
+;;Eg Niklas;
+;;Luksevics Viesturs;
+;;Davies Scott;
+;;Bagioli Nicola;
+;;Bettiol Alberto;
+;1;Bagdonas Gediminas;race/tour-de-vendee/2018
+;;Delaplace Anthony;
+;;Marchand Gianni;
+;;Dernies Tom;
+;1;Riviere David;race/paris-bourges/2018
+;;Areruya Joseph;
+;;Idjouadiene Pierre;
+;;Teugels Lennert;
+;;Mobach Jarno;
+;;Vermeer Tom;
+;1;Cartensen Lucas;race/munsterland-giro/2018
+;;Taebling Paul;
+;;Treubel Pascal;
+;;Retschke Robert;
+;;Kulikovskiy Alexandr;
+;;Belkov Maxim;
+;1;Juaregui Quentin;race/memorial-frank-vandenbroucke/2018
+;;Orceau Clement;
+;;Devriendt Tom;
+;;Peyskens Dimitri;
+;;Raymackers Cedric;
+;;Teugels Lennert;
+;1;Asgreen Kasper;race/world-championship/2018
+;;Britton Rob;
+;;Ludvigsson Tobias;
+;;Mullen Ryan;
+;;Dunne Connor;
+;;Fominiykh Daniil;
+;;Laengen Vegard Stake;
+;;Hnik Karel;
+;;Didier Laurent;
+;;Janse Van Rensburg Jacques;
+;;Koshevoy Ilia;
+;1;Tracz Szymon;race/world-championships-u23/2018
+;;Penko Izidor;
+;;Zukowsky Nickolas;
+;1;Grellier Fabien;race/famenne-ardenne-classic/2018
+;;Jakin Alo;
+;;Ruyters Brecht;
+;;Van Brusseghem Elias;
+;1;Swift Connor;race/gp-d-isbergues/2018
+;;Vermote Julien;
+;;Jauregui Quentin;
+;;Coquard Bryan;
+;;Laporte Christophe;
+;1;Jansen Amund Grondahl;race/gooikse-pijl/2018
+;;Hvideberg Jonas Iversby;
+;;Meeus Jordi;
+;;Boivin Guillaume;
+;1;Ballerini Davide;race/trofeo-matteotti/2018
+;;Visconti Giovanni;
+;;Pozzovivo Domenico;
+;;Santamorita Ivan;
+;;Ciccone Giulio;
+;;Rojas Jose Joaquim;
+;;O'connor Ben;
+;;Gaudu David;
+;;Neilands Krists;
+;;Zardini Edoardo;
+;1;Tonelli Alessandro;race/memorial-marco-pantani/2018
+;;Battistella Samuele;
+;;Turek Daniel;
+;;Evthusenko Alexander;
+;;Gabburo Davide;
+;1;Kooistra Marten;race/circuit-franco-belge/2018
+;;Taminiaux Lionel;
+;;Wyss Danilo;
+;;Van Hooydonck Nathan;
+;;Rice Michael;
+;;Lauk Karl Patrick;
+;1;Masnada Fausto;race/gp-citta-di-peccioli/2018
+;;Zardini Edoardo;
+;;Morin Emmanuel;
+;;Schonberger Sebastian;
+;;Grosu Eduard-Michel;
+;;Cherkasov Nikolai;
+;1;Gazzara Michele;race/giro-di-toscana/2018
+;;Carlini Ettore;
+;;Teklehaimanot Daniel;
+;;Filosi Iuri;
+;;Fedeli Alessandro;
+;1;Boucher David;race/omloop-van-het-houtland-lichtervelde/2018
+;;Vermeulen Emiel;
+;;Lammertink Steven;
+;;Van Goethem Brian;
+;;Mcnally Mark;
+;;Tzortzakis Polychronis;
+;1;Garrison Ian;race/gp-jef-scherens/2018
+;;Guernalec Thibault;
+;;Coenen Dennis;
+;;Fridtiof Roinas;
+;;Stockman Abram;
+;1;Ganna Filippo;race/coppa-bernocchi/2018
+;;Cosnefroy Benoit;
+;;Fedeli Alessandro;
+;;Antunes Amaro;
+;4;Stokbro Andreas;race/okolo-slovenska/2018
+;;Walsleben Philipp;
+;;Zahalka Matej;
+;;Michalicka Juraj;
+;;Haring Martin;
+;;Asselman  Jesper;
+;3;Tybor Patrik;race/okolo-slovenska/2018
+;;Barta Jan;
+;1;Orrico Davide;race/coppa-agostoni/2018
+;;Bussard Dimitri;
+;;Madrazo Angel;
+;;Delaplace Anthony;
+;;Kobernyak Evgeny;
+;;Goldstein Omer;
+;;Gabburo Davide;
+;;Bernardinetti Marco;
+;1;Vasilyev Maksim;race/gp-impanis-van-petegem/2018
+;;Hjemsaeter Olav;
+;;Robeet Ludovic;
+;2;Orsini Umberto;race/okolo-slovenska/2018
+;;Silov Sergej;
+;;Hacecky Vojtech;
+;;Buts Vitaliy;
+;;Stork Florian;
+;1;Meijers Jeroen;race/kampioenschap-van-vlaanderen/2018
+;;De Bock Stijn;
+;;Boucher David;
+;;Bugter Luuc;
+;1;Haring Martin;race/okolo-slovenska/2018
+;;Sleen Torjus;
+;;Piaskowy Emanuel;
+;;Dina Daniel;
+;;Ciccone Giulio;
+;1;De Winter Gordon;race/gp-de-wallonie/2018
+;;Dernies Tom;
+;;Mortier Julien;
+;;Oliveira Ivo;
+;;De Laat Jasper;
+;1;Niv Guy;race/gp-montreal/2018
+;;Ellsay Nigel;
+;;Houle Hugo;
+;;Chretien Charles-Etienne;
+;;Roberge Adam;
+;;Doull Owain;
+;7;Stannard Ian;race/tour-of-britain/2018
+;;Politt Nils;
+;;Mcnally Mark;
+;;Carboni Giovanni;
+;;Paton Alex;
+;1;Cataford Alexander;race/gp-quebec/2018
+;;Langlois Bruno;
+;;Britton Rob;
+;;Sagiv Guy;
+;;Dougall Nicolas;
+;1;Ruijgh Rob;race/antwerp-port-epic/2018
+;;Boucher David;
+;;Eamon Lucas;
+;;Bernas Pawel;
+;1;Gerts Florian;race/gp-de-fourmies/2018
+;;Gruzdev Dmitriy;
+;;Dernies Tom;
+;;Fonseca Armindo;
+;;Smukulis Gatis;
+;;Deltombe Kevin;
+;;Cornu Jeremy;
+;1;Naesen Oliver;race/brussels-cycling-classic/2018
+;;Gregaard Jonas;
+;;Schreurs Hamish;
+;;Van Der Lijke Nick;
+;;Wirtgen Tom;
+;;Bak Lars Ytting;
+;1;Turrin Alex;race/bretagne-classic/2018
+;;Belkov Maxim;
+;;Gerard Arnaud;
+;;Bouet Maxime;
+;;Finetto Mauro;
+;;Ourselin Paul;
+;;Bouwman Koen;
+;4;Cavagna Remi;race/deutschland-tour/2018
+;;Bonifazio Niccolo;
+;;Kiryienka Vasil;
+;1;Van Schip Jan-Willem;race/omloop-mandel-leie-schelde-meulebeke/2018
+;;Waeytens Zico;
+;;Desale Nahom;
+;;Dieleman Michiel;
+;3;Riesebeek Oscar;race/deutschland-tour/2018
+;;Zabel Rick;
+;;Carpenter Robin;
+;;Hollman Juri;
+;;Hodapp Johannes;
+;;Shalunov Evgeny;
+;2;Van Empel Etienne;race/deutschland-tour/2018
+;;Pons Gaetan;
+;;Haller Patrick;
+;;Mandrysch John;
+;5;Garel Adrien;race/tour-du-poitou-charentes-et-de-la-vienne/2018
+;;Perichon Pierre-Luc;
+;;Kangert Tanel;
+;;Finetto Mauro;
+;;Paret-Peintre Aurelien;
+;;Boudat Thomas;
+;1;Arcas Jorge;race/deutschland-tour/2018
+;;Jarrier Benoit;
+;;Lubbers Dorian;
+;;Reynders Jens;
+;;Reutter Sven;
+;;Van Melsen Kevin;
+;3;Jauregui Quentin;race/tour-du-poitou-charentes-et-de-la-vienne/2018
+;;Fedeli Alessandro;
+;;Bonnamour Franck;
+;2;Garel Adrien;race/tour-du-poitou-charentes-et-de-la-vienne/2018
+;;Spreafico Matteo;
+;;Txoperena Benat;
+;1;Dunne Connor;race/veenendaal-veenendaal/2018
+;;Havik Piotr;
+;;Kooijman Jaap;
+;;Slik Ivar;
+;1;Siskevicius Evaldas;race/tour-du-poitou-charentes-et-de-la-vienne/2018
+;;Fournier Marc;
+;;Viel Mattia;
+;;Senni Manuel;
+;;Antomarchi Julien;
+;4;Phinney Taylor;race/colorado-classic/2018
+;;Villalobos Luis;
+;;Anderson Ed;
+;;Piccoli James;
+;7;Irizar Markel;race/binckbank-tour/2018
+;;De Vreese Laurens;
+;;Rickaert Jonas;
+;;Reinders Elmar;
+;;Van Keirsbulck Guillaume;
+;;De Winter Ludwig;
+;;Groenewegen Dylan;
+;1;Shalunov Evgeny;race/cyclassics-hamburg/2018
+;;Gradek Kamil;
+;;Anacona Winner;
+;;De Marchi Alessandro;
+;;Garcia Cortina Ivan;
+;3;Carthy Hugh;race/colorado-classic/2018
+;;Dombrowski Joe;
+;;Howson Damien;
+;;Skujins Toms;
+;;Swirbull Keegan;
+;;Martinez Daniel Felipe;
+;;Sanchez Brayan;
+;4;Vendrame Andrea;race/tour-du-limousin/2018
+;;Montaguti Matteo;
+;;Sicard Romain;
+;;Quemeneur Perrig;
+;;Sterbini Simone;
+;;Madrazo Angel;
+;;Bonnamour Franck;
+;;Le Cunff Kevin;
+;;De Laat Jasper;
+;;Bagioli Nicola;
+;6;Van Der Lijke Nick;race/binckbank-tour/2018
+;;Brandle Matthias;
+;;Gougeard Alexis;
+;;Backaert Frederik;
+;3;Bratashchuk Andrii;race/tour-de-hongrie/2018
+;;Dina Daniel;
+;;Mahdar Martin;
+;3;Ourselin Paul;race/tour-du-limousin/2018
+;;Vachon Florian;
+;;Cabot Jeremy;
+;;Frapporti Marco;
+;;Oien Justin;
+;;Budding Martijn;
+;;Geniez Alexandre;
+;;Combaud Romain;
+;;Morin Emmanuel;
+;;Turgis Tanguy;
+;5;Cort Magnus;race/binckbank-tour/2018
+;;Van Den Berg Julius;
+;;Rickaert Jonas;
+;;Gougeard Alexis;
+;2;Feillu Romain;race/tour-du-limousin/2018
+;;Gouault Pierre;
+;;Antonini Simone;
+;;Trarieux Julien;
+;;Rosa Massimo;
+;;Rybalkin Aleksey;
+;;Van Goethem Brian;
+;4;Van Der Lijke Nick;race/binckbank-tour/2018
+;;De Bondt Dries;
+;;Planckaert Edward;
+;;Kirsch Alex;
+;1;Madrazo Angel;race/tour-du-limousin/2018
+;;Quemeneur Perrig;
+;;Perez Anthony;
+;3;De Bie Sean;race/binckbank-tour/2018
+;;Vantomme Maxime;
+;;Mohoric Matej;
+;;Asselman  Jesper;
+;;Van Der Hoorn Taco;
+;1;De Bondt Dries;race/binckbank-tour/2018
+;;Peyskens Dimitri;
+;;Sprengers Thomas;
+;;Boaro Manuele;
+;;Van Den Berg Julius;
+;;Reinders Elmar;
+;1;Krizek Matthias;race/uec-road-european-championships/2018
+;;Cerny Josef;
+;;Raim Mihkel;
+;;Tzortzakis Polychronis;
+;;Neilands Krists;
+;;Thalmann Roland;
+;;Mccarthy Robert-Jon;
+;1;Affini Edoardo;race/slag-om-norg/2018
+;;Carpenter Robin;
+;;Van Schip Jan-Willem;
+;;Van Breda Rick;
+;;Rhim Brendan;
+;;Bugter Luuc;
+;;Kooistra Marten;
+;1;Perichon Pierre-Luc;race/la-poly-normande/2018
+;;Duval Julien;
+;;Van Der Ploeg Neil;
+;;Gouault Pierre;
+;1;Chetout Loic;race/san-sebastian/2018
+;;Mas Lluis;
+;;Barthe Cyril;
+;;Torres Pablo;
+;;Rodriguez Sergio;
+;;Bagues Aritz;
+;2;Sorensen Chris Anker;race/tour-of-denmark/2018
+;;Brochner Nicolai;
+;;Noppe Christophe;
+;;Wallin Rasmus Bogh;
+;;Toudal Emil;
+;1;Kongstad Tobias;race/tour-of-denmark/2018
+;;Tiller Rasmus;
+;;Lyhne Daniel;
+;;Pedersen Nicklas Amdi;
+;1;Lopez-Cozar Juan Antonio;race/circuito-de-getxo/2018
+;;Oien Justin;
+;;Torres Pablo;
+;;Mihaylov Nikolay;
+;3;Kirsch Alex;race/tour-de-wallonie/2018
+;;Planckaert Edward;
+;;Taminiaux Lionel;
+;4;Van Der Haar Lars;race/tour-de-wallonie/2018
+;;Planckaert Emiel;
+;;De Bondt Dries;
+;;Van Empel Etienne;
+;;Vanbilsen Kenneth;
+;;Sellier Simon;
+;;Courteille Arnaud;
+;;Kirsch Alex;
+;;Van Ginneken Sjoerd;
+;1;Ewan Caleb;race/ride-london-classic/2018
+;;Gougeard Alexis;
+;;Boaro Manuele;
+;;Agnoli Valerio;
+;;Cieslik Pawel;
+;;Verwilst Aaron;
+;2;Asgreen Kasper;race/tour-de-wallonie/2018
+;;Cleppe Nicolas;
+;1;O'connor Ben;race/tour-de-wallonie/2018
+;;Taminiaux Lionel;
+;;Boros Michael;
+;;Hermans Quinten;
+;;Dunne Connor;
+;;Tronet Steven;
+;;Budding Martijn;
+;1;Schmidt Mads Wurtz;race/gp-cerami/2018
+;;Hansen Lasse Norman;
+;;Farazijn Maxime;
+;;Kreder Wesley;
+;;Kennaugh Peter;
+;8;Van Der Lijke Nick;race/tour-of-austria/2018
+;;Mihaylov Nikolay;
+;;Morton Lachlan;
+;;Visconti Giovanni;
+;;Lutsenko Alexey;
+;7;Nibali Antonio;race/tour-of-austria/2018
+;;Mohoric Matej;
+;;Gasparotto Enrico;
+;;Gate Aaron;
+;;Van Empel Etienne;
+;;Cieslik Pawel;
+;;Nych Artem;
+;6;Lutsenko Alexey;race/tour-of-austria/2018
+;;Mohoric Matej;
+;4;Mohoric Matej;
+;;Cummings Stephen;
+;;Van Zyl Johann;
+;;Sterbini Simone;
+;;Mihaylov Nikolay;
+;;Zimmerman Georg;
+;3;Gate Aaron;race/tour-of-austria/2018
+;;Livyns Arjen;
+;;Graf Andreas;
+;;Goldstein Roy;
+;;Orrico Davide;
+;;Bajc Andi;
+;;Gazvoda Gregor;
+;2;Gate Aaron;race/tour-of-austria/2018
+;;Neuhauser Marcel;
+;;Orrico Davide;
+;;Hofer Andreas;
+;1;Gate Aaron;race/tour-of-austria/2018
+;;Finetto Mauro;
+;;Loderer Timon;
+;;Krizek Matthias;
+;;Orrico Davide;
+;;Pelikan Janos;
+;1;Crista Daniel;race/sibiu-cycling-tour/2018
+;;Jannsen Adriaan;
+;1;Reza Kevin;race/paris-chauny-classique/2018
+;;Finetto Mauro;
+;;Minnaard Marco;
+;;Chavanel Sylvain;
+;;Sinkeldam Ramon;
+;;Duval Julien;
+;;Jarrier Benoit;
+;;Gouault Pierre;
+;;Grellier Fabien;
+;;Schlechter Pit;
+;;Maurelet Flavien;
+;;Eiking Odd Christian;
+;;Idjouadiene Pierre;
+;;Turgis Anthony;
+;;Jauregui Quentin;
+;;Smith Dion;
+;1;De Vreese Laurens;race/halle-ingooigem/2018
+;;Teasdale Josh;
+;;Ruijgh Rob;
+;1;Van Der Poel Mathieu;race/circuit-des-xi-villes/2018
+;;Haag Guillaume;
+;;Vanbilsen Kenneth;
+;;Lehaen Dries;
+;;Meeus Jordi;
+;;Baugnies Jerome;
+;;Reynders Jens;
+;3;Gaudin Damien;race/la-route-d-occitanie/2018
+;;Txoperena Benat;
+;4;Plaza Ruben;race/tour-of-slovenia/2018
+;;Poljanski Pawel;
+;;Jansen Amund Grondahl;
+;;Masnada Fausto;
+;;Formolo Davide;
+;1;Vermeersch Gianni;race/dwars-door-het-hageland/2018
+;;Van Der Poel Mathieu;
+;;Van Der Poel David;
+;;Merlier Tim;
+;;Viviani Elia;
+;;Van Poppel Danny;
+;;Dupont Timothy;
+;;Van Schip Jan-Willem;
+;;Ruyters Brecht;
+;;Van Den Berg Julius;
+;2;Jauregui Quentin;race/la-route-d-occitanie/2018
+;;Palliot Yoann;
+;;Cousin Jerome;
+;;Bravo Garikoitz;
+;;Mainard Jerome;
+;;Le Bon Johan;
+;;Doubey Fabien;
+;3;Kittel Marcel;race/tour-of-slovenia/2018
+;;Kluge Roger;
+;2;Hill Benjamin;race/tour-of-slovenia/2018
+;;Katrasnik Gasper;
+;;Hacecky Vojtech;
+;1;Combaud Romain;race/la-route-d-occitanie/2018
+;;Baldo Nicolas;
+;;Gaudin Damien;
+;;Abraham Meron;
+;1;Hill Benjamin;race/tour-of-slovenia/2018
+;;Bellan Juraj;
+;;Haring Martin;
+;;Bozic Jon;
+;;Cemazar Nic;
+;1;Leysen Senne;race/ronde-van-limburg/2018
+;;Janssens Jimmy;
+;;Boucher David;
+;;Pardini Olivier;
+;1;Sbaragli Kristian;race/rund-um-koln/2018
+;;Van Ginneken Sjoerd;
+;;Boev Igor;
+;;Stork Florian;
+;;Schneiter Joab;
+;;Ruegg Lukas;
+;;Smukulis Gatis;
+;1;Pernsteiner Hermann;race/gp-lugano/2018
+;;Sbaragli Kristian;
+;3;Morice Julien;race/boucles-de-la-mayenne/2018
+;;Bettini Francesco;
+;;Jager Patrick;
+;;Vanthourenhout Michael;
+;4;Gaudin Damien;race/tour-de-luxembourg/2018
+;;Koch Jonas;
+;;Kurek Adrian;
+;;Chetout Loic;
+;;Combaud Romain;
+;;Orrico Davide;
+;2;Delaplace Anthony;race/boucles-de-la-mayenne/2018
+;;Journiaux Axel;
+;3;Antunes Amaro;race/tour-de-luxembourg/2018
+;;Combaud Romain;
+;;Nauleau Bryan;
+;;Badilatti Matteo;
+;2;Henn Luca;race/tour-de-luxembourg/2018
+;;Donders Jelle;
+;;Orrico Davide;
+;;De Bondt Dries;
+;1;Vermeersch Gianni;race/boucles-de-la-mayenne/2018
+;;Gene Yohann;
+;;Moreira Mauricio;
+;;Joseph Thomas;
+;;Cosnefroy Benoit;
+;1;Stosz Patryk;race/tour-de-luxembourg/2018
+;;Nowal Florian;
+;;Meiler Lukas;
+;;Van Schip Jan-Willem;
+;1;Sweeck Laurens;race/heist-op-den-berg/2018
+;;Van Kessel Corne;
+;;Ruijgh Rob;
+;;Jordbrekk Blikra Erlend;
+;;Meeus Jordi;
+;1;Maestri Mirco;race/trofeo-calvia/2022
+;;Alonso Pablo;
+;;Piccoli James;
+;1;Dens Tuur;race/trofeo-alcudia/2022
+;;Bizkarra Mikel;
+;;Vandevelde Yentl;
+;;Colombo Raul;
+;1;Mosca Jacopo;race/deia-trophy/2022
+;;Murguialday Jokin;
+;;De Pestel Sander;
+;;Vauquelin Kevin;
+;;Irizer Julen;
+;;Garcia Raul;
+;;Burger Sven;
+;1;Isasa Xabier;race/trofeo-andratx-mirador-d-es-colomer/2022
+;;Rivi Samuele;
+;;Gabburo Davide;
+;;Zoccarato Samuele;
+;;Aparicio Mario;
+;;Apers Ruben;
+;;Bonneu Kamiel;
+;;Saver Kasper;
+;;Alonso Pablo;
+;;Pase Danilo;
+;;Rota Raul;
+;1;Okamika Ander;race/trofeo-palma/2022
+;;Canton Isaac;
+;;Martin Sergio Roman;
+;;Azparren Xabier Mikel;
+;1;Gougeard Alexis;race/gp-d-ouverture/2022
+;;Van Der Tuuk Danny;
+;;Debeaumarche Nicolas;
+;;Carisey Clement;
+;;Blouwe Louis;
+;;Van Poucke Aaron;
+;1;Bais Mattia;race/gp-de-valence/2023
+;;Zoccarato Samuele;
+;;Ballarin Iker;
+;;Denis Thomas;
+;;Estelrich Miguel;
+;1;Goikoetxea Peio;race/tour-de-saudi-arabia/2023
+;;Iacchi Alessandro;
+;;Takeyama Kosuke;
+;;Van Der Beken Aaron;
+;;Hansen Marcus Sander;
+;;MOHD ZARIFF Muhammad Nur Aiman;
+;1;Paleni Enzo;race/gp-d-ouverture/2023
+;;Guegan Mael;
+;;Rapiteau Florian;
+;;Kelemen Petr;
+;1;Berasategi Xabier;race/trofeo-palma/2023
+;;Cobo Ivan;
+;;Van Hemelen Vincent;
+;;Terrasa Marc;
+;1;Bais Mattia;race/trofeo-andratx-mirador-d-es-colomer/2023
+;;Ries Michel;
+;;Uijtdebroeks Cian;
+;;Paasschens Mathijs;
+;1;Van Den Berg Julius;race/trofeo-alcudia/2023
+;;Lange Colby;
+;;Mate Luis Angel;
+;;Fancellu Alessandro;
+;1;Healy Ben;race/trofeo-calvia/2023
+;;Zimmer Matt;
+;;Maestri Mirco;
+;;Eenkhoorn Pascal;
+;2;Ishibashi Manabu;race/tour-de-saudi-arabia/2023
+;;Azparren Enekoitz;
+;3;Masotto Giulio;race/tour-de-saudi-arabia/2023
+;;Juaristi Txomin;
+;;Barac Antonio;
+;;Yamamoto Masaki;
+;;Alabdulmunim Azzam;
+;5;Desal Ceriel;race/tour-de-saudi-arabia/2023
+;;Van Empel Etienne;
+;;Iacchi Alessandro;
+;;Malecki Kamil;
+;;Juaristi Txomin;
+;;Hansen Sander;
+;4;Engelhardt Felix;race/tour-de-saudi-arabia/2023
+;;Zukowsky Nickolas;
+;;Barac Antonio;
+;;MoHD ZARIFF Muhammad Nur Aiman;
+;1;Baestians Ayco;race/etoile-de-besseges/2023
+;;Le Ny Jean-Louis;
+;;Pellaud Simon;
+;3;De Bondt Dries;race/etoile-de-besseges/2023
+;;Braet Vito;
+;;Molly Kenny;
+;;Paleni Enzo;
+;;Girard Damien;
+;;Hennequin Paul;
+;;Champion Thomas;
+;4;Van Avermaet Greg;race/etoile-de-besseges/2023
+;;De Lie Arnaud;
+;;Van Moer Brent;
+;;Skujins Toms;
+;;Skjelmose Mattias;
+;;Sivakov Pavel;
+;;Pedersen Mads;
+;;Piccolo Andrea;
+;;Mosca Jacopo;
+;;Powless Neilson;
+;;Vanmarcke Sep;
+;;Leroux Samuel;
+;;Latour Pierre;
+;;Van Gestel Dries;
+;;Houle Hugo;
+;;Valvasori Larry;
+;;Mozzato Luca;
+;;Skjelmose Jensen Mattias;
+;1;Ishibashi Manabu;race/muscat-classic/2023
+;1;Romeo Ivan;race/vuelta-ciclista-a-la-region-de-murcia/2023
+;;Ourselin Paul;
+;;Garcia Jose Maria;
+;;Estelrich Miguel;
+;;Sweeny Harry;
+;1;Nunes Hugo;race/figueira-champions-classic/2023
+;;Goncalves Gaspar;
+;;Silva Afonso;
+;;Del Pino Jesus;
+;;Garcia Sergio;
+;;Monteiro Alexandre;
+;;Salgueiro Carlos;
+;1;Samitier Sergio;race/clasica-jaen-paraiso-interior/2023
+;;Paasschens Mathijs;
+;;Azparren Xabier Mikel;
+;;Le Berre Mathis;
+;;Ardila Andres Camilo;
+;2;Milesi Lorenzo;race/tour-des-alpes-maritimes-et-du-var/2023
+;;Burgaudeau Mathieu;
+;;Brenner Marco;
+;;Holter Adne;
+;1;Fouche James;race/tour-of-rwanda/2023
+;;Nsengimana Jean Bosco;
+;3;Gaudu David;race/tour-des-alpes-maritimes-et-du-var/2023
+;;Doubey Fabien;
+;;Carthy Hugh;
+;;Gall Felix;
+;;Paret-Peintre Aurelien;
+;;Elissonde Kenny;
+;;Champoussin Clement;
+;;Wilsly Jonas;
+;;Dujardin Sandy;
+;;Bardet Romain;
+;1;Le Ny Jean-Louis;race/tour-des-alpes-maritimes-et-du-var/2023
+;;Guegan Mael;
+;;Bernard Julien;
+;;Kristensen Mads Ostergaard;
+;2;Pritzen Marc Oliver;race/tour-of-rwanda/2023
+;3;Pritzen Marc Oliver;race/tour-of-rwanda/2023
+;;Fouche James;
+;;Nsengimana Jean Bosco;
+;4;Iribar Unai;race/tour-of-rwanda/2023
+;;Stewart Mark;
+;;Manizabayo Eric;
+;;Arefayne Aklilu;
+;5;Froome Chris;race/tour-of-rwanda/2023
+;1;Gudmestad Tord;race/le-samyn/2023
+;;De Wilde Gilles;
+;;Kristensen Mads Ostergaard;
+;;Aniolkowski Stanislaw;
+;;Langella Leniac;
+;;Malecki Kamil;
+;;Jacob Philippe;
+;3;Dennis Rohan;race/gran-camino/2023
+;;Arcas Jorge;
+;;Arrieta Igor;
+;;Ardila Andres Camilo;
+;;Donovan Mark;
+;;Schonberger Sebastian;
+;;Tivani German Nicolas;
+;;Martin Alex;
+;;Antunes Tiago;
+;;Isasa Xabier;
+;;Lastra Jonathan;
+;;Velasco Simone;
+;2;Cuadrado Unai;race/gran-camino/2023
+;;Etxeberria Josu;
+;;Ropero Alejandro;
+;;Konychev Alexander;
+;;Angulo Antonio;
+;;Bais Mattia;
+;;Schonberger Sebastian;
+;1;Christensen Ryan;race/grote-prijs-jean-pierre-monsere/2023
+;;Canal Carlos;
+;;Coleman Zak;
+;;Toudal Emil;
+;;Zukowsky Nickolas;
+;;Artz Huub;
+;;Pluimers Rick;
+;;Verhofstadt Thibau;
+;1;Desal Ceriel;race/ronde-van-drenthe/2023
+;;De Vos Adam;
+;;Hoogendoorn Roy;
+;;De Jong Timo;
+;1;Van Der Beken Aaron;race/per-sempre-alfredo/2023
+;;Belleri Michael;
+;;Leali Stefano;
+;;Piccini Mattia;
+;;Silenzi Anthoni;
+;;Garavaglia Giacomo;
+;;Camprubi Marcel;
+;1;Scott Jacob;race/cholet-pays-de-loire/2023
+;;Boulet Enzo;
+;;Goldstein Edo;
+;;Hadfield Gavin;
+;;Mengel Nikolaj;
+;1;Fancellu Alessandro;race/settimana-internazionale-coppi-e-bartali/2023
+;;Teugels Lennert;
+;;Murgano Marco;
+;;Petrelli Gabriele;
+;;Merchan Didier;
+;2;Lipowitz Florian;race/settimana-internazionale-coppi-e-bartali/2023
+;;Ansaloni Emanuele;
+;;Stojnic Veljko;
+;;Murgano Marco;
+;;Fouche James;
+;3;Rowe Luke;race/settimana-internazionale-coppi-e-bartali/2023
+;;Nibali Antonio;
+;;Peyskens Dimitri;
+;;Craddock Lawson;
+;;Garosio Andrea;
+;;Covili Luca;
+;;Chorrin Alois;
+;;Restrepo Jhonatan;
+;;Gamper Patrick;
+;3;Delbove Joris;race/la-route-d-occitanie/2023
+;;Delacroix Theo;
+;;Etxeberria Josu;
+;;Guillon Celestin;
+;;Boudat Thomas;
+;;Cosnefroy Benoit;
+;;Sanchez Pelayo;
+;;Doubey Fabien;
+;;Dujardin Sandy;
+;;Pichon Laurent;
+;;Urruty Maxime;
+;;Germani Lorenzo;
+;2;Garcia Pierna Carlos;race/la-route-d-occitanie/2023
+;;Boudat Thomas;
+;;Boulet Enzo;
+;;Mifsud Andrea;
+;1;Delacroix Theo;race/la-route-d-occitanie/2023
+;;Goikoetxea Peio;
+;;Garcia Pierna Carlos;
+;;Urruty Maxime;
+;;Joalland Yael;
+;;Aparicio Mario;
+;;Hindsgaul Jacob;
+;;Fagundez Eric Antonio;
+;4;Van Den Berg Lars;race/la-route-d-occitanie/2023
+;;Van Den Berg Marijn;
+;;Molard Rudy;
+;;Carr Simon;
+;;Delbove Joris;
+;;Tronchon Bastien;
+;;Ganna Filippo;
+;;Pichon Laurent;
+;3;Mate Luis Angel;race/vuelta-asturias/2023
+;;Pedrero Antonio;
+;;Simon Julien;
+;;Hagen Carl Fredrik;
+;;Sanchez Pelayo;
+;;Castrillo Pablo;
+;;Agirre Jon;
+;;Barcelo Fernando;
+;;Kench Josh;
+;;Hailemichael Mulu Kinfe;
+;;Sessler Nicolas;
+;2;Dunnewind Jan;race/vuelta-asturias/2023
+;;Grigorev Aleksandr;
+;;Simon Julien;
+;;Lopez Joseba;
+;;Jones Ollie;
+;;Garcia Jose Maria;
+;;Martingil Cesar;
+;;Martinez Victor;
+;;Scott Jacob;
+;1;Jones Ollie;race/vuelta-asturias/2023
+;;Martinez Victor;
+;;Sessler Nicolas;
+;1;Meijers Jeroen;race/international-tour-of-hellas/2023
+;;Dorn Vinzent;
+;;GIANNOUTSOS Miltiadis;
+;;Budzinski Tomasz;
+;;Lelandais Remi;
+;;Sinschek Nils;
+;2;Santamorita Alessandro;race/international-tour-of-hellas/2023
+;;Cepeda Jefferson Alveiro;
+;;Otruba Jakub;
+;;Yemane Dawit;
+;;Sainbayar Jambaljamts;
+;4;Goeman Andreas;race/international-tour-of-hellas/2023
+;;Yemane Dawit;
+;;Tarozzi Manuele;
+;;Combes Simon;
+;;Schunk Conor;
+;;Santamorita Alessandro;
+;;Miltiadis Andreas;
+;;Stites Tyler;
+;4;Ibanez Javier;race/tour-du-poitou-charentes-et-de-la-vienne/2023
+;;Hecht Gage;
+;;Lemmen Bart;
+;3a;Fouche James;race/tour-du-poitou-charentes-et-de-la-vienne/2023
+;;Gabburo Davide;
+;;Rivi Samuele;
+;;Le Ny Jean-Louis;
+;2;Ottema Rick;race/tour-du-poitou-charentes-et-de-la-vienne/2023
+;;Beneteau Lucas;
+;;Fouche James;
+;;Girard Damien;
+;;Mainguenaud Tom;
+;;Martin David;
+;1;Guegan Mael;race/tour-du-poitou-charentes-et-de-la-vienne/2023
+;;McGill Scott;
+;;Fouche James;
+;;Sevilla Diego Pablo;
+;;Zuccarelli Axel Narbonne;
+;1;Christensen Ryan;race/druivenkoers-overijse/2023
+;;Hecht Gage;
+;;Goeman Andreas;
+;;Ledegan Dietmar;
+;;Stockman Abram;
+;;Abrahamsen Jonas;
+;;Lauk Karl Patrick;
+;2;Auge Ronan;race/arctic-race-of-norway/2023
+;;Gravas Peder Antoni;
+;;Garofoli Gianmarco;
+;;Ravnoy Johan;
+;;Van Hemelen Vincent;
+;;Gomez Camilo Andees;
+;4;Marcellusi Martin;race/tour-du-limousin/2023
+;;Joseph Thomas;
+;;Erviti Imanol;
+;;Ourselin Paul;
+;;Appel Stijn;
+;3;Debeaumarche Nicolas;race/tour-du-limousin/2023
+;;Marcellusi Martin;
+;;Bonnet Thomas;
+;;Mifsud Andrea;
+;;Iacchi Alessandro;
+;;Maclead Callum;
+;2;Jacobs Johan;race/tour-du-limousin/2023
+;;Pietrobon Andrea;
+;;Dorn Vinzent;
+;;Mainguenaud Tom;
+;;Molly Kenny;
+;1;Pietrobon Andrea;race/tour-du-limousin/2023
+;;Le Ny Jean-Louis;
+;;Mainguenaud Tom;
+;;Matthew Oliver;
+;1;Ronhaar Pim;race/gp-jef-scherens/2023
+;;Stockman Abram;
+;;Tesson Jason;
+;;Hecht Gage;
+;;Reinderink Pepijn;
+;1;Reynders Jens;race/la-poly-normande/2023
+;;Bidard Francois;
+;;Danes Leo;
+;;Peyskens Dimitri;
+;;Touze Damien;
+;1;Laurence Axel;race/world-championships-u23/2023
+;;Milesi Lorenzo;
+;;Huby Antoine;
+;;Rootkin-Gray Jack;
+;;Brennsater Trym;
+;;Kretschy Moritz;
+;;Mcdonald Brody;
+;;Mackeller Alastair;
+;;Guatibonza Jonathan;
+;;Al-Ali Abdulla Jasim;
+;2;Stewart Mark;race/tour-of-denmark/2023
+;;Johansen Julius;
+;;Jensen Frederik Irgens;
+;;Stampe Daniel;
+;;Aagaard Tobias;
+;;Pedersen Henrik;
+;;Pallesen Jeppe Aaskov;
+;1;Bol Jetse;race/vuelta-a-castilla-y-leon/2023
+;;Balderstone Abel;
+;;Elosegui Inigo;
+;;Jensen August;
+;;Martin Jose Maria;
+;1;Charrin Alois;race/tour-de-l-ain/2023
+;;Kristensen Mads Ostergaard;
+;;Lino Julian;
+;3;Calmejane Lillian;race/tour-de-l-ain/2023
+;;Venturini Clement;
+;;Van Gestel Dries;
+;;Delacroix Theo;
+;;Perichon Pierre-Luc;
+;2;Jarnet Maxime;race/tour-de-l-ain/2023
+;;Devaux Thomas;
+;;Kristensen Mads Ostergaard;
