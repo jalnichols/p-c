@@ -56,7 +56,9 @@ need_to_scrape <- GC_races %>%
   mutate(url = ifelse(str_detect(url, "/uae-tour/2016"), str_replace(url, "/uae-tour/2016", "/abu-dhabi-tour/2016"), url)) %>%
   mutate(url = ifelse(str_detect(url, "/uae-tour/2015"), str_replace(url, "/uae-tour/2015", "/abu-dhabi-tour/2015"), url)) %>% 
   
-  arrange(desc(date))
+  arrange(date) %>%
+  
+  filter(date <= lubridate::today())
 
 #
 
@@ -145,6 +147,110 @@ for(g in 1:length(need_to_scrape$file_name)) {
 #
 #
 
+missing_gc <- GC_races %>%
+  
+  filter(!str_detect(url, "/hammer-")) %>%
+  filter(date < lubridate::today()) %>%
+  filter(winner != "") %>%
+  filter(!url %in% c("race/int-cycling-tour-of-bulgaria-north/2017", "race/velo-alanya-junior-itt/2022", "race/tour-of-albania/2022")) %>%
+  anti_join(dbReadTable(con, "pcs_gc_results") %>%
+              mutate(url = ifelse(str_detect(url, "/benelux-tour/"), str_replace(url, "/benelux-tour/", "/binckbank-tour/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/tour-des-alpes-maritimes-et-du-var/"), str_replace(url, "/tour-des-alpes-maritimes-et-du-var/", "/tour-du-haut-var/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/oxyclean-classic-brugge-de-panne/"), str_replace(url, "/oxyclean-classic-brugge-de-panne/", "/driedaagse-vd-panne/"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/abu-dhabi-tour/2017"), str_replace(url, "/abu-dhabi-tour/2017", "/uae-tour/2017"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/abu-dhabi-tour/2018"), str_replace(url, "/abu-dhabi-tour/2018", "/uae-tour/2018"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/abu-dhabi-tour/2016"), str_replace(url, "/abu-dhabi-tour/2016", "/uae-tour/2016"), url)) %>%
+              mutate(url = ifelse(str_detect(url, "/abu-dhabi-tour/2015"), str_replace(url, "/abu-dhabi-tour/2015", "/uae-tour/2015"), url)), by = c("url")) %>%
+  
+  arrange(desc(date))
+
+#
+
+dl_html = TRUE
+
+for(g in 1:length(missing_gc$file_name)) {
+  
+  f_name <- missing_gc$file_name[[g]]
+  URL <- paste0("https://www.procyclingstats.com/", missing_gc$url[[g]] , "/gc/result/result")
+  
+  if(dl_html == TRUE) {
+    
+    download.file(URL, paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", f_name), quiet = TRUE)
+    
+    Sys.sleep(6)
+    
+  }
+  
+  page <- read_file(paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", f_name)) %>%
+    read_html()
+  
+  stage_chars <- page %>% html_nodes('ul.infolist') %>% html_text() %>% enframe(name = NULL) %>%
+    separate(value, paste0("v", seq(1,15,1)), sep = "\r\n") %>% gather(stat, value) %>% select(-stat) %>%
+    separate(value, c("stat", "value"), sep = ":") %>%
+    mutate(stat = str_trim(stat), value = str_trim(value))
+  
+  DATE <- stage_chars %>%
+    filter(stat == "Date") %>%
+    select(value) %>%
+    .[[1]] %>%
+    lubridate::dmy()
+  
+  RACE <- page %>% html_nodes('div.main') %>% html_nodes('h1') %>% html_text()
+  
+  tables <- page %>%
+    html_nodes('div.result-cont') %>%
+    html_nodes('table') %>%
+    html_table()
+  
+  result_cont <- page %>%
+    html_nodes('ul.restabs') %>%
+    html_nodes('a') %>%
+    html_attr(name = 'href') %>%
+    enframe(name = NULL) %>%
+    rowid_to_column() %>%
+    filter(str_detect(value, "/gc")) %>%
+    select(rowid) %>%
+    .[[1]]
+  
+  if(f_name == "GC-raceherald-sun-tour2014") {
+    result_cont = 1
+  }
+  
+  if(length(result_cont) == 0) {
+    
+    print(paste0("MISSING ", g))
+    
+  } else {
+    
+    df <- tables[[result_cont]] %>%
+      
+      janitor::clean_names() %>%
+      
+      select(rnk, rider, team, pnt) %>%
+      
+      mutate(url = missing_gc$url[[g]],
+             race = iconv(RACE, from="UTF-8", to = "ASCII//TRANSLIT"),
+             rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"),
+             date = DATE,
+             year = missing_gc$year[[g]]) %>%
+      filter(!rnk %in% c("OTL", "DNF", "DNS"))
+    
+    dbWriteTable(con, "pcs_gc_results", df, append=TRUE, row.names = FALSE)
+    
+    rm(df)
+    
+  }
+  
+  Sys.sleep(runif(1,2,6))
+  
+  print(paste0(RACE,g))
+  
+}
+
+#
+#
+#
+
 pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
   
   filter(year >= 2014) %>%
@@ -153,7 +259,9 @@ pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
   mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)),
          rider = iconv(rider, from="UTF-8", to = "ASCII//TRANSLIT"),
          rider = str_to_title(rider),
-         race = str_to_lower(race)) %>%
+         rider = ifelse(rider == "O Connor Ben", "O'connor Ben", rider),
+         rider = str_trim(rider),
+         race = str_trim(str_to_lower(race))) %>%
   mutate(date = ifelse(url == "race/tour-de-langkawi/2020", "2020-02-08",
                            ifelse(url == "race/sibiu-cycling-tour/2019", '2019-08-01', date)),
          date = as.Date(date)) %>%
@@ -164,6 +272,8 @@ pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
   right_join(dbGetQuery(con, "SELECT DISTINCT url, year, rider
                         FROM stage_data_perf
                         WHERE year > 2013 AND class IN ('2.1', '2.HC', '2.UWT', '2.2U', '2.2', '2.Ncup', '2.Pro')") %>%
+               mutate(rider = ifelse(rider == "O Connor Ben", "O'connor Ben", rider),
+                      rider = str_trim(rider)) %>%
               mutate(url = ifelse(str_detect(url, "/binckbank-tour/"), str_replace(url, "/binckbank-tour/", "/benelux-tour/"), url)) %>%
               mutate(url = ifelse(str_detect(url, "/tour-du-haut-var/"), str_replace(url, "/tour-du-haut-var/", "/tour-des-alpes-maritimes-et-du-var/"), url)) %>%
               mutate(url = ifelse(str_detect(url, "/driedaagse-vd-panne/"), str_replace(url, "/driedaagse-vd-panne/", "/oxyclean-classic-brugge-de-panne/"), url)) %>%
@@ -229,8 +339,7 @@ pcs_gc_results <- dbReadTable(con, "pcs_gc_results") %>%
   mutate(max_pnt = max(pnt, na.rm = T)) %>%
   ungroup() %>%
   
-  mutate(rider = ifelse(rider == "O Connor Ben", "O'connor Ben", rider),
-         rider = str_trim(rider))
+  mutate(rider = str_trim(rider))
 
 #
 #
@@ -248,7 +357,11 @@ y <- pcs_gc_results %>%
 startDate = min(y$date)
 endDate = max(y$date)
 
+AlreadyendDate = dbGetQuery(con, "SELECT DISTINCT date FROM rider_gc_rankings") %>% summarize(max = max(date)) %>% .[[1]]
+Written = dbGetQuery(con, "SELECT DISTINCT date FROM rider_gc_rankings")
+
 DatesList = seq(startDate, endDate, 1)
+DatesList = seq(AlreadyendDate, lubridate::today(), 1)
 
 store_list <- vector("list", length(DatesList))
 
@@ -256,7 +369,7 @@ for(x in 1:length(DatesList)) {
   
   D <- as.Date(DatesList[[x]])
   
-  if(lubridate::yday(D) >= 20 & lubridate::yday(D) <= 327) {
+  if(lubridate::yday(D) >= 10 & lubridate::yday(D) <= 327 & !D %in% Written$date) {
     
     # gc_ratings <- pcs_gc_results %>%
     #   filter(date > (D-1100) & date < D) %>%
@@ -287,6 +400,7 @@ for(x in 1:length(DatesList)) {
     #   filter(top7 > 0 | max > 0 | wtd > 0 | top7_wtd > 0)
     
     gc_ratings_pcd <- pcs_gc_results %>%
+      unique() %>%
       filter(date > (D-1100) & date <= D) %>%
       filter(avg_pcd >= 3) %>%
       
@@ -294,6 +408,8 @@ for(x in 1:length(DatesList)) {
              wtd = wt*pnt) %>%
       
       group_by(rider) %>%
+      mutate(latest = ifelse(date == max(date, na.rm = T), pnt, NA),
+             latest = max(latest, na.rm = T)) %>%
       mutate(t7 = ifelse(rank(desc(pnt), ties.method = "first") <= 7, pnt, NA),
              t7_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 7, wtd, NA),
              t3 = ifelse(rank(desc(pnt), ties.method = "first") <= 3, pnt, NA),
@@ -301,6 +417,7 @@ for(x in 1:length(DatesList)) {
       ungroup() %>%
       
       group_by(rider) %>%
+      mutate(order_race = rank(desc(date), ties.method = "first")) %>%
       summarize(avg = mean(pnt, na.rm = T),
                 top7 = mean(t7, na.rm = T),
                 top3 = mean(t3, na.rm = T),
@@ -308,6 +425,8 @@ for(x in 1:length(DatesList)) {
                 wtd = mean(wtd, na.rm = T),
                 top7_wtd = mean(t7_wtd, na.rm = T),
                 top3_wtd = mean(t3_wtd, na.rm = T),
+                latest = mean(latest, na.rm = T),
+                ordered = sum((1 / order_race) * pnt, na.rm = T) / sum(1 / order_race, na.rm = T),
                 races = n()) %>%
       ungroup() %>%
       
@@ -337,7 +456,95 @@ grand_tour_gc_ratings <- bind_rows(store_list) %>%
 #
 #
 
-dbWriteTable(con, "rider_gc_rankings", grand_tour_gc_ratings, overwrite = TRUE, row.names = FALSE)
+dbWriteTable(con, "rider_gc_rankings", grand_tour_gc_ratings, append = TRUE, row.names = FALSE)
+
+#
+
+
+# Apply GC Rankings to Strength of Race -----------------------------------
+
+strength_of_gc_field <- pcs_gc_results %>%
+  
+  select(rider, url, date) %>%
+  unique() %>%
+  
+  inner_join(
+    dbGetQuery(con, "SELECT * FROM rider_gc_rankings"), by = c("rider", "date")
+  )
+
+#
+
+aggregate_strength_of_gc_field <- strength_of_gc_field %>%
+  
+  group_by(url, date) %>%
+  mutate(best5 = rank(desc(top3_wtd), ties.method = "first"),
+         best5 = ifelse(best5 <= 5, top3_wtd, 0)) %>%
+  summarize(avg = sum(avg, na.rm = T),
+            top3_wtd = sum(top3_wtd, na.rm = T),
+            best5 = sum(best5, na.rm = T),
+            riders = n()) %>%
+  ungroup() %>%
+  
+  left_join(
+    dbGetQuery(con, "SELECT DISTINCT url, class, MIN(date) as start_date, MAX(date) as end_date 
+               FROM pcs_stage_data
+               GROUP BY url, class"), by = c("url")
+  )
+
+#
+
+apply_those_strengths_to_GC_results <- pcs_gc_results %>%
+  
+  mutate(perc_max = pnt / max_pnt) %>%
+  
+  left_join(aggregate_strength_of_gc_field %>%
+               select(url, avg, top3_wtd, best5), by = c("url")) %>%
+  
+  mutate(newpnts_avg = perc_max * avg,
+         newpnts_t3w = perc_max * top3_wtd,
+         newpnts_b5 =  perc_max * best5)
+
+#
+
+recent_GC = apply_those_strengths_to_GC_results %>%
+  
+  select(-pnt, -max_pnt) %>%
+  rename(pnt = newpnts_avg,
+         max_pnt = avg) %>%
+  
+  filter(date > '2020-07-01') %>%
+  filter(avg_pcd >= 3) %>%
+  
+  mutate(wt = (1 / (as.numeric(D - date) + 365))/0.00273,
+         wtd = wt*pnt) %>%
+  
+  group_by(rider) %>%
+  mutate(latest = ifelse(date == max(date, na.rm = T), pnt, NA),
+         latest = max(latest, na.rm = T)) %>%
+  mutate(t7 = ifelse(rank(desc(pnt), ties.method = "first") <= 7, pnt, NA),
+         t7_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 7, wtd, NA),
+         t3 = ifelse(rank(desc(pnt), ties.method = "first") <= 3, pnt, NA),
+         t3_wtd = ifelse(rank(desc(wtd), ties.method = "first") <= 3, wtd, NA)) %>%
+  ungroup() %>%
+  
+  group_by(rider) %>%
+  mutate(order_race = rank(desc(date), ties.method = "first")) %>%
+  summarize(avg = mean(pnt, na.rm = T),
+            top7 = mean(t7, na.rm = T),
+            top3 = mean(t3, na.rm = T),
+            max = mean(max_pnt, na.rm = T),
+            wtd = mean(wtd, na.rm = T),
+            top7_wtd = mean(t7_wtd, na.rm = T),
+            top3_wtd = mean(t3_wtd, na.rm = T),
+            latest = mean(latest, na.rm = T),
+            ordered = sum((1 / order_race) * pnt, na.rm = T) / sum(1 / order_race, na.rm = T),
+            races = n()) %>%
+  ungroup() %>%
+  
+  mutate(perc_max = avg/max) %>%
+  
+  filter(top7 > 0 | max > 0 | wtd > 0 | top7_wtd > 0)
+  
 
 #
 #

@@ -19,6 +19,15 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
 All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf
                        WHERE time_trial = 0 AND team_time_trial = 0 AND year >= 2014") %>%
   
+  mutate(rider = case_when(rider == "O Connor Ben" ~ "O'connor Ben",
+                           rider == "O Brien Kelland" ~ "O'brien Kelland",
+                           rider == "Ghirmay Hailu Biniam" ~ "Girmay Biniam",
+                           rider == "Girmay Hailu Biniam" ~ "Girmay Biniam",
+                           rider == "O Donnell Bailey" ~ "O'donnell Bailey",
+                           rider == "D Heygere Gil" ~ "D'heygere Gil",
+                           rider == "Skjelmose Jensen Mattias" ~ "Skjelmose Mattias",
+                           rider == "Wright Alfred" ~ "Wright Fred",
+                           TRUE ~ rider)) %>%
   filter(!is.na(bunch_sprint)) %>%
   filter(!is.na(pred_climb_difficulty)) %>%
   
@@ -43,6 +52,129 @@ All_data <- dbGetQuery(con, "SELECT * FROM stage_data_perf
 #
 #
 
+overallPresentBS <- All_data %>%
+  
+  mutate(present_for_BS = ifelse(rnk <= 25 & bunch_sprint == 1 & tm_pos == 1, 1, 0)) %>%
+  
+  filter(bunch_sprint == 1 & pred_climb_difficulty <= 2) %>%
+  
+  filter(date > '2021-06-01') %>% 
+  
+  group_by(rider) %>%
+  summarize(present_for_BS = mean(present_for_BS)) %>%
+  ungroup()
+
+#
+
+model_PresentBS <- All_data %>%
+  
+  mutate(present_for_BS = ifelse(rnk <= 25 & bunch_sprint == 1 & tm_pos == 1, 1, 0)) %>%
+  
+  filter(bunch_sprint == 1) %>%
+  
+  filter(date > '2021-06-01') %>% 
+  
+  group_by(rider) %>%
+  filter(n() >= 10) %>% 
+  ungroup() %>% 
+  
+  mutate(sqpcd = ifelse(pred_climb_difficulty <= 0, pred_climb_difficulty, pred_climb_difficulty ^ 2)) %>%
+  
+  lme4::glmer(present_for_BS ~ (1 + sqpcd | rider), data = ., family = "binomial")
+
+#
+
+expand_grid(rider = c("Van Aert Wout", 
+                      "Philipsen Jasper", 
+                      "Ewan Caleb", "Meeus Jordi",
+                       "Pedersen Mads",
+                      "Girmay Biniam",
+                      "Coquard Bryan",
+                      "Cort Magnus",
+                      "Aranburu Alex",
+                      "Strong Corbin",
+                      "Laporte Christophe",
+                      "Van Der Poel Mathieu"),
+            sqpcd = c(0,1,2,3,4,5,6,7,8,9,10)^2) %>% 
+  
+  mutate(pred = predict(model_PresentBS, .), 
+         pred = exp(pred)/(1+exp(pred))) %>%
+  
+  ggplot(aes(x = sqrt(sqpcd), y = pred, color = rider))+
+  geom_point()+
+  geom_line(size=2)+
+  scale_y_continuous(labels = scales::percent)+
+  labs(x = "climbing difficulty of race",
+       y = "Probability of finishing in final group",
+       title = "Van Aert is the best sprinter in tough terrain")+
+  scale_color_manual(values = c("red", "blue", "light blue", "gray80",
+                                "gold", "navy", "green", "gray20",
+                                "pink", "purple", "yellow", "brown"))
+
+#
+#
+#
+
+survival_in_BS <- expand_grid(rider = model_PresentBS@frame$rider %>% unique(),
+                              sqpcd = c(0,1,2,3,4,5,6,7,8)^2) %>% 
+  
+  mutate(pred = predict(model_PresentBS, .), 
+         pred = exp(pred)/(1+exp(pred))) %>%
+  mutate(sqpcd = sqrt(sqpcd)) %>%
+  spread(sqpcd, pred) %>% 
+  janitor::clean_names() %>% 
+  mutate(delta = x7/x0)
+
+#
+
+library(gt)
+
+top_sprinters <- survival_in_BS %>% 
+  
+  inner_join(overallPresentBS, by = c("rider")) %>%
+  
+  mutate(chances_of_sprinting_delta = 1-delta, 
+         flat = present_for_BS, 
+         quite_hilly = (flat * (1-chances_of_sprinting_delta)),
+         chances_of_sprinting_delta = chances_of_sprinting_delta * -1) %>%
+  
+  select(rider, `Flat Parcours` = flat, `Quite Hilly Parcours` = quite_hilly, `Reduction (%)` = chances_of_sprinting_delta) %>% 
+  
+  filter(rider %in% c("Welsford Sam", "Van Aert Wout",
+                      "Philipsen Jasper", "Jakobsen Fabio",
+                      "Ewan Caleb", "Meeus Jordi",
+                      "Kristoff Alexander", "Groenewegen Dylan",
+                      "Bauhaus Phil", "Pedersen Mads",
+                      "Girmay Biniam", "Cavendish Mark",
+                      "Coquard Bryan")) %>%
+                      #"Groves Kaden", "Gaviria Fernando",
+                      #"Demare Arnaud", "Merlier Tim",
+                      #"Dainese Alberto", "Bennett Sam",
+                      #"Kooij Olav", "Sagan Peter",
+                      #"Nizzolo Giacomo", "Ackermann Pascal",
+                      #"De Lie Arnaud"))  %>%
+  
+  arrange(desc(`Reduction (%)`)) %>%
+  
+  gt() %>%
+  fmt_percent(
+    columns = c(`Flat Parcours`, `Quite Hilly Parcours`, `Reduction (%)`),
+    decimals = 0
+  ) %>%
+  tab_header(
+    title = paste0("How much do hills degrade sprinters ability to stay in 1st group?"),
+    subtitle = paste0("Model probabiltiy of rider participating in sprint given parcours")
+  ) %>%
+  tab_options() %>% 
+  tab_source_note("data since June 2021")
+
+gtsave(data = top_sprinters, "top-sprinters-degrade-sprinting.png", expand = 20)
+
+
+#
+#
+#
+
 
 # Model using SOP ---------------------------------------------------------
 
@@ -62,7 +194,7 @@ predictions_using_logrk_model <- All_data %>%
   
   inner_join(
     
-    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks WHERE test_or_prod = 'prod'") %>%
+    dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_logranks_sq WHERE test_or_prod = 'BS_not_ODR'") %>%
       mutate(date = as.Date(date)), by = c("date")
     
   ) %>%
@@ -71,33 +203,41 @@ predictions_using_logrk_model <- All_data %>%
   
   left_join(
     
-    dbReadTable(con, "lme4_rider_logranks")  %>%
-      filter(test_or_prod == "prod") %>%
+    dbGetQuery(con, "SELECT * FROM lme4_rider_logranks_sq WHERE test_or_prod = 'BS_not_ODR' AND sample_days = '730'")  %>%
+      filter(test_or_prod == "BS_not_ODR") %>%
       select(-test_or_prod) %>%
-      unique() %>%
+      
+      rowid_to_column() %>%
+      
+      group_by(rider, date) %>%
+      filter(min(rowid) == rowid) %>%
+      ungroup() %>%
+      
+      select(-rowid) %>%
+      
       mutate(rider = str_to_title(rider)) %>%
       mutate(date = as.Date(date)) %>%
       
       filter(!is.na(one_day_race)) %>%
       
-      mutate(level_data = ifelse(is.na(pcd_impact), "just_rider",
+      mutate(level_data = ifelse(is.na(sqpcd_impact), "just_rider",
                                  ifelse(is.na(bunchsprint_impact), "pcd_added",
                                         ifelse(is.na(one_day_race), "bs_added", "odr_added")))) %>%
       
       # the standard deviations of random intercept and pcd impact both vary widely (increase as you move from 2015 to 2020)
       # we adjust here
       group_by(date, level_data) %>%
-      mutate(pcd_impact_new = (pcd_impact - mean(pcd_impact, na.rm = T)) / sd(pcd_impact, na.rm = T),
+      mutate(pcd_impact_new = (sqpcd_impact - mean(sqpcd_impact, na.rm = T)) / sd(sqpcd_impact, na.rm = T),
              random_intercept_new = (random_intercept - mean(random_intercept, na.rm = T)) / sd(random_intercept, na.rm = T)) %>%
       ungroup() %>%
       
       # this transforms them back to input into the regression equation
-      mutate(pcd_impact = pcd_impact_new * sd(pcd_impact, na.rm = T),
+      mutate(sqpcd_impact = pcd_impact_new * sd(sqpcd_impact, na.rm = T),
              random_intercept = random_intercept_new * sd(random_intercept, na.rm = T)) %>%
       
       select(-pcd_impact_new, -random_intercept_new) %>%
       
-      rename(pcd_logrk_impact = pcd_impact,
+      rename(pcd_logrk_impact = sqpcd_impact,
              bs_logrk_impact = bunchsprint_impact,
              rand_logrk_impact = random_intercept,
              odr_logrk_impact = one_day_race) %>%
@@ -165,39 +305,41 @@ All_dates <- All_data %>%
   select(date) %>%
   unique() %>%
   mutate(date = as.Date(date, origin = '1970-01-01')) %>%
+  rbind(tibble(date = lubridate::today())) %>%
   arrange(desc(date))
 
 Dates_to_use <- All_dates %>%
-  anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_sprintlevel2_logranks") %>%
-              mutate(date = as.Date(date))) %>%
+  #anti_join(dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_sprintlevel2_logranks") %>%
+  #            mutate(date = as.Date(date))) %>%
   filter(date > "2017-03-31") %>%
+  arrange(desc(date)) %>%
   rbind(tibble(date = as.Date(lubridate::today()+1))) %>%
   arrange(desc(date))
 
+already <- dbGetQuery(con, "SELECT DISTINCT date FROM lme4_rider_sprintlevel2_logranks") %>%
+  mutate(date = as.Date(date))
+
 #
 #
 #
 
-for(b in 1:length(Dates_to_use$date)) {
+for(b in 1:length(All_dates$date)) {
   
-  if(Dates_to_use$date[[b]] > '2016-06-30') {
+  print(All_dates$date[[b]])
+  
+  if(All_dates$date[[b]] > '2016-06-30' & !All_dates$date[[b]] %in% already$date) {
     
     # go back 4 months further in 2020 post-lockdown
-    
-    if(Dates_to_use$date[[b]] > '2020-04-01' & Dates_to_use$date[[b]] < '2022-08-01') {
-      
+    if(All_dates$date[[b]] > '2020-04-01' & All_dates$date[[b]] < '2022-08-01') {
       howfar = 120
-      
     } else {
-      
       howfar = 0
-      
     }
     
     # one day before predicting date and two years back
-    maxD <- as.Date(Dates_to_use$date[[b]]) - 1
+    maxD <- as.Date(All_dates$date[[b]]) - 1
     minD <- maxD - 730 - howfar
-    
+
     # set-up different time length data-sets
     
     dx <- who_did_you_race_against %>%
@@ -229,43 +371,213 @@ for(b in 1:length(Dates_to_use$date)) {
       mutate(win = ifelse(rnk == 1, 1, 0))
     
     #
+
+    d_small <- dx %>% filter(between(date, All_dates$date[[b+225]], maxD)==TRUE)
+
+    weightings = c(0, 5, 10, 20, 50, 100, 200, 500, 2500, 500000)
+
+    for(w in weightings) {
+
+      if(w == 500000) {
+
+        model <- d_small %>%
+
+          group_by(rider) %>%
+          filter(n() >= 5) %>%
+          ungroup() %>%
+
+          lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
+
+                     data = .)
+
+        ranefs_regular <- lme4::ranef(model)[[1]] %>% rownames_to_column() %>%
+          rename(rider = rowname, random_intercept = `(Intercept)`) %>%
+          mutate(date = maxD + 1,
+                 weightings = as.numeric(NA),
+                 overall_intercept = model@beta[[1]],
+                 sum_sof_log_rk = model@beta[[2]])
+
+        dbWriteTable(con, "lme4_rider_sprintlevel2_logranks", ranefs_regular, append = TRUE, row.names = FALSE)
+
+        print(maxD)
+
+      } else {
+
+        model <- d_small %>%
+
+          group_by(rider) %>%
+          mutate(weightings = 1 / ((as.numeric((maxD+1) - date) + w)),
+                 weightings = weightings / mean(weightings)) %>%
+          filter(n() >= 5) %>%
+          ungroup() %>%
+
+          lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
+
+                     data = .,
+                     weights = weightings)
+
+        ranefs_regular <- lme4::ranef(model)[[1]] %>% rownames_to_column() %>%
+          rename(rider = rowname, random_intercept = `(Intercept)`) %>%
+          mutate(date = maxD + 1,
+                 weightings = w,
+                 overall_intercept = model@beta[[1]],
+                 sum_sof_log_rk = model@beta[[2]],
+                 time_range = '1yr')
+
+        dbWriteTable(con, "lme4_rider_sprintlevel2_logranks", ranefs_regular, append = TRUE, row.names = FALSE)
+
+        print(w)
+
+      }
+
+    }
+    
     #
+    
+    d_small <- dx %>% filter(year == lubridate::year(maxD))
+    
+    weightings = c(0, 5, 10, 20, 50, 100, 200, 500, 2500, 500000)
+    
+    for(w in weightings) {
+      
+      if(w == 500000) {
+        
+        rws <- d_small %>%
+          
+          group_by(rider) %>%
+          filter(n() >= 5) %>%
+          ungroup() %>%
+          
+          filter(n() >= 50)
+        
+        if(nrow(rws) == 0) {print("not enough data")} else {
+          
+          model <- rws %>%
+            
+            lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
+                       
+                       data = .)
+          
+          ranefs_regular <- lme4::ranef(model)[[1]] %>% rownames_to_column() %>%
+            rename(rider = rowname, random_intercept = `(Intercept)`) %>%
+            mutate(date = maxD + 1,
+                   weightings = as.numeric(NA),
+                   overall_intercept = model@beta[[1]],
+                   sum_sof_log_rk = model@beta[[2]],
+                   time_range = 'season')
+          
+          dbWriteTable(con, "lme4_rider_sprintlevel2_logranks", ranefs_regular, append = TRUE, row.names = FALSE)
+          
+          print(maxD)
+        }
+        
+      } else {
+        
+        rws <- d_small %>%
+          
+          group_by(rider) %>%
+          mutate(weightings = 1 / ((as.numeric((maxD+1) - date) + w)),
+                 weightings = weightings / mean(weightings)) %>%
+          filter(n() >= 5) %>%
+          ungroup() %>%
+          
+          filter(n() >= 50)
+        
+        if(nrow(rws) == 0) {print("not enough data")} else {
+          
+          model <- rws %>%
+            
+            lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
+                       
+                       data = .,
+                       weights = weightings)
+          
+          ranefs_regular <- lme4::ranef(model)[[1]] %>% rownames_to_column() %>%
+            rename(rider = rowname, random_intercept = `(Intercept)`) %>%
+            mutate(date = maxD + 1,
+                   weightings = w,
+                   overall_intercept = model@beta[[1]],
+                   sum_sof_log_rk = model@beta[[2]])
+          
+          dbWriteTable(con, "lme4_rider_sprintlevel2_logranks", ranefs_regular, append = TRUE, row.names = FALSE)
+          
+          print(w)
+        
+        }
+        
+      }
+      
+    }
+    
+    #
+    
+    record_vs_sprinters <- d_small %>%
+
+      select(rnk, rider, team, url, stage, year, class, date, length) %>%
+      inner_join(
+        d_small %>%
+          mutate(rel_sof = (1 / adjust_to_elite) / mean(1 / adjust_to_elite, na.rm = T)) %>%
+          select(rnk, rider, team, url, stage, year, class, date, length, rel_sof), by = c("stage", "url", "class", "date", "length", "year")) %>%
+
+      filter(rider.x != rider.y) %>%
+      filter(team.x != team.y) %>%
+
+      mutate(record = ifelse(rnk.x < rnk.y, 1, 0),
+             sof_record = record * rel_sof) %>%
+
+      group_by(rider = rider.x) %>%
+      summarize(races = n_distinct(paste0(stage,url,year,class,date,length)),
+                h2hs = n(),
+                wins = sum(record, na.rm = T),
+                sof_wins = sum(sof_record, na.rm = T),
+                sof_agg = sum(rel_sof, na.rm = T)) %>%
+      ungroup() %>%
+
+      mutate(sof_record = sof_wins / sof_agg,
+             raw_record = wins / h2hs,
+             strength_competition = sof_agg / h2hs)
+
+    dbWriteTable(con, "sprinting_record", record_vs_sprinters, append = TRUE, row.names = FALSE)
+
+    tictoc::tic()
+
+    model_PresentBS <- All_data %>%
+
+      filter(between(date, All_dates$date[[b+450]], maxD)==TRUE) %>%
+
+      group_by(rider) %>%
+      filter(n() >= 20) %>%
+      ungroup() %>%
+
+      mutate(present_for_BS = ifelse(rnk <= 25 & bunch_sprint == 1 & tm_pos == 1, 1, 0)) %>%
+
+      filter(bunch_sprint == 1) %>%
+
+      mutate(sqpcd = ifelse(pred_climb_difficulty <= 0, pred_climb_difficulty, pred_climb_difficulty ^ 2)) %>%
+
+      lme4::glmer(present_for_BS ~ (1 + sqpcd | rider), data = ., family = "binomial")
+
     #
 
-    d_small <- dx %>% filter(between(date, All_dates$date[[b+180]], maxD)==TRUE)
-    
+    survival_in_BS <- expand_grid(rider = model_PresentBS@frame$rider %>% unique(),
+                                  sqpcd = c(0,1,2,3,4,5,6,7,8)^2) %>%
+
+      mutate(pred = predict(model_PresentBS, .),
+             pred = exp(pred)/(1+exp(pred))) %>%
+      mutate(sqpcd = sqrt(sqpcd)) %>%
+      spread(sqpcd, pred) %>%
+      janitor::clean_names() %>%
+      mutate(delta = x6/x0)
+
+    tictoc::toc()
+
     #
-    #
-    #
-    
-    model <- d_small %>%
-      
-      group_by(rider) %>%
-      filter(n() >= 5) %>%
-      ungroup() %>%
-      
-      lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
-                 
-                 data = .)
-    
-    ranefs_regular <- lme4::ranef(model)[[1]] %>% rownames_to_column() %>%
-      rename(rider = rowname, random_intercept = `(Intercept)`) %>%
-      mutate(date = maxD + 1)
-    
-    #
-    # ################################################
-    #
-    
-    dbWriteTable(con, "lme4_rider_sprintlevel2_logranks", ranefs_regular, append = TRUE, row.names = FALSE)
-    
-    print(model@beta[[1]])
-    
-    #
-    #
-    #
-    #
-    
-    print(b)
+
+    dbWriteTable(con,
+                 "survival_for_bunchsprint",
+                 survival_in_BS %>% mutate(date = maxD + 1),
+                 append = TRUE,
+                 row.names = FALSE)
     
   }
   
@@ -273,9 +585,23 @@ for(b in 1:length(Dates_to_use$date)) {
 
 #
 
-dbGetQuery(con, "SELECT * FROM lme4_rider_sprintlevel2_logranks WHERE date >= '2020-01-01'") -> BSRK
+dbGetQuery(con, "SELECT * FROM lme4_rider_sprintlevel2_logranks WHERE date = '2023-07-04'") %>%
+  group_by(date, weightings) %>%
+  mutate(best = min(random_intercept)) %>%
+  ungroup() -> BSRK
 
-BSRK %>% filter(rider == "Bennett Sam") %>% ggplot(aes(x = as.Date(date), y = random_intercept*-1))+geom_point()
+BSRK %>% 
+  filter(rider == "Philipsen Jasper") %>%
+  filter(weightings == 100) %>%
+  ggplot(aes(x = as.Date(date), y = exp(random_intercept+2.48)))+
+  geom_line(color = 'navy', size = 1.5)+
+  geom_line(data = BSRK %>%  filter(weightings == 100) %>%
+              select(date, best) %>% unique(), aes(x = as.Date(date), y = exp(best+2.48)),
+            color = "green", size = 1.5)+
+  scale_y_reverse()+
+  labs(x = "",
+       y = "expected finish position in Grand Tour sprint",
+       title = "Jasper Philipsen vs Best Sprinter")
 
 #
 #
@@ -325,11 +651,11 @@ model <- who_did_you_race_against %>%
   filter(n() >= 16) %>%
   ungroup() %>%
   
+  
+  
   mutate(wt = 1 / (10 + as.numeric(lubridate::today() - date))) %>%
   
-  lme4::lmer(log(new_rnk) ~ (1 | rider) + sum_sof_log_rk,
-             
-             #weights = wt,
+  lme4::lmer(win ~ (1 | rider) + sum_sof_log_rk,
              
              data = .)
   
@@ -448,6 +774,40 @@ predicted_ranks <- who_did_you_race_against %>%
   
   mutate(coef = mgcv::predict.gam(gam_log_rank, .),
          predicted_rank = exp(coef))
+
+
+# Plackett Luce Part ------------------------------------------------------
+
+orderings <- All_data %>%
+  filter(date >= '2020-06-30' & bunch_sprint == 1) %>%
+  mutate(rider = str_to_lower(str_replace_all(rider, " ", "_"))) %>%
+  select(stage, race, year, bunch_sprint, pred_climb_difficulty, rnk, rider) %>%
+  
+  group_by(rider) %>%
+  filter(n() >= 20) %>%
+  ungroup() %>%
+  
+  filter(rnk < 200) %>%
+  spread(rider, rnk, fill = 0)
+
+#
+
+rider_names <- colnames(orderings[,6:length(orderings)])
+
+#
+
+R <- PlackettLuce::as.rankings(orderings[,-(1:5)], 
+                               input = "rankings",
+                               items = rider_names)
+
+#
+
+mod <- PlackettLuce::PlackettLuce(R, maxit = 10000)
+
+#
+
+coefs <- coef(mod) %>% as.data.frame()
+
 
 # H2H Model Part ----------------------------------------------------------
 

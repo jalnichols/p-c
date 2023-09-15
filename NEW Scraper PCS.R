@@ -20,108 +20,115 @@ pull_from_schedule <- c(
   # WORLD TOUR
   'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter',
   
-  # EUROPE
+  # PRO SERIES
   
+  'https://www.procyclingstats.com/races.php?year=2023&circuit=26&class=&filter=Filter',
+  
+  # EUROPE .1s
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.1&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.1&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2&filter=Filter',
+  # Africa 2.1
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=11&class=2.1&filter=Filter',
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2U&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2U&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.HC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.HC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.Pro&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.Pro&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=CC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2013&circuit=21&class=&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2013&circuit=26&class=&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=2.2U&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=1.2U&filter=Filter',
-  
-  # OLYMPICS AND WORLD CHAMPS
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=3&class=Olympics&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=2&class=WC&filter=Filter',
-  
-  # some of these world champs/olympics are hiding in continental tours
-  'https://www.procyclingstats.com/races.php?year=2016&circuit=18&class=Olympics&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2016&circuit=12&class=WC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2015&circuit=18&class=WC&filter=Filter',
-  
-  # NAT'L Champs
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=NC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=11&class=NC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=NC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=NC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=NC&filter=Filter',
-  
-  #'https://www.procyclingstats.com/races.php?year=2019&circuit=&class=NC&filter=Filter',
-  
-  # ASIA
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.HC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.Pro&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.Pro&filter=Filter',
+  # Asia .1s
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.1&filter=Filter',
   
   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.1&filter=Filter',
   
-  # AFRICA
+  # Americas .2s
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=11&class=2.1&filter=Filter',
+  #'https://www.procyclingstats.com/races.php?year=2023&circuit=18&class=2.2&filter=Filter',
   
-  # OCEANIA
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
-  
-  # JUNIORS
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=1.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=2.1&filter=Filter',
+  # EUROPE .2s / U23s / Ncup
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2U&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2U&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2023&circuit=21&class=&filter=Filter',
   'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=1.Ncup&filter=Filter',
   'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=2.Ncup&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=1.1&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2019&circuit=15&class=2.1&filter=Filter',
   
-  # AMERICAS
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.1&filter=Filter',
+  'https://www.procyclingstats.com/races.php?year=2023&circuit=2&class=&filter=Filter')
   
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.HC&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
-  
-  'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter',
-  
-  # All National Champs
-  
-  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=NC&filter=Filter')
+  # # NAT'L Champs
+  # 
+  # 'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=NC&filter=Filter',
+  # 
+  # 'https://www.procyclingstats.com/races.php?year=2019&circuit=11&class=NC&filter=Filter',
+  # 
+  # 'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=NC&filter=Filter',
+  # 
+  # 'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=NC&filter=Filter',
+  # 
+  # 'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=NC&filter=Filter')
+#'   
+#'   # EUROPE
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.HC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.HC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.Pro&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.Pro&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=CC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2013&circuit=21&class=&filter=Filter',
+#' 
+#'   # OLYMPICS AND WORLD CHAMPS
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=3&class=Olympics&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=2&class=WC&filter=Filter',
+#' 
+#'   # some of these world champs/olympics are hiding in continental tours
+#'   'https://www.procyclingstats.com/races.php?year=2016&circuit=18&class=Olympics&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2016&circuit=12&class=WC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2015&circuit=18&class=WC&filter=Filter',
+#' 
+#'   #'https://www.procyclingstats.com/races.php?year=2019&circuit=&class=NC&filter=Filter',
+#' 
+#'   # ASIA
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.HC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.Pro&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.Pro&filter=Filter',
+#' 
+#'   # OCEANIA
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
+#'
+#' 
+#'   # AMERICAS
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.1&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.HC&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter',
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2020&circuit=13&class=WC&filter=Filter',
+#' 
+#'   # All National Champs
+#' 
+#'   'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=NC&filter=Filter'
+#'   
+#'   #'https://www.procyclingstats.com/calendar/latest-results'
+#' )
 
 #
 
@@ -130,7 +137,7 @@ store_from_schedule <- vector("list", length(pull_from_schedule))
 pull_years = 1
 
 current_year = year(today())
-start_year = 2021 # set to 2012 to pull 2013, 2019 to pull 2020
+start_year = 2022 # set to 2012 to pull 2013, 2019 to pull 2020
 
 #
 # pull in each type and then each year
@@ -138,156 +145,165 @@ start_year = 2021 # set to 2012 to pull 2013, 2019 to pull 2020
 
 for(t in 1:length(pull_from_schedule)) {
   
-  Sys.sleep(2)
-  
-  year_list <- vector("list", pull_years)
-  
-  # pull in each year
-  for(y in 1:length(year_list)) {
+  if(pull_from_schedule[[t]] == 'https://www.procyclingstats.com/calendar/latest-results') {
+
+  } else {
     
-    year = start_year + y
+    Sys.sleep(2)
     
-    url <- paste0(
-      str_sub(pull_from_schedule[[t]], 1, 47),
-      year,
-      str_sub(pull_from_schedule[[t]], 52, nchar(pull_from_schedule[[t]])))
+    year_list <- vector("list", pull_years)
     
-    # if it's current year handle differently
-    
-    if(year == current_year) {
+    # pull in each year
+    for(y in 1:length(year_list)) {
       
-      download.file(url = url, destfile = "temp.html", quiet = TRUE)
+      year = start_year + y
       
-      while(file.info("temp.html")$size < 11000) {
-        Sys.sleep(5)
-        download.file(url = url, destfile = "temp.html", quiet = TRUE)
-      }
-      
-      page <- "temp.html" %>%
-        read_html()
-      
-      # bring in all events
-      evts <- page %>%
-        html_nodes('table') %>%
-        html_table(dec = ",") %>%
-        .[[1]] %>%
-        .[, c(1, 3:5)]
-      
-      # if no events, skip to next
-      
-      if(length(evts$Date) == 0) {
-        
+      if(pull_from_schedule[[t]] == "https://www.procyclingstats.com/calendar/latest-results") {
+        url = "https://www.procyclingstats.com/calendar/latest-results"
       } else {
         
-        # calculate events which have started and which have winners
-        # exclude those which have not started AND those with blank winners which have ended
-        evts <- evts %>%
-          mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
-          mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-          filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
-          count() %>%
-          as.list() %>%
-          .[[1]]
+        url <- paste0(
+          str_sub(pull_from_schedule[[t]], 1, 47),
+          year,
+          str_sub(pull_from_schedule[[t]], 52, nchar(pull_from_schedule[[t]])))
+      }
+      
+      # if it's current year handle differently
+      
+      if(year == current_year) {
         
-        # if no events qualify, skip to next
-        if(evts == 0) {
+        download.file(url = url, destfile = "temp.html", quiet = TRUE)
+        
+        while(file.info("temp.html")$size < 11000) {
+          Sys.sleep(5)
+          download.file(url = url, destfile = "temp.html", quiet = TRUE)
+        }
+        
+        page <- "temp.html" %>%
+          read_html()
+        
+        # bring in all events
+        evts <- page %>%
+          html_nodes('table') %>%
+          html_table(dec = ",") %>%
+          .[[1]] %>%
+          .[, c(1, 3:5)]
+        
+        # if no events, skip to next
+        
+        if(length(evts$Date) == 0) {
+          
         } else {
           
-          # if events do qualify, filter to remove cancelled events
-          events <- cbind(
+          # calculate events which have started and which have winners
+          # exclude those which have not started AND those with blank winners which have ended
+          evts <- evts %>%
+            mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
+            mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
+            filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
+            count() %>%
+            as.list() %>%
+            .[[1]]
+          
+          # if no events qualify, skip to next
+          if(evts == 0) {
+          } else {
             
-            # this generates valid events with winners and dates today or earlier
-            
-            page %>%
-              html_nodes('table.basic') %>%
-              html_table(dec = ",") %>%
-              .[[1]] %>%
-              .[, c(1, 3:5)] %>%
-              mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
-              mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
-              filter(!Race == 'National Championships Colombia U23 - Road Race'),
-            
-            # this generates URLs of races (all races)
-            
-            value = cbind(page %>%
-                            html_nodes('table.basic') %>%
-                            html_nodes('a') %>%
-                            html_attr(name = "href") %>%
-                            enframe(name = NULL) %>%
-                            filter(str_detect(value, "race/")) %>%
-                            filter(str_detect(value, as.character(year))) %>%
-                            filter(!str_detect(value, "stage-")) %>%
-                            filter(!str_detect(value, "result")) %>%
-                            filter(!(str_detect(value, "2020/"))) %>%
-                            #filter(!(str_detect(value, "startlist/preview"))) %>%
-                            #unique() %>%
-                            rename(url = value),
-                          
-                          # this generates a class of 'striked' if the race was cancelled
-                          
-                          page %>%
-                            html_nodes('table.basic') %>%
-                            html_nodes('tbody') %>%
-                            html_nodes('tr') %>%
-                            html_attr(name = "class") %>%
-                            enframe(name = NULL)) %>%
+            # if events do qualify, filter to remove cancelled events
+            events <- cbind(
+              
+              # this generates valid events with winners and dates today or earlier
+              
+              page %>%
+                html_nodes('table.basic') %>%
+                html_table(dec = ",") %>%
+                .[[1]] %>%
+                .[, c(1, 3:5)] %>%
+                mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
+                mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))),
+              
+              # this generates URLs of races (all races)
+              
+              cbind(page %>%
+                      html_nodes('table.basic') %>%
+                      html_nodes('a') %>%
+                      html_attr(name = "href") %>%
+                      enframe(name = NULL) %>%
+                      filter(str_detect(value, "race/")) %>%
+                      filter(str_detect(value, as.character(year))) %>%
+                      filter(!(str_detect(value, "stage-") & !str_detect(value, "-gc")) | value %in% c("race/subway-3-stage-race/2023/startlist/preview",
+                                                                         "race/joe-martin-stage-race-me/2023/startlist/preview")) %>%
+                      #filter(!str_detect(value, "result")) %>%
+                      filter(!(str_detect(value, "2020/"))) %>%
+                      #filter(!(str_detect(value, "startlist/preview"))) %>%
+                      #unique() %>%
+                      rename(url = value),
+                    
+                    # this generates a class of 'striked' if the race was cancelled
+                    
+                    page %>%
+                      html_nodes('table.basic') %>%
+                      html_nodes('tbody') %>%
+                      html_nodes('tr') %>%
+                      html_attr(name = "class") %>%
+                      enframe(name = NULL))) %>%
               
               # this filter removes striked races
+              filter(!(DateStart > lubridate::today() | (Winner == "" & DateEnd <= lubridate::today()))) %>%
               filter(is.na(value)) %>%
               filter(!url == "race/nc-colombia-u23/2022/startlist/preview") %>%
               filter(!url == 'race/ccc-tour-grody-piastowskie/2021/startlist/preview') %>%
+              filter(!Race == 'National Championships Colombia U23 - Road Race') %>%
               select(-value) %>%
-              .[1:evts, ]
+              .[1:evts, ] %>%
+              
+              mutate(year = year)
             
-          ) %>%
+            year_list[[y]] <- events
             
-            mutate(year = year) %>%
-            rename(url = value)
-          
-          year_list[[y]] <- events
+          }
           
         }
         
       }
       
+      # if not current year, handle the same
+      else {
+        
+        page <- url %>%
+          read_html()
+        
+        events <- cbind(
+          
+          page %>%
+            html_nodes('table') %>%
+            html_table(dec = ",") %>%
+            .[[1]] %>%
+            .[,-1],
+          
+          page %>%
+            html_nodes('table') %>%
+            html_nodes('a') %>%
+            html_attr(name = "href") %>%
+            tibble::enframe(name = NULL) %>%
+            filter(str_detect(value, "race/")) %>%
+            filter(str_detect(value, as.character(year)))
+          
+        ) %>%
+          
+          mutate(year = year) %>%
+          rename(url = value)
+        
+        year_list[[y]] <- events
+        
+      }
+      
     }
     
-    # if not current year, handle the same
-    else {
-      
-      page <- url %>%
-        read_html()
-      
-      events <- cbind(
-        
-        page %>%
-          html_nodes('table') %>%
-          html_table(dec = ",") %>%
-          .[[1]] %>%
-          .[,-1],
-        
-        page %>%
-          html_nodes('table') %>%
-          html_nodes('a') %>%
-          html_attr(name = "href") %>%
-          tibble::enframe(name = NULL) %>%
-          filter(str_detect(value, "race/")) %>%
-          filter(str_detect(value, as.character(year)))
-        
-      ) %>%
-        
-        mutate(year = year) %>%
-        rename(url = value)
-      
-      year_list[[y]] <- events
-      
-    }
+    store_from_schedule[[t]] <- bind_rows(year_list) %>%
+      mutate(type = pull_from_schedule[[t]])
     
   }
-  
-  store_from_schedule[[t]] <- bind_rows(year_list) %>%
-    mutate(type = pull_from_schedule[[t]])
   
 }
 
@@ -327,22 +343,63 @@ natl_champs <- c(natl_champs, paste0(natl_champs,"-itt"))
 
 extra_races <- c("race/world-championship",
                  "race/world-championship-u23",
+                 "race/world-championships-u23",
                  "race/world-championship-mj",
+                 "race/uci-world-championships-mj",
                  "race/world-championship-itt",
                  "race/world-championship-itt-u23",
+                 "race/world-championships-itt-u23",
                  "race/world-championship-itt-mj",
+                 "race/uci-world-championships-itt-mj",
                  "race/olympic-games",
                  "race/olympic-games-itt",
                  "race/uec-road-european-championships",
-                 "race/uec-road-european-championships-itt")
+                 "race/uec-road-european-championships-itt",
+                 "race/european-championships")
 
 # remove tours without races (eg, Africa Tour 2013)
 
 store_from_schedule <- store_from_schedule[lengths(store_from_schedule) != 0]
 
+# latest
+
+NC = TRUE
+
+if(NC == TRUE) {
+  get_NC <- read_html("https://www.procyclingstats.com/races.php?category=1&filter=Filter&p=uci&s=latest-results") %>%
+    html_nodes('table')
+  
+  urls <- get_NC %>%
+    .[[1]] %>%
+    html_nodes('a') %>%
+    html_attr(name = 'href') %>%
+    enframe(name = NULL) %>%
+    filter(!str_detect(value, "rider"))
+  
+  df <- get_NC %>%
+    .[[1]] %>%
+    html_table() %>%
+    
+    mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
+           Winner = iconv(Winner, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+    
+    select(date = Date, race = Race, winner = Winner, class = Class) %>%
+    cbind(URL = urls) %>%
+    rename(url = value) %>%
+    mutate(type = "Latest",
+           year = lubridate::year(date),
+           url = str_replace(url, "/result", "")) %>%
+    filter(class == "NC") %>%
+    filter(str_replace(url,paste0("/",year), "") %in% natl_champs)
+  
+}
+
 #
 
 all_events <- bind_rows(store_from_schedule) %>%
+  
+  mutate(url = str_replace(url, "/gc", ""),
+         url = str_replace(url, "/result", "")) %>%
   
   mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
   mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2)))),
@@ -385,7 +442,10 @@ all_events <- bind_rows(store_from_schedule) %>%
   mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
          Winner = iconv(Winner, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
   
-  janitor::clean_names()
+  janitor::clean_names() %>%
+  
+  rbind(df) %>%
+  unique()
 
 #
 # Write DB Table
@@ -424,6 +484,7 @@ all_events <- all_events %>%
   )
 
 print(new_events)
+print(paste0("Pulled each schedule?     ", t == length(pull_from_schedule)))
 
 # write only new ones
 # scrape ones on-going be renamed all_events to take new_events
@@ -458,15 +519,14 @@ for(e in 1:length(all_events$url)) {
     read_html()
   
   page2 <- paste0('https://www.procyclingstats.com/', 
-                 all_events$url[[e]],
-                 '/gc/stages') %>%
+                 all_events$url[[e]]) %>%
     
     read_html()
 
   # pull in stages
   
   as <- page2 %>%
-    html_nodes('table.basic') %>%
+    html_nodes('table') %>%
     html_nodes('td') %>%
     html_nodes('a') %>%
     html_attr(name = "href") %>%
@@ -580,8 +640,8 @@ dbWriteTable(con, "pcs_all_stages", all_stages, append = TRUE, row.names = FALSE
 
 # delete anything written already in pcs_stage_characteristics table
 
-dbSendQuery(con, sprintf("DELETE FROM pcs_stage_characteristics
-            WHERE url IN (%s)", toString(paste0("'", all_stages$url %>% unique(), "'"))))
+#dbSendQuery(con, sprintf("DELETE FROM pcs_stage_characteristics
+#            WHERE url IN (%s)", toString(paste0("'", all_stages$url %>% unique(), "'"))))
 
 print(all_stages)
 
@@ -597,7 +657,7 @@ html_stage_dir <- fs::dir_ls("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HT
 dl_html <- TRUE
 
 # races from this year
-dbGetQuery(con, "SELECT stage, race, year, date, url FROM pcs_stage_raw WHERE year = 2022 AND rnk = '1'") -> Y22
+dbGetQuery(con, "SELECT stage, race, year, date, url FROM pcs_stage_raw WHERE year = 2023 AND rnk = '1'") -> Y22
 
 all_stages <- all_stages %>%
   anti_join(Y22, by = c("s" = "stage", "url"))
@@ -620,6 +680,14 @@ races_list <- vector("list", length(all_stages$race))
 
 #
 
+all_stages <- all_stages %>%
+  rowid_to_column() %>%
+  group_by(race) %>%
+  filter(rowid == min(rowid)) %>%
+  ungroup()
+
+print(all_stages)
+
 tictoc::tic()
 
 #
@@ -627,6 +695,10 @@ tictoc::tic()
 for(r in 1:length(all_stages$value)) {
   
   f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+  
+  if(str_sub(all_stages$url[[r]], 1, 8) == "national") {
+    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/national-race/", ""), "/", ""))
+  }
   
   # match existence of f_name in stage directory
   if(f_name %in% html_stage_dir | dl_html == TRUE) {
@@ -662,10 +734,12 @@ for(r in 1:length(all_stages$value)) {
      (race_url == 'race/tour-of-mersin/2017' & s == 4) |
      (race_url == 'race/romanian-cycling-tour/2012' & s == 2) |
      (race_url == "race/baltic-chain-tour/2011") |
+     (race_url == "race/vuelta-a-espana/2022" & s == 1) |
      (race_url == 'race/volta-a-catalunya/2012' & s == 3) |
      (race_url == 'race/bayern-rundfarht/2012' & s == 2) |
      (race_url == 'race/nc-czech-republic/2011') |
      (race_url == 'race/nc-south-africa/2011') |
+     (race_url == "race/uae-tour/2023" & s == 3) |
      (race_url == 'race/central-european-tour-budapest-gp/2011') |
      (str_detect(race_url, "race/hammer-") == TRUE)) {
     
@@ -673,9 +747,7 @@ for(r in 1:length(all_stages$value)) {
                             rider = "Cancelled / TTT",
                             team = as.character(NA),
                             win_seconds = 0,
-                            time_seconds = 0,
-                            length = 0,
-                            speed = 0) %>%
+                            length = 0) %>%
       mutate(stage = s,
              distance = NA,
              stage_name = NA,
@@ -685,12 +757,16 @@ for(r in 1:length(all_stages$value)) {
     
   } else {
     
-    url <- all_stages$value[[r]]
+    url <- paste0(all_stages$value[[r]], "/result")
     
     # scrape the HTML for the page for multiple use
     
-    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$url[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
+    if(str_sub(all_stages$url[[r]], 1, 8) == "national") {
+      f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/national-race/", ""), "/", ""))
+    }
+  
     if(dl_html == TRUE) {
       
       download.file(url, f_name, quiet = TRUE)
@@ -775,9 +851,7 @@ for(r in 1:length(all_stages$value)) {
                                 rider = "Cancelled / TTT / anomalous",
                                 team = as.character(NA),
                                 win_seconds = 0,
-                                time_seconds = 0,
-                                length = 0,
-                                speed = 0) %>%
+                                length = 0) %>%
           mutate(stage = s,
                  distance = NA,
                  stage_name = NA,
@@ -991,7 +1065,7 @@ for(r in 1:length(all_stages$value)) {
   
   if(dl_html == TRUE) {
     
-    Sys.sleep(runif(1, 0.5, 3.5))
+    Sys.sleep(runif(1, 2.5, 5.5))
     
   }
   
@@ -1048,11 +1122,24 @@ test_dl <- bind_rows(df_list) %>% unique() %>% janitor::clean_names()
 
 test_dl %>% filter(rnk == 1)
 
+print(paste0("Pulled all races?     ", f == length(all_stages$race)))
+
 # DONT DELETE WHEN UPDATING
 #db Send Query(con, "DELETE FROM xxxpcs_stage_rawxxx")
 
 #dbWriteTable(con, "pcs_stage_raw", test_dl, append = TRUE, row.names = FALSE)
 
+
+
+# fix lengths
+
+# usa <- read_delim("C:/Users/Jake Nichols/Downloads/nat.csv")
+# 
+# for(x in 1:nrow(usa)) {
+#   
+#   dbSendQuery(con, sprintf("UPDATE pcs_stage_raw SET length = %s WHERE url = '%s'", usa$length[[x]], usa$url[[x]]))
+#   
+# }
 
 # Scrape Other Data + Write Stage Data ------------------------------------
 
@@ -1066,7 +1153,7 @@ test_dl %>% filter(rnk == 1)
 
 game_race_list <- vector("list", 10)
 
-pull_in_game <- seq(2022, 2022, 1)
+pull_in_game <- seq(2023, 2023, 1)
 
 for(g in 1:length(pull_in_game)) {
   
@@ -1101,23 +1188,28 @@ all_games <- bind_rows(game_race_list) %>%
   inner_join(
     
     dbReadTable(con, "pcs_all_stages") %>%
-      select(url, value, year, s) %>%
+      select(url, value, year, s, class) %>%
       mutate(match_url = paste0(url, "/game")), by = c("url" = "match_url")
     
   ) %>%
   
   janitor::clean_names() %>%
   
-  select(date, race, url = value, year, stage = s) %>%
+  mutate(one_day_race = ifelse(class %in% c("WC", "Olympics", "1.UWT", "CC", "1.Pro",
+                                            "1.HC", "1.1", "1.2", "1.2U", "1.Ncup"), 1, 0)) %>%
+  
+  select(date, race, url = value, year, stage = s, one_day_race) %>%
   
   mutate(url = str_replace(url, "e/binckbank-tour", "e/benelux-tour")) %>%
   mutate(url = str_replace(url, "e/sharjah-international-cycling-tour/", "e/sharjah-tour")) %>%
   
-  mutate(url = paste0(url, "/game/results-vs-picks")) %>%
-  
+  mutate(url = ifelse(one_day_race == 0, paste0(url, "/game/results-vs-picks"), paste0(url, "/results/game/results-vs-picks"))) %>%
+  select(-one_day_race) %>%
   filter(as.Date(date) <= lubridate::today()) %>%
   
-  anti_join(dbGetQuery(con, "SELECT stage, race, year FROM pcs_game_picks GROUP BY stage, race, year"), by = c("stage" = "stage", "race" = "race", "year"))
+  anti_join(dbGetQuery(con, "SELECT stage, race, year FROM pcs_game_picks GROUP BY stage, race, year"), by = c("stage" = "stage", "race" = "race", "year")) %>%
+  
+  filter(date >= '2023-08-21')
 
 #
 #
@@ -1212,7 +1304,6 @@ dbWriteTable(con, "pcs_game_picks", games_most_picked, append = TRUE, row.names 
 
 # Stage Characteristics ---------------------------------------------------
 
-
 pv_model <- read_rds("Stored models/pcd-pv-mod.rds")
 ic_model <- read_rds("Stored models/pcd-icon-mod.rds")
 
@@ -1233,6 +1324,10 @@ for(r in 1:length(all_stages$value)) {
   
   f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
   
+  if(str_sub(all_stages$url[[r]], 1, 8) == "national") {
+    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/national-race/", ""), "/", ""))
+  }
+  
   # match existence of f_name in stage directory
   if(f_name %in% html_stage_dir | dl_html == TRUE) {
     
@@ -1245,6 +1340,10 @@ for(r in 1:length(all_stages$value)) {
     # scrape the HTML for the page for multiple use
     
     f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+
+    if(str_sub(all_stages$url[[r]], 1, 8) == "national") {
+      f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/national-race/", ""), "/", ""))
+    }
     
     if(dl_html == TRUE) {
       
@@ -1455,6 +1554,9 @@ for(r in 1:length(all_stages$value)) {
       
       #
       
+      dbSendQuery(con, sprintf("DELETE FROM pcs_stage_characteristics WHERE stage = ('%s') AND url = ('%s')",
+                               stage_data_chars$stage, stage_data_chars$url))
+      
       dbWriteTable(con, "pcs_stage_characteristics", stage_data_chars, append = TRUE, row.names = FALSE)
 
       print(stage_data_chars)
@@ -1616,7 +1718,11 @@ stage_data <- stage_data_int %>%
   
   mutate(time_trial = ifelse(stage_name %in% c("Time trial", "Prologue") | str_detect(stage_name, "ITT"), TRUE, FALSE)) %>%
 
-  mutate(grand_tour = ifelse(race %in% c("Tour de France", "Giro d'Italia", 
+  mutate(time_trial = case_when(url == "race/okolo-jiznich-cech/2022" & stage == 1 ~ TRUE,
+                                url == "race/tour-of-denmark/2022" & stage == 2 ~ TRUE,
+                                TRUE ~ time_trial)) %>%
+  
+  mutate(grand_tour = ifelse(race %in% c("Tour de France", "Giro d'Italia", "Giro dItalia", "Giro d Italia",
                                          "La Vuelta ciclista a Espana", "Vuelta a Espana"), TRUE, FALSE)) %>%
   
   mutate(one_day_race = ifelse(stage_name == "One day race", TRUE, FALSE)) %>%
@@ -1806,7 +1912,7 @@ stage_data <- stage_data %>%
                        start_distance = KM_top - length,
                        summit = alt + 1000,
                        time_climbed = NA),
-              model_category = mgcv::predict.gam(read_rds('model-climb-difficulty.rds'),
+              model_category = mgcv::predict.gam(read_rds('Stored models/model-climb-difficulty.rds'),
                                                  supp_climbs %>%
                                                    filter(is.na(category)) %>%
                                                    fill(stage, .direction = "down") %>%
@@ -1940,24 +2046,29 @@ stage_data <- stage_data %>%
   
   filter(!(race == "dubai tour" & year == 2014 & class == "2.HC")) %>%
   filter(!(url == "race/carpathia-couriers-paths/2022" & stage == 3)) %>%
+  filter(!(url == "race/boucles-de-la-mayenne/2023" & stage == 3 & abs(gain_gc) >= 10)) %>%
 
   unique() %>% 
   
   mutate(rider = str_to_title(rider)) %>%
   
-  mutate(stage = ifelse(stage == "", 1, stage))
+  mutate(stage = ifelse(stage == "", 1, stage)) %>%
+  
+  mutate(rider = case_when(rider == "Skjelmose Jensen Mattias" ~ "Skjelmose Mattias",
+                           TRUE ~ rider))
 
 # Write the cleaned-up data to database
 
-y22 <- stage_data %>% filter(year == 2022 & rnk == 1)
+y22 <- stage_data %>% filter(year == 2023 & rnk == 1)
 
 print(y22 %>% arrange(desc(date)))
 
-#dbSendQuery(con, "DELETE FROM pcs_stage_data WHERE year = 2022")
+#dbSendQuery(con, "DELETE FROM pcs_stage_data WHERE year >= 2023")
 
 dbWriteTable(con, "pcs_stage_data", 
              
-             stage_data %>% filter(year >= 2022), 
+             stage_data %>% mutate(rider = str_trim(rider)) %>% filter(year >= 2023) %>%
+               mutate(stage = ifelse(str_detect(stage, "cx.pro"), "CX", stage)), 
              
              append = TRUE, row.names = FALSE)
 
@@ -1976,13 +2087,15 @@ dbWriteTable(con, "pcs_stage_data",
 
 all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
                         FROM pcs_stage_data
-                        WHERE year > 2013") %>%
+                        WHERE year > 2011") %>%
   
   mutate(one_day_race = ifelse(url %in% c('race/gp-d-ouverture/2018',
                                           'race/gp-d-ouverture/2017'), 1, one_day_race)) %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC", "Olympics")) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT", "2.1", "1.1", "1.Pro", "2.Pro", "1.HC", "2.HC", "Olympics", "CC",
+                      "1.2", "2.2", "1.2U", "2.2U", "1.Ncup", "2.Ncup")) %>%
+  #filter(class %in% c("1.2U", "2.2U", "1.2", "2.2") & year >= 2021) %>%
   
   filter(stage != 0) %>%
   
@@ -1996,7 +2109,13 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
   
   filter(stage_name != "Prologue") %>%
   
-  mutate(one_day_race = ifelse(stage_name == "Time tri" & class %in% c("WC", "Olympics", "1.1"), 1, one_day_race))
+  mutate(one_day_race = ifelse(stage_name == "Time tri" & class %in% c("WC", "Olympics", "1.1"), 1, one_day_race)) %>%
+  
+  filter(date <= lubridate::today()) %>% 
+  filter(!class %in% c("JR", "NAT", "NC")) %>%
+  filter(year >= 2023) %>%
+  arrange(desc(date)) %>%
+  filter(date > '2023-08-01')
 
 #
 # THIS IS PROBABLY BROKEN
@@ -2015,76 +2134,188 @@ for(r in 1:length(all_races$url)) {
     
   }
   
-  page <- read_file(f_name) %>%
-    read_html()
-  
-  # bring in the list of tables
-  
-  d <- page %>%
-    html_nodes('table') %>%
-    html_table()
-  
-  if(length(d) == 0) {
+  if(file.exists(f_name)) {
     
-  } else if(length(d) > 1) {
+    page <- read_file(f_name) %>%
+      read_html()
     
-    # find which table to choose by searching for the one generically displayed (will be stage standings)
-    choose <- page %>%
-      html_nodes('div') %>%
-      html_attr(name = "class") %>%
-      enframe(name = NULL) %>%
-      filter(value %in% c("result-cont hide", "result-cont")) %>%
-      tibble::rowid_to_column() %>%
-      .[[1]] %>%
-      .[[1]]
+    # bring in the list of tables
     
-  } else {
+    d <- page %>%
+      html_nodes('table') %>%
+      html_table()
     
-    choose <- 1
-    
-  }
-  
-  #
-  
-  startlist <- d[[choose]]
-  
-  if(max((colnames(startlist) == "BIB") == TRUE) == 1) {
-    
-    startlist <- startlist %>%
+    if(length(d) == 0) {
       
-      .[, 1:8] %>%
+      f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(all_races$url[[r]], "/", ""))
       
-      select(rider = Rider,
-             team = Team,
-             bib = BIB) %>%
-      unique() %>%
+      page <- read_file(f_name) %>%
+        read_html()
       
-      mutate(race = all_races$race[[r]],
-             year = all_races$year[[r]],
-             url = all_races$url[[r]])
-    
-    startlist$race <- iconv(startlist$race, from="UTF-8", to = "ASCII//TRANSLIT")
-    
-    startlist$rider <- iconv(startlist$rider, from="UTF-8", to = "ASCII//TRANSLIT")
-    
-    startlist$team <- stringi::stri_trans_general(str = startlist$team, 
-                                                  id = "Latin-ASCII")
-    
-    startlist <- startlist %>%
+      # bring in the list of tables
       
-      mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)))
+      d <- page %>%
+        html_nodes('table') %>%
+        html_table()
+      
+      # find which table to choose by searching for the one generically displayed (will be stage standings)
+      choose <- page %>%
+        html_nodes('div') %>%
+        html_attr(name = "class") %>%
+        enframe(name = NULL) %>%
+        filter(value %in% c("result-cont hide", "result-cont", "resultCont", "resultCont hide")) %>%
+        tibble::rowid_to_column() %>%
+        .[[1]] %>%
+        .[[1]]
+      
+    } else if(length(d) > 1) {
+      
+      # find which table to choose by searching for the one generically displayed (will be stage standings)
+      choose <- page %>%
+        html_nodes('div') %>%
+        html_attr(name = "class") %>%
+        enframe(name = NULL) %>%
+        filter(value %in% c("result-cont hide", "result-cont", "resultCont", "resultCont hide")) %>%
+        tibble::rowid_to_column() %>%
+        .[[1]] %>%
+        .[[1]]
+      
+    } else {
+      
+      choose <- 1
+      
+    }
     
     #
     
-    dbWriteTable(con, "pcs_all_startlists", startlist, row.names = FALSE, append = TRUE)
+    startlist <- d[[choose]]
     
-    Sys.sleep(2)
+    if(nrow(startlist) <= 10) {
+      
+      if(all_races$one_day_race[[r]] == 0) {
+        
+        page <- paste0("https://www.procyclingstats.com/", all_races$url[[r]], "/stage-", all_races$stage[[r]]) %>%
+          read_html()
+        
+      } else {
+        
+        page <- paste0("https://www.procyclingstats.com/", all_races$url[[r]], "/result") %>%
+          read_html()
+      }
+
+      # bring in the list of tables
+      
+      d <- page %>%
+        html_nodes('table') %>%
+        html_table()
+      
+      startlist <- d[[choose]]
+      
+    }
     
-    print(r)
-    
+    if(max((colnames(startlist) == "BIB") == TRUE) == 1) {
+      
+      startlist <- startlist %>%
+        
+        .[, 1:9] %>%
+        
+        select(rider = Rider,
+               team = Team,
+               bib = BIB) %>%
+        unique() %>%
+        
+        mutate(race = all_races$race[[r]],
+               year = all_races$year[[r]],
+               url = all_races$url[[r]]) %>%
+        mutate(bib = ifelse(bib == "-", NA, bib))
+      
+      startlist$race <- iconv(startlist$race, from="UTF-8", to = "ASCII//TRANSLIT")
+      
+      startlist$rider <- iconv(startlist$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+      
+      startlist$team <- stringi::stri_trans_general(str = startlist$team, 
+                                                    id = "Latin-ASCII")
+      
+      startlist <- startlist %>%
+        
+        mutate(rider = str_sub(rider, 1, nchar(rider)-nchar(team)),
+               rider = str_trim(rider))
+      
+      #
+      
+      dbWriteTable(con, "pcs_all_startlists", startlist, row.names = FALSE, append = TRUE)
+      
+      Sys.sleep(6)
+      
+      print(startlist %>% filter(bib == 1))
+      print(r)
+      
+    }
+  
   }
   
 }    
+
+#
+#
+#
+#
+#
+#
+#
+
+all_races <- all_races %>% filter(year >= 2023) %>% anti_join(dbGetQuery(con, "SELECT DISTINCT url FROM pcs_staff_in_race"))
+
+for(r in 1:nrow(all_races)) {
+  
+  URL <- paste0('https://www.procyclingstats.com/', str_replace(all_races$url[[r]],"/gc",""), '/startlist')
+  
+  page <- URL %>%
+    read_html() 
+  
+  startlist <- page %>%
+    html_nodes('ul.startlist_v4') %>%
+    html_nodes('a')
+  
+  riders <- startlist %>%
+    html_nodes('span') %>%
+    html_text() %>%
+    enframe(name = NULL) %>%
+    mutate(value = iconv(value, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+    mutate(value = str_to_title(tolower(value)))
+  
+  teams <- cbind(
+    startlist %>%
+      html_text() %>%
+      enframe(name = NULL),
+    startlist %>%
+      html_attr(name = "href") %>%
+      enframe(name = NULL) %>%
+      rename(url = value)) %>%
+    filter(value != "") %>%
+    mutate(team_2nd = ifelse(str_detect(url, "team"), value, NA)) %>%
+    fill(team_2nd, .direction = "down") %>%
+    mutate(value = iconv(value, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+    mutate(value = str_to_title(tolower(value))) %>%
+    mutate(staff = str_detect(url, "staff/")) %>%
+    rename(team = team_2nd)
+  
+  if(nrow(teams %>% filter(staff == TRUE)) == 0) {} else {
+    
+    staff_in_race <- teams %>%
+      filter(staff == TRUE) %>%
+      select(-staff, staff_url = url) %>%
+      cbind(all_races[r,] %>% select(-stage_name, -one_day_race, -race, start_date = date))
+    
+    dbWriteTable(con, "pcs_staff_in_race", staff_in_race, append = TRUE, row.names = FALSE)
+    
+    print(all_races$url[[r]])
+    
+  }
+  
+  Sys.sleep(5)
+  
+}
 
 #
 #
@@ -2103,12 +2334,13 @@ all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stag
                         WHERE year > 2019 AND time_trial = 0") %>%
   
   arrange(-year) %>%
-  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year >= 2021 & class %in% c("2.Pro", "1.Pro"))) %>%
+  filter(class %in% c("WC", "1.UWT", "2.UWT") | (year >= 2021 & class %in% c("2.Pro", "1.Pro", "1.1", "2.1"))) %>%
+  filter(year >= 2023) %>%
   
   mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
   
-  anti_join(dbGetQuery(con, "SELECT url, stage FROM pcs_km_breakaway"), by = c("url", "stage")) %>%
-  
+  anti_join(dbGetQuery(con, "SELECT url, stage FROM pcs_km_breakaway_1"), by = c("url", "stage")) %>%
+  filter(date > as.Date('2023-08-20')) %>%
   arrange(desc(date))
 
 #
@@ -2120,14 +2352,14 @@ for(r in 1:length(all_races$url)) {
     page <- paste0("https://www.procyclingstats.com/", 
                    all_races$url[[r]], 
                    "/stage-", 
-                   str_replace(all_races$stage_name[[r]], "Stage ", ""), 
-                   "/live/kms-in-the-break")
+                   str_trim(str_replace(all_races$stage_name[[r]], "Stage ", "")), 
+                   "/statistics/kms-in-the-break")
     
   } else {
     
     page <- paste0("https://www.procyclingstats.com/", 
                    all_races$url[[r]], 
-                   "/result/live/kms-in-the-break")
+                   "/result/statistics/kms-in-the-break")
     
   }
   
@@ -2162,7 +2394,7 @@ for(r in 1:length(all_races$url)) {
     
     #
     
-    dbWriteTable(con, "pcs_km_breakaway", breaks, row.names = FALSE, append = TRUE)
+    dbWriteTable(con, "pcs_km_breakaway_1", breaks, row.names = FALSE, append = TRUE)
     
     print(r)
     
@@ -2173,6 +2405,109 @@ for(r in 1:length(all_races$url)) {
   }
   
 }
+
+#
+#
+#
+#
+
+
+# Pull in KOM and Sprint Results ---------------------------------------------------
+
+all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
+                        FROM pcs_stage_data
+                        WHERE year >= 2023 AND time_trial = 0") %>%
+  
+  arrange(-year) %>%
+  filter(class %in% c("2.UWT", "2.Pro", "2.HC", "2.1", "2.2U", "2.2")) %>%
+  
+  mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
+  
+  anti_join(dbGetQuery(con, "SELECT url, stage FROM pcs_kom_sprints_actual"), by = c("url", "stage")) %>%
+  
+  arrange(desc(date)) %>%
+  
+  filter(date > '2023-08-20')
+
+#
+
+for(r in 1:length(all_races$url)) {
+  
+  if(all_races$one_day_race[[r]] == 0) {
+    
+    page <- paste0("https://www.procyclingstats.com/", 
+                   all_races$url[[r]], 
+                   "/stage-", 
+                   str_trim(str_replace(all_races$stage_name[[r]], "Stage ", "")), 
+                   "/info/complementary-results")
+    
+  } else {
+    
+    page <- paste0("https://www.procyclingstats.com/", 
+                   all_races$url[[r]], 
+                   "/result/info/complementary-results")
+    
+  }
+  
+  page <- page %>%
+    read_html()
+  
+  # bring in the list of tables
+  
+  d <- page %>%
+    html_nodes('table') %>%
+    html_table()
+  
+  if(length(d) > 0) {
+    
+    n <- page %>%
+      html_nodes('h3') %>%
+      html_text() %>%
+      enframe(name = NULL) %>%
+      filter(!value %in% c("Grand Tours", "One day races", "Major Tours", "Rankings & Statistics", "About ProCyclingStats",
+                           "Info"))
+    
+    for(x in 1:length(d)) {
+      
+      if(nrow(d[[x]]) > 0) {
+        
+        #if(str_detect(n$value[[x]], "KOM") | str_detect(n$value[[x]], "Sprint") | str_detect(n$value[[x]], "sprint") |
+        #   str_detect(n$value[[x]], "Points at finish") | str_detect(n$value[[x]], "Finishline points") |
+        #   str_detect(n$value[[x]], "Points | Finish")) {
+        
+        if("Points" %in% (d[[x]] %>% colnames()) & "Rider" %in% (d[[x]] %>% colnames())) {
+          
+          df <- d[[x]] %>%
+            bind_rows() %>%
+            mutate(name = n$value[[x]]) %>%
+            select(rnk = Rnk, rider = Rider, name, points = Points) %>%
+            mutate(race = all_races$race[[r]],
+                   year = all_races$year[[r]],
+                   stage = all_races$stage[[r]],
+                   url = all_races$url[[r]])
+          
+          df$race <- iconv(df$race, from="UTF-8", to = "ASCII//TRANSLIT")
+          df$rider <- iconv(df$rider, from="UTF-8", to = "ASCII//TRANSLIT")
+          
+          dbWriteTable(con, "pcs_kom_sprints_actual", df, row.names = FALSE, append = TRUE)
+          
+          print(head(df,1))
+          
+        }
+        
+        #}
+        
+      }
+    }
+    
+    print(r)
+    
+  }
+  
+  Sys.sleep(7)
+  
+}
+
 
 #
 #
@@ -2216,9 +2551,12 @@ if(dl_html == FALSE) {
                          FROM pcs_stage_raw
                          WHERE rnk IS NOT NULL"), by = c("s", "url")) %>%
     
-    filter(year >= 2022) %>%
+    filter(year >= 2023) %>%
     arrange(desc(date)) %>%
-    arrange(desc(class %in% c("1.UWT", "2.UWT", "1.Pro", "2.Pro")))
+    arrange(desc(class %in% c("1.UWT", "2.UWT", "1.Pro", "2.Pro"))) %>%
+    unique() %>%
+    filter(!url == 'race/circuit-des-ardennes-international/2022') %>% 
+    arrange(desc(as.Date(date) + as.numeric(s)))
   
 }
 
@@ -2244,6 +2582,11 @@ for(r in 1:length(all_stages$value)) {
     # scrape the HTML for the page for multiple use
     
     f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    
+    #while(file.info(f_name)$size < 11000) {
+      #Sys.sleep(5)
+      download.file(url = url, destfile = f_name, quiet = TRUE)
+    #}
     
     Sys.sleep(3)
     
@@ -2399,10 +2742,17 @@ for(r in 1:length(all_stages$value)) {
     url <- all_stages$value[[r]]
     
     # scrape the HTML for the page for multiple use
+
+    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
     
     download.file(url, f_name, quiet = TRUE)
     
-    f_name <- paste0("C:/Users/Jake Nichols/Documents/Old D Drive/PCS-HTML/", str_replace_all(str_replace(all_stages$value[[r]], "https://www.procyclingstats.com/race/", ""), "/", ""))
+    while(file.info(f_name)$size < 11000) {
+      Sys.sleep(5)
+      download.file(url = url, destfile = f_name, quiet = TRUE)
+    }
+    
+    Sys.sleep(3)
     
     page <- read_file(f_name) %>%
       read_html()
@@ -2431,6 +2781,7 @@ for(r in 1:length(all_stages$value)) {
         if('TRUE' %in% str_detect("Rider", cn)) {
           
           res[[n]] <- df %>%
+            janitor::clean_names() %>%
             rowid_to_column() %>%
             mutate(rows = max(rowid)) %>%
             select(-rowid) %>%
@@ -2482,6 +2833,7 @@ for(r in 1:length(all_stages$value)) {
         if('TRUE' %in% str_detect("GC", cn)) {
           
           res[[n]] <- df %>%
+            janitor::clean_names() %>%
             rowid_to_column() %>%
             mutate(rows = max(rowid)) %>%
             select(-rowid) %>%
@@ -2555,7 +2907,7 @@ for(r in 1:length(all_stages$value)) {
         stage_GC <- d[[chooser$n[[1]]]] %>%
           janitor::clean_names() %>%
           
-          select(gc_rnk = gc, gc_time, rider, team) %>%
+          select(gc_rnk = gc, gc_time = time, rider, team) %>%
           
           mutate(stage = s,
                  url = all_stages$url[[r]],
@@ -2592,55 +2944,6 @@ tictoc::toc()
 
 #
 #
-#
-
-pull_from_schedule <- c(
-  
-  # WORLD TOUR
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=1&class=&filter=Filter',
-  
-  # EUROPE
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=2.2U&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=1.2U&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=13&class=CC&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2013&circuit=21&class=&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2013&circuit=26&class=&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=2.2U&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2022&circuit=&class=1.2U&filter=Filter',
-  
-  # OLYMPICS AND WORLD CHAMPS
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=3&class=Olympics&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=2&class=WC&filter=Filter',
-  
-  # ASIA
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.HC&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.HC&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.Pro&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.Pro&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=1.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=12&class=2.1&filter=Filter',
-  
-  # AFRICA
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=11&class=2.1&filter=Filter',
-  
-  # OCEANIA
-  
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=14&class=2.1&filter=Filter',
-  
-  # AMERICAS
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.1&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.HC&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=1.Pro&filter=Filter',
-  'https://www.procyclingstats.com/races.php?year=2019&circuit=18&class=2.Pro&filter=Filter')
-
 #
 
 data_list <- vector("list", 100)
@@ -2705,43 +3008,42 @@ for(t in 1:length(pull_from_schedule)) {
           .[[1]] %>%
           .[, c(1, 3:5)] %>%
           mutate(DateEnd = as.Date(paste0(year, "-", str_sub(Date, nchar(Date)-1, nchar(Date)), "-", as.numeric(str_sub(Date, nchar(Date)-4, nchar(Date)-3))))) %>%
-          mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))) %>%
-          
-          filter(!Race == 'National Championships Colombia U23 - Road Race'),
+          mutate(DateStart = as.Date(paste0(year, "-", str_sub(Date, 4, 5), "-", as.numeric(str_sub(Date, 1, 2))))),
         
         # this generates URLs of races (all races)
         
         cbind(page %>%
-                        html_nodes('table.basic') %>%
-                        html_nodes('a') %>%
-                        html_attr(name = "href") %>%
-                        enframe(name = NULL) %>%
-                        filter(str_detect(value, "race/")) %>%
-                        filter(str_detect(value, as.character(year))) %>%
-                        filter(!str_detect(value, "stage-")) %>%
-                        filter(!str_detect(value, "result")) %>%
-                        filter(!(str_detect(value, "2020/"))) %>%
-                        #filter(!(str_detect(value, "startlist/preview"))) %>%
-                        #unique() %>%
-                        rename(url = value),
-                      
-                      # this generates a class of 'striked' if the race was cancelled
-                      
-                      page %>%
-                        html_nodes('table.basic') %>%
-                        html_nodes('tbody') %>%
-                        html_nodes('tr') %>%
-                        html_attr(name = "class") %>%
-                        enframe(name = NULL))
-        
-      ) %>%
+                html_nodes('table.basic') %>%
+                html_nodes('a') %>%
+                html_attr(name = "href") %>%
+                enframe(name = NULL) %>%
+                filter(str_detect(value, "race/")) %>%
+                filter(str_detect(value, as.character(year))) %>%
+                filter(!(str_detect(value, "stage-") & !str_detect(value, "-gc")) | value %in% c("race/subway-3-stage-race/2023/startlist/preview",
+                                                                                                 "race/joe-martin-stage-race-me/2023/startlist/preview")) %>%
+                #filter(!str_detect(value, "result")) %>%
+                filter(!(str_detect(value, "2020/"))) %>%
+                #filter(!(str_detect(value, "startlist/preview"))) %>%
+                #unique() %>%
+                rename(url = value),
+              
+              # this generates a class of 'striked' if the race was cancelled
+              
+              page %>%
+                html_nodes('table.basic') %>%
+                html_nodes('tbody') %>%
+                html_nodes('tr') %>%
+                html_attr(name = "class") %>%
+                enframe(name = NULL))) %>%
         
         # this filter removes striked races
         filter(is.na(value)) %>%
         filter(!url == "race/nc-colombia-u23/2022/startlist/preview") %>%
         filter(!url == 'race/ccc-tour-grody-piastowskie/2021/startlist/preview') %>%
-        mutate(year = year) %>%
-        select(-value)
+        filter(!Race == 'National Championships Colombia U23 - Road Race') %>%
+        select(-value) %>%
+        
+        mutate(year = year)
       
       if(nrow(events) > 0) {
         year_list[[y]] <- events
@@ -2798,9 +3100,11 @@ not_started_events <- bind_rows(data_list) %>%
   mutate(url = str_replace(url, "/startlist/preview", "")) %>%
   
   mutate(Race = iconv(Race, from="UTF-8", to = "ASCII//TRANSLIT"),
-         Winner = iconv(Winner, from="UTF-8", to = "ASCII//TRANSLIT")) %>%
+         Winner = "") %>%
   
-  janitor::clean_names()
+  janitor::clean_names() %>%
+  unique() %>%
+  mutate(url = str_replace(url, "/result", ""))
 
 #
 #
@@ -2827,10 +3131,19 @@ for(e in 1:length(not_started_events$url)) {
   # go to generic event page and find which stage is listed last
   
   page2 <- paste0('https://www.procyclingstats.com/', 
-                  not_started_events$url[[e]],
-                  '/gc/stages') %>%
+                  not_started_events$url[[e]]) %>%
     
     read_html()
+  
+  # pull in stages
+  
+  as <- page2 %>%
+    html_nodes('table') %>%
+    html_nodes('td') %>%
+    html_nodes('a') %>%
+    html_attr(name = "href") %>%
+    enframe(name = NULL) %>% 
+    filter(str_detect(value, 'race/'))
   
   # pull in stages
   
@@ -2927,7 +3240,7 @@ for(r in 1:length(all_stages$value)) {
     
     s = all_stages$s[[r]]
     
-    url <- all_stages$value[[r]]
+    url <- paste0(all_stages$value[[r]], "/result")
     
     # scrape the HTML for the page for multiple use
     
@@ -3144,6 +3457,8 @@ for(r in 1:length(all_stages$value)) {
       
       print(stage_data_chars)
       
+      Sys.sleep(4)
+      
     }
   }
 }
@@ -3156,93 +3471,37 @@ tictoc::toc()
 #
 #
 
-# Pull in KOM and Sprint Results ---------------------------------------------------
+national_races_url <- 'https://www.procyclingstats.com/calendar/national'
 
-all_races <- dbGetQuery(con, "SELECT DISTINCT race, year, class, date, url, stage, stage_name, one_day_race
-                        FROM pcs_stage_data
-                        WHERE year >= 2022 AND time_trial = 0") %>%
-  
-  arrange(-year) %>%
-  filter(class %in% c("2.UWT", "2.Pro", "2.HC", "2.1")) %>%
-  
-  mutate(stage_name = str_sub(stage_name, 1, 8)) %>%
-  
-  anti_join(dbGetQuery(con, "SELECT url, stage FROM pcs_kom_sprints"), by = c("url", "stage")) %>%
-  
-  arrange(desc(date))
+nr_page <- national_races_url %>%
+  read_html()
 
-#
+races <- nr_page %>%
+  html_nodes('table') %>%
+  html_table() %>%
+  .[[1]]
 
-for(r in 1:length(all_races$url)) {
-  
-  if(all_races$one_day_race[[r]] == 0) {
-    
-    page <- paste0("https://www.procyclingstats.com/", 
-                   all_races$url[[r]], 
-                   "/stage-", 
-                   str_replace(all_races$stage_name[[r]], "Stage ", ""), 
-                   "/live/complementary-results")
-    
-  } else {
-    
-    page <- paste0("https://www.procyclingstats.com/", 
-                   all_races$url[[r]], 
-                   "/result/live/kms-in-the-break")
-    
-  }
-  
-  page <- page %>%
-    read_html()
-  
-  # bring in the list of tables
-  
-  d <- page %>%
-    html_nodes('table') %>%
-    html_table()
-  
-  if(length(d) > 0) {
-    
-    n <- page %>%
-      html_nodes('h3') %>%
-      html_text() %>%
-      enframe(name = NULL) %>%
-      filter(!value %in% c("Grand Tours", "One day races", "Major Tours", "Rankings & Statistics", "About ProCyclingStats",
-                           "Info"))
-    
-    for(x in 1:length(d)) {
-      
-      if(nrow(d[[x]]) > 0) {
-        
-        if(str_detect(n$value[[x]], "KOM") | str_detect(n$value[[x]], "Sprint") | str_detect(n$value[[x]], "Bonus") | 
-           str_detect(n$value[[x]], "Bonfication")) {
-          
-          df <- d[[x]] %>%
-            bind_rows() %>%
-            mutate(name = n$value[[x]]) %>%
-            select(rnk = Rnk, rider = Rider, name) %>%
-            mutate(race = all_races$race[[r]],
-                   year = all_races$year[[r]],
-                   stage = all_races$stage[[r]],
-                   url = all_races$url[[r]])
-          
-          df$race <- iconv(df$race, from="UTF-8", to = "ASCII//TRANSLIT")
-          df$rider <- iconv(df$rider, from="UTF-8", to = "ASCII//TRANSLIT")
-          
-          dbWriteTable(con, "pcs_kom_sprints", df, row.names = FALSE, append = TRUE)
-          
-        }
-        
-      }
-    }
-    
-    print(r)
-    
-    Sys.sleep(5)
-    
-  }
-  
-}
+race_urls <- nr_page %>%
+  html_nodes('table') %>%
+  html_nodes('tr') %>%
+  html_nodes('a') %>%
+  html_attr(name = "href") %>%
+  enframe(name = NULL) %>%
+  rename(race_urls = value) %>%
+  filter(!str_detect(race_urls, "rider"))
 
+nr_df <- cbind(races, race_urls) %>%
+  select(date = Date, race = Race, url = race_urls) %>%
+  mutate(class = "NAT",
+         winner = "",
+         type = "National Races",
+         year = lubridate::year(date))
+
+keep = c()
+
+nr_df <- nr_df %>% filter(str_replace(url, "https://www.procyclingstats.com/", "") %in% keep)
+
+dbWriteTable(con, "pcs_all_races", nr_df, append = TRUE, row.names = FALSE)
 
 #
 #
